@@ -11,13 +11,13 @@ This is a stripped down version of Apache's PdfBox Java library for manipulating
 
 Example code:
 ```
-File root = android.os.Environment.getExternalStorageDirectory(); 
-	    File dir = new File (root.getAbsolutePath() + "/download");
-	    dir.mkdirs();
-	    File out = new File(dir, "test.pdf");
+	File root = android.os.Environment.getExternalStorageDirectory(); 
+	File dir = new File (root.getAbsolutePath() + "/download");
+	dir.mkdirs();
+	File out = new File(dir, "test.pdf");
 
-	    try {
-	    	PDDocument pdfDoc = PDDocument.load(root.getAbsolutePath() + "/download" + "/input.pdf");
+	try {
+		PDDocument pdfDoc = PDDocument.load(root.getAbsolutePath() + "/download" + "/input.pdf");
 	    	PDDocumentCatalog docCatalog = pdfDoc.getDocumentCatalog();
 	    	PDAcroForm acroForm = docCatalog.getAcroForm();
 	    	PDField field = acroForm.getField("Date");
@@ -25,9 +25,17 @@ File root = android.os.Environment.getExternalStorageDirectory();
 	    	    field.setValue("Today");
 	    	}
 	    	try {
-				pdfDoc.save(root.getAbsolutePath() + "/download" + "/output.pdf");
-			} catch (COSVisitorException e) {
+			pdfDoc.save(root.getAbsolutePath() + "/download" + "/output.pdf");
+		} catch (COSVisitorException e) {
 				e.printStackTrace();
-			}
+		}
 	    	pdfDoc.close();
+	} catch (FileNotFoundException e) {
+	        e.printStackTrace();
+	        Log.i("debug", "******* File not found. Did you" +
+	                " add a WRITE_EXTERNAL_STORAGE permission to the   manifest?");
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	}
 ```
