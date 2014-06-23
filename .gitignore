@@ -19,7 +19,7 @@ local.properties
 #other eclipse
 gen/
 res/
-AndroidManifext.xml
+AndroidManifest.xml
 proguard-project.txt
 project.properties
 
