@@ -3,6 +3,10 @@ PdfBox-Android
 
 Basic PDF form filling on Android with a modified version of Apache's PdfBox project
 
+Important notes:
+-Based on PdfBox v1.8.3
+-This is still a work in progress; much if the functionality is missing/broken
+
 
 This is a stripped down version of Apache's PdfBox Java library for manipulating PDF documents. This version:
 -Contains only the methods required to open a PDF document with forms, fill them, and save and close the document
