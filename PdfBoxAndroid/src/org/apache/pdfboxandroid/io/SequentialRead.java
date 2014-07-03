@@ -28,4 +28,15 @@ public interface SequentialRead {
      * length of the data stream.
      */
     public long length() throws IOException;
+    
+    /**
+     * Read a buffer of data.
+     *
+     * @param b The buffer to write the data to.
+     * @param offset Offset into the buffer to start writing.
+     * @param length The amount of data to attempt to read.
+     * @return The number of bytes that were actually read.
+     * @throws IOException If there was an error while reading the data.
+     */
+    public int read(byte[] b, int offset, int length) throws IOException;
 }

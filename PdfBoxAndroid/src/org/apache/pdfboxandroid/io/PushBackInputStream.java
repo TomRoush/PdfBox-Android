@@ -75,6 +75,69 @@ public class PushBackInputStream extends PushbackInputStream {
     }
     
     /**
+     * {@inheritDoc} 
+     */
+    public int read() throws IOException
+    {
+        int retval = super.read();
+        if (retval != -1)
+        {
+            offset++;
+        }
+        return retval;
+    }
+    
+    /**
+     * {@inheritDoc} 
+     */
+    public int read(byte[] b) throws IOException
+    {
+        return this.read(b, 0, b.length);
+    }
+    
+    /**
+     * {@inheritDoc} 
+     */
+    public int read(byte[] b, int off, int len) throws IOException
+    {
+        int retval = super.read(b, off, len);
+        if (retval != -1)
+        {
+            offset += retval;
+        }
+        return retval;
+    }
+    
+    /**
+     * {@inheritDoc} 
+     */
+    public void unread(int b) throws IOException
+    {
+        offset--;
+        super.unread(b);
+    }
+    
+    /**
+     * {@inheritDoc} 
+     */
+    public void unread(byte[] b) throws IOException
+    {
+        this.unread(b, 0, b.length);
+    }
+    
+    /**
+     * {@inheritDoc} 
+     */
+    public void unread(byte[] b, int off, int len) throws IOException
+    {
+        if (len > 0)
+        {
+            offset -= len;
+            super.unread(b, off, len);
+        }
+    }
+    
+    /**
      * Reads a given number of bytes from the underlying stream.
      * @param length the number of bytes to be read
      * @return a byte array containing the bytes just read

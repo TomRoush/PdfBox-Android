@@ -38,6 +38,11 @@ public class COSDocument extends COSBase {
     private boolean closed = false;
     
     /**
+     * Flag to skip malformed or otherwise unparseable input where possible.
+     */
+    private final boolean forceParsing;
+    
+    /**
      * Maps object and generation id to object byte offsets.
      */
     private final Map<COSObjectKey, Long> xrefTable = new HashMap<COSObjectKey, Long>();
@@ -76,6 +81,7 @@ public class COSDocument extends COSBase {
     {
         scratchFile = scratchFileValue;
         tmpFile = null;
+        forceParsing = forceParsingValue;
     }
     
     /**
@@ -119,6 +125,7 @@ public class COSDocument extends COSBase {
     {
         tmpFile = File.createTempFile("pdfbox-", ".tmp", scratchDir);
         scratchFile = new RandomAccessFile(tmpFile, "rw");
+        forceParsing = forceParsingValue;
     }
     
     /**

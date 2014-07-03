@@ -77,8 +77,7 @@ public class PDDocument implements Pagable {
     {
         PDFParser parser = new PDFParser( new BufferedInputStream( input ) , scratchFile );
         parser.parse();
-        PDDocument doc = parser.getPDDocument();
-        return doc;
+        return parser.getPDDocument();
     }
     
     /**

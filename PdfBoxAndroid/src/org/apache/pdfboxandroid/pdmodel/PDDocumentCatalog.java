@@ -64,15 +64,20 @@ public class PDDocumentCatalog implements COSObjectable {
      */
     public PDAcroForm getAcroForm()
     {
-        if( acroForm == null )
-        {
-            COSDictionary acroFormDic =
-                (COSDictionary)root.getDictionaryObject( COSName.ACRO_FORM );
-            if( acroFormDic != null )
-            {
-                acroForm = new PDAcroForm( document, acroFormDic );
-            }
-        }
+			if( acroForm == null )
+			{
+				Log.e(PDFBox.LOG_TAG, "no acroform");
+			    COSDictionary acroFormDic =
+			        (COSDictionary)root.getDictionaryObject( COSName.ACRO_FORM );
+			    
+			    Log.e(PDFBox.LOG_TAG, "got dictionary");
+			    if( acroFormDic != null )
+			    {
+			    	Log.e(PDFBox.LOG_TAG, "no dictionary");
+			        acroForm = new PDAcroForm( document, acroFormDic );
+			        Log.e(PDFBox.LOG_TAG, "create form");
+			    }
+			}
         return acroForm;
     }
 }

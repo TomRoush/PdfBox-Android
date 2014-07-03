@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.pdfboxandroid.PDFBox;
 import org.apache.pdfboxandroid.cos.COSArray;
 import org.apache.pdfboxandroid.cos.COSBase;
 import org.apache.pdfboxandroid.cos.COSBoolean;
@@ -43,6 +44,8 @@ import org.apache.pdfboxandroid.pdmodel.PDDocument;
 import org.apache.pdfboxandroid.pdmodel.interactive.digitalsignature.SignatureInterface;
 import org.apache.pdfboxandroid.persistence.util.COSObjectKey;
 import org.apache.pdfboxandroid.util.StringUtil;
+
+import android.util.Log;
 
 /**
  * this class acts on a in-memory representation of a pdf document.
@@ -511,7 +514,7 @@ public class COSWriter implements ICOSVisitor {
             // sort xref, needed only if object keys not regenerated
             Collections.sort(getXRefEntries());
             COSWriterXRefEntry lastEntry = getXRefEntries().get( getXRefEntries().size()-1 );
-    
+            
             // remember the position where x ref is written
             setStartxref(getStandardOutput().getPos());
             //
@@ -544,7 +547,7 @@ public class COSWriter implements ICOSVisitor {
 
             // sort xref, needed only if object keys not regenerated
             Collections.sort(getXRefEntries());
-
+            
             // remember the position where x ref was written
             setStartxref(getStandardOutput().getPos());
 
@@ -693,7 +696,7 @@ public class COSWriter implements ICOSVisitor {
             // the size is the highest object number+1. we add one more
             // for the xref stream object we are going to write
             pdfxRefStream.setSize(getNumber() + 2);
-
+            
             setStartxref(getStandardOutput().getPos());
             COSStream stream2 = pdfxRefStream.getStream();
             doWriteObject(stream2);
@@ -713,7 +716,7 @@ public class COSWriter implements ICOSVisitor {
     
             // sort xref, needed only if object keys not regenerated
             Collections.sort(getXRefEntries());
-          
+            
             // remember the position where x ref was written
             setStartxref(getStandardOutput().getPos());
     

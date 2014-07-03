@@ -35,12 +35,12 @@ public class RandomAccessFile implements RandomAccess {
         ras.seek(position);
     }
 
-//    /**
-//     * {@inheritDoc}
-//     */
-//    public long getPosition() throws IOException {
-//        return ras.getFilePointer();
-//    }
+    /**
+     * {@inheritDoc}
+     */
+    public long getPosition() throws IOException {
+        return ras.getFilePointer();
+    }
     
     /**
      * {@inheritDoc}
@@ -50,13 +50,13 @@ public class RandomAccessFile implements RandomAccess {
         return ras.read();
     }
 
-//    /**
-//     * {@inheritDoc}
-//     */
-//    public int read(byte[] b, int offset, int length) throws IOException
-//    {
-//        return ras.read(b, offset, length);
-//    }
+    /**
+     * {@inheritDoc}
+     */
+    public int read(byte[] b, int offset, int length) throws IOException
+    {
+        return ras.read(b, offset, length);
+    }
 
     /**
      * {@inheritDoc}

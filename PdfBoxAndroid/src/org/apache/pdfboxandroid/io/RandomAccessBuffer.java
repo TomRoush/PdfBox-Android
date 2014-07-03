@@ -155,6 +155,49 @@ public class RandomAccessBuffer implements RandomAccess {
     /**
      * {@inheritDoc}
      */
+    public int read(byte[] b, int offset, int length) throws IOException
+    {
+        if (pointer >= this.size)
+        {
+            return 0;
+        }
+        int maxLength = (int) Math.min(length, this.size-pointer);
+        long remainingBytes = BUFFER_SIZE - currentBufferPointer;
+        if (maxLength >= remainingBytes)
+        {
+            // copy the first bytes from the current buffer
+            System.arraycopy(currentBuffer, (int)currentBufferPointer, b, offset, (int)remainingBytes);
+            int newOffset = offset + (int)remainingBytes;
+            long remainingBytes2Read = length - remainingBytes;
+            // determine how many buffers are needed to get the remaining amount bytes
+            int numberOfArrays = (int)remainingBytes2Read / BUFFER_SIZE;
+            for (int i=0;i<numberOfArrays;i++) 
+            {
+                nextBuffer();
+                System.arraycopy(currentBuffer, 0, b, newOffset, BUFFER_SIZE);
+                newOffset += BUFFER_SIZE;
+            }
+            remainingBytes2Read = remainingBytes2Read % BUFFER_SIZE;
+            // are there still some bytes to be read?
+            if (remainingBytes2Read > 0)
+            {
+                nextBuffer();
+                System.arraycopy(currentBuffer, 0, b, newOffset, (int)remainingBytes2Read);
+                currentBufferPointer += remainingBytes2Read;
+            }
+        }
+        else
+        {
+            System.arraycopy(currentBuffer, (int)currentBufferPointer, b, offset, maxLength);
+            currentBufferPointer += maxLength;
+        }
+        pointer += maxLength;
+        return maxLength;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public long length() throws IOException
     {
         return size;
@@ -170,6 +213,13 @@ public class RandomAccessBuffer implements RandomAccess {
         bufferListIndex = (int)(position / BUFFER_SIZE);
         currentBufferPointer = position % BUFFER_SIZE;
         currentBuffer = bufferList.get(bufferListIndex);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public long getPosition() throws IOException {
+        return pointer;
     }
 
     /**

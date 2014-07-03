@@ -285,7 +285,7 @@ public abstract class BaseParser {
         long retval = 0;
 
         StringBuilder longBuffer = readStringNumber();
-
+        Log.e(PDFBox.LOG_TAG, "longBuffer" + longBuffer.toString());
         try
         {
             retval = Long.parseLong( longBuffer.toString() );

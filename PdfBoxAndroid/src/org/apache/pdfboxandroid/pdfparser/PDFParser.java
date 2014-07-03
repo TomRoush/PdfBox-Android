@@ -82,7 +82,7 @@ public class PDFParser extends BaseParser {
     public PDFParser(InputStream input, RandomAccess rafi, boolean force) throws IOException 
     {
         super(input, force);
-//        this.raf = rafi;
+        this.raf = rafi;
     }
     
     /**
@@ -172,7 +172,9 @@ public class PDFParser extends BaseParser {
             }
 
             // set xref to start with
-            xrefTrailerResolver.setStartxref( document.getStartXref() );
+            long acquiredStartXref = document.getStartXref();
+            Log.e(PDFBox.LOG_TAG, "Parser1: " + acquiredStartXref);
+            xrefTrailerResolver.setStartxref( acquiredStartXref );
 
             // get resolved xref table + trailer
             document.setTrailer( xrefTrailerResolver.getTrailer() );

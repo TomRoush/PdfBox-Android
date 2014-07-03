@@ -3,6 +3,7 @@ package org.apache.pdfboxandroid.pdmodel.interactive.form;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.pdfboxandroid.PDFBox;
 import org.apache.pdfboxandroid.cos.COSArray;
 import org.apache.pdfboxandroid.cos.COSBase;
 import org.apache.pdfboxandroid.cos.COSDictionary;
@@ -11,6 +12,8 @@ import org.apache.pdfboxandroid.cos.COSString;
 import org.apache.pdfboxandroid.pdmodel.PDDocument;
 import org.apache.pdfboxandroid.pdmodel.PDResources;
 import org.apache.pdfboxandroid.pdmodel.common.COSObjectable;
+
+import android.util.Log;
 
 /**
  * This class represents the acroform of a PDF document.
@@ -32,8 +35,11 @@ public class PDAcroForm implements COSObjectable {
      */
     public PDAcroForm( PDDocument doc, COSDictionary form )
     {
+    	Log.e(PDFBox.LOG_TAG, "new acro");
         document = doc;
+        Log.e(PDFBox.LOG_TAG, "set doc");
         acroForm = form;
+        Log.e(PDFBox.LOG_TAG, "set dic");
     }
     
     /**
