@@ -1,45 +1,44 @@
 PdfBox-Android
 ==============
 
-Basic PDF form filling on Android with a modified version of Apache's PdfBox project
+The beginnings of a port of Apache's PdfBox library to be usable on Android
+
 
 Important notes:
--Based on PdfBox v1.8.3
--This is still a work in progress; much if the functionality is missing/broken
+
+-Based on PdfBox v1.8.6
+
+-This is still a work in progress; much of the functionality is still missing
 
 
-This is a stripped down version of Apache's PdfBox Java library for manipulating PDF documents. This version:
--Contains only the methods required to open a PDF document with forms, fill them, and save and close the document
--Works on Android
--All method and variable names remain the same, but the base package is now org.apache.pdfboxandroid
-
-Example code:
+Example code: Load a pdf called in.pdf from the project's asset folder, fill a field called Date, and save the pdf as out.pdf in the device's Downloads folder
 ```
-	File root = android.os.Environment.getExternalStorageDirectory(); 
-	File dir = new File (root.getAbsolutePath() + "/download");
-	dir.mkdirs();
-	File out = new File(dir, "test.pdf");
-
-	try {
-		PDDocument pdfDoc = PDDocument.load(root.getAbsolutePath() + "/download" + "/input.pdf");
+	AssetManager assetManager = getAssets();
+	    try {
+	    	InputStream template = assetManager.open("in.pdf");
+	    	PDDocument pdfDoc = PDDocument.load(template);
 	    	PDDocumentCatalog docCatalog = pdfDoc.getDocumentCatalog();
 	    	PDAcroForm acroForm = docCatalog.getAcroForm();
+	    	if(acroForm == null) {Log.e(PDFBox.LOG_TAG, "null acroform");}
 	    	PDField field = acroForm.getField("Date");
 	    	if (field != null) {
 	    	    field.setValue("Today");
+	    	} else {
+	    	    Log.e(PDFBox.LOG_TAG, "No field found with name:" + "Date");
 	    	}
 	    	try {
-			pdfDoc.save(root.getAbsolutePath() + "/download" + "/output.pdf");
-		} catch (COSVisitorException e) {
+				pdfDoc.save(root.getAbsolutePath() + "/download" + "/out.pdf");
+			} catch (COSVisitorException e) {
 				e.printStackTrace();
-		}
+			}
 	    	pdfDoc.close();
-	} catch (FileNotFoundException e) {
+	    	
+	    } catch (FileNotFoundException e) {
 	        e.printStackTrace();
-	        Log.i("debug", "******* File not found. Did you" +
-	                " add a WRITE_EXTERNAL_STORAGE permission to the   manifest?");
+	        Log.i("debug", "Unable to find specified file");
 	    } catch (IOException e) {
 	        e.printStackTrace();
+	    } catch (Exception e) {
+	    	e.printStackTrace();
 	    }
-	}
 ```
