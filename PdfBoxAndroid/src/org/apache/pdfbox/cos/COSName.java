@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.persistence.util.COSHEXTable;
 
 /**

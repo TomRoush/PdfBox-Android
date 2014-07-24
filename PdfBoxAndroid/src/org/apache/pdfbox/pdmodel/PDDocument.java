@@ -1,4 +1,4 @@
-package org.apache.pdfboxandroid;
+package org.apache.pdfbox.pdmodel;
 
 import java.awt.print.Pageable;
 import java.io.BufferedInputStream;
