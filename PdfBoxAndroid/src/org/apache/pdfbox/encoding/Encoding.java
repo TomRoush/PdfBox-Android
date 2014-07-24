@@ -59,15 +59,22 @@ public abstract class Encoding implements COSObjectable
         //Loads some additional glyph mappings
         loadGlyphList("org/apache/pdfbox/resources/additional_glyphlist.txt");
 
-        // Load an external glyph list file that user can give as JVM property
-        String location = System.getProperty("glyphlist_ext");
-        if(location != null)
+     // Load an external glyph list file that user can give as JVM property
+        try
         {
-            File external = new File(location);
-            if(external.exists())
+            String location = System.getProperty("glyphlist_ext");
+            if(location != null)
             {
-                loadGlyphList(location);
+                File external = new File(location);
+                if(external.exists())
+                {
+                    loadGlyphList(location);
+                }
             }
+        }
+        catch (SecurityException e)  // can occur on Sytem.getProperty
+        {
+            // PDFBOX-1946 ignore and continue
         }
 
         NAME_TO_CHARACTER.put( NOTDEF, "" );
@@ -191,6 +198,28 @@ public abstract class Encoding implements COSObjectable
     }
 
     /**
+     * Determines if the encoding has a mapping for the given name value.
+     * 
+     * @param name the source value for the mapping
+     * @return the mapped value
+     */
+    public boolean hasCodeForName(String name)
+    {
+        return nameToCode.containsKey(name);
+    }
+
+    /**
+     * Determines if the encoding has a mapping for the given code value.
+     * 
+     * @param code the source value for the mapping
+     * @return the mapped value
+     */
+    public boolean hasNameForCode(int code)
+    {
+        return codeToName.containsKey(code);
+    }
+    
+    /**
      * This will get the character code for the name.
      *
      * @param name The name of the character.
@@ -221,6 +250,24 @@ public abstract class Encoding implements COSObjectable
     public String getName( int code ) throws IOException
     {
         return codeToName.get( code );
+    }
+    
+    /**
+     * This will take a name and get the character code for that name.
+     * 
+     * @param name The name.
+     * 
+     * @return The name of the character.
+     * 
+     */
+    public static String getCharacterForName(String name)
+    {
+        if (NAME_TO_CHARACTER.containsKey(name))
+        {
+            LOG.debug("No character for name " + name);
+            return NAME_TO_CHARACTER.get(name);
+        }
+        return null;
     }
 
     /**

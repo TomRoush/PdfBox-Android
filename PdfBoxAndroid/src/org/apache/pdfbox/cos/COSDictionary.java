@@ -45,7 +45,6 @@ public class COSDictionary extends COSBase
 	 */
 	public COSDictionary( COSDictionary dict )
 	{
-		if(dict.containsKey(COSName.ROOT)) System.out.println("Putting all with root");
 		items.putAll( dict.items );
 	}
 
@@ -223,8 +222,6 @@ public class COSDictionary extends COSBase
 	 */
 	public void setItem( COSName key, COSBase value )
 	{
-		if(key.toString().equals("Root"))
-		System.out.println("Putting COSBase " + key.toString());
 		if( value == null )
 		{
 			removeItem( key );
@@ -244,7 +241,6 @@ public class COSDictionary extends COSBase
 	 */
 	public void setItem( COSName key, COSObjectable value )
 	{
-		System.out.println("Putting COSObjectable " + key.toString());
 		COSBase base = null;
 		if( value != null )
 		{

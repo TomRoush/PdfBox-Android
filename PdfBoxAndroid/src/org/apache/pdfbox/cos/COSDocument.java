@@ -94,7 +94,7 @@ public class COSDocument extends COSBase
      *
      *  @throws IOException If there is an error creating the tmp file.
      */
-    public COSDocument() throws IOException 
+    public COSDocument()
     {
         this(new RandomAccessBuffer(), false);
     }

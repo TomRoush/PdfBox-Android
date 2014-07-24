@@ -519,6 +519,10 @@ public final class COSName extends COSBase implements Comparable<COSName>
     /**
      * A common COSName value.
      */
+    public static final COSName ENCODED_BYTE_ALIGN = new COSName("EncodedByteAlign");
+    /**
+     * A common COSName value.
+     */
     public static final COSName ENCODING = new COSName( "Encoding" );
     /**
      * A common COSName value.
@@ -546,6 +550,11 @@ public final class COSName extends COSBase implements Comparable<COSName>
      * A common COSName value.
      */
     public static final COSName ENCRYPT_META_DATA = new COSName( "EncryptMetadata" );
+
+    /**
+     * A common COSName value.
+     */
+    public static final COSName END_OF_LINE = new COSName("EndOfLine");
     
     /**
      * A common COSName value.
@@ -1717,23 +1726,26 @@ public final class COSName extends COSBase implements Comparable<COSName>
         {
             int current = ((bytes[i]+256)%256);
 
-            if(current <= 32 || current >= 127 ||
-               current == '(' ||
-               current == ')' ||
-               current == '[' ||
-               current == ']' ||
-               current == '/' ||
-               current == '%' ||
-               current == '<' ||
-               current == '>' ||
-               current == NAME_ESCAPE[0] )
+            // Be more restrictive than the PDF spec, "Name Objects"
+            // see PDFBOX-2073
+            if ((current >= 'A' && current <= 'Z')
+                    || (current >= 'a' && current <= 'z')
+                    || (current >= '0' && current <= '9')
+                    || current == '+'
+                    || current == '-'
+                    || current == '_'
+                    || current == '@'
+                    || current == '*'
+                    || current == '$'
+                    || current == ';'
+                    || current == '.')
             {
-                output.write(NAME_ESCAPE);
-                output.write(COSHEXTable.TABLE[current]);
+                output.write(current);
             }
             else
             {
-                output.write(current);
+                output.write(NAME_ESCAPE);
+                output.write(COSHEXTable.TABLE[current]);
             }
         }
     }

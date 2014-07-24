@@ -8,6 +8,12 @@ import java.util.List;
 import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 
+/**
+ * An array of PDFBase objects as part of the PDF document.
+ *
+ * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
+ * @version $Revision: 1.24 $
+ */
 public class COSArray extends COSBase implements Iterable<COSBase>
 {
 

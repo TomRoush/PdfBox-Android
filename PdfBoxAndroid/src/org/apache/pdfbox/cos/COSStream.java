@@ -3,24 +3,38 @@ package org.apache.pdfbox.cos;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.filter.Filter;
 import org.apache.pdfbox.filter.FilterManager;
+import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.io.RandomAccess;
+import org.apache.pdfbox.io.RandomAccessBuffer;
+import org.apache.pdfbox.io.RandomAccessFile;
+import org.apache.pdfbox.io.RandomAccessFileInputStream;
+import org.apache.pdfbox.io.RandomAccessFileOutputStream;
+import org.apache.pdfbox.pdfparser.PDFStreamParser;
 
 /**
  * This class represents a stream object in a PDF document.
  *
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.41 $
+ * 
  */
-public class COSStream extends COSDictionary
+public class COSStream extends COSDictionary implements Closeable
 {
+    /**
+     * Log instance.
+     */
+    private static final Log LOG = LogFactory.getLog(COSStream.class);
+
     private static final int BUFFER_SIZE=16384;
 
     private RandomAccess file;
@@ -34,6 +48,16 @@ public class COSStream extends COSDictionary
      */
     private RandomAccessFileOutputStream unFilteredStream;
 
+    private RandomAccess clone (RandomAccess file) {
+        if (file == null) {
+            return null;
+        } else if (file instanceof RandomAccessFile) {
+            return file;
+        } else {
+            return ((RandomAccessBuffer)file).clone();
+        }
+    }
+
     /**
      * Constructor.  Creates a new stream with an empty dictionary.
      *
@@ -42,7 +66,7 @@ public class COSStream extends COSDictionary
     public COSStream( RandomAccess storage )
     {
         super();
-        file = storage;
+        file = clone(storage);
     }
 
     /**
@@ -54,7 +78,7 @@ public class COSStream extends COSDictionary
     public COSStream( COSDictionary dictionary, RandomAccess storage )
     {
         super( dictionary );
-        file = storage;
+        file = clone(storage);
     }
 
     /**
@@ -143,7 +167,7 @@ public class COSStream extends COSDictionary
      */
     public InputStream getUnfilteredStream() throws IOException
     {
-        InputStream retval = null;
+        InputStream retval;
         if( unFilteredStream == null )
         {
             doDecode();
@@ -154,7 +178,7 @@ public class COSStream extends COSDictionary
         if( unFilteredStream != null )
         {
             long position = unFilteredStream.getPosition();
-            long length = unFilteredStream.getLength();
+            long length = unFilteredStream.getLengthWritten();
             RandomAccessFileInputStream input =
                 new RandomAccessFileInputStream( file, position, length );
             retval = new BufferedInputStream( input, BUFFER_SIZE );
@@ -189,6 +213,7 @@ public class COSStream extends COSDictionary
      * @return any object, depending on the visitor implementation, or null
      * @throws COSVisitorException If an error occurs while visiting this object.
      */
+    @Override
     public Object accept(ICOSVisitor visitor) throws COSVisitorException
     {
         return visitor.visitFromStream(this);
@@ -240,7 +265,6 @@ public class COSStream extends COSDictionary
     {
         FilterManager manager = getFilterManager();
         Filter filter = manager.getFilter( filterName );
-        InputStream input;
 
         boolean done = false;
         IOException exception = null;
@@ -249,11 +273,12 @@ public class COSStream extends COSDictionary
         // in case we need it later
         long writtenLength = unFilteredStream.getLengthWritten();  
 
-        if( length == 0 )
+        if (length == 0 && writtenLength == 0)
         {
             //if the length is zero then don't bother trying to decode
             //some filters don't work when attempting to decode
             //with a zero length stream.  See zlib_error_01.pdf
+            IOUtils.closeQuietly(unFilteredStream);
             unFilteredStream = new RandomAccessFileOutputStream( file );
             done = true;
         }
@@ -262,12 +287,14 @@ public class COSStream extends COSDictionary
             //ok this is a simple hack, sometimes we read a couple extra
             //bytes that shouldn't be there, so we encounter an error we will just
             //try again with one less byte.
-            for( int tryCount=0; !done && tryCount<5; tryCount++ )
+            for (int tryCount = 0; length > 0 && !done && tryCount < 5; tryCount++)
             {
+                InputStream input = null;
                 try
                 {
                     input = new BufferedInputStream(
                         new RandomAccessFileInputStream( file, position, length ), BUFFER_SIZE );
+                	IOUtils.closeQuietly(unFilteredStream);
                     unFilteredStream = new RandomAccessFileOutputStream( file );
                     filter.decode( input, unFilteredStream, this, filterIndex );
                     done = true;
@@ -276,6 +303,10 @@ public class COSStream extends COSDictionary
                 {
                     length--;
                     exception = io;
+                }
+                finally
+                {
+                	IOUtils.closeQuietly(input);
                 }
             }
             if( !done )
@@ -286,10 +317,12 @@ public class COSStream extends COSDictionary
                 length = writtenLength;
                 for( int tryCount=0; !done && tryCount<5; tryCount++ )
                 {
+                    InputStream input = null;
                     try
                     {
                         input = new BufferedInputStream(
                             new RandomAccessFileInputStream( file, position, length ), BUFFER_SIZE );
+                    	IOUtils.closeQuietly(unFilteredStream);
                         unFilteredStream = new RandomAccessFileOutputStream( file );
                         filter.decode( input, unFilteredStream, this, filterIndex );
                         done = true;
@@ -298,6 +331,10 @@ public class COSStream extends COSDictionary
                     {
                         length--;
                         exception = io;
+                    }
+                    finally
+                    {
+                    	IOUtils.closeQuietly(input);
                     }
                 }
             }
@@ -350,13 +387,14 @@ public class COSStream extends COSDictionary
     {
         FilterManager manager = getFilterManager();
         Filter filter = manager.getFilter( filterName );
-        InputStream input;
 
-        input = new BufferedInputStream(
+        InputStream input = new BufferedInputStream(
             new RandomAccessFileInputStream( file, filteredStream.getPosition(),
                                                    filteredStream.getLength() ), BUFFER_SIZE );
+        IOUtils.closeQuietly(filteredStream);
         filteredStream = new RandomAccessFileOutputStream( file );
         filter.encode( input, filteredStream, this, filterIndex );
+        IOUtils.closeQuietly(input);
     }
 
     /**
@@ -384,8 +422,10 @@ public class COSStream extends COSDictionary
      */
     public OutputStream createFilteredStream() throws IOException
     {
+    	IOUtils.closeQuietly(unFilteredStream);
+    	unFilteredStream = null;
+    	IOUtils.closeQuietly(filteredStream);
         filteredStream = new RandomAccessFileOutputStream( file );
-        unFilteredStream = null;
         return new BufferedOutputStream( filteredStream, BUFFER_SIZE );
     }
 
@@ -402,9 +442,11 @@ public class COSStream extends COSDictionary
      */
     public OutputStream createFilteredStream( COSBase expectedLength ) throws IOException
     {
+      	IOUtils.closeQuietly(unFilteredStream);
+       	unFilteredStream = null;
+    	IOUtils.closeQuietly(filteredStream);
         filteredStream = new RandomAccessFileOutputStream( file );
         filteredStream.setExpectedLength( expectedLength );
-        unFilteredStream = null;
         return new BufferedOutputStream( filteredStream, BUFFER_SIZE );
     }
 
@@ -419,6 +461,7 @@ public class COSStream extends COSDictionary
     {
         setItem(COSName.FILTER, filters);
         // kill cached filtered streams
+    	IOUtils.closeQuietly(filteredStream);
         filteredStream = null;
     }
 
@@ -431,8 +474,35 @@ public class COSStream extends COSDictionary
      */
     public OutputStream createUnfilteredStream() throws IOException
     {
-        unFilteredStream = new RandomAccessFileOutputStream( file );
+        IOUtils.closeQuietly(filteredStream);
         filteredStream = null;
+    	IOUtils.closeQuietly(unFilteredStream);
+        unFilteredStream = new RandomAccessFileOutputStream( file );
         return new BufferedOutputStream( unFilteredStream, BUFFER_SIZE );
+    }
+    
+    public void close()
+    {
+    	try
+    	{
+    		if (file != null)
+    		{
+    			file.close();
+    			file = null;
+    		}
+    	}
+    	catch (IOException exception)
+    	{
+    		LOG.error("Exception occured when closing the file.", exception);
+    	}
+    	if (filteredStream != null)
+    	{
+    		IOUtils.closeQuietly(filteredStream);
+    	}
+    	if (unFilteredStream != null)
+    	{
+    		IOUtils.closeQuietly(unFilteredStream);
+    	}
+    	clear();
     }
 }

@@ -1,5 +1,6 @@
 package org.apache.pdfbox.io;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -8,7 +9,7 @@ import java.util.ArrayList;
  * The data will be stored in 16kb chunks organized in an ArrayList.  
  *
  */
-public class RandomAccessBuffer implements RandomAccess
+public class RandomAccessBuffer implements RandomAccess, Closeable
 {
     // chunk size is 16kb
     private static final int BUFFER_SIZE = 16384;
@@ -43,6 +44,30 @@ public class RandomAccessBuffer implements RandomAccess
         bufferListMaxIndex = 0;
     }
 
+    @Override
+    public RandomAccessBuffer clone() {
+        RandomAccessBuffer copy = new RandomAccessBuffer();
+
+        copy.bufferList = new ArrayList<byte[]>(bufferList.size());
+        for (byte [] buffer : bufferList) {
+            byte [] newBuffer = new byte [buffer.length];
+            System.arraycopy(buffer,0,newBuffer,0,buffer.length);
+            copy.bufferList.add(newBuffer);
+        }
+        if (currentBuffer!=null) {
+            copy.currentBuffer = copy.bufferList.get(copy.bufferList.size()-1);
+        } else {
+            copy.currentBuffer = null;
+        }
+        copy.pointer = pointer;
+        copy.currentBufferPointer = currentBufferPointer;
+        copy.size = size;
+        copy.bufferListIndex = bufferListIndex;
+        copy.bufferListMaxIndex = bufferListMaxIndex;
+
+        return copy;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -61,6 +86,7 @@ public class RandomAccessBuffer implements RandomAccess
      */
     public void seek(long position) throws IOException
     {
+        checkClosed();
         pointer = position;
         // calculate the chunk list index
         bufferListIndex = (int)(position / BUFFER_SIZE);
@@ -72,7 +98,8 @@ public class RandomAccessBuffer implements RandomAccess
      * {@inheritDoc}
      */
     public long getPosition() throws IOException {
-        return pointer;
+       checkClosed();
+       return pointer;
     }
     
     /**
@@ -80,6 +107,7 @@ public class RandomAccessBuffer implements RandomAccess
      */
     public int read() throws IOException
     {
+        checkClosed();
         if (pointer >= this.size)
         {
             return -1;
@@ -105,6 +133,7 @@ public class RandomAccessBuffer implements RandomAccess
      */
     public int read(byte[] b, int offset, int length) throws IOException
     {
+        checkClosed();
         if (pointer >= this.size)
         {
             return 0;
@@ -148,6 +177,7 @@ public class RandomAccessBuffer implements RandomAccess
      */
     public long length() throws IOException
     {
+        checkClosed();
         return size;
     }
 
@@ -156,6 +186,7 @@ public class RandomAccessBuffer implements RandomAccess
      */
     public void write(int b) throws IOException
     {
+        checkClosed();
         // end of buffer reached?
         if (currentBufferPointer >= BUFFER_SIZE) 
         {
@@ -187,6 +218,7 @@ public class RandomAccessBuffer implements RandomAccess
      */
     public void write(byte[] b, int offset, int length) throws IOException
     {
+        checkClosed();
         long newSize = pointer + length;
         long remainingBytes = BUFFER_SIZE - currentBufferPointer;
         if (length >= remainingBytes)
@@ -259,5 +291,17 @@ public class RandomAccessBuffer implements RandomAccess
     {
         currentBufferPointer = 0;
         currentBuffer = bufferList.get(++bufferListIndex);
+    }
+    
+    /**
+     * Ensure that the RandomAccessBuffer is not closed
+     * @throws IOException
+     */
+    private void checkClosed () throws IOException {
+        if (currentBuffer==null) {
+            // consider that the rab is closed if there is no current buffer
+            throw new IOException("RandomAccessBuffer already closed");
+        }
+        
     }
 }

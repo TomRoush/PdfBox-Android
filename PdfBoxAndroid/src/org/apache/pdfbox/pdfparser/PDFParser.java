@@ -6,6 +6,8 @@ import java.io.InputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.pdfbox.cos.COSDocument;
+import org.apache.pdfbox.exceptions.WrappedIOException;
 import org.apache.pdfbox.io.RandomAccess;
 
 /**
@@ -161,7 +163,7 @@ public class PDFParser extends BaseParser
                 }
                 skipSpaces();
             }
-            System.out.println("Parse: " + document.getStartXref());
+
             // set xref to start with
             xrefTrailerResolver.setStartxref( document.getStartXref() );
 
@@ -172,6 +174,10 @@ public class PDFParser extends BaseParser
             if( !document.isEncrypted() )
             {
                 document.dereferenceObjectStreams();
+            }
+            else
+            {
+                LOG.info("Document is encrypted");
             }
             ConflictObj.resolveConflicts(document, conflictList);
         }

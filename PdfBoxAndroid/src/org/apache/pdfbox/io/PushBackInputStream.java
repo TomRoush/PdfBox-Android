@@ -13,8 +13,7 @@ import java.io.PushbackInputStream;
  */
 public class PushBackInputStream extends PushbackInputStream
 {
-	
-	/*
+    /*
      * The current position in the file. 
      */
     private long offset = 0;
@@ -219,5 +218,5 @@ public class PushBackInputStream extends PushbackInputStream
     	raInput.seek( newOffset );
     	offset = newOffset;
     }
-	
+
 }

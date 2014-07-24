@@ -2,6 +2,7 @@ package org.apache.pdfbox.pdmodel;
 
 import java.awt.print.Pageable;
 import java.io.BufferedInputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -19,7 +20,7 @@ import org.apache.pdfbox.pdfparser.PDFParser;
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
  * @version $Revision: 1.47 $
  */
-public class PDDocument implements Pageable
+public class PDDocument implements Pageable, Closeable
 {
 	
 	/**
@@ -51,6 +52,34 @@ public class PDDocument implements Pageable
         PDFParser parser = new PDFParser( new BufferedInputStream( input ) , scratchFile );
         parser.parse();
         return parser.getPDDocument();
+    }
+    
+    /**
+     * This will close the underlying COSDocument object.
+     *
+     * @throws IOException If there is an error releasing resources.
+     */
+    public void close() throws IOException
+    {
+//    	documentCatalog = null;
+//    	documentInformation = null;
+//    	encParameters = null;
+//    	if (pageMap != null)
+//    	{
+//    		pageMap.clear();
+//    		pageMap = null;
+//    	}
+//    	securityHandler = null;
+//    	if (document != null)
+//    	{
+//	        document.close();
+//	        document = null;
+//    	}
+//        if (parser != null)
+//        {
+//        	parser.clearResources();
+//        	parser = null;
+//        }
     }
     
 }
