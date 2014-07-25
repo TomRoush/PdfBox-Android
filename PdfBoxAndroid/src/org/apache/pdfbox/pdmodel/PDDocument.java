@@ -6,7 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import org.apache.pdfbox.cos.COSBase;
+import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSDocument;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.io.RandomAccess;
 import org.apache.pdfbox.pdfparser.BaseParser;
 import org.apache.pdfbox.pdfparser.PDFParser;
@@ -31,7 +34,7 @@ public class PDDocument implements Pageable, Closeable
 
     //cached values
 //    private PDDocumentInformation documentInformation;
-//    private PDDocumentCatalog documentCatalog;
+    private PDDocumentCatalog documentCatalog;
     
     //The encParameters will be cached here.  When the document is decrypted then
     //the COSDocument will not have an "Encrypt" dictionary anymore and this object
@@ -107,6 +110,39 @@ public class PDDocument implements Pageable, Closeable
     {
         document = doc;
         parser = usedParser;
+    }
+    
+    /**
+     * This will get the low level document.
+     *
+     * @return The document that this layer sits on top of.
+     */
+    public COSDocument getDocument()
+    {
+        return document;
+    }
+    
+    /**
+     * This will get the document CATALOG.  This is guaranteed to not return null.
+     *
+     * @return The documents /Root dictionary
+     */
+    public PDDocumentCatalog getDocumentCatalog()
+    {
+        if( documentCatalog == null )
+        {
+            COSDictionary trailer = document.getTrailer();
+            COSBase dictionary = trailer.getDictionaryObject( COSName.ROOT );
+            if (dictionary instanceof COSDictionary) 
+            {
+                documentCatalog = new PDDocumentCatalog(this, (COSDictionary) dictionary);
+            } 
+            else 
+            {
+                documentCatalog = new PDDocumentCatalog(this);
+            }
+        }
+        return documentCatalog;
     }
     
     /**

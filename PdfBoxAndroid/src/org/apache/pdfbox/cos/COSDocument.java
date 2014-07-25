@@ -407,6 +407,16 @@ public class COSDocument extends COSBase implements Closeable
     }
     
     /**
+     * This will get the document trailer.
+     *
+     * @return the document trailer dict
+     */
+    public COSDictionary getTrailer()
+    {
+        return trailer;
+    }
+    
+    /**
      * // MIT added, maybe this should not be supported as trailer is a persistence construct.
      * This will set the document trailer.
      *
