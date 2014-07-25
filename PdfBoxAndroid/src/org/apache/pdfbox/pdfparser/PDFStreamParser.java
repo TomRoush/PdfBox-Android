@@ -3,8 +3,11 @@ package org.apache.pdfbox.pdfparser;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSBoolean;
@@ -15,6 +18,7 @@ import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.io.RandomAccess;
+import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.util.ImageParameters;
 import org.apache.pdfbox.util.PDFOperator;
 
@@ -22,17 +26,16 @@ import org.apache.pdfbox.util.PDFOperator;
  * This will parse a PDF byte stream and extract operands and such.
  *
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.32 $
+ * @version $Revision$
  */
 public class PDFStreamParser extends BaseParser
 {
-	
-	private List<Object> streamObjects = new ArrayList<Object>( 100 );
+    private List<Object> streamObjects = new ArrayList<Object>( 100 );
     private final RandomAccess file;
     private final int    maxBinCharTestLength = 5;
     private final byte[] binCharTestArr = new byte[maxBinCharTestLength];
 
-	/**
+    /**
      * Constructor that takes a stream to parse.
      *
      * @since Apache PDFBox 1.3.0
@@ -49,7 +52,7 @@ public class PDFStreamParser extends BaseParser
         super(stream, forceParsing);
         file = raf;
     }
-    
+
     /**
      * Constructor that takes a stream to parse.
      *
@@ -63,7 +66,34 @@ public class PDFStreamParser extends BaseParser
     {
         this(stream, raf, FORCE_PARSING);
     }
-    
+
+    /**
+     * Constructor.
+     *
+     * @param stream The stream to parse.
+     *
+     * @throws IOException If there is an error initializing the stream.
+     */
+    public PDFStreamParser( PDStream stream ) throws IOException
+    {
+       this( stream.createInputStream(), stream.getStream().getScratchFile() );
+    }
+
+    /**
+     * Constructor.
+     *
+     * @since Apache PDFBox 1.3.0
+     * @param stream The stream to parse.
+     * @param forceParsing flag to skip malformed or otherwise unparseable
+     *                     input where possible
+     * @throws IOException If there is an error initializing the stream.
+     */
+    public PDFStreamParser(COSStream stream, boolean forceParsing)
+            throws IOException 
+    {
+       this(stream.getUnfilteredStream(), stream.getScratchFile(), forceParsing);
+    }
+
     /**
      * Constructor.
      *
@@ -75,7 +105,7 @@ public class PDFStreamParser extends BaseParser
     {
        this( stream.getUnfilteredStream(), stream.getScratchFile() );
     }
-    
+
     /**
      * This will parse the tokens in the stream.  This will close the
      * stream when it is finished parsing.
@@ -98,7 +128,82 @@ public class PDFStreamParser extends BaseParser
             pdfSource.close();
         }
     }
-    
+
+    /**
+     * This will get the tokens that were parsed from the stream.
+     *
+     * @return All of the tokens in the stream.
+     */
+    public List<Object> getTokens()
+    {
+        return streamObjects;
+    }
+
+    /**
+     * This will close the underlying pdfSource object.
+     * 
+     * @throws IOException If there is an error releasing resources.
+     */
+    public void close() throws IOException
+    {
+        pdfSource.close();
+    }
+
+    /**
+     * This will get an iterator which can be used to parse the stream
+     * one token after the other.
+     *
+     * @return an iterator to get one token after the other
+     */
+    public Iterator<Object> getTokenIterator()
+    {
+        return new Iterator<Object>()
+        {
+            private Object token;
+
+            private void tryNext()
+            {
+                try
+                {
+                    if (token == null)
+                    {
+                        token = parseNextToken();
+                    }
+                }
+                catch (IOException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            /** {@inheritDoc} */
+            public boolean hasNext()
+            {
+                tryNext();
+                return token != null;
+            }
+
+            /** {@inheritDoc} */
+            public Object next() 
+            {
+                tryNext();
+                Object tmp = token;
+                if (tmp == null)
+                {
+                    throw new NoSuchElementException();
+                }
+                token = null;
+                return tmp;
+            }
+
+            /** {@inheritDoc} */
+            public void remove()
+            {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
     /**
      * This will parse the next token in the stream.
      *
@@ -319,4 +424,103 @@ public class PDFStreamParser extends BaseParser
         return retval;
     }
 
+    /**
+     * Looks up next 5 bytes if they contain only ASCII characters (no control
+     * sequences etc.).
+     *
+     * @return <code>true</code> if next 5 bytes are printable ASCII characters,
+     * otherwise <code>false</code>
+     */
+    private boolean hasNoFollowingBinData(final PushbackInputStream pdfSource) 
+            throws IOException
+    {
+        // as suggested in PDFBOX-1164
+        final int readBytes = pdfSource.read(binCharTestArr, 0, maxBinCharTestLength);
+        boolean noBinData = true;
+        
+        if (readBytes > 0)
+        {
+            for (int bIdx = 0; bIdx < readBytes; bIdx++)
+            {
+                final byte b = binCharTestArr[bIdx];
+                if ((b < 0x09) || ((b > 0x0a) && (b < 0x20) && (b != 0x0d)))
+                {
+                    // control character or > 0x7f -> we have binary data
+                    noBinData = false;
+                    break;
+                }
+            }
+            pdfSource.unread(binCharTestArr, 0, readBytes);
+        }
+        return noBinData;
+    }
+
+    /**
+     * This will read an operator from the stream.
+     *
+     * @return The operator that was read from the stream.
+     *
+     * @throws IOException If there is an error reading from the stream.
+     */
+    protected String readOperator() throws IOException
+    {
+        skipSpaces();
+
+        //average string size is around 2 and the normal string buffer size is
+        //about 16 so lets save some space.
+        StringBuffer buffer = new StringBuffer(4);
+        int nextChar = pdfSource.peek();
+        while(
+            nextChar != -1 && // EOF
+            !isWhitespace(nextChar) &&
+            !isClosing(nextChar) &&
+            nextChar != '[' &&
+            nextChar != '<' &&
+            nextChar != '(' &&
+            nextChar != '/' &&
+            (nextChar < '0' ||
+             nextChar > '9' ) )
+        {
+            char currentChar = (char)pdfSource.read();
+            nextChar = pdfSource.peek();
+            buffer.append( currentChar );
+            // Type3 Glyph description has operators with a number in the name
+            if (currentChar == 'd' && (nextChar == '0' || nextChar == '1') ) 
+            {
+                buffer.append( (char)pdfSource.read() );
+                nextChar = pdfSource.peek();
+            }
+        }
+        return buffer.toString();
+    }
+    
+    private boolean isSpaceOrReturn( int c )
+    {
+        return c == 10 || c == 13 || c == 32;
+    }
+
+    /**
+     * Checks if the next char is a space or a return.
+     * 
+     * @return true if the next char is a space or a return
+     * @throws IOException if something went wrong
+     */
+    private boolean isSpaceOrReturn() throws IOException
+    {
+        return isSpaceOrReturn( pdfSource.peek() );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void clearResources()
+    {
+        super.clearResources();
+        if (streamObjects != null)
+        {
+            streamObjects.clear();
+            streamObjects = null;
+        }
+    }
 }

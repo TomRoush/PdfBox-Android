@@ -1,4 +1,4 @@
-package java.awt.print;
+package awt.print;
 
 public interface Pageable {
 
