@@ -2,10 +2,12 @@ package org.apache.pdfbox.pdmodel.interactive.annotation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.util.BitFlagHelper;
 
 /**
@@ -89,6 +91,24 @@ public class PDAnnotation implements COSObjectable
     {
         return dictionary;
     }
+    
+    /**
+     * The annotation rectangle, defining the location of the annotation on the page in default user space units. This
+     * is usually required and should not return null on valid PDF documents. But where this is a parent form field with
+     * children, such as radio button collections then the rectangle will be null.
+     * 
+     * @return The Rect value of this annotation.
+     */
+    public PDRectangle getRectangle()
+    {
+        COSArray rectArray = (COSArray) dictionary.getDictionaryObject(COSName.RECT);
+        PDRectangle rectangle = null;
+        if (rectArray != null)
+        {
+            rectangle = new PDRectangle(rectArray);
+        }
+        return rectangle;
+    }
 
     /**
      * Interface method for COSObjectable.
@@ -98,6 +118,37 @@ public class PDAnnotation implements COSObjectable
     public COSBase getCOSObject()
     {
         return getDictionary();
+    }
+    
+    /**
+     * This will get the appearance dictionary associated with this annotation. This may return null.
+     * 
+     * @return This annotations appearance.
+     */
+    public PDAppearanceDictionary getAppearance()
+    {
+        PDAppearanceDictionary ap = null;
+        COSDictionary apDic = (COSDictionary) dictionary.getDictionaryObject(COSName.AP);
+        if (apDic != null)
+        {
+            ap = new PDAppearanceDictionary(apDic);
+        }
+        return ap;
+    }
+    
+    /**
+     * This will set the appearance associated with this annotation.
+     * 
+     * @param appearance The appearance dictionary for this annotation.
+     */
+    public void setAppearance(PDAppearanceDictionary appearance)
+    {
+        COSDictionary ap = null;
+        if (appearance != null)
+        {
+            ap = appearance.getDictionary();
+        }
+        dictionary.setItem(COSName.AP, ap);
     }
     
     /**

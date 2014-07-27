@@ -52,7 +52,7 @@ public abstract class PDVariableText extends PDField
      */
     private COSString da;
 
-//    private PDAppearance appearance;
+    private PDAppearance appearance;
 
 
     /**
@@ -99,21 +99,21 @@ public abstract class PDVariableText extends PDField
      *
      * @throws IOException If there is an error calculating the appearance stream.
      */
-//    public void setValue(String value) throws IOException
-//    {
-//        COSString fieldValue = new COSString(value);
-//        getDictionary().setItem( COSName.V, fieldValue );
-//
-//        //hmm, not sure what the case where the DV gets set to the field
-//        //value, for now leave blank until we can come up with a case
-//        //where it needs to be in there
-//        //getDictionary().setItem( COSName.getPDFName( "DV" ), fieldValue );
-//        if(appearance == null)
-//        {
-//            this.appearance = new PDAppearance( getAcroForm(), this );
-//        }
-//        appearance.setAppearanceValue(value);
-//    }
+    public void setValue(String value) throws IOException
+    {
+        COSString fieldValue = new COSString(value);
+        getDictionary().setItem( COSName.V, fieldValue );
+
+        //hmm, not sure what the case where the DV gets set to the field
+        //value, for now leave blank until we can come up with a case
+        //where it needs to be in there
+        //getDictionary().setItem( COSName.getPDFName( "DV" ), fieldValue );
+        if(appearance == null)
+        {
+            this.appearance = new PDAppearance( getAcroForm(), this );
+        }
+        appearance.setAppearanceValue(value);
+    }
 
     /**
      * getValue gets the fields value to as a string.

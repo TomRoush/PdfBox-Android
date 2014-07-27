@@ -137,5 +137,15 @@ public class PDDocumentCatalog implements COSObjectable
         }
         return acroForm;
     }
+    
+    /**
+     * This will get the root node for the pages.
+     *
+     * @return The parent page node.
+     */
+    public PDPageNode getPages()
+    {
+        return new PDPageNode( (COSDictionary)root.getDictionaryObject( COSName.PAGES ) );
+    }
 
 }

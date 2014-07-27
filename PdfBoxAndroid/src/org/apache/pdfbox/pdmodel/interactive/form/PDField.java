@@ -11,6 +11,7 @@ import org.apache.pdfbox.cos.COSInteger;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 
 /**
@@ -110,6 +111,15 @@ public abstract class PDField implements COSObjectable
         return retval;
 
     }
+    
+    /**
+     * setValue sets the fields value to a given string.
+     * 
+     * @param value the string value
+     * 
+     * @throws IOException If there is an error creating the appearance stream.
+     */
+    public abstract void setValue(String value) throws IOException;
     
     /**
      * This will get the flags for this field.
@@ -264,6 +274,23 @@ public abstract class PDField implements COSObjectable
     public COSBase getCOSObject()
     {
         return dictionary;
+    }
+    
+    /**
+     * Get the additional actions for this field. This will return null if there are no additional actions for this
+     * field.
+     * 
+     * @return The actions of the field.
+     */
+    public PDFormFieldAdditionalActions getActions()
+    {
+        COSDictionary aa = (COSDictionary) dictionary.getDictionaryObject(COSName.AA);
+        PDFormFieldAdditionalActions retval = null;
+        if (aa != null)
+        {
+            retval = new PDFormFieldAdditionalActions(aa);
+        }
+        return retval;
     }
 
 }

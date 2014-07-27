@@ -488,6 +488,14 @@ public class COSDocument extends COSBase implements Closeable
     }
     
     /**
+     * @return Returns the headerString.
+     */
+    public String getHeaderString()
+    {
+        return headerString;
+    }
+    
+    /**
      * @param header The headerString to set.
      */
     public void setHeaderString(String header)
@@ -592,6 +600,20 @@ public class COSDocument extends COSBase implements Closeable
     public long getStartXref()
     {
       return startXref;
+    }
+    
+    /**
+     * Determines it the trailer is a XRef stream or not.
+     * 
+     * @return true if the trailer is a XRef stream
+     */
+    public boolean isXRefStream()
+    {
+        if (trailer != null)
+        {
+            return COSName.XREF.equals(trailer.getItem(COSName.TYPE));
+        }
+        return false;
     }
 
 }
