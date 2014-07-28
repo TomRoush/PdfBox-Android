@@ -2,8 +2,10 @@ package org.apache.pdfbox.pdmodel.interactive.annotation;
 
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
+import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSStream;
+import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 
@@ -83,31 +85,31 @@ public class PDAppearanceStream implements COSObjectable
      *
      * @return The appearance stream resources.
      */
-//    public PDResources getResources()
-//    {
-//        PDResources retval = null;
-//        COSDictionary dict = (COSDictionary)stream.getDictionaryObject( COSName.RESOURCES );
-//        if( dict != null )
-//        {
-//            retval = new PDResources( dict );
-//        }
-//        return retval;
-//    }TODO
+    public PDResources getResources()
+    {
+        PDResources retval = null;
+        COSDictionary dict = (COSDictionary)stream.getDictionaryObject( COSName.RESOURCES );
+        if( dict != null )
+        {
+            retval = new PDResources( dict );
+        }
+        return retval;
+    }
 
     /**
      * This will set the new resources.
      *
      * @param resources The new resources.
      */
-//    public void setResources( PDResources resources )
-//    {
-//        COSDictionary dict = null;
-//        if( resources != null )
-//        {
-//            dict = resources.getCOSDictionary();
-//        }
-//        stream.setItem( COSName.RESOURCES, dict );
-//    }TODO
+    public void setResources( PDResources resources )
+    {
+        COSDictionary dict = null;
+        if( resources != null )
+        {
+            dict = resources.getCOSDictionary();
+        }
+        stream.setItem( COSName.RESOURCES, dict );
+    }
 
     /**
      * Gets the optional matrix for this appearance.  This may return null.

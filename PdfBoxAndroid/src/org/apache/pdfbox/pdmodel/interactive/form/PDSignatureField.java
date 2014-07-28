@@ -81,5 +81,20 @@ public class PDSignatureField extends PDField
       }
       return fieldName+i;
     }
+    
+    /**
+     * @see PDField#setValue(java.lang.String)
+     *
+     * @param value The new value for the field.
+     *
+     * @throws IOException If there is an error creating the appearance stream.
+     * @deprecated use setSignature(PDSignature) instead
+     */
+    @Override
+    @Deprecated
+    public void setValue(String value) throws IOException
+    {
+        throw new RuntimeException( "Can't set signature as String, use setSignature(PDSignature) instead" );
+    }
 
 }

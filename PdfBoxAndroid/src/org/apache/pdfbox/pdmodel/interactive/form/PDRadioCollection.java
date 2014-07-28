@@ -1,7 +1,13 @@
 package org.apache.pdfbox.pdmodel.interactive.form;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.util.BitFlagHelper;
 
 /**
@@ -63,27 +69,27 @@ public class PDRadioCollection extends PDChoiceButton
      *
      * {@inheritDoc}
      */
-//    public void setValue(String value) throws IOException
-//    {
-//        getDictionary().setString( COSName.V, value );
-//        List kids = getKids();
-//        for (int i = 0; i < kids.size(); i++)
-//        {
-//            PDField field = (PDField)kids.get(i);
-//            if ( field instanceof PDCheckbox )
-//            {
-//                PDCheckbox btn = (PDCheckbox)field;
-//                if( btn.getOnValue().equals(value) )
-//                {
-//                    btn.check();
-//                }
-//                else
-//                {
-//                    btn.unCheck();
-//                }
-//            }
-//        }
-//    }
+    public void setValue(String value) throws IOException
+    {
+        getDictionary().setString( COSName.V, value );
+        List kids = getKids();
+        for (int i = 0; i < kids.size(); i++)
+        {
+            PDField field = (PDField)kids.get(i);
+            if ( field instanceof PDCheckbox )
+            {
+                PDCheckbox btn = (PDCheckbox)field;
+                if( btn.getOnValue().equals(value) )
+                {
+                    btn.check();
+                }
+                else
+                {
+                    btn.unCheck();
+                }
+            }
+        }
+    }
 
     /**
      * getValue gets the fields value to as a string.
@@ -92,28 +98,28 @@ public class PDRadioCollection extends PDChoiceButton
      *
      * @throws IOException If there is an error getting the value.
      */
-//    public String getValue()throws IOException
-//    {
-//        String retval = null;
-//        List kids = getKids();
-//        for (int i = 0; i < kids.size(); i++)
-//        {
-//            PDField kid = (PDField)kids.get(i);
-//            if ( kid instanceof PDCheckbox )
-//            {
-//                PDCheckbox btn = (PDCheckbox)kid;
-//                if( btn.isChecked() )
-//                {
-//                    retval = btn.getOnValue();
-//                }
-//            }
-//        }
-//        if( retval == null )
-//        {
-//            retval = getDictionary().getNameAsString( COSName.V );
-//        }
-//        return retval;
-//    }
+    public String getValue()throws IOException
+    {
+        String retval = null;
+        List kids = getKids();
+        for (int i = 0; i < kids.size(); i++)
+        {
+            PDField kid = (PDField)kids.get(i);
+            if ( kid instanceof PDCheckbox )
+            {
+                PDCheckbox btn = (PDCheckbox)kid;
+                if( btn.isChecked() )
+                {
+                    retval = btn.getOnValue();
+                }
+            }
+        }
+        if( retval == null )
+        {
+            retval = getDictionary().getNameAsString( COSName.V );
+        }
+        return retval;
+    }
 
 
     /**
@@ -123,20 +129,20 @@ public class PDRadioCollection extends PDChoiceButton
      * @return A list of PDWidget objects.
      * @throws IOException if there is an error while creating the children objects.
      */
-//    @SuppressWarnings("unchecked")
-//    public List getKids() throws IOException
-//    {
-//        List retval = null;
-//        COSArray kids = (COSArray)getDictionary().getDictionaryObject(COSName.KIDS);
-//        if( kids != null )
-//        {
-//            List kidsList = new ArrayList();
-//            for (int i = 0; i < kids.size(); i++)
-//            {
-//                kidsList.add( PDFieldFactory.createField( getAcroForm(), (COSDictionary)kids.getObject(i) ) );
-//            }
-//            retval = new COSArrayList( kidsList, kids );
-//        }
-//        return retval;
-//    }
+    @SuppressWarnings("unchecked")
+    public List getKids() throws IOException
+    {
+        List retval = null;
+        COSArray kids = (COSArray)getDictionary().getDictionaryObject(COSName.KIDS);
+        if( kids != null )
+        {
+            List kidsList = new ArrayList();
+            for (int i = 0; i < kids.size(); i++)
+            {
+                kidsList.add( PDFieldFactory.createField( getAcroForm(), (COSDictionary)kids.getObject(i) ) );
+            }
+            retval = new COSArrayList( kidsList, kids );
+        }
+        return retval;
+    }
 }

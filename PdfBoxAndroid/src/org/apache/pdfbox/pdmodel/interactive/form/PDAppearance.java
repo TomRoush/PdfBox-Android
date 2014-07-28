@@ -448,6 +448,56 @@ public class PDAppearance
     }
     
     /**
+     * w in an appearance stream represents the lineWidth.
+     * @return the linewidth
+     */
+    private float getLineWidth( List tokens )
+    {
+
+        float retval = 1;
+        if( tokens != null )
+        {
+            int btIndex = tokens.indexOf(PDFOperator.getOperator( "BT" ));
+            int wIndex = tokens.indexOf(PDFOperator.getOperator( "w" ));
+            //the w should only be used if it is before the first BT.
+            if( (wIndex > 0) && (wIndex < btIndex) )
+            {
+                retval = ((COSNumber)tokens.get(wIndex-1)).floatValue();
+            }
+        }
+        return retval;
+    }
+    
+    private PDRectangle getSmallestDrawnRectangle( PDRectangle boundingBox, List tokens )
+    {
+        PDRectangle smallest = boundingBox;
+        for( int i=0; i<tokens.size(); i++ )
+        {
+            Object next = tokens.get( i );
+            if( next == PDFOperator.getOperator( "re" ) )
+            {
+                COSNumber x = (COSNumber)tokens.get( i-4 );
+                COSNumber y = (COSNumber)tokens.get( i-3 );
+                COSNumber width = (COSNumber)tokens.get( i-2 );
+                COSNumber height = (COSNumber)tokens.get( i-1 );
+                PDRectangle potentialSmallest = new PDRectangle();
+                potentialSmallest.setLowerLeftX( x.floatValue() );
+                potentialSmallest.setLowerLeftY( y.floatValue() );
+                potentialSmallest.setUpperRightX( x.floatValue() + width.floatValue() );
+                potentialSmallest.setUpperRightY( y.floatValue() + height.floatValue() );
+                if( smallest == null ||
+                    smallest.getLowerLeftX() < potentialSmallest.getLowerLeftX() ||
+                    smallest.getUpperRightY() > potentialSmallest.getUpperRightY() )
+                {
+                    smallest = potentialSmallest;
+                }
+
+            }
+        }
+        return smallest;
+    }
+    
+    /**
      * My "not so great" method for calculating the fontsize.
      * It does not work superb, but it handles ok.
      * @return the calculated font-size
@@ -545,6 +595,24 @@ public class PDAppearance
         PDRectangle innerBox = getSmallestDrawnRectangle( boundingBox, tokens );
         float xInset = 2+ 2*(boundingBox.getWidth() - innerBox.getWidth());
         return Math.round(xInset) + " "+ pos + " Td";
+    }
+    
+    /**
+     * calculates the available width of the box.
+     * @return the calculated available width of the box
+     */
+    private float getAvailableWidth( PDRectangle boundingBox, float lineWidth )
+    {
+        return boundingBox.getWidth() - 2 * lineWidth;
+    }
+
+    /**
+     * calculates the available height of the box.
+     * @return the calculated available height of the box
+     */
+    private float getAvailableHeight( PDRectangle boundingBox, float lineWidth )
+    {
+        return boundingBox.getHeight() - 2 * lineWidth;
     }
 
 }

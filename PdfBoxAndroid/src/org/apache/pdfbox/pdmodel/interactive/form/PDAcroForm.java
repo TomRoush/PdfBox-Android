@@ -11,6 +11,7 @@ import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 
@@ -163,6 +164,37 @@ public class PDAcroForm implements COSObjectable
             }
         }
         return retval;
+    }
+    
+    /**
+     * This will get the default resources for the acro form.
+     *
+     * @return The default resources.
+     */
+    public PDResources getDefaultResources()
+    {
+        PDResources retval = null;
+        COSDictionary dr = (COSDictionary)acroForm.getDictionaryObject( COSName.getPDFName( "DR" ) );
+        if( dr != null )
+        {
+            retval = new PDResources( dr );
+        }
+        return retval;
+    }
+
+    /**
+     * This will set the default resources for the acroform.
+     *
+     * @param dr The new default resources.
+     */
+    public void setDefaultResources( PDResources dr )
+    {
+        COSDictionary drDict = null;
+        if( dr != null )
+        {
+            drDict = dr.getCOSDictionary();
+        }
+        acroForm.setItem( COSName.getPDFName( "DR" ), drDict );
     }
     
     /**

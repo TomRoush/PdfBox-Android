@@ -1,5 +1,6 @@
 package org.apache.pdfbox.pdmodel.common;
 
+import org.apache.fontbox.util.BoundingBox;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSFloat;
@@ -49,14 +50,14 @@ public class PDRectangle implements COSObjectable
      *
      * @param box the bounding box to be used for the rectangle
      */
-//    public PDRectangle( BoundingBox box )
-//    {
-//        rectArray = new COSArray();
-//        rectArray.add( new COSFloat( box.getLowerLeftX() ) );
-//        rectArray.add( new COSFloat( box.getLowerLeftY() ) );
-//        rectArray.add( new COSFloat( box.getUpperRightX() ) );
-//        rectArray.add( new COSFloat( box.getUpperRightY() ) );
-//    }
+    public PDRectangle( BoundingBox box )
+    {
+        rectArray = new COSArray();
+        rectArray.add( new COSFloat( box.getLowerLeftX() ) );
+        rectArray.add( new COSFloat( box.getLowerLeftY() ) );
+        rectArray.add( new COSFloat( box.getUpperRightX() ) );
+        rectArray.add( new COSFloat( box.getUpperRightY() ) );
+    }
 
     /**
      * Constructor.
