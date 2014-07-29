@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.afm.AFMParser;
 import org.apache.fontbox.afm.FontMetric;
 import org.apache.fontbox.cmap.CMap;
+import org.apache.fontbox.cmap.CMapParser;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -160,6 +161,17 @@ public abstract class PDFont implements COSObjectable
     }
     
     /**
+     * Constructor.
+     *
+     * @param fontDictionary The font dictionary according to the PDF specification.
+     */
+    public PDFont( COSDictionary fontDictionary )
+    {
+        font = fontDictionary;
+        determineEncoding();
+    }
+    
+    /**
      * This will get the font descriptor for this font.
      *
      * @return The font descriptor for this font.
@@ -185,6 +197,13 @@ public abstract class PDFont implements COSObjectable
         }
         return fontDescriptor;
     }
+    
+    /**
+     * Determines the encoding for the font.
+     * This method as to be overwritten, as there are different
+     * possibilities to define a mapping.
+     */
+    protected abstract void determineEncoding();
 
     /**
      * {@inheritDoc}
@@ -278,6 +297,24 @@ public abstract class PDFont implements COSObjectable
     }
     
     /**
+     * This will attempt to get the average font width from an AFM file.
+     *
+     * @return The average font width from the AFM file.
+     *
+     * @throws IOException if we cannot find the width.
+     */
+    protected float getAverageFontWidthFromAFMFile() throws IOException
+    {
+        float retval = 0;
+        FontMetric metric = getAFM();
+        if( metric != null )
+        {
+            retval = metric.getAverageCharacterWidth();
+        }
+        return retval;
+    }
+    
+    /**
      * This will get an AFM object if one exists.
      *
      * @return The afm object from the name.
@@ -314,6 +351,47 @@ public abstract class PDFont implements COSObjectable
     private FontMetric afm = null;
 
     private COSBase encoding = null;
+    /**
+     * cache the {@link COSName#ENCODING} object from
+     * the font's dictionary since it is called so often.
+     * <p>
+     * Use this method instead of
+     * <pre>
+     *   font.getDictionaryObject(COSName.ENCODING);
+     * </pre>
+     * @return the encoding
+     */
+    protected COSBase getEncoding()
+    {
+        if (encoding == null)
+        {
+            encoding = font.getDictionaryObject( COSName.ENCODING );
+        }
+        return encoding;
+    }
+    
+    protected CMap parseCmap( String cmapRoot, InputStream cmapStream)
+    {
+        CMap targetCmap = null;
+        if( cmapStream != null )
+        {
+            CMapParser parser = new CMapParser();
+            try
+            {
+                targetCmap = parser.parse( cmapRoot, cmapStream );
+                // limit the cache to external CMaps
+                if (cmapRoot != null)
+                {
+                    cmapObjects.put( targetCmap.getName(), targetCmap );
+                }
+            }
+            catch (IOException exception)
+            {
+                LOG.error("An error occurs while reading a CMap", exception);
+            }
+        }
+        return targetCmap;
+    }
     
  // Memorized values to avoid repeated dictionary lookups
     private String subtype = null;

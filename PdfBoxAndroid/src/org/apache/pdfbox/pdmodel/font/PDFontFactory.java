@@ -73,7 +73,7 @@ public class PDFontFactory
         }
         if( subType.equals( COSName.TYPE1) )
         {
-//            retval = new PDType1Font( dic );
+            retval = new PDType1Font( dic );
         }
         else if( subType.equals( COSName.MM_TYPE1 ) )
         {
