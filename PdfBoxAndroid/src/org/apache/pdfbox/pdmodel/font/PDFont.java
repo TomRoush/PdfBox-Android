@@ -21,6 +21,7 @@ import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.encoding.Encoding;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import org.apache.pdfbox.pdmodel.common.PDMatrix;
 import org.apache.pdfbox.util.ResourceLoader;
 
 /**
@@ -55,7 +56,7 @@ public abstract class PDFont implements COSObjectable
     /**
      *  The font matrix.
      */
-//    protected PDMatrix fontMatrix = null;
+    protected PDMatrix fontMatrix = null;
 
     /**
      * This is only used if this is a font object and it has an encoding and it is
@@ -116,7 +117,7 @@ public abstract class PDFont implements COSObjectable
     }
     
     protected static final String resourceRootCMAP = "org/apache/pdfbox/resources/cmap/";
-    //TODO: get resources for these locations
+    //TODO: get resources for cmap
     private static final String resourceRootAFM = "org/apache/pdfbox/resources/afm/";
 
     private static void addAdobeFontMetric(
@@ -370,6 +371,16 @@ public abstract class PDFont implements COSObjectable
         return encoding;
     }
     
+    /**
+     * Set the encoding object from the fonts dictionary.
+     * @param encodingValue the given encoding.
+     */
+    protected void setEncoding(COSBase encodingValue)
+    {
+        font.setItem( COSName.ENCODING, encodingValue );
+        encoding = encodingValue;
+    }
+    
     protected CMap parseCmap( String cmapRoot, InputStream cmapStream)
     {
         CMap targetCmap = null;
@@ -391,6 +402,26 @@ public abstract class PDFont implements COSObjectable
             }
         }
         return targetCmap;
+    }
+    
+    /**
+     * The will set the encoding for this font.
+     *
+     * @param enc The font encoding.
+     */
+    public void setFontEncoding( Encoding enc )
+    {
+        fontEncoding = enc;
+    }
+    
+    /**
+     * This will get or create the encoder.
+     *
+     * @return The encoding to use.
+     */
+    public Encoding getFontEncoding()
+    {
+        return fontEncoding;
     }
     
  // Memorized values to avoid repeated dictionary lookups
@@ -426,6 +457,26 @@ public abstract class PDFont implements COSObjectable
     {
         getSubType();
         return type1Font;
+    }
+    
+    /**
+     * The PostScript name of the font.
+     *
+     * @return The postscript name of the font.
+     */
+    public String getBaseFont()
+    {
+        return font.getNameAsString( COSName.BASE_FONT );
+    }
+    
+    /**
+     * Set the PostScript name of the font.
+     *
+     * @param baseFont The postscript name for the font.
+     */
+    public void setBaseFont( String baseFont )
+    {
+        font.setName( COSName.BASE_FONT, baseFont );
     }
     
     /**
@@ -533,6 +584,15 @@ public abstract class PDFont implements COSObjectable
             }
         }
         return width;
+    }
+    
+    /**
+     * Sets hasToUnicode to the given value.
+     * @param hasToUnicodeValue the given value for hasToUnicode
+     */
+    protected void setHasToUnicode(boolean hasToUnicodeValue)
+    {
+        hasToUnicode = hasToUnicodeValue;
     }
 
 }

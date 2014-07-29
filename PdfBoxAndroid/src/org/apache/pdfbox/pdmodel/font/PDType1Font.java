@@ -1,12 +1,25 @@
 package org.apache.pdfbox.pdmodel.font;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.StringTokenizer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.afm.FontMetric;
+import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSFloat;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.encoding.AFMEncoding;
 import org.apache.pdfbox.encoding.Encoding;
+import org.apache.pdfbox.encoding.EncodingManager;
+import org.apache.pdfbox.encoding.Type1Encoding;
+import org.apache.pdfbox.encoding.WinAnsiEncoding;
+import org.apache.pdfbox.pdmodel.common.PDMatrix;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 
 /**
@@ -17,6 +30,88 @@ import org.apache.pdfbox.pdmodel.common.PDStream;
  */
 public class PDType1Font extends PDSimpleFont
 {
+	
+	/**
+     * Log instance.
+     */
+    private static final Log log = LogFactory.getLog(PDType1Font.class);
+
+    private PDType1CFont type1CFont = null;
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font TIMES_ROMAN = new PDType1Font( "Times-Roman" );
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font TIMES_BOLD = new PDType1Font( "Times-Bold" );
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font TIMES_ITALIC = new PDType1Font( "Times-Italic" );
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font TIMES_BOLD_ITALIC = new PDType1Font( "Times-BoldItalic" );
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font HELVETICA = new PDType1Font( "Helvetica" );
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font HELVETICA_BOLD = new PDType1Font( "Helvetica-Bold" );
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font HELVETICA_OBLIQUE = new PDType1Font( "Helvetica-Oblique" );
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font HELVETICA_BOLD_OBLIQUE = new PDType1Font( "Helvetica-BoldOblique" );
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font COURIER = new PDType1Font( "Courier" );
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font COURIER_BOLD = new PDType1Font( "Courier-Bold" );
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font COURIER_OBLIQUE = new PDType1Font( "Courier-Oblique" );
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font COURIER_BOLD_OBLIQUE = new PDType1Font( "Courier-BoldOblique" );
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font SYMBOL = new PDType1Font( "Symbol" );
+    /**
+     * Standard Base 14 Font.
+     */
+    public static final PDType1Font ZAPF_DINGBATS = new PDType1Font( "ZapfDingbats" );
+
+    private static final Map<String, PDType1Font> STANDARD_14 = new HashMap<String, PDType1Font>();
+    static
+    {
+        STANDARD_14.put( TIMES_ROMAN.getBaseFont(), TIMES_ROMAN );
+        STANDARD_14.put( TIMES_BOLD.getBaseFont(), TIMES_BOLD );
+        STANDARD_14.put( TIMES_ITALIC.getBaseFont(), TIMES_ITALIC );
+        STANDARD_14.put( TIMES_BOLD_ITALIC.getBaseFont(), TIMES_BOLD_ITALIC );
+        STANDARD_14.put( HELVETICA.getBaseFont(), HELVETICA );
+        STANDARD_14.put( HELVETICA_BOLD.getBaseFont(), HELVETICA_BOLD );
+        STANDARD_14.put( HELVETICA_OBLIQUE.getBaseFont(), HELVETICA_OBLIQUE );
+        STANDARD_14.put( HELVETICA_BOLD_OBLIQUE.getBaseFont(), HELVETICA_BOLD_OBLIQUE );
+        STANDARD_14.put( COURIER.getBaseFont(), COURIER );
+        STANDARD_14.put( COURIER_BOLD.getBaseFont(), COURIER_BOLD );
+        STANDARD_14.put( COURIER_OBLIQUE.getBaseFont(), COURIER_OBLIQUE );
+        STANDARD_14.put( COURIER_BOLD_OBLIQUE.getBaseFont(), COURIER_BOLD_OBLIQUE );
+        STANDARD_14.put( SYMBOL.getBaseFont(), SYMBOL );
+        STANDARD_14.put( ZAPF_DINGBATS.getBaseFont(), ZAPF_DINGBATS );
+    }
 
 	/**
      * Constructor.
@@ -54,6 +149,19 @@ public class PDType1Font extends PDSimpleFont
         }
     }
     
+    /**
+     * Constructor.
+     *
+     * @param baseFont The base font for this font.
+     */
+    public PDType1Font( String baseFont )
+    {
+        this();
+        setBaseFont( baseFont );
+        setFontEncoding(new WinAnsiEncoding());
+        setEncoding(COSName.WIN_ANSI_ENCODING);
+    }
+    
     protected void determineEncoding()
     {
         super.determineEncoding();
@@ -68,6 +176,177 @@ public class PDType1Font extends PDSimpleFont
             setFontEncoding(fontEncoding);
         }
         getEncodingFromFont(getFontEncoding() == null);
+    }
+    
+    /**
+     * Tries to get the encoding for the type1 font.
+     *
+     */
+    private void getEncodingFromFont(boolean extractEncoding)
+    {
+        // This whole section of code needs to be replaced with an actual type1 font parser!!
+        // Get the font program from the embedded type font.
+        PDFontDescriptor fontDescriptor = getFontDescriptor();
+        if( fontDescriptor != null && fontDescriptor instanceof PDFontDescriptorDictionary)
+        {
+            PDStream fontFile = ((PDFontDescriptorDictionary)fontDescriptor).getFontFile();
+            if( fontFile != null )
+            {
+                BufferedReader in = null;
+                try 
+                {
+                    in = new BufferedReader(new InputStreamReader(fontFile.createInputStream()));
+                    
+                    // this section parses the font program stream searching for a /Encoding entry
+                    // if it contains an array of values a Type1Encoding will be returned
+                    // if it encoding contains an encoding name the corresponding Encoding will be returned
+                    String line = "";
+                    Type1Encoding encoding = null;
+                    while( (line = in.readLine()) != null)
+                    {
+                        if (extractEncoding) 
+                        {
+                            if (line.startsWith("currentdict end")) {
+                                if (encoding != null)
+                                    setFontEncoding(encoding);
+                                break;
+                            }
+                            if (line.startsWith("/Encoding")) 
+                            {
+                                if(line.contains("array")) 
+                                {
+                                    StringTokenizer st = new StringTokenizer(line);
+                                    // ignore the first token
+                                    st.nextElement();
+                                    int arraySize = Integer.parseInt(st.nextToken());
+                                    encoding = new Type1Encoding(arraySize);
+                                }
+                                // if there is already an encoding, we don't need to
+                                // assign another one
+                                else if (getFontEncoding() == null)
+                                {
+                                    StringTokenizer st = new StringTokenizer(line);
+                                    // ignore the first token
+                                    st.nextElement();
+                                    String type1Encoding = st.nextToken();
+                                    setFontEncoding(
+                                        EncodingManager.INSTANCE.getEncoding(
+                                                COSName.getPDFName(type1Encoding)));
+                                    break;
+                                }
+                            }
+                            else if (line.startsWith("dup")) {
+                                StringTokenizer st = new StringTokenizer(line.replaceAll("/"," /"));
+                                // ignore the first token
+                                st.nextElement();
+                                try
+                                {
+                                    int index = Integer.parseInt(st.nextToken());
+                                    String name = st.nextToken();
+                                    if(encoding == null)
+                                    {
+                                        log.warn("Unable to get character encoding. " +
+                                                "Encoding definition found without /Encoding line.");
+                                    }
+                                    else
+                                    {
+                                        encoding.addCharacterEncoding(index, name.replace("/", ""));
+                                    }
+                                }
+                                catch(NumberFormatException exception)
+                                {
+                                    // there are (tex?)-some fonts containing postscript code like the following, 
+                                    // which has to be ignored, see PDFBOX-1481
+                                    // dup dup 161 10 getinterval 0 exch putinterval ....
+                                    log.debug("Malformed encoding definition ignored (line="+line+")");
+                                }
+                                continue;
+                            }
+                        }
+                        // according to the pdf reference, all font matrices should be same, except for type 3 fonts.
+                        // but obviously there are some type1 fonts with different matrix values, see pdf sample
+                        // attached to PDFBOX-935
+                        if (line.startsWith("/FontMatrix"))
+                        {
+                            // most likely all matrix values are in the same line than the keyword
+                            if (line.indexOf("[") > -1)
+                            {
+                                String matrixValues = line.substring(line.indexOf("[")+1,line.lastIndexOf("]"));
+                                StringTokenizer st = new StringTokenizer(matrixValues);
+                                COSArray array = new COSArray();
+                                if (st.countTokens() >= 6)
+                                {
+                                    try 
+                                    {
+                                        for (int i=0;i<6;i++)
+                                        {
+                                            COSFloat floatValue = new COSFloat(Float.parseFloat(st.nextToken()));
+                                            array.add(floatValue);
+                                        }
+                                    }
+                                    catch (NumberFormatException exception)
+                                    {
+                                        log.error("Can't read the fontmatrix from embedded font file!");
+                                    }
+                                    fontMatrix = new PDMatrix(array);
+                                }
+                            }
+                            else
+                            {
+                                // there are fonts where all values are on a separate line, see PDFBOX-1611
+                                COSArray array = new COSArray();
+                                while((line = in.readLine()) != null)
+                                {
+                                    if (line.startsWith("["))
+                                    {
+                                        continue;
+                                    }
+                                    if (line.endsWith("]"))
+                                    {
+                                        break;
+                                    }
+                                    try
+                                    {
+                                        COSFloat floatValue = new COSFloat(Float.parseFloat(line));
+                                        array.add(floatValue);
+                                    }
+                                    catch (NumberFormatException exception)
+                                    {
+                                        log.error("Can't read the fontmatrix from embedded font file!");
+                                    }
+                                }
+                                if (array.size() == 6)
+                                {
+                                    fontMatrix = new PDMatrix(array);
+                                }
+                                else
+                                {
+                                    log.error("Can't read the fontmatrix from embedded font file, not enough values!");
+                                }
+                            }
+                        }
+                    }
+                }
+                catch(IOException exception) 
+                {
+                    log.error("Error: Could not extract the encoding from the embedded type1 font.");
+                }
+                finally
+                {
+                    if (in != null)
+                    {
+                        try
+                        {
+                            in.close();
+                        }
+                        catch(IOException exception) 
+                        {
+                            log.error("An error occurs while closing the stream used to read the embedded type1 font.");
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }
