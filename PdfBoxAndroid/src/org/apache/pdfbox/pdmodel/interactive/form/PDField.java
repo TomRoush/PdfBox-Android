@@ -13,6 +13,7 @@ import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import org.apache.pdfbox.util.BitFlagHelper;
 
 /**
  * This is the superclass for a Field element in a PDF. Based on the COS object model from PDFBox.
@@ -120,6 +121,16 @@ public abstract class PDField implements COSObjectable
      * @throws IOException If there is an error creating the appearance stream.
      */
     public abstract void setValue(String value) throws IOException;
+    
+    /**
+     * sets the field to be read-only.
+     * 
+     * @param readonly The new flag for readonly.
+     */
+    public void setReadonly(boolean readonly)
+    {
+        BitFlagHelper.setFlag(getDictionary(), COSName.FF, FLAG_READ_ONLY, readonly);
+    }
     
     /**
      * This will get the flags for this field.
