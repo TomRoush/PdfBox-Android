@@ -24,7 +24,7 @@ public class FilterManager
     {
         Filter flateFilter = new FlateFilter();
 //        Filter dctFilter = new DCTFilter();
-//        Filter ccittFaxFilter = new CCITTFaxDecodeFilter();
+        Filter ccittFaxFilter = new CCITTFaxDecodeFilter();
 //        Filter lzwFilter = new LZWFilter();
 //        Filter asciiHexFilter = new ASCIIHexFilter();
 //        Filter ascii85Filter = new ASCII85Filter();
@@ -34,11 +34,11 @@ public class FilterManager
 //        Filter jbig2Filter = new JBIG2Filter();
         
         addFilter( COSName.FLATE_DECODE, flateFilter );
-//        addFilter( COSName.FLATE_DECODE_ABBREVIATION, flateFilter );
+        addFilter( COSName.FLATE_DECODE_ABBREVIATION, flateFilter );
 //        addFilter( COSName.DCT_DECODE, dctFilter );
 //        addFilter( COSName.DCT_DECODE_ABBREVIATION, dctFilter );
-//        addFilter( COSName.CCITTFAX_DECODE, ccittFaxFilter );
-//        addFilter( COSName.CCITTFAX_DECODE_ABBREVIATION, ccittFaxFilter );
+        addFilter( COSName.CCITTFAX_DECODE, ccittFaxFilter );
+        addFilter( COSName.CCITTFAX_DECODE_ABBREVIATION, ccittFaxFilter );
 //        addFilter( COSName.LZW_DECODE, lzwFilter );
 //        addFilter( COSName.LZW_DECODE_ABBREVIATION, lzwFilter );
 //        addFilter( COSName.ASCII_HEX_DECODE, asciiHexFilter );
