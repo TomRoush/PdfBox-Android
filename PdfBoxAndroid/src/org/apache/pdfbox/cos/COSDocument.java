@@ -4,7 +4,9 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -397,6 +399,114 @@ public class COSDocument extends COSBase implements Closeable
     }
     
     /**
+     * This will return a list of signature dictionaries as COSDictionary.
+     *
+     * @return list of signature dictionaries as COSDictionary
+     * @throws IOException if no document catalog can be found
+     */
+//    public List<COSDictionary> getSignatureDictionaries() throws IOException
+//    {
+//        List<COSDictionary> signatureFields = getSignatureFields(false);
+//        List<COSDictionary> signatures = new LinkedList<COSDictionary>();
+//        for ( COSDictionary dict : signatureFields )
+//        {
+//            COSBase dictionaryObject = dict.getDictionaryObject(COSName.V);
+//            if (dictionaryObject != null)
+//            {
+//                signatures.add((COSDictionary)dictionaryObject);
+//            }
+//        }
+//        return signatures;
+//    }TODO
+    
+    /**
+     * This will return a list of signature fields.
+     *
+     * @return list of signature dictionaries as COSDictionary
+     * @throws IOException if no document catalog can be found
+     */
+    public List<COSDictionary> getSignatureFields(boolean onlyEmptyFields) throws IOException
+    {
+        COSObject documentCatalog = getCatalog();
+        if (documentCatalog != null)
+        {
+            COSDictionary acroForm = (COSDictionary)documentCatalog.getDictionaryObject(COSName.ACRO_FORM);
+            if (acroForm != null)
+            {
+                COSArray fields = (COSArray)acroForm.getDictionaryObject(COSName.FIELDS);
+                if (fields != null)
+                {
+                    // Some fields may contain twice references to a single field. 
+                    // This will prevent such double entries.
+                    HashMap<COSObjectKey, COSDictionary> signatures = new HashMap<COSObjectKey, COSDictionary>();
+                    for ( Object object : fields )
+                    {
+                        COSObject dict = (COSObject)object;
+                        if (COSName.SIG.equals(dict.getItem(COSName.FT)))
+                        {
+                            COSBase dictionaryObject = dict.getDictionaryObject(COSName.V);
+                            if (dictionaryObject == null || (dictionaryObject != null && !onlyEmptyFields))
+                            {
+                                signatures.put(new COSObjectKey(dict), (COSDictionary)dict.getObject());
+                            }
+                        }
+                    }
+                    return new LinkedList<COSDictionary>(signatures.values());
+                }
+            }
+        }
+        return Collections.emptyList();
+    }
+    
+    /**
+     * This will get the document ID.
+     *
+     * @return The document id.
+     */
+    public COSArray getDocumentID()
+    {
+        return (COSArray) getTrailer().getDictionaryObject(COSName.ID);
+    }
+
+    /**
+     * This will set the document ID.
+     *
+     * @param id The document id.
+     */
+    public void setDocumentID( COSArray id )
+    {
+        getTrailer().setItem(COSName.ID, id);
+    }
+    
+    /**
+     * Set the signature interface to the given value.
+     * @param sigInterface the signature interface
+     */
+//    public void setSignatureInterface(SignatureInterface sigInterface) 
+//    {
+//        signatureInterface = sigInterface;
+//    }TODO
+
+    /**
+     * This will get the document catalog.
+     *
+     * Maybe this should move to an object at PDFEdit level
+     *
+     * @return catalog is the root of all document activities
+     *
+     * @throws IOException If no catalog can be found.
+     */
+    public COSObject getCatalog() throws IOException
+    {
+        COSObject catalog = getObjectByType( COSName.CATALOG );
+        if( catalog == null )
+        {
+            throw new IOException( "Catalog cannot be found" );
+        }
+        return catalog;
+    }
+
+    /**
      * This will get a list of all available objects.
      *
      * @return A list of all objects.
@@ -405,7 +515,7 @@ public class COSDocument extends COSBase implements Closeable
     {
         return new ArrayList<COSObject>(objectPool.values());
     }
-    
+
     /**
      * This will get the document trailer.
      *
@@ -415,7 +525,7 @@ public class COSDocument extends COSBase implements Closeable
     {
         return trailer;
     }
-    
+
     /**
      * // MIT added, maybe this should not be supported as trailer is a persistence construct.
      * This will set the document trailer.
@@ -439,7 +549,7 @@ public class COSDocument extends COSBase implements Closeable
     {
         return visitor.visitFromDocument( this );
     }
-    
+
     /**
      * This will close all storage and delete the tmp files.
      *
@@ -486,7 +596,38 @@ public class COSDocument extends COSBase implements Closeable
             closed = true;
         }
     }
-    
+
+    /**
+     * Warn the user in the finalizer if he didn't close the PDF document. The method also
+     * closes the document just in case, to avoid abandoned temporary files. It's still a good
+     * idea for the user to close the PDF document at the earliest possible to conserve resources.
+     * @throws IOException if an error occurs while closing the temporary files
+     */
+    @Override
+    protected void finalize() throws IOException
+    {
+        if (!closed) 
+        {
+            if (warnMissingClose) 
+            {
+                LOG.warn( "Warning: You did not close a PDF Document" );
+            }
+            close();
+        }
+    }
+
+    /**
+     * Controls whether this instance shall issue a warning if the PDF document wasn't closed
+     * properly through a call to the {@link #close()} method. If the PDF document is held in
+     * a cache governed by soft references it is impossible to reliably close the document
+     * before the warning is raised. By default, the warning is enabled.
+     * @param warn true enables the warning, false disables it.
+     */
+    public void setWarnMissingClose(boolean warn)
+    {
+        this.warnMissingClose = warn;
+    }
+
     /**
      * @return Returns the headerString.
      */
@@ -494,7 +635,6 @@ public class COSDocument extends COSBase implements Closeable
     {
         return headerString;
     }
-    
     /**
      * @param header The headerString to set.
      */
@@ -502,7 +642,7 @@ public class COSDocument extends COSBase implements Closeable
     {
         headerString = header;
     }
-    
+
     /**
      * This method will search the list of objects for types of ObjStm.  If it finds
      * them then it will parse out all of the objects from the stream that is contains.
@@ -530,7 +670,7 @@ public class COSDocument extends COSBase implements Closeable
             }
         }
     }
-    
+
     /**
      * This will get an object from the pool.
      *
@@ -560,7 +700,17 @@ public class COSDocument extends COSBase implements Closeable
         }
         return obj;
     }
-    
+
+    /**
+     * Removes an object from the object pool.
+     * @param key the object key
+     * @return the object that was removed or null if the object was not found
+     */
+    public COSObject removeObject(COSObjectKey key)
+    {
+        return objectPool.remove(key);
+    }
+
     /**
      * Populate XRef HashMap with given values.
      * Each entry maps ObjectKeys to byte offsets in the file.
@@ -570,7 +720,7 @@ public class COSDocument extends COSBase implements Closeable
     {
         xrefTable.putAll( xrefTableValues );
     }
-    
+
     /**
      * Returns the xrefTable which is a mapping of ObjectKeys
      * to byte offsets in the file.
@@ -580,7 +730,7 @@ public class COSDocument extends COSBase implements Closeable
     {
         return xrefTable;
     }
-    
+
     /**
      * This method set the startxref value of the document. This will only 
      * be needed for incremental updates.
@@ -591,7 +741,7 @@ public class COSDocument extends COSBase implements Closeable
     {
         startXref = startXrefValue;
     }
-    
+
     /**
      * Return the startXref Position of the parsed document. This will only be needed for incremental updates.
      * 
@@ -601,7 +751,7 @@ public class COSDocument extends COSBase implements Closeable
     {
       return startXref;
     }
-    
+
     /**
      * Determines it the trailer is a XRef stream or not.
      * 
@@ -615,5 +765,4 @@ public class COSDocument extends COSBase implements Closeable
         }
         return false;
     }
-
 }

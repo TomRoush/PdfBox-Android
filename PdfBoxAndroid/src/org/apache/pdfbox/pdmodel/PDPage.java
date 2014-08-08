@@ -1,5 +1,7 @@
 package org.apache.pdfbox.pdmodel;
 
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSBase;
@@ -7,6 +9,7 @@ import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.common.PDStream;
 
 import awt.print.Printable;
 
@@ -151,6 +154,17 @@ public class PDPage implements COSObjectable, Printable
 
     private PDPageNode parent = null;
     
+    /**
+     * This will set the parent of this page.
+     *
+     * @param parentNode The parent to this page node.
+     */
+    public void setParent( PDPageNode parentNode )
+    {
+        parent = parentNode;
+        page.setItem( COSName.PARENT, parent.getDictionary() );
+    }
+    
     private PDRectangle mediaBox = null;
     
     /**
@@ -169,6 +183,30 @@ public class PDPage implements COSObjectable, Printable
         {
             page.setItem( COSName.MEDIA_BOX, mediaBoxValue.getCOSArray() );
         }
+    }
+    
+    /**
+     * This will get the contents of the PDF Page, in the case that the contents
+     * of the page is an array then then the entire array of streams will be
+     * be wrapped and appear as a single stream.
+     *
+     * @return The page content stream.
+     *
+     * @throws IOException If there is an error obtaining the stream.
+     */
+    public PDStream getContents() throws IOException
+    {
+        return PDStream.createFromCOS( page.getDictionaryObject( COSName.CONTENTS ) );
+    }
+
+    /**
+     * This will set the contents of this page.
+     *
+     * @param contents The new contents of the page.
+     */
+    public void setContents( PDStream contents )
+    {
+        page.setItem( COSName.CONTENTS, contents );
     }
 
 }

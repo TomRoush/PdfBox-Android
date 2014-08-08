@@ -11,6 +11,7 @@ import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSInteger;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 
@@ -79,6 +80,35 @@ public class PDPageNode implements COSObjectable
         }
         page.setLong( COSName.COUNT, totalCount );
         return totalCount;
+    }
+    
+    /**
+     * This will get the count of descendent page objects.
+     *
+     * @return The total number of descendent page objects.
+     */
+    public long getCount()
+    {
+        if(page == null)
+        {
+            return 0L;
+        }
+        COSBase num = page.getDictionaryObject(COSName.COUNT);
+        if(num == null)
+        {
+            return 0L;
+        }
+        return ((COSNumber) num).intValue();
+    }
+    
+    /**
+     * This will get the underlying dictionary that this class acts on.
+     *
+     * @return The underlying dictionary for this class.
+     */
+    public COSDictionary getDictionary()
+    {
+        return page;
     }
 
     /**
