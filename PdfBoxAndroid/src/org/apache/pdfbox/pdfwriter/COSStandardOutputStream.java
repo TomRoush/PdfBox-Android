@@ -199,8 +199,8 @@ public class COSStandardOutputStream extends FilterOutputStream
         return null;
     }
     
-//    public InputStream getFilterInputStream(int[] byteRange) 
-//    {
-//        return new COSFilterInputStream(new FileInputStream(fileDescriptor), byteRange);
-//    }
+    public InputStream getFilterInputStream(int[] byteRange) 
+    {
+        return new COSFilterInputStream(new FileInputStream(fileDescriptor), byteRange);
+    }
 }

@@ -19,7 +19,7 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 public class PDSignatureField extends PDField
 {
 
-	/**
+    /**
      * @see PDField#PDField(PDAcroForm,COSDictionary)
      *
      * @param theAcroForm The acroForm for this field.
@@ -97,4 +97,88 @@ public class PDSignatureField extends PDField
         throw new RuntimeException( "Can't set signature as String, use setSignature(PDSignature) instead" );
     }
 
+    /**
+     * @see PDField#setValue(java.lang.String)
+     *
+     * @return The string value of this field.
+     *
+     * @throws IOException If there is an error creating the appearance stream.
+     * @deprecated use getSignature() instead
+     */
+    @Override
+    @Deprecated
+    public String getValue() throws IOException
+    {
+      throw new RuntimeException( "Can't get signature as String, use getSignature() instead." );
+    }
+
+    /**
+     * Return a string rep of this object.
+     *
+     * @return A string rep of this object.
+     */
+    @Override
+    public String toString()
+    {
+        return "PDSignature";
+    }
+    
+    /**
+     * Add a signature dictionary to the signature field.
+     * 
+     * @param value is the PDSignature 
+     */
+//    public void setSignature(PDSignature value) 
+//    {
+//      getDictionary().setItem(COSName.V, value);
+//    }TODO
+    
+    /**
+     * Get the signature dictionary.
+     * 
+     * @return the signature dictionary
+     * 
+     */
+//    public PDSignature getSignature()
+//    {
+//      COSBase dictionary = getDictionary().getDictionaryObject(COSName.V);
+//      if (dictionary == null)
+//      {
+//          return null;
+//      }
+//      return new PDSignature((COSDictionary)dictionary);
+//    }TODO
+
+    /**
+     * <p>(Optional; PDF 1.5) A seed value dictionary containing information
+     * that constrains the properties of a signature that is applied to the
+     * field.</p>
+     *
+     * @return the seed value dictionary as PDSeedValue
+     */
+//    public PDSeedValue getSeedValue()
+//    {
+//      COSDictionary dict = (COSDictionary)getDictionary().getDictionaryObject(COSName.SV);
+//      PDSeedValue sv = null;
+//      if (dict != null)
+//      {
+//          sv = new PDSeedValue(dict);
+//      }
+//      return sv;
+//    }TODO
+
+    /**
+     * <p>(Optional; PDF 1.) A seed value dictionary containing information
+     * that constrains the properties of a signature that is applied to the
+     * field.</p>
+     *
+     * @param sv is the seed value dictionary as PDSeedValue
+     */
+//    public void setSeedValue(PDSeedValue sv)
+//    {
+//      if (sv != null)
+//      {
+//          getDictionary().setItem(COSName.SV, sv.getCOSObject());
+//      }
+//    }TODO
 }

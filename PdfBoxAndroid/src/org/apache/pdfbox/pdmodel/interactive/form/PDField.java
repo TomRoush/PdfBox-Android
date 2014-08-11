@@ -86,6 +86,63 @@ public abstract class PDField implements COSObjectable
     }
     
     /**
+     * Returns the fully qualified name of the field, which is a concatenation of the names of all the parents fields.
+     * 
+     * @return the name of the field
+     * 
+     * @throws IOException If there is an error generating the fully qualified name.
+     */
+    public String getFullyQualifiedName() throws IOException
+    {
+        PDField parent = getParent();
+        String parentName = null;
+        if (parent != null)
+        {
+            parentName = parent.getFullyQualifiedName();
+        }
+        String finalName = getPartialName();
+        if (parentName != null)
+        {
+            finalName = parentName + "." + finalName;
+        }
+        return finalName;
+    }
+    
+    /**
+     * Gets the alternate name of the field.
+     * 
+     * @return the alternate name of the field
+     */
+    public String getAlternateFieldName()
+    {
+        return this.getDictionary().getString(COSName.TU);
+    }
+
+    /**
+     * This will set the alternate name of the field.
+     * 
+     * @param alternateFieldName the alternate name of the field
+     */
+    public void setAlternateFieldName(String alternateFieldName)
+    {
+        this.getDictionary().setString(COSName.TU, alternateFieldName);
+    }
+
+    /**
+     * Get the FT entry of the field. This is a read only field and is set depending on the actual type. The field type
+     * is an inheritable attribute. This method will return only the direct value on this object. Use the findFieldType
+     * for an upward recursive search.
+     * 
+     * @return The Field type.
+     * 
+     * @see PDField#findFieldType()
+     */
+    public String getFieldType()
+    {
+        return getDictionary().getNameAsString(COSName.FT);
+    }
+    
+    /**
      * Find the field type and optionally do a recursive upward search. Sometimes the fieldtype will be specified on the
      * parent instead of the direct object. This will look at this object for the field type, if none is specified then
      * it will look to the parent if there is a parent. If there is no parent and no field type has been found then this
@@ -123,6 +180,15 @@ public abstract class PDField implements COSObjectable
     public abstract void setValue(String value) throws IOException;
     
     /**
+     * getValue gets the fields value to as a string.
+     * 
+     * @return The string value of this field.
+     * 
+     * @throws IOException If there is an error getting the value.
+     */
+    public abstract String getValue() throws IOException;
+    
+    /**
      * sets the field to be read-only.
      * 
      * @param readonly The new flag for readonly.
@@ -130,6 +196,53 @@ public abstract class PDField implements COSObjectable
     public void setReadonly(boolean readonly)
     {
         BitFlagHelper.setFlag(getDictionary(), COSName.FF, FLAG_READ_ONLY, readonly);
+    }
+    
+    /**
+     * 
+     * @return true if the field is readonly
+     */
+    public boolean isReadonly()
+    {
+        return BitFlagHelper.getFlag(getDictionary(), COSName.FF, FLAG_READ_ONLY);
+    }
+
+    /**
+     * sets the field to be required.
+     * 
+     * @param required The new flag for required.
+     */
+    public void setRequired(boolean required)
+    {
+        BitFlagHelper.setFlag(getDictionary(), COSName.FF, FLAG_REQUIRED, required);
+    }
+
+    /**
+     * 
+     * @return true if the field is required
+     */
+    public boolean isRequired()
+    {
+        return BitFlagHelper.getFlag(getDictionary(), COSName.FF, FLAG_REQUIRED);
+    }
+
+    /**
+     * sets the field to be not exported..
+     * 
+     * @param noExport The new flag for noExport.
+     */
+    public void setNoExport(boolean noExport)
+    {
+        BitFlagHelper.setFlag(getDictionary(), COSName.FF, FLAG_NO_EXPORT, noExport);
+    }
+
+    /**
+     * 
+     * @return true if the field is not to be exported.
+     */
+    public boolean isNoExport()
+    {
+        return BitFlagHelper.getFlag(getDictionary(), COSName.FF, FLAG_NO_EXPORT);
     }
     
     /**
@@ -147,6 +260,136 @@ public abstract class PDField implements COSObjectable
         }
         return retval;
     }
+    
+    /**
+     * This will set the flags for this field.
+     * 
+     * @param flags The new flags.
+     */
+    public void setFieldFlags(int flags)
+    {
+        getDictionary().setInt(COSName.FF, flags);
+    }
+    
+    /**
+     * This will import a fdf field from a fdf document.
+     * 
+     * @param fdfField The fdf field to import.
+     * 
+     * @throws IOException If there is an error importing the data for this field.
+     */
+//    public void importFDF(FDFField fdfField) throws IOException
+//    {
+//        Object fieldValue = fdfField.getValue();
+//        int fieldFlags = getFieldFlags();
+//
+//        if (fieldValue != null)
+//        {
+//            if (fieldValue instanceof String)
+//            {
+//                setValue((String) fieldValue);
+//            }
+//            else if (fieldValue instanceof PDTextStream)
+//            {
+//                setValue(((PDTextStream) fieldValue).getAsString());
+//            }
+//            else
+//            {
+//                throw new IOException("Unknown field type:" + fieldValue.getClass().getName());
+//            }
+//        }
+//        Integer ff = fdfField.getFieldFlags();
+//        if (ff != null)
+//        {
+//            setFieldFlags(ff.intValue());
+//        }
+//        else
+//        {
+//            // these are suppose to be ignored if the Ff is set.
+//            Integer setFf = fdfField.getSetFieldFlags();
+//
+//            if (setFf != null)
+//            {
+//                int setFfInt = setFf.intValue();
+//                fieldFlags = fieldFlags | setFfInt;
+//                setFieldFlags(fieldFlags);
+//            }
+//
+//            Integer clrFf = fdfField.getClearFieldFlags();
+//            if (clrFf != null)
+//            {
+//                // we have to clear the bits of the document fields for every bit that is
+//                // set in this field.
+//                //
+//                // Example:
+//                // docFf = 1011
+//                // clrFf = 1101
+//                // clrFfValue = 0010;
+//                // newValue = 1011 & 0010 which is 0010
+//                int clrFfValue = clrFf.intValue();
+//                clrFfValue ^= 0xFFFFFFFF;
+//                fieldFlags = fieldFlags & clrFfValue;
+//                setFieldFlags(fieldFlags);
+//            }
+//        }
+//
+//        PDAnnotationWidget widget = getWidget();
+//        if (widget != null)
+//        {
+//            int annotFlags = widget.getAnnotationFlags();
+//            Integer f = fdfField.getWidgetFieldFlags();
+//            if (f != null && widget != null)
+//            {
+//                widget.setAnnotationFlags(f.intValue());
+//            }
+//            else
+//            {
+//                // these are suppose to be ignored if the F is set.
+//                Integer setF = fdfField.getSetWidgetFieldFlags();
+//                if (setF != null)
+//                {
+//                    annotFlags = annotFlags | setF.intValue();
+//                    widget.setAnnotationFlags(annotFlags);
+//                }
+//
+//                Integer clrF = fdfField.getClearWidgetFieldFlags();
+//                if (clrF != null)
+//                {
+//                    // we have to clear the bits of the document fields for every bit that is
+//                    // set in this field.
+//                    //
+//                    // Example:
+//                    // docF = 1011
+//                    // clrF = 1101
+//                    // clrFValue = 0010;
+//                    // newValue = 1011 & 0010 which is 0010
+//                    int clrFValue = clrF.intValue();
+//                    clrFValue ^= 0xFFFFFFFFL;
+//                    annotFlags = annotFlags & clrFValue;
+//                    widget.setAnnotationFlags(annotFlags);
+//                }
+//            }
+//        }
+//        List<FDFField> fdfKids = fdfField.getKids();
+//        List<COSObjectable> pdKids = getKids();
+//        for (int i = 0; fdfKids != null && i < fdfKids.size(); i++)
+//        {
+//            FDFField fdfChild = fdfKids.get(i);
+//            String fdfName = fdfChild.getPartialFieldName();
+//            for (int j = 0; j < pdKids.size(); j++)
+//            {
+//                Object pdChildObj = pdKids.get(j);
+//                if (pdChildObj instanceof PDField)
+//                {
+//                    PDField pdChild = (PDField) pdChildObj;
+//                    if (fdfName != null && fdfName.equals(pdChild.getPartialName()))
+//                    {
+//                        pdChild.importFDF(fdfChild);
+//                    }
+//                }
+//            }
+//        }
+//    }TODO
     
     /**
      * This will get the single associated widget that is part of this field. This occurs when the Widget is embedded in
@@ -181,6 +424,34 @@ public abstract class PDField implements COSObjectable
             retval = null;
         }
         return retval;
+    }
+    
+    /**
+     * Get the parent field to this field, or null if none exists.
+     * 
+     * @return The parent field.
+     * 
+     * @throws IOException If there is an error creating the parent field.
+     */
+    public PDField getParent() throws IOException
+    {
+        PDField parent = null;
+        COSDictionary parentDic = (COSDictionary) getDictionary().getDictionaryObject(COSName.PARENT, COSName.P);
+        if (parentDic != null)
+        {
+            parent = PDFieldFactory.createField(getAcroForm(), parentDic);
+        }
+        return parent;
+    }
+    
+    /**
+     * Set the parent of this field.
+     * 
+     * @param parent The parent to this field.
+     */
+    public void setParent(PDField parent)
+    {
+        getDictionary().setItem("Parent", parent);
     }
     
     /**
@@ -258,6 +529,28 @@ public abstract class PDField implements COSObjectable
     }
     
     /**
+     * This will set the list of kids.
+     * 
+     * @param kids The list of child widgets.
+     */
+    public void setKids(List<COSObjectable> kids)
+    {
+        COSArray kidsArray = COSArrayList.converterToCOSArray(kids);
+        getDictionary().setItem(COSName.KIDS, kidsArray);
+    }
+
+    /**
+     * This will return a string representation of this field.
+     * 
+     * @return A string representation of this field.
+     */
+    @Override
+    public String toString()
+    {
+        return "" + getDictionary().getDictionaryObject(COSName.V);
+    }
+    
+    /**
      * This will get the acroform that this field is part of.
      * 
      * @return The form this field is on.
@@ -265,6 +558,16 @@ public abstract class PDField implements COSObjectable
     public PDAcroForm getAcroForm()
     {
         return acroForm;
+    }
+    
+    /**
+     * This will set the form this field is on.
+     * 
+     * @param value The new form to use.
+     */
+    public void setAcroForm(PDAcroForm value)
+    {
+        acroForm = value;
     }
     
     /**
@@ -302,6 +605,16 @@ public abstract class PDField implements COSObjectable
             retval = new PDFormFieldAdditionalActions(aa);
         }
         return retval;
+    }
+    
+    /**
+     * Set the actions of the field.
+     * 
+     * @param actions The field actions.
+     */
+    public void setActions(PDFormFieldAdditionalActions actions)
+    {
+        dictionary.setItem(COSName.AA, actions);
     }
 
 }

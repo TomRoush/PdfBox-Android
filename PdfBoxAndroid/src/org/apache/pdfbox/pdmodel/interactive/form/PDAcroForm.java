@@ -2,6 +2,8 @@ package org.apache.pdfbox.pdmodel.interactive.form;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -75,6 +77,86 @@ public class PDAcroForm implements COSObjectable
     }
     
     /**
+     * This method will import an entire FDF document into the PDF document
+     * that this acroform is part of.
+     *
+     * @param fdf The FDF document to import.
+     *
+     * @throws IOException If there is an error doing the import.
+     */
+//    public void importFDF( FDFDocument fdf ) throws IOException
+//    {
+//        List fields = fdf.getCatalog().getFDF().getFields();
+//        if( fields != null )
+//        {
+//            for( int i=0; i<fields.size(); i++ )
+//            {
+//                FDFField fdfField = (FDFField)fields.get( i );
+//                PDField docField = getField( fdfField.getPartialFieldName() );
+//                if( docField != null )
+//                {
+//                    docField.importFDF( fdfField );
+//                }
+//            }
+//        }
+//    }TODO
+    
+    /**
+     * This will export all FDF form data.
+     *
+     * @return An FDF document used to export the document.
+     * @throws IOException If there is an error when exporting the document.
+     */
+//    public FDFDocument exportFDF() throws IOException
+//    {
+//        FDFDocument fdf = new FDFDocument();
+//        FDFCatalog catalog = fdf.getCatalog();
+//        FDFDictionary fdfDict = new FDFDictionary();
+//        catalog.setFDF( fdfDict );
+//
+//        List fdfFields = new ArrayList();
+//        List fields = getFields();
+//        Iterator fieldIter = fields.iterator();
+//        while( fieldIter.hasNext() )
+//        {
+//            PDField docField = (PDField)fieldIter.next();
+//            addFieldAndChildren( docField, fdfFields );
+//        }
+//        fdfDict.setID( document.getDocument().getDocumentID() );
+//        if( fdfFields.size() > 0 )
+//        {
+//            fdfDict.setFields( fdfFields );
+//        }
+//        return fdf;
+//    }TODO
+
+//    private void addFieldAndChildren( PDField docField, List fdfFields ) throws IOException
+//    {
+//        Object fieldValue = docField.getValue();
+//        FDFField fdfField = new FDFField();
+//        fdfField.setPartialFieldName( docField.getPartialName() );
+//        fdfField.setValue( fieldValue );
+//        List kids = docField.getKids();
+//        List childFDFFields = new ArrayList();
+//        if( kids != null )
+//        {
+//
+//            for( int i=0; i<kids.size(); i++ )
+//            {
+//                addFieldAndChildren( (PDField)kids.get( i ), childFDFFields );
+//            }
+//            if( childFDFFields.size() > 0 )
+//            {
+//                fdfField.setKids( childFDFFields );
+//            }
+//        }
+//        if( fieldValue != null || childFDFFields.size() > 0 )
+//        {
+//            fdfFields.add( fdfField );
+//        }
+//    }TODO
+    
+    /**
      * This will return all of the fields in the document.  The type
      * will be a org.apache.pdfbox.pdmodel.field.PDField.
      *
@@ -106,6 +188,54 @@ public class PDAcroForm implements COSObjectable
             retval = new COSArrayList( actuals, fields );
         }
         return retval;
+    }
+    
+    /**
+     * Set the fields that are part of this AcroForm.
+     *
+     * @param fields The fields that are part of this form.
+     */
+    public void setFields( List fields )
+    {
+        acroForm.setItem( "Fields", COSArrayList.converterToCOSArray( fields ));
+    }
+    
+    /**
+     * This will tell this form to cache the fields into a Map structure
+     * for fast access via the getField method.  The default is false.  You would
+     * want this to be false if you were changing the COSDictionary behind the scenes,
+     * otherwise setting this to true is acceptable.
+     *
+     * @param cache A boolean telling if we should cache the fields.
+     * @throws IOException If there is an error while caching the fields.
+     */
+    public void setCacheFields( boolean cache ) throws IOException
+    {
+        if( cache )
+        {
+            fieldCache = new HashMap();
+            List fields = getFields();
+            Iterator fieldIter = fields.iterator();
+            while( fieldIter.hasNext() )
+            {
+                PDField next = (PDField)fieldIter.next();
+                fieldCache.put( next.getFullyQualifiedName(), next );
+            }
+        }
+        else
+        {
+            fieldCache = null;
+        }
+    }
+    
+    /**
+     * This will tell if this acro form is caching the fields.
+     *
+     * @return true if the fields are being cached.
+     */
+    public boolean isCachingFields()
+    {
+        return fieldCache != null;
     }
     
     /**
@@ -203,6 +333,32 @@ public class PDAcroForm implements COSObjectable
     public COSBase getCOSObject()
     {
         return acroForm;
+    }
+    
+    /**
+     * Get the XFA resource, the XFA resource is only used for PDF 1.5+ forms.
+     *
+     * @return The xfa resource or null if it does not exist.
+     */
+    public PDXFA getXFA()
+    {
+        PDXFA xfa = null;
+        COSBase base = acroForm.getDictionaryObject( "XFA" );
+        if( base != null )
+        {
+            xfa = new PDXFA( base );
+        }
+        return xfa;
+    }
+
+    /**
+     * Set the XFA resource, this is only used for PDF 1.5+ forms.
+     *
+     * @param xfa The xfa resource.
+     */
+    public void setXFA( PDXFA xfa )
+    {
+        acroForm.setItem( "XFA", xfa );
     }
 
 }
