@@ -3,11 +3,14 @@ package org.apache.pdfbox.pdmodel.interactive.annotation;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSFloat;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.util.Matrix;
 
 /**
  * This class represents an appearance for an annotation.
@@ -116,44 +119,44 @@ public class PDAppearanceStream implements COSObjectable
      *
      * @return The matrix of this appearance.
      */
-//    public Matrix getMatrix()
-//    {
-//        Matrix retval = null;
-//        COSArray array = (COSArray)stream.getDictionaryObject( COSName.MATRIX );
-//        if( array != null )
-//        {
-//            retval = new Matrix();
-//            retval.setValue(0, 0, ((COSNumber) array.get(0)).floatValue());
-//            retval.setValue(0, 1, ((COSNumber) array.get(1)).floatValue());
-//            retval.setValue(1, 0, ((COSNumber) array.get(2)).floatValue());
-//            retval.setValue(1, 1, ((COSNumber) array.get(3)).floatValue());
-//            retval.setValue(2, 0, ((COSNumber) array.get(4)).floatValue());
-//            retval.setValue(2, 1, ((COSNumber) array.get(5)).floatValue());
-//        }
-//        return retval;
-//    }TODO
+    public Matrix getMatrix()
+    {
+        Matrix retval = null;
+        COSArray array = (COSArray)stream.getDictionaryObject( COSName.MATRIX );
+        if( array != null )
+        {
+            retval = new Matrix();
+            retval.setValue(0, 0, ((COSNumber) array.get(0)).floatValue());
+            retval.setValue(0, 1, ((COSNumber) array.get(1)).floatValue());
+            retval.setValue(1, 0, ((COSNumber) array.get(2)).floatValue());
+            retval.setValue(1, 1, ((COSNumber) array.get(3)).floatValue());
+            retval.setValue(2, 0, ((COSNumber) array.get(4)).floatValue());
+            retval.setValue(2, 1, ((COSNumber) array.get(5)).floatValue());
+        }
+        return retval;
+    }
 
     /**
      * Sets the optional Matrix entry for this appearance.
      * @param transform the transformation matrix
      */
-//    public void setMatrix(AffineTransform transform)
-//    {
-//        if (transform != null)
-//        {
-//            COSArray matrix = new COSArray();
-//            double[] values = new double[6];
-//            transform.getMatrix(values);
-//            for (double v : values)
-//            {
-//                matrix.add(new COSFloat((float)v));
-//            }
-//            stream.setItem(COSName.MATRIX, matrix);
-//        }
-//        else
-//        {
-//            stream.removeItem(COSName.MATRIX);
-//        }
-//    }TODO
+    public void setMatrix(android.graphics.Matrix m /*AffineTransform transform*/)
+    {
+        if (m != null)
+        {
+            COSArray matrix = new COSArray();
+            float[] values = new float[6];
+            m.getValues(values);
+            for(int i = 0; i < 6; i++)// for (float v : values)
+            {
+                matrix.add(new COSFloat(values[i]));
+            }
+            stream.setItem(COSName.MATRIX, matrix);
+        }
+        else
+        {
+            stream.removeItem(COSName.MATRIX);
+        }
+    }
 
 }
