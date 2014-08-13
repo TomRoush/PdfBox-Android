@@ -77,7 +77,7 @@ public class PDFontFactory
         }
         else if( subType.equals( COSName.MM_TYPE1 ) )
         {
-//            retval = new PDMMType1Font( dic );
+            retval = new PDMMType1Font( dic );
         }
         else if( subType.equals( COSName.TRUE_TYPE ) )
         {
@@ -89,15 +89,15 @@ public class PDFontFactory
         }
         else if( subType.equals( COSName.TYPE0 ) )
         {
-//            retval = new PDType0Font( dic );
+            retval = new PDType0Font( dic );
         }
         else if( subType.equals( COSName.CID_FONT_TYPE0 ) )
         {
-//            retval = new PDCIDFontType0Font( dic );
+            retval = new PDCIDFontType0Font( dic );
         }
         else if( subType.equals( COSName.CID_FONT_TYPE2 ) )
         {
-//            retval = new PDCIDFontType2Font( dic );
+            retval = new PDCIDFontType2Font( dic );
         }
         else
         {

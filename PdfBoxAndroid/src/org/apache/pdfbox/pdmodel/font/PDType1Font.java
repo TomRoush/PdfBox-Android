@@ -112,6 +112,8 @@ public class PDType1Font extends PDSimpleFont
         STANDARD_14.put( SYMBOL.getBaseFont(), SYMBOL );
         STANDARD_14.put( ZAPF_DINGBATS.getBaseFont(), ZAPF_DINGBATS );
     }
+    
+//    private Font awtFont = null;TODO
 
 	/**
      * Constructor.
@@ -161,6 +163,91 @@ public class PDType1Font extends PDSimpleFont
         setFontEncoding(new WinAnsiEncoding());
         setEncoding(COSName.WIN_ANSI_ENCODING);
     }
+    
+    /**
+     * A convenience method to get one of the standard 14 font from name.
+     *
+     * @param name The name of the font to get.
+     *
+     * @return The font that matches the name or null if it does not exist.
+     */
+    public static PDType1Font getStandardFont( String name )
+    {
+        return (PDType1Font)STANDARD_14.get( name );
+    }
+
+    /**
+     * This will get the names of the standard 14 fonts.
+     *
+     * @return An array of the names of the standard 14 fonts.
+     */
+    public static String[] getStandard14Names()
+    {
+        return (String[])STANDARD_14.keySet().toArray( new String[14] );
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+//    public Font getawtFont() throws IOException TODO
+//    {
+//        if( awtFont == null )
+//        {
+//            if (type1CFont != null)
+//            {
+//                awtFont = type1CFont.getawtFont();
+//            }
+//            else
+//            {
+//                String baseFont = getBaseFont();
+//                PDFontDescriptor fd = getFontDescriptor();
+//                if (fd != null && fd instanceof PDFontDescriptorDictionary)
+//                {
+//                    PDFontDescriptorDictionary fdDictionary = (PDFontDescriptorDictionary)fd;
+//                    if( fdDictionary.getFontFile() != null )
+//                    {
+//                        try 
+//                        {
+//                            // create a type1 font with the embedded data
+//                            awtFont = Font.createFont( Font.TYPE1_FONT, fdDictionary.getFontFile().createInputStream() );
+//                        } 
+//                        catch (FontFormatException e) 
+//                        {
+//                            log.info("Can't read the embedded type1 font " + fd.getFontName() );
+//                        }
+//                    }
+//                    if (awtFont == null)
+//                    {
+//                        // check if the font is part of our environment
+//                        if (fd.getFontName() != null)
+//                        {
+//                            awtFont = FontManager.getAwtFont(fd.getFontName());
+//                        }
+//                        if (awtFont == null)
+//                        {
+//                            log.info("Can't find the specified font " + fd.getFontName() );
+//                        }
+//                    }
+//                }
+//                else
+//                {
+//                    // check if the font is part of our environment
+//                    awtFont = FontManager.getAwtFont(baseFont);
+//                    if (awtFont == null) 
+//                    {
+//                        log.info("Can't find the specified basefont " + baseFont );
+//                    }
+//                }
+//            }
+//            if (awtFont == null)
+//            {
+//                // we can't find anything, so we have to use the standard font
+//                awtFont = FontManager.getStandardFont();
+//                log.info("Using font "+awtFont.getName()+ " instead");
+//            }
+//        }
+//        return awtFont;
+//    }
     
     protected void determineEncoding()
     {
@@ -346,6 +433,66 @@ public class PDType1Font extends PDSimpleFont
                     }
                 }
             }
+        }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String encode(byte[] c, int offset, int length) throws IOException
+    {
+        if (type1CFont != null && getFontEncoding() == null)
+        {
+            String character = type1CFont.encode(c, offset, length);
+            if (character != null)
+            {
+                return character;
+            }
+        }
+        return super.encode(c, offset, length);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int encodeToCID( byte[] c, int offset, int length ) throws IOException 
+    {
+      if (type1CFont != null && getFontEncoding() == null)
+      {
+          return type1CFont.encodeToCID(c, offset, length);
+      }
+      else
+      {
+          return super.encodeToCID(c, offset, length);
+      }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public PDMatrix getFontMatrix()
+    {
+        if (type1CFont != null)
+        {
+            return type1CFont.getFontMatrix();
+        }
+        else
+        {
+            return super.getFontMatrix();
+        }
+    }
+
+    @Override
+    public void clear()
+    {
+        super.clear();
+        if (type1CFont != null)
+        {
+            type1CFont.clear();
+            type1CFont = null;
         }
     }
 

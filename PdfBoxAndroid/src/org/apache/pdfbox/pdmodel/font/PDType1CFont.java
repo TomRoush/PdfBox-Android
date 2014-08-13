@@ -23,10 +23,12 @@ import org.apache.fontbox.cff.encoding.CFFEncoding;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSFloat;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.encoding.Encoding;
 import org.apache.pdfbox.encoding.EncodingManager;
+import org.apache.pdfbox.pdmodel.common.PDMatrix;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 
@@ -74,6 +76,226 @@ public class PDType1CFont extends PDSimpleFont
         super( fontDictionary );
         load();
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String encode(byte[] bytes, int offset, int length) throws IOException
+    {
+        String character = getCharacter(bytes, offset, length);
+        if (character == null)
+        {
+            log.debug("No character for code " + (bytes[offset] & 0xff) + " in " + fontname);
+            return null;
+        }
+        return character;
+    }
+
+    private String getCharacter(byte[] bytes, int offset, int length)
+    {
+        int code = getCodeFromArray(bytes, offset, length);
+        String character = null;
+        if (codeToSID.containsKey(code))
+        {
+            code = codeToSID.get(code);
+        }
+        if (sidToCharacter.containsKey(code))
+        {
+            character = sidToCharacter.get(code);
+        }
+        return character;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int encodeToCID(byte[] bytes, int offset, int length)
+    {
+        if (length > 2)
+        {
+            return -1;
+        }
+        int code = bytes[offset] & 0xff;
+        if (length == 2)
+        {
+            code = code * 256 + bytes[offset + 1] & 0xff;
+        }
+        return code;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+//    public float getFontWidth( byte[] bytes, int offset, int length ) throws IOException
+//    {
+//        String name = getName(bytes, offset, length);
+//        if ( name == null && !Arrays.equals(SPACE_BYTES, bytes) )
+//        {
+//            log.debug("No name for code " + (bytes[offset] & 0xff) + " in " + this.cffFont.getName());
+//
+//            return 0;
+//        }
+//
+//        Float width = (Float)this.glyphWidths.get(name);
+//        if( width == null )
+//        {
+//            width = Float.valueOf(getFontMetric().getCharacterWidth(name));
+//            this.glyphWidths.put(name, width);
+//        }
+//
+//        return width.floatValue();
+//    }
+
+    /**
+     * {@inheritDoc}
+     */
+//    public float getFontHeight( byte[] bytes, int offset, int length ) throws IOException
+//    {
+//        String name = getName(bytes, offset, length);
+//        if( name == null )
+//        {
+//            log.debug("No name for code " + (bytes[offset] & 0xff) + " in " + this.cffFont.getName());
+//
+//            return 0;
+//        }
+//
+//        Float height = (Float)this.glyphHeights.get(name);
+//        if( height == null )
+//        {
+//            height = Float.valueOf(getFontMetric().getCharacterHeight(name));
+//            this.glyphHeights.put(name, height);
+//        }
+//
+//        return height.floatValue();
+//    }
+
+    private String getName( byte[] bytes, int offset, int length )
+    {
+        if (length > 2)
+        {
+            return null;
+        }
+        
+        int code = bytes[offset] & 0xff;
+        if (length == 2)
+        {
+            code = code * 256 + bytes[offset+1] & 0xff;
+        }
+
+        return sidToName.get(code);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public float getStringWidth( String string ) throws IOException
+    {
+        float width = 0;
+
+        for( int i = 0; i < string.length(); i++ )
+        {
+            String character = string.substring(i, i + 1);
+
+            Integer code = getCode(character);
+            if( code == null )
+            {
+                log.debug("No code for character " + character);
+
+                return 0;
+            }
+
+            width += getFontWidth(new byte[]{(byte)code.intValue()}, 0, 1);
+        }
+
+        return width;
+    }
+
+    private Integer getCode( String character )
+    {
+        return characterToSID.get(character);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+//    public float getAverageFontWidth() throws IOException
+//    {
+//        if( this.avgWidth == null )
+//        {
+//            this.avgWidth = Float.valueOf(getFontMetric().getAverageCharacterWidth());
+//        }
+//
+//        return this.avgWidth.floatValue();
+//    }TODO
+
+    /**
+     * {@inheritDoc}
+     */
+//    public PDRectangle getFontBoundingBox() throws IOException
+//    {
+//        if( this.fontBBox == null )
+//        {
+//            this.fontBBox = new PDRectangle(getFontMetric().getFontBBox());
+//        }
+//
+//        return this.fontBBox;
+//    }TODO
+
+    /**
+     * {@inheritDoc}
+     */
+    public PDMatrix getFontMatrix()
+    {
+        if( fontMatrix == null )
+        {
+            List<Number> numbers = (List<Number>)this.cffFont.getProperty("FontMatrix");
+            if( numbers != null && numbers.size() == 6 )
+            {
+                COSArray array = new COSArray();
+                for(Number number : numbers)
+                {
+                    array.add(new COSFloat(number.floatValue()));
+                }
+                fontMatrix = new PDMatrix(array);
+            }
+            else
+            {
+                super.getFontMatrix();
+            }
+        }
+        return fontMatrix;
+    }
+
+    /**
+     * {@inheritDoc}
+     */    
+//    public Font getawtFont() throws IOException
+//    {
+//        if (awtFont == null)
+//        {
+//            this.awtFont = prepareAwtFont(this.cffFont);
+//        }
+//        return awtFont;
+//    }TODO
+    
+//    private FontMetric getFontMetric() 
+//    {
+//        if (fontMetric == null)
+//        {
+//            try
+//            {
+//                fontMetric = prepareFontMetric(cffFont);
+//            }
+//            catch (IOException exception)
+//            {
+//                log.error("An error occured while extracting the font metrics!", exception);
+//            }
+//        }
+//        return fontMetric;
+//    }TODO
     
     private void load() throws IOException
     {
@@ -257,6 +479,36 @@ public class PDType1CFont extends PDSimpleFont
         return string;
     }
     
+//    private FontMetric prepareFontMetric( CFFFont font ) throws IOException
+//    {
+//        byte[] afmBytes = AFMFormatter.format(font);
+//
+//        InputStream is = new ByteArrayInputStream(afmBytes);
+//        try
+//        {
+//            AFMParser afmParser = new AFMParser(is);
+//            afmParser.parse();
+//
+//            FontMetric result = afmParser.getResult();
+//
+//            // Replace default FontBBox value with a newly computed one
+//            BoundingBox bounds = result.getFontBBox();
+//            List<Integer> numbers = Arrays.asList(
+//                    Integer.valueOf((int)bounds.getLowerLeftX()),
+//                    Integer.valueOf((int)bounds.getLowerLeftY()),
+//                    Integer.valueOf((int)bounds.getUpperRightX()),
+//                    Integer.valueOf((int)bounds.getUpperRightY())
+//                );
+//            font.addValueToTopDict("FontBBox", numbers);
+//
+//            return result;
+//        }
+//        finally
+//        {
+//            is.close();
+//        }
+//    }
+    
     private Map<Integer,String> loadOverride() throws IOException
     {
         Map<Integer,String> result = new LinkedHashMap<Integer,String>();
@@ -323,6 +575,25 @@ public class PDType1CFont extends PDSimpleFont
         return result;
     }
     
+//    private static Font prepareAwtFont( CFFFont font ) throws IOException
+//    {
+//        byte[] type1Bytes = Type1FontFormatter.format(font);
+//
+//        InputStream is = new ByteArrayInputStream(type1Bytes);
+//        try
+//        {
+//            return Font.createFont(Font.TYPE1_FONT, is);
+//        }
+//        catch( FontFormatException ffe )
+//        {
+//            throw new WrappedIOException(ffe);
+//        }
+//        finally
+//        {
+//            is.close();
+//        }
+//    }TODO
+    
     /**
      * This class represents a PDFEncoding.
      *
@@ -366,6 +637,45 @@ public class PDType1CFont extends PDSimpleFont
             return true;
         }
 
+    }
+    
+    @Override
+    public void clear()
+    {
+        super.clear();
+        cffFont = null;
+        fontMetric = null;
+        fontBBox = null;
+        if (characterToSID != null)
+        {
+            characterToSID.clear();
+            characterToSID = null;
+        }
+        if (codeToSID != null)
+        {
+            codeToSID.clear();
+            codeToSID = null;
+        }
+        if (glyphHeights != null)
+        {
+            glyphHeights.clear();
+            glyphHeights = null;
+        }
+        if (glyphWidths != null)
+        {
+            glyphWidths.clear();
+            glyphWidths = null;
+        }
+        if (sidToCharacter != null)
+        {
+            sidToCharacter.clear();
+            sidToCharacter = null;
+        }
+        if (sidToName != null)
+        {
+            sidToName.clear();
+            sidToName = null;
+        }
     }
 
 }
