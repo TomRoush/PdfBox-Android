@@ -33,7 +33,15 @@ import org.apache.pdfbox.pdfwriter.COSWriter;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
+import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
+import org.apache.pdfbox.pdmodel.encryption.BadSecurityHandlerException;
+import org.apache.pdfbox.pdmodel.encryption.DecryptionMaterial;
 import org.apache.pdfbox.pdmodel.encryption.PDEncryptionDictionary;
+import org.apache.pdfbox.pdmodel.encryption.ProtectionPolicy;
+import org.apache.pdfbox.pdmodel.encryption.SecurityHandler;
+import org.apache.pdfbox.pdmodel.encryption.SecurityHandlersManager;
+import org.apache.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
+import org.apache.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
@@ -74,7 +82,7 @@ public class PDDocument implements Pageable, Closeable
     /**
      * The security handler used to decrypt / encrypt the document.
      */
-//    private SecurityHandler securityHandler = null;TODO
+    private SecurityHandler securityHandler = null;
 
 
     /**
@@ -906,19 +914,19 @@ public class PDDocument implements Pageable, Closeable
      * @throws IOException If there is an error getting the stream data.
      *
      */
-//    public void decrypt( String password ) throws CryptographyException, IOException
-//    {
-//        try
-//        {
-//            StandardDecryptionMaterial m = new StandardDecryptionMaterial(password);
-//            this.openProtection(m);
-//            document.dereferenceObjectStreams();
-//        }
-//        catch(BadSecurityHandlerException e)
-//        {
-//            throw new CryptographyException(e);
-//        }
-//    }TODO
+    public void decrypt( String password ) throws CryptographyException, IOException
+    {
+        try
+        {
+            StandardDecryptionMaterial m = new StandardDecryptionMaterial(password);
+            this.openProtection(m);
+            document.dereferenceObjectStreams();
+        }
+        catch(BadSecurityHandlerException e)
+        {
+            throw new CryptographyException(e);
+        }
+    }
 
     /**
      * This will tell if the document was decrypted with the master password.  This
@@ -947,20 +955,20 @@ public class PDDocument implements Pageable, Closeable
      * @throws IOException If there is an error accessing the data.
      *
      */
-//    public void encrypt( String ownerPassword, String userPassword )
-//        throws CryptographyException, IOException
-//    {
-//        try
-//        {
-//            StandardProtectionPolicy policy =
-//                new StandardProtectionPolicy(ownerPassword, userPassword, new AccessPermission());
-//            this.protect(policy);
-//        }
-//        catch(BadSecurityHandlerException e)
-//        {
-//            throw new CryptographyException(e);
-//        }
-//    }TODO
+    public void encrypt( String ownerPassword, String userPassword )
+        throws CryptographyException, IOException
+    {
+        try
+        {
+            StandardProtectionPolicy policy =
+                new StandardProtectionPolicy(ownerPassword, userPassword, new AccessPermission());
+            this.protect(policy);
+        }
+        catch(BadSecurityHandlerException e)
+        {
+            throw new CryptographyException(e);
+        }
+    }
 
     /**
      * The owner password that was passed into the encrypt method. You should
@@ -1538,11 +1546,11 @@ public class PDDocument implements Pageable, Closeable
      *
      * @throws BadSecurityHandlerException If there is an error during protection.
      */
-//    public void protect(ProtectionPolicy pp) throws BadSecurityHandlerException
-//    {
-//        SecurityHandler handler = SecurityHandlersManager.getInstance().getSecurityHandler(pp);
-//        securityHandler = handler;
-//    }TODO
+    public void protect(ProtectionPolicy pp) throws BadSecurityHandlerException
+    {
+        SecurityHandler handler = SecurityHandlersManager.getInstance().getSecurityHandler(pp);
+        securityHandler = handler;
+    }
 
     /**
      * Tries to decrypt the document in memory using the provided decryption material.
@@ -1556,22 +1564,22 @@ public class PDDocument implements Pageable, Closeable
      * @throws IOException If there is an error reading cryptographic information.
      * @throws CryptographyException If there is an error during decryption.
      */
-//    public void openProtection(DecryptionMaterial pm)
-//        throws BadSecurityHandlerException, IOException, CryptographyException
-//    {
-//        PDEncryptionDictionary dict = this.getEncryptionDictionary();
-//        if(dict.getFilter() != null)
-//        {
-//            securityHandler = SecurityHandlersManager.getInstance().getSecurityHandler(dict.getFilter());
-//            securityHandler.decryptDocument(this, pm);
-//            document.dereferenceObjectStreams();
-//            document.setEncryptionDictionary( null );
-//        }
-//        else
-//        {
-//            throw new RuntimeException("This document does not need to be decrypted");
-//        }
-//    }TODO
+    public void openProtection(DecryptionMaterial pm)
+        throws BadSecurityHandlerException, IOException, CryptographyException
+    {
+        PDEncryptionDictionary dict = this.getEncryptionDictionary();
+        if(dict.getFilter() != null)
+        {
+            securityHandler = SecurityHandlersManager.getInstance().getSecurityHandler(dict.getFilter());
+            securityHandler.decryptDocument(this, pm);
+            document.dereferenceObjectStreams();
+            document.setEncryptionDictionary( null );
+        }
+        else
+        {
+            throw new RuntimeException("This document does not need to be decrypted");
+        }
+    }
 
     /**
      * Returns the access permissions granted when the document was decrypted.
@@ -1584,24 +1592,24 @@ public class PDDocument implements Pageable, Closeable
      * @return the access permissions for the current user on the document.
      */
 
-//    public AccessPermission getCurrentAccessPermission()
-//    {
-//        if(this.securityHandler == null)
-//        {
-//            return AccessPermission.getOwnerAccessPermission();
-//        }
-//        return securityHandler.getCurrentAccessPermission();
-//    }TODO
+    public AccessPermission getCurrentAccessPermission()
+    {
+        if(this.securityHandler == null)
+        {
+            return AccessPermission.getOwnerAccessPermission();
+        }
+        return securityHandler.getCurrentAccessPermission();
+    }
 
     /**
      * Get the security handler that is used for document encryption.
      *
      * @return The handler used to encrypt/decrypt the document.
      */
-//    public SecurityHandler getSecurityHandler()
-//    {
-//        return securityHandler;
-//    }TODO
+    public SecurityHandler getSecurityHandler()
+    {
+        return securityHandler;
+    }
     
     /**
      * Sets security handler if none is set already.
@@ -1610,15 +1618,15 @@ public class PDDocument implements Pageable, Closeable
      * @return  <code>true</code> if security handler was set, <code>false</code>
      *          otherwise (a security handler was already set)
      */
-//    public boolean setSecurityHandler(SecurityHandler secHandler)
-//    {
-//        if ( securityHandler == null )
-//        {
-//            securityHandler = secHandler;
-//            return true;
-//        }
-//        return false;
-//    }TODO
+    public boolean setSecurityHandler(SecurityHandler secHandler)
+    {
+        if ( securityHandler == null )
+        {
+            securityHandler = secHandler;
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Indicates if all security is removed or not when writing the pdf.
