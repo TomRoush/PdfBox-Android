@@ -5,9 +5,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 
 /**
  * A class for handling the PDF field as a signature.
@@ -128,10 +130,10 @@ public class PDSignatureField extends PDField
      * 
      * @param value is the PDSignature 
      */
-//    public void setSignature(PDSignature value) 
-//    {
-//      getDictionary().setItem(COSName.V, value);
-//    }TODO
+    public void setSignature(PDSignature value) 
+    {
+      getDictionary().setItem(COSName.V, value);
+    }
     
     /**
      * Get the signature dictionary.
@@ -139,15 +141,15 @@ public class PDSignatureField extends PDField
      * @return the signature dictionary
      * 
      */
-//    public PDSignature getSignature()
-//    {
-//      COSBase dictionary = getDictionary().getDictionaryObject(COSName.V);
-//      if (dictionary == null)
-//      {
-//          return null;
-//      }
-//      return new PDSignature((COSDictionary)dictionary);
-//    }TODO
+    public PDSignature getSignature()
+    {
+      COSBase dictionary = getDictionary().getDictionaryObject(COSName.V);
+      if (dictionary == null)
+      {
+          return null;
+      }
+      return new PDSignature((COSDictionary)dictionary);
+    }
 
     /**
      * <p>(Optional; PDF 1.5) A seed value dictionary containing information

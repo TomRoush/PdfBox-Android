@@ -156,6 +156,16 @@ public class PDDocumentCatalog implements COSObjectable
     }
     
     /**
+     * Set the acro form for this catalog.
+     *
+     * @param acro The new acro form.
+     */
+    public void setAcroForm( PDAcroForm acro )
+    {
+        root.setItem( COSName.ACRO_FORM, acro );
+    }
+    
+    /**
      * This will get the root node for the pages.
      *
      * @return The parent page node.

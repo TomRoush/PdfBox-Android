@@ -17,6 +17,7 @@ import org.apache.pdfbox.io.RandomAccess;
 import org.apache.pdfbox.io.RandomAccessBuffer;
 import org.apache.pdfbox.io.RandomAccessFile;
 import org.apache.pdfbox.pdfparser.PDFObjectStreamParser;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
 import org.apache.pdfbox.persistence.util.COSObjectKey;
 
 /**
@@ -57,7 +58,7 @@ public class COSDocument extends COSBase implements Closeable
     /**
      * Signature interface.
      */
-//    private SignatureInterface signatureInterface;
+    private SignatureInterface signatureInterface;
 
     /**
      * This file will store the streams in order to conserve memory.
@@ -382,10 +383,10 @@ public class COSDocument extends COSBase implements Closeable
      * This will return the signature interface.
      * @return the signature interface 
      */
-//    public SignatureInterface getSignatureInterface() 
-//    {
-//        return signatureInterface;
-//    }TODO
+    public SignatureInterface getSignatureInterface() 
+    {
+        return signatureInterface;
+    }
     
     /**
      * This will set the encryption dictionary, this should only be called when
@@ -404,20 +405,20 @@ public class COSDocument extends COSBase implements Closeable
      * @return list of signature dictionaries as COSDictionary
      * @throws IOException if no document catalog can be found
      */
-//    public List<COSDictionary> getSignatureDictionaries() throws IOException
-//    {
-//        List<COSDictionary> signatureFields = getSignatureFields(false);
-//        List<COSDictionary> signatures = new LinkedList<COSDictionary>();
-//        for ( COSDictionary dict : signatureFields )
-//        {
-//            COSBase dictionaryObject = dict.getDictionaryObject(COSName.V);
-//            if (dictionaryObject != null)
-//            {
-//                signatures.add((COSDictionary)dictionaryObject);
-//            }
-//        }
-//        return signatures;
-//    }TODO
+    public List<COSDictionary> getSignatureDictionaries() throws IOException
+    {
+        List<COSDictionary> signatureFields = getSignatureFields(false);
+        List<COSDictionary> signatures = new LinkedList<COSDictionary>();
+        for ( COSDictionary dict : signatureFields )
+        {
+            COSBase dictionaryObject = dict.getDictionaryObject(COSName.V);
+            if (dictionaryObject != null)
+            {
+                signatures.add((COSDictionary)dictionaryObject);
+            }
+        }
+        return signatures;
+    }
     
     /**
      * This will return a list of signature fields.
@@ -482,10 +483,10 @@ public class COSDocument extends COSBase implements Closeable
      * Set the signature interface to the given value.
      * @param sigInterface the signature interface
      */
-//    public void setSignatureInterface(SignatureInterface sigInterface) 
-//    {
-//        signatureInterface = sigInterface;
-//    }TODO
+    public void setSignatureInterface(SignatureInterface sigInterface) 
+    {
+        signatureInterface = sigInterface;
+    }
 
     /**
      * This will get the document catalog.

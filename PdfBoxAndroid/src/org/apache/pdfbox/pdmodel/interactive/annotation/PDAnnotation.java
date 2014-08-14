@@ -1,13 +1,17 @@
 package org.apache.pdfbox.pdmodel.interactive.annotation;
 
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.color.PDGamma;
 import org.apache.pdfbox.util.BitFlagHelper;
 
 /**
@@ -16,10 +20,9 @@ import org.apache.pdfbox.util.BitFlagHelper;
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
  * 
  */
-public class PDAnnotation implements COSObjectable
+public abstract class PDAnnotation implements COSObjectable
 {
-	
-	/**
+    /**
      * Log instance.
      */
     private static final Log LOG = LogFactory.getLog(PDAnnotation.class);
@@ -64,6 +67,89 @@ public class PDAnnotation implements COSObjectable
     private COSDictionary dictionary;
 
     /**
+     * Create the correct annotation from the base COS object.
+     * 
+     * @param base The COS object that is the annotation.
+     * @return The correctly typed annotation object.
+     * @throws IOException If there is an error while creating the annotation.
+     */
+    public static PDAnnotation createAnnotation(COSBase base) throws IOException
+    {
+        PDAnnotation annot = null;
+        if (base instanceof COSDictionary)
+        {
+            COSDictionary annotDic = (COSDictionary) base;
+            String subtype = annotDic.getNameAsString(COSName.SUBTYPE);
+            if (PDAnnotationFileAttachment.SUB_TYPE.equals(subtype))
+            {
+                annot = new PDAnnotationFileAttachment(annotDic);
+            }
+            else if (PDAnnotationLine.SUB_TYPE.equals(subtype))
+            {
+                annot = new PDAnnotationLine(annotDic);
+            }
+            else if (PDAnnotationLink.SUB_TYPE.equals(subtype))
+            {
+                annot = new PDAnnotationLink(annotDic);
+            }
+            else if (PDAnnotationPopup.SUB_TYPE.equals(subtype))
+            {
+                annot = new PDAnnotationPopup(annotDic);
+            }
+            else if (PDAnnotationRubberStamp.SUB_TYPE.equals(subtype))
+            {
+                annot = new PDAnnotationRubberStamp(annotDic);
+            }
+            else if (PDAnnotationSquareCircle.SUB_TYPE_SQUARE.equals(subtype)
+                    || PDAnnotationSquareCircle.SUB_TYPE_CIRCLE.equals(subtype))
+            {
+                annot = new PDAnnotationSquareCircle(annotDic);
+            }
+            else if (PDAnnotationText.SUB_TYPE.equals(subtype))
+            {
+                annot = new PDAnnotationText(annotDic);
+            }
+            else if (PDAnnotationTextMarkup.SUB_TYPE_HIGHLIGHT.equals(subtype)
+                    || PDAnnotationTextMarkup.SUB_TYPE_UNDERLINE.equals(subtype)
+                    || PDAnnotationTextMarkup.SUB_TYPE_SQUIGGLY.equals(subtype)
+                    || PDAnnotationTextMarkup.SUB_TYPE_STRIKEOUT.equals(subtype))
+            {
+                annot = new PDAnnotationTextMarkup(annotDic);
+            }
+            else if (PDAnnotationLink.SUB_TYPE.equals(subtype))
+            {
+                annot = new PDAnnotationLink(annotDic);
+            }
+            else if (PDAnnotationWidget.SUB_TYPE.equals(subtype))
+            {
+                annot = new PDAnnotationWidget(annotDic);
+            }
+            else if (PDAnnotationMarkup.SUB_TYPE_FREETEXT.equals(subtype)
+                    || PDAnnotationMarkup.SUB_TYPE_POLYGON.equals(subtype)
+                    || PDAnnotationMarkup.SUB_TYPE_POLYLINE.equals(subtype)
+                    || PDAnnotationMarkup.SUB_TYPE_CARET.equals(subtype)
+                    || PDAnnotationMarkup.SUB_TYPE_INK.equals(subtype)
+                    || PDAnnotationMarkup.SUB_TYPE_SOUND.equals(subtype))
+            {
+                annot = new PDAnnotationMarkup(annotDic);
+            }
+            else
+            {
+                // TODO not yet implemented:
+                // Movie, Screen, PrinterMark, TrapNet, Watermark, 3D, Redact
+                annot = new PDAnnotationUnknown(annotDic);
+                LOG.debug("Unknown or unsupported annotation subtype " + subtype);
+            }
+        }
+        else
+        {
+            throw new IOException("Error: Unknown annotation type " + base);
+        }
+
+        return annot;
+    }
+
+    /**
      * Constructor.
      */
     public PDAnnotation()
@@ -71,7 +157,7 @@ public class PDAnnotation implements COSObjectable
         dictionary = new COSDictionary();
         dictionary.setItem(COSName.TYPE, COSName.ANNOT);
     }
-    
+
     /**
      * Constructor.
      * 
@@ -81,7 +167,7 @@ public class PDAnnotation implements COSObjectable
     {
         dictionary = dict;
     }
-    
+
     /**
      * returns the dictionary.
      * 
@@ -91,7 +177,7 @@ public class PDAnnotation implements COSObjectable
     {
         return dictionary;
     }
-    
+
     /**
      * The annotation rectangle, defining the location of the annotation on the page in default user space units. This
      * is usually required and should not return null on valid PDF documents. But where this is a parent form field with
@@ -111,6 +197,36 @@ public class PDAnnotation implements COSObjectable
     }
 
     /**
+     * This will set the rectangle for this annotation.
+     * 
+     * @param rectangle The new rectangle values.
+     */
+    public void setRectangle(PDRectangle rectangle)
+    {
+        dictionary.setItem(COSName.RECT, rectangle.getCOSArray());
+    }
+
+    /**
+     * This will get the flags for this field.
+     * 
+     * @return flags The set of flags.
+     */
+    public int getAnnotationFlags()
+    {
+        return getDictionary().getInt(COSName.F, 0);
+    }
+
+    /**
+     * This will set the flags for this field.
+     * 
+     * @param flags The new flags.
+     */
+    public void setAnnotationFlags(int flags)
+    {
+        getDictionary().setInt(COSName.F, flags);
+    }
+
+    /**
      * Interface method for COSObjectable.
      * 
      * @return This object as a standard COS object.
@@ -119,7 +235,40 @@ public class PDAnnotation implements COSObjectable
     {
         return getDictionary();
     }
-    
+
+    /**
+     * This will get the name of the current appearance stream if any.
+     * 
+     * @return The name of the appearance stream.
+     */
+    public String getAppearanceStream()
+    {
+        String retval = null;
+        COSName name = (COSName) getDictionary().getDictionaryObject(COSName.AS);
+        if (name != null)
+        {
+            retval = name.getName();
+        }
+        return retval;
+    }
+
+    /**
+     * This will set the annotations appearance stream name.
+     * 
+     * @param as The name of the appearance stream.
+     */
+    public void setAppearanceStream(String as)
+    {
+        if (as == null)
+        {
+            getDictionary().removeItem(COSName.AS);
+        }
+        else
+        {
+            getDictionary().setItem(COSName.AS, COSName.getPDFName(as));
+        }
+    }
+
     /**
      * This will get the appearance dictionary associated with this annotation. This may return null.
      * 
@@ -135,7 +284,7 @@ public class PDAnnotation implements COSObjectable
         }
         return ap;
     }
-    
+
     /**
      * This will set the appearance associated with this annotation.
      * 
@@ -150,7 +299,7 @@ public class PDAnnotation implements COSObjectable
         }
         dictionary.setItem(COSName.AP, ap);
     }
-    
+
     /**
      * Get the invisible flag.
      * 
@@ -411,6 +560,77 @@ public class PDAnnotation implements COSObjectable
     public void setStructParent(int structParent)
     {
         getDictionary().setInt(COSName.STRUCT_PARENT, structParent);
+    }
+
+    /**
+     * This will set the colour used in drawing various elements. As of PDF 1.6 these are : Background of icon when
+     * closed Title bar of popup window Border of a link annotation
+     * 
+     * Colour is in DeviceRGB colourspace
+     * 
+     * @param c colour in the DeviceRGB colourspace
+     * 
+     */
+    public void setColour(PDGamma c)
+    {
+        getDictionary().setItem(COSName.C, c);
+    }
+
+    /**
+     * This will retrieve the colour used in drawing various elements. As of PDF 1.6 these are : Background of icon when
+     * closed Title bar of popup window Border of a link annotation
+     * 
+     * Colour is in DeviceRGB colourspace
+     * 
+     * @return PDGamma object representing the colour
+     * 
+     */
+    public PDGamma getColour()
+    {
+        COSArray c = (COSArray) getDictionary().getItem(COSName.C);
+        if (c != null)
+        {
+            return new PDGamma(c);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /**
+     * This will retrieve the subtype of the annotation.
+     * 
+     * @return the subtype
+     */
+    public String getSubtype()
+    {
+        return this.getDictionary().getNameAsString(COSName.SUBTYPE);
+    }
+
+    /**
+     * This will set the corresponding page for this annotation.
+     * 
+     * @param page is the corresponding page
+     */
+    public void setPage(PDPage page)
+    {
+        this.getDictionary().setItem(COSName.P, page);
+    }
+
+    /**
+     * This will retrieve the corresponding page of this annotation.
+     * 
+     * @return the corresponding page
+     */
+    public PDPage getPage()
+    {
+        COSDictionary p = (COSDictionary) this.getDictionary().getDictionaryObject(COSName.P);
+        if (p != null)
+        {
+            return new PDPage(p);
+        }
+        return null;
     }
 
 }
