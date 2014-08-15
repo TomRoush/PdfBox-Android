@@ -15,10 +15,14 @@ import org.apache.pdfbox.pdmodel.common.PDDestinationOrAction;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDPageLabels;
 import org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDMarkInfo;
+import org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureTreeRoot;
 import org.apache.pdfbox.pdmodel.graphics.color.PDOutputIntent;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionFactory;
 import org.apache.pdfbox.pdmodel.interactive.action.PDDocumentCatalogAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.action.type.PDURIDictionary;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.pagenavigation.PDThread;
 import org.apache.pdfbox.pdmodel.interactive.viewerpreferences.PDViewerPreferences;
@@ -226,27 +230,27 @@ public class PDDocumentCatalog implements COSObjectable
      *
      * @return The document's outline.
      */
-//    public PDDocumentOutline getDocumentOutline()
-//    {
-//        PDDocumentOutline retval = null;
-//        COSDictionary dict = (COSDictionary)root.getDictionaryObject( COSName.OUTLINES );
-//        if( dict != null )
-//        {
-//            retval = new PDDocumentOutline( dict );
-//        }
-//
-//        return retval;
-//    }TODO
+    public PDDocumentOutline getDocumentOutline()
+    {
+        PDDocumentOutline retval = null;
+        COSDictionary dict = (COSDictionary)root.getDictionaryObject( COSName.OUTLINES );
+        if( dict != null )
+        {
+            retval = new PDDocumentOutline( dict );
+        }
+
+        return retval;
+    }
 
     /**
      * Set the document outlines.
      *
      * @param outlines The new document outlines.
      */
-//    public void setDocumentOutline( PDDocumentOutline outlines )
-//    {
-//        root.setItem( COSName.OUTLINES, outlines );
-//    }TODO
+    public void setDocumentOutline( PDDocumentOutline outlines )
+    {
+        root.setItem( COSName.OUTLINES, outlines );
+    }
 
     /**
      * Get the list threads for this pdf document.
@@ -324,30 +328,30 @@ public class PDDocumentCatalog implements COSObjectable
      * @throws IOException If there is an error creating the destination
      * or action.
      */
-//    public PDDestinationOrAction getOpenAction() throws IOException
-//    {
-//        PDDestinationOrAction action = null;
-//        COSBase actionObj = root.getDictionaryObject(COSName.OPEN_ACTION);
-//
-//        if( actionObj == null )
-//        {
-//            //no op
-//        }
-//        else if( actionObj instanceof COSDictionary )
-//        {
-//            action = PDActionFactory.createAction((COSDictionary)actionObj);
-//        }
-//        else if( actionObj instanceof COSArray )
-//        {
-//            action = PDDestination.create( actionObj );
-//        }
-//        else
-//        {
-//            throw new IOException( "Unknown OpenAction " + actionObj );
-//        }
-//
-//        return action;
-//    }TODO
+    public PDDestinationOrAction getOpenAction() throws IOException
+    {
+        PDDestinationOrAction action = null;
+        COSBase actionObj = root.getDictionaryObject(COSName.OPEN_ACTION);
+
+        if( actionObj == null )
+        {
+            //no op
+        }
+        else if( actionObj instanceof COSDictionary )
+        {
+            action = PDActionFactory.createAction((COSDictionary)actionObj);
+        }
+        else if( actionObj instanceof COSArray )
+        {
+            action = PDDestination.create( actionObj );
+        }
+        else
+        {
+            throw new IOException( "Unknown OpenAction " + actionObj );
+        }
+
+        return action;
+    }
     /**
      * @return The Additional Actions for this Document
      */
@@ -375,26 +379,26 @@ public class PDDocumentCatalog implements COSObjectable
     /**
      * @return The names dictionary for this document or null if none exist.
      */
-//    public PDDocumentNameDictionary getNames()
-//    {
-//        PDDocumentNameDictionary nameDic = null;
-//        COSDictionary names = (COSDictionary) root.getDictionaryObject(COSName.NAMES);
-//        if(names != null)
-//        {
-//            nameDic = new PDDocumentNameDictionary(this,names);
-//        }
-//        return nameDic;
-//    }TODO
+    public PDDocumentNameDictionary getNames()
+    {
+        PDDocumentNameDictionary nameDic = null;
+        COSDictionary names = (COSDictionary) root.getDictionaryObject(COSName.NAMES);
+        if(names != null)
+        {
+            nameDic = new PDDocumentNameDictionary(this,names);
+        }
+        return nameDic;
+    }
 
     /**
      * Set the names dictionary for the document.
      *
      * @param names The names dictionary that is associated with this document.
      */
-//    public void setNames( PDDocumentNameDictionary names )
-//    {
-//        root.setItem(COSName.NAMES, names );
-//    }TODO
+    public void setNames( PDDocumentNameDictionary names )
+    {
+        root.setItem(COSName.NAMES, names );
+    }
 
     /**
      * Get info about doc's usage of tagged features.  This will return
@@ -538,26 +542,26 @@ public class PDDocumentCatalog implements COSObjectable
      *
      * @return The document's structure tree root or null if none exists.
      */
-//    public PDStructureTreeRoot getStructureTreeRoot()
-//    {
-//        PDStructureTreeRoot treeRoot = null;
-//        COSDictionary dic = (COSDictionary)root.getDictionaryObject( COSName.STRUCT_TREE_ROOT );
-//        if( dic != null )
-//        {
-//            treeRoot = new PDStructureTreeRoot( dic );
-//        }
-//        return treeRoot;
-//    }TODO
+    public PDStructureTreeRoot getStructureTreeRoot()
+    {
+        PDStructureTreeRoot treeRoot = null;
+        COSDictionary dic = (COSDictionary)root.getDictionaryObject( COSName.STRUCT_TREE_ROOT );
+        if( dic != null )
+        {
+            treeRoot = new PDStructureTreeRoot( dic );
+        }
+        return treeRoot;
+    }
 
     /**
      * Set the document's structure tree root.
      *
      * @param treeRoot The new structure tree.
      */
-//    public void setStructureTreeRoot( PDStructureTreeRoot treeRoot )
-//    {
-//        root.setItem( COSName.STRUCT_TREE_ROOT, treeRoot );
-//    }TODO
+    public void setStructureTreeRoot( PDStructureTreeRoot treeRoot )
+    {
+        root.setItem( COSName.STRUCT_TREE_ROOT, treeRoot );
+    }
 
     /**
      * The language for the document.

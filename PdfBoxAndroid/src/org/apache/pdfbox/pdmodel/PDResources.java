@@ -2,6 +2,7 @@ package org.apache.pdfbox.pdmodel;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -13,6 +14,9 @@ import org.apache.pdfbox.pdmodel.common.COSDictionaryMap;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDFontFactory;
+import org.apache.pdfbox.pdmodel.graphics.PDExtendedGraphicsState;
+import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObject;
+import org.apache.pdfbox.pdmodel.markedcontent.PDPropertyList;
 import org.apache.pdfbox.util.MapUtil;
 
 /**
@@ -27,10 +31,10 @@ public class PDResources implements COSObjectable
     private Map<String, PDFont> fonts = null;
     private Map<PDFont, String> fontMappings = new HashMap<PDFont, String>();
 //    private Map<String, PDColorSpace> colorspaces = null;TODO
-//    private Map<String, PDXObject> xobjects = null;TODO
-//    private Map<PDXObject, String> xobjectMappings = null;TODO
+    private Map<String, PDXObject> xobjects = null;
+    private Map<PDXObject, String> xobjectMappings = null;
 //    private HashMap<String, PDXObjectImage> images = null;TODO
-//    private Map<String, PDExtendedGraphicsState> graphicsStates = null;TODO
+    private Map<String, PDExtendedGraphicsState> graphicsStates = null;
 //    private Map<String, PDPatternResources> patterns = null;TODO
 //    private Map<String, PDShadingResources> shadings = null;TODO
 
@@ -102,30 +106,30 @@ public class PDResources implements COSObjectable
 //            colorspaces.clear();
 //            colorspaces = null;
 //        }
-//        if (xobjects != null)
-//        {
-//            for(PDXObject xobject : xobjects.values())
-//            {
-//                xobject.clear();
-//            }
-//            xobjects.clear();
-//            xobjects = null;
-//        }
-//        if (xobjectMappings != null)
-//        {
-//            xobjectMappings.clear();
-//            xobjectMappings = null;
-//        }
+        if (xobjects != null)
+        {
+            for(PDXObject xobject : xobjects.values())
+            {
+                xobject.clear();
+            }
+            xobjects.clear();
+            xobjects = null;
+        }
+        if (xobjectMappings != null)
+        {
+            xobjectMappings.clear();
+            xobjectMappings = null;
+        }
 //        if (images != null)
 //        {
 //            images.clear();
 //            images = null;
 //        }
-//        if (graphicsStates != null)
-//        {
-//            graphicsStates.clear();
-//            graphicsStates = null;
-//        }
+        if (graphicsStates != null)
+        {
+            graphicsStates.clear();
+            graphicsStates = null;
+        }
 //        if (patterns != null)
 //        {
 //            patterns.clear();
@@ -298,20 +302,20 @@ public class PDResources implements COSObjectable
      * 
      * @param xobjectsValue The new map of xobjects.
      */
-//    public void setXObjects(Map<String, PDXObject> xobjectsValue)
-//    {
-//        xobjects = xobjectsValue;
-//        if (xobjectsValue != null)
-//        {
-//            resources.setItem(COSName.XOBJECT, COSDictionaryMap.convert(xobjectsValue));
-//            xobjectMappings = reverseMap(xobjects, PDXObject.class);
-//        }
-//        else
-//        {
-//            resources.removeItem(COSName.XOBJECT);
-//            xobjectMappings = null;
-//        }
-//    }TODO
+    public void setXObjects(Map<String, PDXObject> xobjectsValue)
+    {
+        xobjects = xobjectsValue;
+        if (xobjectsValue != null)
+        {
+            resources.setItem(COSName.XOBJECT, COSDictionaryMap.convert(xobjectsValue));
+            xobjectMappings = reverseMap(xobjects, PDXObject.class);
+        }
+        else
+        {
+            resources.removeItem(COSName.XOBJECT);
+            xobjectMappings = null;
+        }
+    }
 
     /**
      * This will get the map of colorspaces. This will return null if the underlying resources dictionary does not have
@@ -374,76 +378,76 @@ public class PDResources implements COSObjectable
      * 
      * @return The map of extended graphic state objects.
      */
-//    public Map<String, PDExtendedGraphicsState> getGraphicsStates()
-//    {
-//        if (graphicsStates == null)
-//        {
-//            COSDictionary states = (COSDictionary) resources.getDictionaryObject(COSName.EXT_G_STATE);
-//            if (states != null)
-//            {
-//                graphicsStates = new HashMap<String, PDExtendedGraphicsState>();
-//                for (COSName name : states.keySet())
-//                {
-//                    COSDictionary dictionary = (COSDictionary) states.getDictionaryObject(name);
-//                    graphicsStates.put(name.getName(), new PDExtendedGraphicsState(dictionary));
-//                }
-//            }
-//        }
-//        return graphicsStates;
-//    }TODO
+    public Map<String, PDExtendedGraphicsState> getGraphicsStates()
+    {
+        if (graphicsStates == null)
+        {
+            COSDictionary states = (COSDictionary) resources.getDictionaryObject(COSName.EXT_G_STATE);
+            if (states != null)
+            {
+                graphicsStates = new HashMap<String, PDExtendedGraphicsState>();
+                for (COSName name : states.keySet())
+                {
+                    COSDictionary dictionary = (COSDictionary) states.getDictionaryObject(name);
+                    graphicsStates.put(name.getName(), new PDExtendedGraphicsState(dictionary));
+                }
+            }
+        }
+        return graphicsStates;
+    }
 
     /**
      * This will set the map of graphics states.
      * 
      * @param states The new map of states.
      */
-//    public void setGraphicsStates(Map<String, PDExtendedGraphicsState> states)
-//    {
-//        graphicsStates = states;
-//        if (states != null)
-//        {
-//            Iterator<String> iter = states.keySet().iterator();
-//            COSDictionary dic = new COSDictionary();
-//            while (iter.hasNext())
-//            {
-//                String name = (String) iter.next();
-//                PDExtendedGraphicsState state = states.get(name);
-//                dic.setItem(COSName.getPDFName(name), state.getCOSObject());
-//            }
-//            resources.setItem(COSName.EXT_G_STATE, dic);
-//        }
-//        else
-//        {
-//            resources.removeItem(COSName.EXT_G_STATE);
-//        }
-//    }TODO
+    public void setGraphicsStates(Map<String, PDExtendedGraphicsState> states)
+    {
+        graphicsStates = states;
+        if (states != null)
+        {
+            Iterator<String> iter = states.keySet().iterator();
+            COSDictionary dic = new COSDictionary();
+            while (iter.hasNext())
+            {
+                String name = (String) iter.next();
+                PDExtendedGraphicsState state = states.get(name);
+                dic.setItem(COSName.getPDFName(name), state.getCOSObject());
+            }
+            resources.setItem(COSName.EXT_G_STATE, dic);
+        }
+        else
+        {
+            resources.removeItem(COSName.EXT_G_STATE);
+        }
+    }
 
     /**
      * Returns the dictionary mapping resource names to property list dictionaries for marked content.
      * 
      * @return the property list
      */
-//    public PDPropertyList getProperties()
-//    {
-//        PDPropertyList retval = null;
-//        COSDictionary props = (COSDictionary) resources.getDictionaryObject(COSName.PROPERTIES);
-//
-//        if (props != null)
-//        {
-//            retval = new PDPropertyList(props);
-//        }
-//        return retval;
-//    }TODO
+    public PDPropertyList getProperties()
+    {
+        PDPropertyList retval = null;
+        COSDictionary props = (COSDictionary) resources.getDictionaryObject(COSName.PROPERTIES);
+
+        if (props != null)
+        {
+            retval = new PDPropertyList(props);
+        }
+        return retval;
+    }
 
     /**
      * Sets the dictionary mapping resource names to property list dictionaries for marked content.
      * 
      * @param props the property list
      */
-//    public void setProperties(PDPropertyList props)
-//    {
-//        resources.setItem(COSName.PROPERTIES, props.getCOSObject());
-//    }TODO
+    public void setProperties(PDPropertyList props)
+    {
+        resources.setItem(COSName.PROPERTIES, props.getCOSObject());
+    }
 
     /**
      * This will get the map of patterns. This will return null if the underlying resources dictionary does not have a

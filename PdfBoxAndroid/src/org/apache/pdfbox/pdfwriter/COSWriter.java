@@ -1,5 +1,7 @@
 package org.apache.pdfbox.pdfwriter;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -36,8 +38,12 @@ import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.cos.ICOSVisitor;
 import org.apache.pdfbox.exceptions.COSVisitorException;
+import org.apache.pdfbox.exceptions.CryptographyException;
+import org.apache.pdfbox.exceptions.SignatureException;
 import org.apache.pdfbox.pdfparser.PDFXRefStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.encryption.SecurityHandler;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
 import org.apache.pdfbox.persistence.util.COSObjectKey;
 import org.apache.pdfbox.util.StringUtil;
 
@@ -714,62 +720,62 @@ public class COSWriter implements ICOSVisitor, Closeable
         }
     }
 
-    private void doWriteSignature(COSDocument doc) throws IOException//, SignatureException
-    {//TODO
-//        // need to calculate the ByteRange
-//        if (signaturePosition[0]>0 && byterangePosition[1] > 0)
-//        {
-//            int left = (int)getStandardOutput().getPos()-signaturePosition[1];
-//            String newByteRange = "0 "+signaturePosition[0]+" "+signaturePosition[1]+" "+left+"]";
-//            int leftByterange = byterangePosition[1]-byterangePosition[0]-newByteRange.length();
-//            if(leftByterange<0)
-//            {
-//                throw new IOException("Can't write new ByteRange, not enough space");
-//            }
-//            getStandardOutput().setPos(byterangePosition[0]);
-//            getStandardOutput().write(newByteRange.getBytes());
-//            for(int i=0;i<leftByterange;++i)
-//            {
-//                getStandardOutput().write(0x20);
-//            }
-//        
-//            getStandardOutput().setPos(0);
-//            // Begin - extracting document
-//            InputStream filterInputStream = new COSFilterInputStream(in, 
-//                    new int[] {0,signaturePosition[0],signaturePosition[1],left});
-//            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-//            try 
-//            {
-//                byte[] buffer = new byte[1024];
-//                int c;
-//                while((c = filterInputStream.read(buffer)) != -1)
-//                {
-//                    bytes.write(buffer, 0, c);
-//                }
-//            } 
-//            finally 
-//            {
-//                if(filterInputStream !=null)
-//                {
-//                    filterInputStream.close();
-//                }
-//            }
-//
-//            byte[] pdfContent = bytes.toByteArray();
-//            // End - extracting document
-//        
-//            SignatureInterface signatureInterface = doc.getSignatureInterface();
-//            byte[] sign = signatureInterface.sign(new ByteArrayInputStream(pdfContent));
-//            String signature = new COSString(sign).getHexString();
-//            int startPos = signaturePosition[0] + 1; // move past "<"
-//            int endPos = signaturePosition[1] - 1; // move in front of ">"
-//            if (startPos + signature.length() > endPos)            
-//            {
-//                throw new IOException("Can't write signature, not enough space");
-//            }
-//            getStandardOutput().setPos(startPos);
-//            getStandardOutput().write(signature.getBytes());
-//        }
+    private void doWriteSignature(COSDocument doc) throws IOException, SignatureException
+    {
+        // need to calculate the ByteRange
+        if (signaturePosition[0]>0 && byterangePosition[1] > 0)
+        {
+            int left = (int)getStandardOutput().getPos()-signaturePosition[1];
+            String newByteRange = "0 "+signaturePosition[0]+" "+signaturePosition[1]+" "+left+"]";
+            int leftByterange = byterangePosition[1]-byterangePosition[0]-newByteRange.length();
+            if(leftByterange<0)
+            {
+                throw new IOException("Can't write new ByteRange, not enough space");
+            }
+            getStandardOutput().setPos(byterangePosition[0]);
+            getStandardOutput().write(newByteRange.getBytes());
+            for(int i=0;i<leftByterange;++i)
+            {
+                getStandardOutput().write(0x20);
+            }
+        
+            getStandardOutput().setPos(0);
+            // Begin - extracting document
+            InputStream filterInputStream = new COSFilterInputStream(in, 
+                    new int[] {0,signaturePosition[0],signaturePosition[1],left});
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            try 
+            {
+                byte[] buffer = new byte[1024];
+                int c;
+                while((c = filterInputStream.read(buffer)) != -1)
+                {
+                    bytes.write(buffer, 0, c);
+                }
+            } 
+            finally 
+            {
+                if(filterInputStream !=null)
+                {
+                    filterInputStream.close();
+                }
+            }
+
+            byte[] pdfContent = bytes.toByteArray();
+            // End - extracting document
+        
+            SignatureInterface signatureInterface = doc.getSignatureInterface();
+            byte[] sign = signatureInterface.sign(new ByteArrayInputStream(pdfContent));
+            String signature = new COSString(sign).getHexString();
+            int startPos = signaturePosition[0] + 1; // move past "<"
+            int endPos = signaturePosition[1] - 1; // move in front of ">"
+            if (startPos + signature.length() > endPos)            
+            {
+                throw new IOException("Can't write signature, not enough space");
+            }
+            getStandardOutput().setPos(startPos);
+            getStandardOutput().write(signature.getBytes());
+        }
     }
     
     private void writeXrefRange(long x, long y) throws IOException
@@ -1155,10 +1161,10 @@ public class COSWriter implements ICOSVisitor, Closeable
         {
             throw new COSVisitorException(e);
         }
-//        catch (SignatureException e)
-//        {
-//            throw new COSVisitorException(e);
-//        }
+        catch (SignatureException e)
+        {
+            throw new COSVisitorException(e);
+        }
     }
 
     /**
@@ -1290,9 +1296,8 @@ public class COSWriter implements ICOSVisitor, Closeable
         {
             if (willEncrypt)
             {
-//                document.getSecurityHandler().encryptStream(obj, currentObjectKey.getNumber()
-//                        , currentObjectKey.getGeneration());
-            	//TODO
+                document.getSecurityHandler().encryptStream(obj, currentObjectKey.getNumber()
+                        , currentObjectKey.getGeneration());
             }
 
             COSObject lengthObject = null;
@@ -1376,11 +1381,10 @@ public class COSWriter implements ICOSVisitor, Closeable
         {
             if(willEncrypt)
             {
-//                document.getSecurityHandler().decryptString(
-//                    obj,
-//                    currentObjectKey.getNumber(),
-//                    currentObjectKey.getGeneration());
-            	//TODO
+                document.getSecurityHandler().decryptString(
+                    obj,
+                    currentObjectKey.getNumber(),
+                    currentObjectKey.getGeneration());
             }
 
             obj.writePDF( getStandardOutput() );
@@ -1435,27 +1439,27 @@ public class COSWriter implements ICOSVisitor, Closeable
         }
         else
         {
-//            SecurityHandler securityHandler = document.getSecurityHandler();
-//            if(securityHandler != null)
-//            {
-//                try
-//                {
-//                    securityHandler.prepareDocumentForEncryption(document);
-//                    this.willEncrypt = true;
-//                }
-//                catch(IOException e)
-//                {
-//                    throw new COSVisitorException( e );
-//                }
-//                catch(CryptographyException e)
-//                {
-//                    throw new COSVisitorException( e );
-//                }
-//            }
-//            else
-//            {
+            SecurityHandler securityHandler = document.getSecurityHandler();
+            if(securityHandler != null)
+            {
+                try
+                {
+                    securityHandler.prepareDocumentForEncryption(document);
+                    this.willEncrypt = true;
+                }
+                catch(IOException e)
+                {
+                    throw new COSVisitorException( e );
+                }
+                catch(CryptographyException e)
+                {
+                    throw new COSVisitorException( e );
+                }
+            }
+            else
+            {
                     this.willEncrypt = false;
-//            }TODO        
+            }        
         }
 
         COSDocument cosDoc = document.getDocument();
