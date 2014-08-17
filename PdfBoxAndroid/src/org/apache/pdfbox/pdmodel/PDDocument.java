@@ -28,6 +28,7 @@ import org.apache.pdfbox.exceptions.CryptographyException;
 import org.apache.pdfbox.exceptions.SignatureException;
 import org.apache.pdfbox.io.RandomAccess;
 import org.apache.pdfbox.pdfparser.BaseParser;
+import org.apache.pdfbox.pdfparser.NonSequentialPDFParser;
 import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdfwriter.COSWriter;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
@@ -1224,10 +1225,10 @@ public class PDDocument implements Pageable, Closeable
      *
      * @throws IOException  in case of a file reading or parsing error
      */
-//    public static PDDocument loadNonSeq( File file, RandomAccess scratchFile ) throws IOException
-//    {
-//        return loadNonSeq( file, scratchFile, "" );
-//    }TODO
+    public static PDDocument loadNonSeq( File file, RandomAccess scratchFile ) throws IOException
+    {
+        return loadNonSeq( file, scratchFile, "" );
+    }
     
     /**
      * Parses PDF with non sequential parser.
@@ -1240,12 +1241,12 @@ public class PDDocument implements Pageable, Closeable
      *
      * @throws IOException  in case of a file reading or parsing error
      */
-//    public static PDDocument loadNonSeq( File file, RandomAccess scratchFile, String password ) throws IOException
-//    {
-//        NonSequentialPDFParser parser = new NonSequentialPDFParser( file, scratchFile, password );
-//        parser.parse();
-//        return parser.getPDDocument();
-//    }TODO
+    public static PDDocument loadNonSeq( File file, RandomAccess scratchFile, String password ) throws IOException
+    {
+        NonSequentialPDFParser parser = new NonSequentialPDFParser( file, scratchFile, password );
+        parser.parse();
+        return parser.getPDDocument();
+    }
 
     /**
      * Parses PDF with non sequential parser.
@@ -1257,10 +1258,10 @@ public class PDDocument implements Pageable, Closeable
      *
      * @throws IOException  in case of a file reading or parsing error
      */
-//    public static PDDocument loadNonSeq( InputStream input, RandomAccess scratchFile) throws IOException
-//    {
-//        return loadNonSeq(input, scratchFile, "");
-//    }TODO
+    public static PDDocument loadNonSeq( InputStream input, RandomAccess scratchFile) throws IOException
+    {
+        return loadNonSeq(input, scratchFile, "");
+    }
 
     /**
      * Parses PDF with non sequential parser.
@@ -1273,12 +1274,12 @@ public class PDDocument implements Pageable, Closeable
      *
      * @throws IOException  in case of a file reading or parsing error
      */
-//    public static PDDocument loadNonSeq( InputStream input, RandomAccess scratchFile, String password ) throws IOException
-//    {
-//        NonSequentialPDFParser parser = new NonSequentialPDFParser( input, scratchFile, password );
-//        parser.parse();
-//        return parser.getPDDocument();
-//    }TODO
+    public static PDDocument loadNonSeq( InputStream input, RandomAccess scratchFile, String password ) throws IOException
+    {
+        NonSequentialPDFParser parser = new NonSequentialPDFParser( input, scratchFile, password );
+        parser.parse();
+        return parser.getPDDocument();
+    }
     
     /**
      * Save the document to a file.
@@ -1521,7 +1522,7 @@ public class PDDocument implements Pageable, Closeable
     		pageMap.clear();
     		pageMap = null;
     	}
-//    	securityHandler = null;TODO
+    	securityHandler = null;
     	if (document != null)
     	{
 	        document.close();
