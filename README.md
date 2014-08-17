@@ -3,13 +3,17 @@ PdfBox-Android
 
 The beginnings of a port of Apache's PdfBox library to be usable on Android
 
+The main code of this project is licensed under the Apache 2.0 License, found at http://www.apache.org/licenses/LICENSE-2.0.html
 
-Important notes:
+#### Important notes:
 
 -Based on PdfBox v1.8.6
 
 -This is still a work in progress; much of the functionality is still missing
 
+#### Libraries:
+Apache Commons Logging library: http://commons.apache.org/proper/commons-logging/
+SpongyCastle core, prov, and pkiv: https://github.com/rtyley/spongycastle/
 
 Example code: Load a pdf called in.pdf from the project's asset folder, fill a field called Date, and save the pdf as out.pdf in the device's Downloads folder
 ```
