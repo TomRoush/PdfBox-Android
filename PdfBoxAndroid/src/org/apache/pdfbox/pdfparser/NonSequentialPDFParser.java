@@ -39,6 +39,7 @@ import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.io.PushBackInputStream;
 import org.apache.pdfbox.io.RandomAccess;
 import org.apache.pdfbox.io.RandomAccessBuffer;
+import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
