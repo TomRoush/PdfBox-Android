@@ -1,7 +1,7 @@
 PdfBox-Android
 ==============
 
-The beginnings of a port of Apache's PdfBox library to be usable on Android
+The beginnings of a port of Apache's PdfBox library to be usable on Android. The latest jar for the latest build can be found inside the PdfBoxAndroid folder
 
 The main code of this project is licensed under the Apache 2.0 License, found at http://www.apache.org/licenses/LICENSE-2.0.html
 
