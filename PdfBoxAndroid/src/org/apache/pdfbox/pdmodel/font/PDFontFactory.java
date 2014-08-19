@@ -81,11 +81,11 @@ public class PDFontFactory
         }
         else if( subType.equals( COSName.TRUE_TYPE ) )
         {
-//            retval = new PDTrueTypeFont( dic );
+            retval = new PDTrueTypeFont( dic );
         }
         else if( subType.equals( COSName.TYPE3 ) )
         {
-//            retval = new PDType3Font( dic );
+            retval = new PDType3Font( dic );
         }
         else if( subType.equals( COSName.TYPE0 ) )
         {
