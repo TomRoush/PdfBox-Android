@@ -11,6 +11,8 @@ import org.apache.pdfbox.cos.COSInteger;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import org.apache.pdfbox.pdmodel.common.PDTextStream;
+import org.apache.pdfbox.pdmodel.fdf.FDFField;
 import org.apache.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.util.BitFlagHelper;
@@ -278,118 +280,118 @@ public abstract class PDField implements COSObjectable
      * 
      * @throws IOException If there is an error importing the data for this field.
      */
-//    public void importFDF(FDFField fdfField) throws IOException
-//    {
-//        Object fieldValue = fdfField.getValue();
-//        int fieldFlags = getFieldFlags();
-//
-//        if (fieldValue != null)
-//        {
-//            if (fieldValue instanceof String)
-//            {
-//                setValue((String) fieldValue);
-//            }
-//            else if (fieldValue instanceof PDTextStream)
-//            {
-//                setValue(((PDTextStream) fieldValue).getAsString());
-//            }
-//            else
-//            {
-//                throw new IOException("Unknown field type:" + fieldValue.getClass().getName());
-//            }
-//        }
-//        Integer ff = fdfField.getFieldFlags();
-//        if (ff != null)
-//        {
-//            setFieldFlags(ff.intValue());
-//        }
-//        else
-//        {
-//            // these are suppose to be ignored if the Ff is set.
-//            Integer setFf = fdfField.getSetFieldFlags();
-//
-//            if (setFf != null)
-//            {
-//                int setFfInt = setFf.intValue();
-//                fieldFlags = fieldFlags | setFfInt;
-//                setFieldFlags(fieldFlags);
-//            }
-//
-//            Integer clrFf = fdfField.getClearFieldFlags();
-//            if (clrFf != null)
-//            {
-//                // we have to clear the bits of the document fields for every bit that is
-//                // set in this field.
-//                //
-//                // Example:
-//                // docFf = 1011
-//                // clrFf = 1101
-//                // clrFfValue = 0010;
-//                // newValue = 1011 & 0010 which is 0010
-//                int clrFfValue = clrFf.intValue();
-//                clrFfValue ^= 0xFFFFFFFF;
-//                fieldFlags = fieldFlags & clrFfValue;
-//                setFieldFlags(fieldFlags);
-//            }
-//        }
-//
-//        PDAnnotationWidget widget = getWidget();
-//        if (widget != null)
-//        {
-//            int annotFlags = widget.getAnnotationFlags();
-//            Integer f = fdfField.getWidgetFieldFlags();
-//            if (f != null && widget != null)
-//            {
-//                widget.setAnnotationFlags(f.intValue());
-//            }
-//            else
-//            {
-//                // these are suppose to be ignored if the F is set.
-//                Integer setF = fdfField.getSetWidgetFieldFlags();
-//                if (setF != null)
-//                {
-//                    annotFlags = annotFlags | setF.intValue();
-//                    widget.setAnnotationFlags(annotFlags);
-//                }
-//
-//                Integer clrF = fdfField.getClearWidgetFieldFlags();
-//                if (clrF != null)
-//                {
-//                    // we have to clear the bits of the document fields for every bit that is
-//                    // set in this field.
-//                    //
-//                    // Example:
-//                    // docF = 1011
-//                    // clrF = 1101
-//                    // clrFValue = 0010;
-//                    // newValue = 1011 & 0010 which is 0010
-//                    int clrFValue = clrF.intValue();
-//                    clrFValue ^= 0xFFFFFFFFL;
-//                    annotFlags = annotFlags & clrFValue;
-//                    widget.setAnnotationFlags(annotFlags);
-//                }
-//            }
-//        }
-//        List<FDFField> fdfKids = fdfField.getKids();
-//        List<COSObjectable> pdKids = getKids();
-//        for (int i = 0; fdfKids != null && i < fdfKids.size(); i++)
-//        {
-//            FDFField fdfChild = fdfKids.get(i);
-//            String fdfName = fdfChild.getPartialFieldName();
-//            for (int j = 0; j < pdKids.size(); j++)
-//            {
-//                Object pdChildObj = pdKids.get(j);
-//                if (pdChildObj instanceof PDField)
-//                {
-//                    PDField pdChild = (PDField) pdChildObj;
-//                    if (fdfName != null && fdfName.equals(pdChild.getPartialName()))
-//                    {
-//                        pdChild.importFDF(fdfChild);
-//                    }
-//                }
-//            }
-//        }
-//    }TODO
+    public void importFDF(FDFField fdfField) throws IOException
+    {
+        Object fieldValue = fdfField.getValue();
+        int fieldFlags = getFieldFlags();
+
+        if (fieldValue != null)
+        {
+            if (fieldValue instanceof String)
+            {
+                setValue((String) fieldValue);
+            }
+            else if (fieldValue instanceof PDTextStream)
+            {
+                setValue(((PDTextStream) fieldValue).getAsString());
+            }
+            else
+            {
+                throw new IOException("Unknown field type:" + fieldValue.getClass().getName());
+            }
+        }
+        Integer ff = fdfField.getFieldFlags();
+        if (ff != null)
+        {
+            setFieldFlags(ff.intValue());
+        }
+        else
+        {
+            // these are suppose to be ignored if the Ff is set.
+            Integer setFf = fdfField.getSetFieldFlags();
+
+            if (setFf != null)
+            {
+                int setFfInt = setFf.intValue();
+                fieldFlags = fieldFlags | setFfInt;
+                setFieldFlags(fieldFlags);
+            }
+
+            Integer clrFf = fdfField.getClearFieldFlags();
+            if (clrFf != null)
+            {
+                // we have to clear the bits of the document fields for every bit that is
+                // set in this field.
+                //
+                // Example:
+                // docFf = 1011
+                // clrFf = 1101
+                // clrFfValue = 0010;
+                // newValue = 1011 & 0010 which is 0010
+                int clrFfValue = clrFf.intValue();
+                clrFfValue ^= 0xFFFFFFFF;
+                fieldFlags = fieldFlags & clrFfValue;
+                setFieldFlags(fieldFlags);
+            }
+        }
+
+        PDAnnotationWidget widget = getWidget();
+        if (widget != null)
+        {
+            int annotFlags = widget.getAnnotationFlags();
+            Integer f = fdfField.getWidgetFieldFlags();
+            if (f != null && widget != null)
+            {
+                widget.setAnnotationFlags(f.intValue());
+            }
+            else
+            {
+                // these are suppose to be ignored if the F is set.
+                Integer setF = fdfField.getSetWidgetFieldFlags();
+                if (setF != null)
+                {
+                    annotFlags = annotFlags | setF.intValue();
+                    widget.setAnnotationFlags(annotFlags);
+                }
+
+                Integer clrF = fdfField.getClearWidgetFieldFlags();
+                if (clrF != null)
+                {
+                    // we have to clear the bits of the document fields for every bit that is
+                    // set in this field.
+                    //
+                    // Example:
+                    // docF = 1011
+                    // clrF = 1101
+                    // clrFValue = 0010;
+                    // newValue = 1011 & 0010 which is 0010
+                    int clrFValue = clrF.intValue();
+                    clrFValue ^= 0xFFFFFFFFL;
+                    annotFlags = annotFlags & clrFValue;
+                    widget.setAnnotationFlags(annotFlags);
+                }
+            }
+        }
+        List<FDFField> fdfKids = fdfField.getKids();
+        List<COSObjectable> pdKids = getKids();
+        for (int i = 0; fdfKids != null && i < fdfKids.size(); i++)
+        {
+            FDFField fdfChild = fdfKids.get(i);
+            String fdfName = fdfChild.getPartialFieldName();
+            for (int j = 0; j < pdKids.size(); j++)
+            {
+                Object pdChildObj = pdKids.get(j);
+                if (pdChildObj instanceof PDField)
+                {
+                    PDField pdChild = (PDField) pdChildObj;
+                    if (fdfName != null && fdfName.equals(pdChild.getPartialName()))
+                    {
+                        pdChild.importFDF(fdfChild);
+                    }
+                }
+            }
+        }
+    }
     
     /**
      * This will get the single associated widget that is part of this field. This occurs when the Widget is embedded in

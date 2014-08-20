@@ -21,6 +21,7 @@ import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.exceptions.WrappedIOException;
 import org.apache.pdfbox.io.RandomAccess;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.fdf.FDFDocument;
 import org.apache.pdfbox.persistence.util.COSObjectKey;
 
 /**
@@ -440,10 +441,10 @@ public class PDFParser extends BaseParser
      *
      * @throws IOException If there is an error getting the document.
      */
-//    public FDFDocument getFDFDocument() throws IOException
-//    {
-//        return new FDFDocument( getDocument() );
-//    }TODO
+    public FDFDocument getFDFDocument() throws IOException
+    {
+        return new FDFDocument( getDocument() );
+    }
 
     /**
      * This will parse the next object from the stream and add it to

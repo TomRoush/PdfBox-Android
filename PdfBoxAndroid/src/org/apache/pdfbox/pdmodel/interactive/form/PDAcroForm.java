@@ -16,6 +16,10 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import org.apache.pdfbox.pdmodel.fdf.FDFCatalog;
+import org.apache.pdfbox.pdmodel.fdf.FDFDictionary;
+import org.apache.pdfbox.pdmodel.fdf.FDFDocument;
+import org.apache.pdfbox.pdmodel.fdf.FDFField;
 
 /**
  * This class represents the acroform of a PDF document.
@@ -84,22 +88,22 @@ public class PDAcroForm implements COSObjectable
      *
      * @throws IOException If there is an error doing the import.
      */
-//    public void importFDF( FDFDocument fdf ) throws IOException
-//    {
-//        List fields = fdf.getCatalog().getFDF().getFields();
-//        if( fields != null )
-//        {
-//            for( int i=0; i<fields.size(); i++ )
-//            {
-//                FDFField fdfField = (FDFField)fields.get( i );
-//                PDField docField = getField( fdfField.getPartialFieldName() );
-//                if( docField != null )
-//                {
-//                    docField.importFDF( fdfField );
-//                }
-//            }
-//        }
-//    }TODO
+    public void importFDF( FDFDocument fdf ) throws IOException
+    {
+        List fields = fdf.getCatalog().getFDF().getFields();
+        if( fields != null )
+        {
+            for( int i=0; i<fields.size(); i++ )
+            {
+                FDFField fdfField = (FDFField)fields.get( i );
+                PDField docField = getField( fdfField.getPartialFieldName() );
+                if( docField != null )
+                {
+                    docField.importFDF( fdfField );
+                }
+            }
+        }
+    }
     
     /**
      * This will export all FDF form data.
@@ -107,54 +111,54 @@ public class PDAcroForm implements COSObjectable
      * @return An FDF document used to export the document.
      * @throws IOException If there is an error when exporting the document.
      */
-//    public FDFDocument exportFDF() throws IOException
-//    {
-//        FDFDocument fdf = new FDFDocument();
-//        FDFCatalog catalog = fdf.getCatalog();
-//        FDFDictionary fdfDict = new FDFDictionary();
-//        catalog.setFDF( fdfDict );
-//
-//        List fdfFields = new ArrayList();
-//        List fields = getFields();
-//        Iterator fieldIter = fields.iterator();
-//        while( fieldIter.hasNext() )
-//        {
-//            PDField docField = (PDField)fieldIter.next();
-//            addFieldAndChildren( docField, fdfFields );
-//        }
-//        fdfDict.setID( document.getDocument().getDocumentID() );
-//        if( fdfFields.size() > 0 )
-//        {
-//            fdfDict.setFields( fdfFields );
-//        }
-//        return fdf;
-//    }TODO
+    public FDFDocument exportFDF() throws IOException
+    {
+        FDFDocument fdf = new FDFDocument();
+        FDFCatalog catalog = fdf.getCatalog();
+        FDFDictionary fdfDict = new FDFDictionary();
+        catalog.setFDF( fdfDict );
 
-//    private void addFieldAndChildren( PDField docField, List fdfFields ) throws IOException
-//    {
-//        Object fieldValue = docField.getValue();
-//        FDFField fdfField = new FDFField();
-//        fdfField.setPartialFieldName( docField.getPartialName() );
-//        fdfField.setValue( fieldValue );
-//        List kids = docField.getKids();
-//        List childFDFFields = new ArrayList();
-//        if( kids != null )
-//        {
-//
-//            for( int i=0; i<kids.size(); i++ )
-//            {
-//                addFieldAndChildren( (PDField)kids.get( i ), childFDFFields );
-//            }
-//            if( childFDFFields.size() > 0 )
-//            {
-//                fdfField.setKids( childFDFFields );
-//            }
-//        }
-//        if( fieldValue != null || childFDFFields.size() > 0 )
-//        {
-//            fdfFields.add( fdfField );
-//        }
-//    }TODO
+        List fdfFields = new ArrayList();
+        List fields = getFields();
+        Iterator fieldIter = fields.iterator();
+        while( fieldIter.hasNext() )
+        {
+            PDField docField = (PDField)fieldIter.next();
+            addFieldAndChildren( docField, fdfFields );
+        }
+        fdfDict.setID( document.getDocument().getDocumentID() );
+        if( fdfFields.size() > 0 )
+        {
+            fdfDict.setFields( fdfFields );
+        }
+        return fdf;
+    }
+
+    private void addFieldAndChildren( PDField docField, List fdfFields ) throws IOException
+    {
+        Object fieldValue = docField.getValue();
+        FDFField fdfField = new FDFField();
+        fdfField.setPartialFieldName( docField.getPartialName() );
+        fdfField.setValue( fieldValue );
+        List kids = docField.getKids();
+        List childFDFFields = new ArrayList();
+        if( kids != null )
+        {
+
+            for( int i=0; i<kids.size(); i++ )
+            {
+                addFieldAndChildren( (PDField)kids.get( i ), childFDFFields );
+            }
+            if( childFDFFields.size() > 0 )
+            {
+                fdfField.setKids( childFDFFields );
+            }
+        }
+        if( fieldValue != null || childFDFFields.size() > 0 )
+        {
+            fdfFields.add( fdfField );
+        }
+    }
     
     /**
      * This will return all of the fields in the document.  The type
