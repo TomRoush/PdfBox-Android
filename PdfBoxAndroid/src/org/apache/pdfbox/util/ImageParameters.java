@@ -1,8 +1,6 @@
 package org.apache.pdfbox.util;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;

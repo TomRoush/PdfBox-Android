@@ -15,6 +15,8 @@ import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDFontFactory;
 import org.apache.pdfbox.pdmodel.graphics.PDExtendedGraphicsState;
+import org.apache.pdfbox.pdmodel.graphics.pattern.PDPatternResources;
+import org.apache.pdfbox.pdmodel.graphics.shading.PDShadingResources;
 import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObject;
 import org.apache.pdfbox.pdmodel.markedcontent.PDPropertyList;
 import org.apache.pdfbox.util.MapUtil;
@@ -35,8 +37,8 @@ public class PDResources implements COSObjectable
     private Map<PDXObject, String> xobjectMappings = null;
 //    private HashMap<String, PDXObjectImage> images = null;TODO
     private Map<String, PDExtendedGraphicsState> graphicsStates = null;
-//    private Map<String, PDPatternResources> patterns = null;TODO
-//    private Map<String, PDShadingResources> shadings = null;TODO
+    private Map<String, PDPatternResources> patterns = null;
+    private Map<String, PDShadingResources> shadings = null;
 
     /**
      * Log instance.
@@ -124,22 +126,22 @@ public class PDResources implements COSObjectable
 //        {
 //            images.clear();
 //            images = null;
-//        }
+//        }TODO
         if (graphicsStates != null)
         {
             graphicsStates.clear();
             graphicsStates = null;
         }
-//        if (patterns != null)
-//        {
-//            patterns.clear();
-//            patterns = null;
-//        }
-//        if (shadings != null)
-//        {
-//            shadings.clear();
-//            shadings = null;
-//        }TODO
+        if (patterns != null)
+        {
+            patterns.clear();
+            patterns = null;
+        }
+        if (shadings != null)
+        {
+            shadings.clear();
+            shadings = null;
+        }
     }
 
     /**
@@ -457,49 +459,49 @@ public class PDResources implements COSObjectable
      * 
      * @throws IOException If there is an error getting the pattern resources.
      */
-//    public Map<String, PDPatternResources> getPatterns() throws IOException
-//    {
-//        if (patterns == null)
-//        {
-//            COSDictionary patternsDictionary = (COSDictionary) resources.getDictionaryObject(COSName.PATTERN);
-//            if (patternsDictionary != null)
-//            {
-//                patterns = new HashMap<String, PDPatternResources>();
-//                for (COSName name : patternsDictionary.keySet())
-//                {
-//                    COSDictionary dictionary = (COSDictionary) patternsDictionary.getDictionaryObject(name);
-//                    patterns.put(name.getName(), PDPatternResources.create(dictionary));
-//                }
-//            }
-//        }
-//        return patterns;
-//    }TODO
+    public Map<String, PDPatternResources> getPatterns() throws IOException
+    {
+        if (patterns == null)
+        {
+            COSDictionary patternsDictionary = (COSDictionary) resources.getDictionaryObject(COSName.PATTERN);
+            if (patternsDictionary != null)
+            {
+                patterns = new HashMap<String, PDPatternResources>();
+                for (COSName name : patternsDictionary.keySet())
+                {
+                    COSDictionary dictionary = (COSDictionary) patternsDictionary.getDictionaryObject(name);
+                    patterns.put(name.getName(), PDPatternResources.create(dictionary));
+                }
+            }
+        }
+        return patterns;
+    }
 
     /**
      * This will set the map of patterns.
      * 
      * @param patternsValue The new map of patterns.
      */
-//    public void setPatterns(Map<String, PDPatternResources> patternsValue)
-//    {
-//        patterns = patternsValue;
-//        if (patternsValue != null)
-//        {
-//            Iterator<String> iter = patternsValue.keySet().iterator();
-//            COSDictionary dic = new COSDictionary();
-//            while (iter.hasNext())
-//            {
-//                String name = iter.next();
-//                PDPatternResources pattern = patternsValue.get(name);
-//                dic.setItem(COSName.getPDFName(name), pattern.getCOSObject());
-//            }
-//            resources.setItem(COSName.PATTERN, dic);
-//        }
-//        else
-//        {
-//            resources.removeItem(COSName.PATTERN);
-//        }
-//    }TODO
+    public void setPatterns(Map<String, PDPatternResources> patternsValue)
+    {
+        patterns = patternsValue;
+        if (patternsValue != null)
+        {
+            Iterator<String> iter = patternsValue.keySet().iterator();
+            COSDictionary dic = new COSDictionary();
+            while (iter.hasNext())
+            {
+                String name = iter.next();
+                PDPatternResources pattern = patternsValue.get(name);
+                dic.setItem(COSName.getPDFName(name), pattern.getCOSObject());
+            }
+            resources.setItem(COSName.PATTERN, dic);
+        }
+        else
+        {
+            resources.removeItem(COSName.PATTERN);
+        }
+    }
 
     /**
      * This will get the map of shadings. This will return null if the underlying resources dictionary does not have a
@@ -509,49 +511,49 @@ public class PDResources implements COSObjectable
      * 
      * @throws IOException If there is an error getting the shading resources.
      */
-//    public Map<String, PDShadingResources> getShadings() throws IOException
-//    {
-//        if (shadings == null)
-//        {
-//            COSDictionary shadingsDictionary = (COSDictionary) resources.getDictionaryObject(COSName.SHADING);
-//            if (shadingsDictionary != null)
-//            {
-//                shadings = new HashMap<String, PDShadingResources>();
-//                for (COSName name : shadingsDictionary.keySet())
-//                {
-//                    COSDictionary dictionary = (COSDictionary) shadingsDictionary.getDictionaryObject(name);
-//                    shadings.put(name.getName(), PDShadingResources.create(dictionary));
-//                }
-//            }
-//        }
-//        return shadings;
-//    }TODO
+    public Map<String, PDShadingResources> getShadings() throws IOException
+    {
+        if (shadings == null)
+        {
+            COSDictionary shadingsDictionary = (COSDictionary) resources.getDictionaryObject(COSName.SHADING);
+            if (shadingsDictionary != null)
+            {
+                shadings = new HashMap<String, PDShadingResources>();
+                for (COSName name : shadingsDictionary.keySet())
+                {
+                    COSDictionary dictionary = (COSDictionary) shadingsDictionary.getDictionaryObject(name);
+                    shadings.put(name.getName(), PDShadingResources.create(dictionary));
+                }
+            }
+        }
+        return shadings;
+    }
 
     /**
      * This will set the map of shadings.
      * 
      * @param shadingsValue The new map of shadings.
      */
-//    public void setShadings(Map<String, PDShadingResources> shadingsValue)
-//    {
-//        shadings = shadingsValue;
-//        if (shadingsValue != null)
-//        {
-//            Iterator<String> iter = shadingsValue.keySet().iterator();
-//            COSDictionary dic = new COSDictionary();
-//            while (iter.hasNext())
-//            {
-//                String name = iter.next();
-//                PDShadingResources shading = shadingsValue.get(name);
-//                dic.setItem(COSName.getPDFName(name), shading.getCOSObject());
-//            }
-//            resources.setItem(COSName.SHADING, dic);
-//        }
-//        else
-//        {
-//            resources.removeItem(COSName.SHADING);
-//        }
-//    }TODO
+    public void setShadings(Map<String, PDShadingResources> shadingsValue)
+    {
+        shadings = shadingsValue;
+        if (shadingsValue != null)
+        {
+            Iterator<String> iter = shadingsValue.keySet().iterator();
+            COSDictionary dic = new COSDictionary();
+            while (iter.hasNext())
+            {
+                String name = iter.next();
+                PDShadingResources shading = shadingsValue.get(name);
+                dic.setItem(COSName.getPDFName(name), shading.getCOSObject());
+            }
+            resources.setItem(COSName.SHADING, dic);
+        }
+        else
+        {
+            resources.removeItem(COSName.SHADING);
+        }
+    }
 
     /**
      * Adds the given font to the resources of the current page.
