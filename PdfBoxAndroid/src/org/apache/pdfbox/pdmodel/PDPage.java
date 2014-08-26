@@ -23,9 +23,6 @@ import org.apache.pdfbox.pdmodel.interactive.action.PDPageAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.pagenavigation.PDThreadBead;
 
-import android.graphics.Color;
-import awt.print.Printable;
-
 /**
  * This represents a single page in a PDF document.
  * <p>
@@ -36,7 +33,7 @@ import awt.print.Printable;
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
  * @version $Revision: 1.29 $
  */
-public class PDPage implements COSObjectable, Printable
+public class PDPage implements COSObjectable
 {
 
     /**
@@ -845,27 +842,6 @@ public class PDPage implements COSObjectable, Printable
     {
         page.setItem( COSName.ANNOTS, COSArrayList.converterToCOSArray( annots ) );
     }
-
-    /**
-     * @deprecated Use the {@link PDPageable} adapter class
-     * {@inheritDoc}
-     */
-//    public int print(Graphics graphics, PageFormat pageFormat, int pageIndex)
-//        throws PrinterException
-//    {
-//        try
-//        {
-//            PageDrawer drawer = new PageDrawer();
-//            PDRectangle cropBox = findCropBox();
-//            drawer.drawPage( graphics, this, cropBox.createDimension() );
-//            drawer.dispose();
-//            return PAGE_EXISTS;
-//        }
-//        catch( IOException io )
-//        {
-//            throw new PrinterIOException( io );
-//        }
-//    }TODO
 
     /**
      * {@inheritDoc}

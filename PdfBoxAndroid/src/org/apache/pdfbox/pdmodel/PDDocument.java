@@ -53,8 +53,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 
-import awt.print.Pageable;
-
 /**
  * This is the in-memory representation of the PDF document.  You need to call
  * close() on this object when you are done using it!!
@@ -66,7 +64,7 @@ import awt.print.Pageable;
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
  * @version $Revision: 1.47 $
  */
-public class PDDocument implements Pageable, Closeable
+public class PDDocument implements Closeable
 {
 	
 	private COSDocument document;
@@ -1403,109 +1401,6 @@ public class PDDocument implements Pageable, Closeable
         PDDocumentCatalog cat = getDocumentCatalog();
         return (int)cat.getPages().getCount();
     }
-
-    /**
-     * Returns the format of the page at the given index when using a
-     * default printer job returned by  {@link PrinterJob#getPrinterJob()}.
-     *
-     * @deprecated Use the {@link PDPageable} adapter class
-     * @param pageIndex page index, zero-based
-     * @return page format
-     */
-//    @Deprecated
-//    public PageFormat getPageFormat(int pageIndex)
-//    {
-//        try 
-//        {
-//            PrinterJob printerJob = PrinterJob.getPrinterJob();
-//            return new PDPageable(this, printerJob).getPageFormat(pageIndex);
-//        } 
-//        catch (PrinterException e) 
-//        {
-//            throw new RuntimeException(e);
-//        }
-//    } TODO
-
-    /**
-     * {@inheritDoc}
-     */
-//    public Printable getPrintable(int pageIndex)
-//    {
-//        return (Printable)getDocumentCatalog().getAllPages().get( pageIndex );
-//    }TODO
-
-    /**
-     * @see PDDocument#print()
-     *
-     * @param printJob The printer job.
-     *
-     * @throws PrinterException If there is an error while sending the PDF to
-     * the printer, or you do not have permissions to print this document.
-     */
-//    public void print(PrinterJob printJob) throws PrinterException
-//    {
-//        print(printJob, false);
-//    }TODO
-
-    /**
-     * This will send the PDF document to a printer.  The printing functionality
-     * depends on the org.apache.pdfbox.pdfviewer.PageDrawer functionality.  The PageDrawer
-     * is a work in progress and some PDFs will print correctly and some will
-     * not.  This is a convenience method to create the java.awt.print.PrinterJob.
-     * The PDDocument implements the java.awt.print.Pageable interface and
-     * PDPage implementes the java.awt.print.Printable interface, so advanced printing
-     * capabilities can be done by using those interfaces instead of this method.
-     *
-     * @throws PrinterException If there is an error while sending the PDF to
-     * the printer, or you do not have permissions to print this document.
-     */
-//    public void print() throws PrinterException
-//    {
-//        print( PrinterJob.getPrinterJob() );
-//    }TODO
-
-    /**
-     * This will send the PDF to the default printer without prompting the user
-     * for any printer settings.
-     *
-     * @see PDDocument#print()
-     *
-     * @throws PrinterException If there is an error while printing.
-     */
-//    public void silentPrint() throws PrinterException
-//    {
-//        silentPrint( PrinterJob.getPrinterJob() );
-//    }TODO
-
-    /**
-     * This will send the PDF to the default printer without prompting the user
-     * for any printer settings.
-     *
-     * @param printJob A printer job definition.
-     * @see PDDocument#print()
-     *
-     * @throws PrinterException If there is an error while printing.
-     */
-//    public void silentPrint( PrinterJob printJob ) throws PrinterException
-//    {
-//        print(printJob, true);
-//    }TODO
-
-//    private void print(PrinterJob job, boolean silent) throws PrinterException 
-//    {
-//        if (job == null) 
-//        {
-//            throw new PrinterException("The given printer job is null.");
-//        } 
-//        else 
-//        {
-//            job.setPageable(new PDPageable(this, job));
-//            if (silent || job.printDialog()) 
-//            {
-//                job.print();
-//            }
-//        }
-//    }TODO
 
     /**
      * This will close the underlying COSDocument object.
