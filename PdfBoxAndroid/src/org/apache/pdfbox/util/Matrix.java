@@ -47,7 +47,7 @@ public class Matrix implements Cloneable
 //            single[3], single[4],
 //            single[6], single[7] );
     	android.graphics.Matrix retval = new android.graphics.Matrix();
-    	retval.setValues(new float[] {single[0], single[3], single[6], single[1], single[4], single[7], 0, 0 ,1});
+    	retval.setValues(single);
         return retval;
     }
 

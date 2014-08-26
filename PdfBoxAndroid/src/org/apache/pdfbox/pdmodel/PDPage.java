@@ -14,6 +14,7 @@ import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.cos.COSStream;
+import org.apache.pdfbox.pdfviewer.PageDrawer;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
@@ -22,6 +23,12 @@ import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.interactive.action.PDPageAdditionalActions;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import org.apache.pdfbox.pdmodel.interactive.pagenavigation.PDThreadBead;
+
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 
 /**
  * This represents a single page in a PDF document.
@@ -48,7 +55,7 @@ public class PDPage implements COSObjectable
     /**
      * Fully transparent that can fall back to white when image type has no alpha.
      */
-//    private static final Color TRANSPARENT_WHITE = new Color( 255, 255, 255, 0 );TODO
+    private static final int TRANSPARENT_WHITE = Color.argb(0, 255, 255, 255);
 
     private COSDictionary page;
 
@@ -713,68 +720,73 @@ public class PDPage implements COSObjectable
      *
      * @throws IOException If there is an error drawing to the image.
      */
-//    public BufferedImage convertToImage(int imageType, int resolution) throws IOException
-//    {
-//        PDRectangle cropBox = findCropBox();
-//        float widthPt = cropBox.getWidth();
-//        float heightPt = cropBox.getHeight();
-//        float scaling = resolution / (float)DEFAULT_USER_SPACE_UNIT_DPI;
-//        int widthPx = Math.round(widthPt * scaling);
-//        int heightPx = Math.round(heightPt * scaling);
-//        //TODO The following reduces accuracy. It should really be a Dimension2D.Float.
+    public Bitmap convertToImage(Bitmap.Config imageType, int resolution) throws IOException
+    {
+        PDRectangle cropBox = findCropBox();
+        float widthPt = cropBox.getWidth();
+        float heightPt = cropBox.getHeight();
+        float scaling = resolution / (float)DEFAULT_USER_SPACE_UNIT_DPI;
+        int widthPx = Math.round(widthPt * scaling);
+        int heightPx = Math.round(heightPt * scaling);
+        //TODO The following reduces accuracy. It should really be a Dimension2D.Float.
 //        Dimension pageDimension = new Dimension( (int)widthPt, (int)heightPt );
-//        int rotationAngle = findRotation();
-//        // normalize the rotation angle
-//        if (rotationAngle < 0)
-//        {
-//            rotationAngle += 360;
-//        }
-//        else if (rotationAngle >= 360)
-//        {
-//            rotationAngle -= 360;
-//        }
-//        // swap width and height
-//        BufferedImage retval;
-//        if (rotationAngle == 90 || rotationAngle == 270)
-//        {
-//            retval = new BufferedImage( heightPx, widthPx, imageType );
-//        }
-//        else
-//        {
-//            retval = new BufferedImage( widthPx, heightPx, imageType );
-//        }
-//        Graphics2D graphics = (Graphics2D)retval.getGraphics();
-//        graphics.setBackground( TRANSPARENT_WHITE );
+        RectF pageDimension = new RectF(0f, 0f, widthPt, heightPt);
+        int rotationAngle = findRotation();
+        // normalize the rotation angle
+        if (rotationAngle < 0)
+        {
+            rotationAngle += 360;
+        }
+        else if (rotationAngle >= 360)
+        {
+            rotationAngle -= 360;
+        }
+        // swap width and height
+        Bitmap retval;
+        if (rotationAngle == 90 || rotationAngle == 270)
+        {
+            retval = Bitmap.createBitmap(heightPx, widthPx, imageType);
+        }
+        else
+        {
+        	retval = Bitmap.createBitmap(widthPx, heightPx, imageType);
+        }
+        Canvas canvas = new Canvas();
+        canvas.setBitmap(retval);
+        Paint paint = new Paint();
+        canvas.drawColor(TRANSPARENT_WHITE);
+        paint.setColor(TRANSPARENT_WHITE);
 //        graphics.clearRect( 0, 0, retval.getWidth(), retval.getHeight() );
-//        if (rotationAngle != 0)
-//        {
-//            int translateX = 0;
-//            int translateY = 0;
-//            switch(rotationAngle) 
-//            {
-//                case 90:
-//                    translateX = retval.getWidth();
-//                    break;
-//                case 270:
-//                    translateY = retval.getHeight();
-//                    break;
-//                case 180:
-//                    translateX = retval.getWidth();
-//                    translateY = retval.getHeight();
-//                    break;
-//                default:
-//                    break;
-//            }
-//            graphics.translate(translateX,translateY);
-//            graphics.rotate((float)Math.toRadians(rotationAngle));
-//        }
-//        graphics.scale( scaling, scaling );
-//        PageDrawer drawer = new PageDrawer();
-//        drawer.drawPage( graphics, this, pageDimension );
-//        drawer.dispose();
-//        graphics.dispose();
-//        return retval;
-//    }TODO
+        canvas.drawRect(0, 0, retval.getWidth(), retval.getHeight(), paint);
+        
+        if (rotationAngle != 0)
+        {
+            int translateX = 0;
+            int translateY = 0;
+            switch(rotationAngle) 
+            {
+                case 90:
+                    translateX = retval.getWidth();
+                    break;
+                case 270:
+                    translateY = retval.getHeight();
+                    break;
+                case 180:
+                    translateX = retval.getWidth();
+                    translateY = retval.getHeight();
+                    break;
+                default:
+                    break;
+            }
+            canvas.translate(translateX,translateY);
+            canvas.rotate((float)Math.toRadians(rotationAngle));
+        }
+        canvas.scale( scaling, scaling );
+        PageDrawer drawer = new PageDrawer();
+        drawer.drawPage( paint, canvas, this, pageDimension );
+        drawer.dispose();
+        return retval;
+    }
 
     /**
      * Get the page actions.
