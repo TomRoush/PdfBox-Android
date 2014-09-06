@@ -1,0 +1,468 @@
+package org.apache.pdfbox.pdmodel.graphics.xobject;
+
+import java.io.IOException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.pdfbox.cos.COSArray;
+import org.apache.pdfbox.cos.COSBase;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSStream;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.common.PDStream;
+
+/**
+ * The prototype for all PDImages.
+ *
+ * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
+ * @author mathiak
+ * @version $Revision: 1.9 $
+ */
+public abstract class PDXObjectImage extends PDXObject
+{
+
+    /**
+     * Log instance.
+     */
+    private static final Log LOG = LogFactory.getLog(PDXObjectImage.class);
+
+    /**
+     * The XObject subtype.
+     */
+    public static final String SUB_TYPE = "Image";
+
+    /**
+     * This contains the suffix used when writing to file.
+     */
+    private String suffix;
+
+//    private PDColorState stencilColor;TODO
+    
+    /**
+     * Standard constructor.
+     *
+     * @param imageStream The XObject is passed as a COSStream.
+     * @param fileSuffix The file suffix, jpg/png.
+     */
+    public PDXObjectImage(PDStream imageStream, String fileSuffix)
+    {
+        super( imageStream );
+        suffix = fileSuffix;
+    }
+
+    /**
+     * Standard constuctor.
+     *
+     * @param doc The document to store the stream in.
+     * @param fileSuffix The file suffix, jpg/png.
+     */
+    public PDXObjectImage(PDDocument doc, String fileSuffix)
+    {
+        super( doc );
+        getCOSStream().setName( COSName.SUBTYPE, SUB_TYPE );
+        suffix = fileSuffix;
+    }
+
+    /**
+     * Create the correct thumbnail from the cos base.
+     *
+     * @param xobject The cos level xobject to create.
+     *
+     * @return a pdmodel xobject
+     * @throws IOException If there is an error creating the xobject.
+     */
+    public static PDXObject createThumbnailXObject( COSBase xobject ) throws IOException
+    {
+        PDXObject retval = commonXObjectCreation(xobject, true);
+        return retval;
+    }
+    
+    /**
+     * Returns an java.awt.Image, that can be used for display etc.
+     *
+     * @return This PDF object as an AWT image.
+     *
+     * @throws IOException If there is an error creating the image.
+     */
+//    public abstract BufferedImage getRGBImage() throws IOException;TODO
+
+    /**
+     * Returns a PDXObjectImage of the SMask image, if there is one.
+     * See section 11.5 of the pdf specification for details on Soft Masks.
+     *
+     * @return the PDXObjectImage of the SMask if there is one, else <code>null</code>.
+     * @throws IOException if an I/O error occurs creating an XObject
+     */
+    public PDXObjectImage getSMaskImage() throws IOException
+    {
+        COSStream cosStream = getPDStream().getStream();
+        COSBase smask = cosStream.getDictionaryObject(COSName.SMASK);
+
+        if (smask == null)
+        {
+            return null;
+        }
+        else
+        {
+            return (PDXObjectImage)PDXObject.createXObject(smask);
+        }
+    }
+    
+//    public BufferedImage applyMasks(BufferedImage baseImage) throws IOException
+//    {
+//        if (getImageMask())
+//        {
+//            return imageMask(baseImage);
+//        }
+//        if (getMask() != null)
+//        {
+//            return mask(baseImage);
+//        }
+//        PDXObjectImage smask = getSMaskImage();
+//        if (smask != null)
+//        {
+//            BufferedImage smaskBI = smask.getRGBImage();
+//            if (smaskBI != null)
+//            {
+//	            COSArray decodeArray = smask.getDecode();
+//	            CompositeImage compositeImage = new CompositeImage(baseImage, smaskBI);
+//	            BufferedImage rgbImage = compositeImage.createMaskedImage(decodeArray);
+//	            return rgbImage;
+//            }
+//            else
+//            {
+//            	// this may happen if the smask is somehow broken, e.g. unsupported filter
+//                LOG.warn("masking getRGBImage returned NULL");
+//            }
+//        }
+//        return baseImage;
+//    }TODO
+    
+    public boolean hasMask() throws IOException
+    {
+    	return getImageMask() || getMask() != null || getSMaskImage() != null;
+    }
+    
+    
+//    public BufferedImage imageMask(BufferedImage baseImage) throws IOException 
+//    {
+//    	BufferedImage stencilMask = new BufferedImage(baseImage.getWidth(), baseImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+//        Graphics2D graphics = (Graphics2D)stencilMask.getGraphics();
+//        if (getStencilColor() != null)
+//        {
+//            graphics.setColor(getStencilColor().getJavaColor());
+//        }
+//        else
+//        {
+//            // this might happen when using ExractImages, see PDFBOX-1145
+//            LOG.debug("no stencil color for PixelMap found, using Color.BLACK instead.");
+//            graphics.setColor(Color.BLACK);
+//        }
+//        
+//        graphics.fillRect(0, 0, baseImage.getWidth(), baseImage.getHeight());
+//        COSArray decode = getDecode();
+//        if (decode != null && decode.getInt(0) == 1)
+//        {
+//            // PDFBOX-1998
+//            graphics.setComposite(AlphaComposite.DstOut);
+//        }
+//        else
+//        {
+//            graphics.setComposite(AlphaComposite.DstIn);
+//        }
+//        graphics.drawImage(baseImage, null, 0, 0);
+//        graphics.dispose();
+//        return stencilMask;
+//    }TODO
+    
+//    public BufferedImage mask(BufferedImage baseImage) 
+//    	throws IOException
+//    {
+//        COSBase mask = getMask();
+//        if (mask instanceof COSStream)
+//        {
+//        	PDXObjectImage maskImageRef = (PDXObjectImage)PDXObject.createXObject((COSStream)mask);
+//        	BufferedImage maskImage = maskImageRef.getRGBImage();
+//       	 	if(maskImage == null)
+//       	 	{
+//    	   		 LOG.warn("masking getRGBImage returned NULL");
+//    	   		 return baseImage;
+//       	 	}
+//       	 
+//    	   	 BufferedImage newImage = new BufferedImage( maskImage.getWidth(), maskImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+//    	   	 Graphics2D graphics = (Graphics2D)newImage.getGraphics();
+//    	   	 graphics.drawImage(baseImage, 0, 0, maskImage.getWidth(), maskImage.getHeight(), 0, 0, baseImage.getWidth(), baseImage.getHeight(), null);   
+//    	   	 graphics.setComposite(AlphaComposite.DstIn);
+//    	   	 graphics.drawImage(maskImage, null, 0, 0);
+//    	   	 graphics.dispose();
+//    	   	 return newImage;
+//        }
+//        else
+//        {
+//            // TODO Colour key masking
+//            LOG.warn("Colour key masking isn't supported");
+//            return baseImage;
+//        }
+//    }TODO
+
+    /**
+     * Writes the Image to out.
+     * @param out the OutputStream that the Image is written to.
+     * @throws IOException when somethings wrong with out
+     */
+//    public abstract void write2OutputStream(OutputStream out) throws IOException;TODO
+
+    /**
+     * Writes the image to a file with the filename + an appropriate suffix, like "Image.jpg".
+     * The suffix is automatically set by the
+     * @param filename the filename
+     * @throws IOException When somethings wrong with the corresponding file.
+     */
+//    public void write2file(String filename) throws IOException
+//    {
+//        FileOutputStream out = null;
+//        try
+//        {
+//            out = new FileOutputStream(filename + "." + suffix);
+//            write2OutputStream(out);
+//            out.flush();
+//        }
+//        finally
+//        {
+//            if( out != null )
+//            {
+//                out.close();
+//            }
+//        }
+//    }TODO
+
+    /**
+     * Writes the image to a file with the filename + an appropriate
+     * suffix, like "Image.jpg".
+     * The suffix is automatically set by the
+     * @param file the file
+     * @throws IOException When somethings wrong with the corresponding file.
+     */
+//    public void write2file(File file) throws IOException
+//    {
+//        FileOutputStream out = null;
+//        try
+//        {
+//            out = new FileOutputStream(file);
+//            write2OutputStream(out);
+//            out.flush();
+//        }
+//        finally
+//        {
+//            if( out != null )
+//            {
+//                out.close();
+//            }
+//        }
+//    }TODO
+
+    /**
+     * Get the height of the image.
+     *
+     * @return The height of the image.
+     */
+    public int getHeight()
+    {
+        return getCOSStream().getInt( COSName.HEIGHT, -1 );
+    }
+
+    /**
+     * Set the height of the image.
+     *
+     * @param height The height of the image.
+     */
+    public void setHeight( int height )
+    {
+        getCOSStream().setInt( COSName.HEIGHT, height );
+    }
+
+    /**
+     * Get the width of the image.
+     *
+     * @return The width of the image.
+     */
+    public int getWidth()
+    {
+        return getCOSStream().getInt( COSName.WIDTH, -1 );
+    }
+
+    /**
+     * Set the width of the image.
+     *
+     * @param width The width of the image.
+     */
+    public void setWidth( int width )
+    {
+        getCOSStream().setInt( COSName.WIDTH, width );
+    }
+
+    /**
+     * The bits per component of this image.  This will return -1 if one has not
+     * been set.
+     *
+     * @return The number of bits per component.
+     */
+    public int getBitsPerComponent()
+    {
+        return getCOSStream().getInt( COSName.BITS_PER_COMPONENT, COSName.BPC, -1 );
+    }
+
+    /**
+     * Set the number of bits per component.
+     *
+     * @param bpc The number of bits per component.
+     */
+    public void setBitsPerComponent( int bpc )
+    {
+        getCOSStream().setInt( COSName.BITS_PER_COMPONENT, bpc );
+    }
+
+    /**
+     * This will get the color space or null if none exists.
+     *
+     * @return The color space for this image.
+     *
+     * @throws IOException If there is an error getting the colorspace.
+     */
+//    public PDColorSpace getColorSpace() throws IOException
+//    {
+//        COSBase cs = getCOSStream().getDictionaryObject( COSName.COLORSPACE, COSName.CS );
+//        PDColorSpace retval = null;
+//        if( cs != null )
+//        {
+//            retval = PDColorSpaceFactory.createColorSpace( cs );
+//            if (retval == null)
+//            {
+//                LOG.info("About to return NULL from createColorSpace branch");
+//            }
+//        }
+//        else
+//        {
+//            //there are some cases where the 'required' CS value is not present
+//            //but we know that it will be grayscale for a CCITT filter.
+//            COSBase filter = getCOSStream().getDictionaryObject( COSName.FILTER );
+//            if( COSName.CCITTFAX_DECODE.equals( filter ) ||
+//                COSName.CCITTFAX_DECODE_ABBREVIATION.equals( filter ) )
+//            {
+//                retval = new PDDeviceGray();
+//            }
+//            else if( COSName.JBIG2_DECODE.equals( filter ) )
+//            {
+//                retval = new PDDeviceGray();
+//            }
+//            else if (getImageMask())
+//            {
+//                // image is a stencil mask -> use DeviceGray
+//                retval = new PDDeviceGray();
+//            }
+//            else
+//            {
+//                LOG.info("About to return NULL from unhandled branch."
+//                        + " filter = " + filter);
+//            }
+//        }
+//        return retval;
+//    }TODO
+
+    /**
+     * This will set the color space for this image.
+     *
+     * @param cs The color space for this image.
+     */
+//    public void setColorSpace( PDColorSpace cs )
+//    {
+//        COSBase base = null;
+//        if( cs != null )
+//        {
+//            base = cs.getCOSObject();
+//        }
+//        getCOSStream().setItem( COSName.COLORSPACE, base );
+//    }TODO
+
+    /**
+     * This will get the suffix for this image type, jpg/png.
+     *
+     * @return The image suffix.
+     */
+    public String getSuffix()
+    {
+        return suffix;
+    }
+
+    /**
+     * Get the ImageMask flag. Used in Stencil Masking.  Section 4.8.5 of the spec.
+     *
+     * @return The ImageMask flag.  This is optional and defaults to False, so if it does not exist, we return False
+     */
+    public boolean getImageMask()
+    {
+        return getCOSStream().getBoolean( COSName.IMAGE_MASK, false );
+    }
+
+    /**
+     * Set the current non stroking colorstate. It'll be used to create stencil masked images.
+     * 
+     * @param stencilColorValue The non stroking colorstate
+     */
+//    public void setStencilColor(PDColorState stencilColorValue)
+//    {
+//        stencilColor = stencilColorValue;
+//    }TODO
+
+    /**
+     * Returns the non stroking colorstate to be used to create stencil makes images.
+     * 
+     * @return The current non stroking colorstate.
+     */
+//    public PDColorState getStencilColor()
+//    {
+//        return stencilColor;
+//    }TODO
+
+    /**
+     * Returns the Decode Array of an XObjectImage.
+     * @return the decode array
+     */
+    public COSArray getDecode()
+    {
+        COSBase decode = getCOSStream().getDictionaryObject( COSName.DECODE );
+        if (decode != null && decode instanceof COSArray)
+        {
+            return (COSArray)decode;
+        }
+        return null;
+    }
+
+    /**
+     * Returns the optional mask of a XObjectImage if there is one.
+     *
+     * @return The mask otherwise null.
+     */
+    public COSBase getMask()
+    {
+        COSBase mask = getCOSStream().getDictionaryObject(COSName.MASK);
+        if (mask != null)
+        {
+            return mask;
+        }
+        return null;
+    }
+
+//    BufferedImage extractAlphaImage(BufferedImage bi)
+//    {
+//        WritableRaster alphaRaster = bi.getAlphaRaster();
+//        BufferedImage alphaImage = new BufferedImage(alphaRaster.getWidth(), 
+//                alphaRaster.getHeight(), 
+//                bi.getTransparency() == Transparency.BITMASK ? 
+//                BufferedImage.TYPE_BYTE_BINARY : 
+//                BufferedImage.TYPE_BYTE_GRAY);
+//        alphaImage.setData(alphaRaster);
+//        return alphaImage;
+//    }TODO
+
+}

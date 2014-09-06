@@ -213,43 +213,43 @@ public class PDResources implements COSObjectable
      * 
      * @return The map of xobjects.
      */
-//    public Map<String, PDXObject> getXObjects()
-//    {
-//        if (xobjects == null)
-//        {
-//            // at least an empty map will be returned
-//            // TODO we should return null instead of an empty map
-//            xobjects = new HashMap<String, PDXObject>();
-//            COSDictionary xobjectsDictionary = (COSDictionary) resources.getDictionaryObject(COSName.XOBJECT);
-//            if (xobjectsDictionary == null)
-//            {
-//                xobjectsDictionary = new COSDictionary();
-//                resources.setItem(COSName.XOBJECT, xobjectsDictionary);
-//            }
-//            else
-//            {
-//                xobjects = new HashMap<String, PDXObject>();
-//                for (COSName objName : xobjectsDictionary.keySet())
-//                {
-//                    PDXObject xobject = null;
-//                    try
-//                    {
-//                        xobject = PDXObject.createXObject(xobjectsDictionary.getDictionaryObject(objName));
-//                    }
-//                    catch (IOException exception)
-//                    {
-//                        LOG.error("error while creating a xobject", exception);
-//                    }
-//                    if (xobject != null)
-//                    {
-//                        xobjects.put(objName.getName(), xobject);
-//                    }
-//                }
-//            }
-//            setXObjects(xobjects);
-//        }
-//        return xobjects;
-//    }TODO
+    public Map<String, PDXObject> getXObjects()
+    {
+        if (xobjects == null)
+        {
+            // at least an empty map will be returned
+            // TODO we should return null instead of an empty map
+            xobjects = new HashMap<String, PDXObject>();
+            COSDictionary xobjectsDictionary = (COSDictionary) resources.getDictionaryObject(COSName.XOBJECT);
+            if (xobjectsDictionary == null)
+            {
+                xobjectsDictionary = new COSDictionary();
+                resources.setItem(COSName.XOBJECT, xobjectsDictionary);
+            }
+            else
+            {
+                xobjects = new HashMap<String, PDXObject>();
+                for (COSName objName : xobjectsDictionary.keySet())
+                {
+                    PDXObject xobject = null;
+                    try
+                    {
+                        xobject = PDXObject.createXObject(xobjectsDictionary.getDictionaryObject(objName));
+                    }
+                    catch (IOException exception)
+                    {
+                        LOG.error("error while creating a xobject", exception);
+                    }
+                    if (xobject != null)
+                    {
+                        xobjects.put(objName.getName(), xobject);
+                    }
+                }
+            }
+            setXObjects(xobjects);
+        }
+        return xobjects;
+    }
 
     /**
      * This will get the map of images. An empty map will be returned if there are no underlying images. So far the keys
@@ -607,29 +607,29 @@ public class PDResources implements COSObjectable
      * 
      * @return the XObject name to be used within the content stream.
      */
-//    public String addXObject(PDXObject xobject, String prefix)
-//    {
-//        if (xobjects == null)
-//        {
-//            // initialize XObject map
-//            getXObjects();
-//        }
-//        String objMapping = xobjectMappings.get(xobject);
-//        if (objMapping == null)
-//        {
-//            objMapping = MapUtil.getNextUniqueKey(xobjects, prefix);
-//            xobjectMappings.put(xobject, objMapping);
-//            xobjects.put(objMapping, xobject);
-//            addXObjectToDictionary(xobject, objMapping);
-//        }
-//        return objMapping;
-//    }TODO
+    public String addXObject(PDXObject xobject, String prefix)
+    {
+        if (xobjects == null)
+        {
+            // initialize XObject map
+            getXObjects();
+        }
+        String objMapping = xobjectMappings.get(xobject);
+        if (objMapping == null)
+        {
+            objMapping = MapUtil.getNextUniqueKey(xobjects, prefix);
+            xobjectMappings.put(xobject, objMapping);
+            xobjects.put(objMapping, xobject);
+            addXObjectToDictionary(xobject, objMapping);
+        }
+        return objMapping;
+    }
 
-//    private void addXObjectToDictionary(PDXObject xobject, String xobjectName)
-//    {
-//        COSDictionary xobjectsDictionary = (COSDictionary) resources.getDictionaryObject(COSName.XOBJECT);
-//        xobjectsDictionary.setItem(xobjectName, xobject);
-//    }TODO
+    private void addXObjectToDictionary(PDXObject xobject, String xobjectName)
+    {
+        COSDictionary xobjectsDictionary = (COSDictionary) resources.getDictionaryObject(COSName.XOBJECT);
+        xobjectsDictionary.setItem(xobjectName, xobject);
+    }
 
     private <T> Map<T, String> reverseMap(Map<String, T> map, Class<T> keyClass)
     {

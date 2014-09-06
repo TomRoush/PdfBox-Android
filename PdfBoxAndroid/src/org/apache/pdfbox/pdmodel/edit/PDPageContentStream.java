@@ -21,6 +21,8 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.COSStreamArray;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObject;
+import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObjectImage;
 
 /**
  * This class is a convenience for creating page content streams.  You MUST
@@ -305,10 +307,10 @@ public class PDPageContentStream implements Closeable
      *
      * @throws IOException If there is an error writing to the stream.
      */
-//    public void drawImage(PDXObjectImage image, float x, float y) throws IOException
-//    {
-//        drawXObject(image, x, y, image.getWidth(), image.getHeight());
-//    }TODO
+    public void drawImage(PDXObjectImage image, float x, float y) throws IOException
+    {
+        drawXObject(image, x, y, image.getWidth(), image.getHeight());
+    }
 
     /**
      * Draw an xobject(form or image) at the x,y coordinates and a certain width and height.
@@ -321,12 +323,12 @@ public class PDPageContentStream implements Closeable
      *
      * @throws IOException If there is an error writing to the stream.
      */
-//    public void drawXObject(PDXObject xobject, float x, float y, float width, float height) throws IOException
-//    {
-//        android.graphics.Matrix transform = new android.graphics.Matrix();
-//        transform.setValues(new float[] {width, 0, x, height, 0, y});
-//        drawXObject(xobject, transform);
-//    }TODO
+    public void drawXObject(PDXObject xobject, float x, float y, float width, float height) throws IOException
+    {
+        android.graphics.Matrix transform = new android.graphics.Matrix();
+        transform.setValues(new float[] {width, 0, x, height, 0, y});
+        drawXObject(xobject, transform);
+    }
 
     /**
      * Draw an xobject(form or image) using the given {@link AffineTransform} to position
@@ -336,32 +338,32 @@ public class PDPageContentStream implements Closeable
      * @param transform the transformation matrix
      * @throws IOException If there is an error writing to the stream.
      */
-//    public void drawXObject(PDXObject xobject, android.graphics.Matrix transform) throws IOException
-//    {
-//        if (inTextMode)
-//        {
-//            throw new IOException("Error: drawXObject is not allowed within a text block.");
-//        }
-//        String xObjectPrefix = null;
-//        if (xobject instanceof PDXObjectImage)
-//        {
-//            xObjectPrefix = "Im";
-//        }
-//        else
-//        {
-//            xObjectPrefix = "Form";
-//        }
-//        String objMapping = resources.addXObject(xobject, xObjectPrefix);
-//        saveGraphicsState();
-//        appendRawCommands(SPACE);
-//        concatenate2CTM(transform);
-//        appendRawCommands(SPACE);
-//        appendRawCommands("/");
-//        appendRawCommands(objMapping);
-//        appendRawCommands(SPACE);
-//        appendRawCommands(XOBJECT_DO);
-//        restoreGraphicsState();
-//    }TODO
+    public void drawXObject(PDXObject xobject, android.graphics.Matrix transform) throws IOException
+    {
+        if (inTextMode)
+        {
+            throw new IOException("Error: drawXObject is not allowed within a text block.");
+        }
+        String xObjectPrefix = null;
+        if (xobject instanceof PDXObjectImage)
+        {
+            xObjectPrefix = "Im";
+        }
+        else
+        {
+            xObjectPrefix = "Form";
+        }
+        String objMapping = resources.addXObject(xobject, xObjectPrefix);
+        saveGraphicsState();
+        appendRawCommands(SPACE);
+        concatenate2CTM(transform);
+        appendRawCommands(SPACE);
+        appendRawCommands("/");
+        appendRawCommands(objMapping);
+        appendRawCommands(SPACE);
+        appendRawCommands(XOBJECT_DO);
+        restoreGraphicsState();
+    }
 
     /**
      * The Td operator.

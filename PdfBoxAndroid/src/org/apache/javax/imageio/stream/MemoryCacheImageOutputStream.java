@@ -23,7 +23,7 @@
  * questions.
  */
 
-package javax.imageio.stream;
+package org.apache.javax.imageio.stream;
 
 import java.io.IOException;
 import java.io.OutputStream;

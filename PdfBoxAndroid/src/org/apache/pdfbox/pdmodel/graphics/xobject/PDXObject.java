@@ -101,10 +101,10 @@ public abstract class PDXObject implements COSObjectable
      * @return a pdmodel xobject
      * @throws IOException If there is an error creating the xobject.
      */
-//    public static PDXObject createXObject(COSBase xobject) throws IOException
-//    {
-//        return commonXObjectCreation(xobject, false);
-//    }TODO
+    public static PDXObject createXObject(COSBase xobject) throws IOException
+    {
+        return commonXObjectCreation(xobject, false);
+    }
 
     /**
      * Create the correct xobject from the cos base.
@@ -115,58 +115,58 @@ public abstract class PDXObject implements COSObjectable
      * @return a pdmodel xobject
      * @throws IOException If there is an error creating the xobject.
      */
-//    protected static PDXObject commonXObjectCreation(COSBase xobject, boolean isThumb)
-//    {
-//        PDXObject retval = null;
-//        if (xobject == null)
-//        {
-//            retval = null;
-//        }
-//        else if (xobject instanceof COSStream)
-//        {
-//            COSStream xstream = (COSStream) xobject;
-//            String subtype = xstream.getNameAsString(COSName.SUBTYPE);
-//            // according to the PDF Reference : a thumbnail subtype must be Image if it is not null
-//            if (PDXObjectImage.SUB_TYPE.equals(subtype) || (subtype == null && isThumb))
-//            {
-//                PDStream image = new PDStream(xstream);
-//                // See if filters are DCT or JPX otherwise treat as Bitmap-like
-//                // There might be a problem with several filters, but that's ToDo until
-//                // I find an example
-//                List<COSName> filters = image.getFilters();
-//                if (filters != null && filters.contains(COSName.DCT_DECODE))
-//                {
-//                    return new PDJpeg(image);
-//                }
-//                else if (filters != null && filters.contains(COSName.CCITTFAX_DECODE))
-//                {
-//                    return new PDCcitt(image);
-//                }
-//                else if (filters != null && filters.contains(COSName.JPX_DECODE))
-//                {
-//                    // throw new IOException( "JPXDecode has not been implemented for images" );
-//                    // JPX Decode is not really supported right now, but if we are just doing
-//                    // text extraction then we don't want to throw an exception, so for now
-//                    // just return a PDPixelMap, which will break later on if it is
-//                    // actually used, but for text extraction it is not used.
-//                    return new PDPixelMap(image);
-//                }
-//                else
-//                {
-//                    retval = new PDPixelMap(image);
-//                }
-//            }
-//            else if (PDXObjectForm.SUB_TYPE.equals(subtype))
-//            {
-//                retval = new PDXObjectForm(xstream);
-//            }
-//            else
-//            {
-//                LOG.warn("Skipping unknown XObject subtype '" + subtype + "'");
-//            }
-//        }
-//        return retval;
-//    }
+    protected static PDXObject commonXObjectCreation(COSBase xobject, boolean isThumb)
+    {
+        PDXObject retval = null;
+        if (xobject == null)
+        {
+            retval = null;
+        }
+        else if (xobject instanceof COSStream)
+        {
+            COSStream xstream = (COSStream) xobject;
+            String subtype = xstream.getNameAsString(COSName.SUBTYPE);
+            // according to the PDF Reference : a thumbnail subtype must be Image if it is not null
+            if (PDXObjectImage.SUB_TYPE.equals(subtype) || (subtype == null && isThumb))
+            {
+                PDStream image = new PDStream(xstream);
+                // See if filters are DCT or JPX otherwise treat as Bitmap-like
+                // There might be a problem with several filters, but that's ToDo until
+                // I find an example
+                List<COSName> filters = image.getFilters();
+                if (filters != null && filters.contains(COSName.DCT_DECODE))
+                {
+                    return new PDJpeg(image);
+                }
+                else if (filters != null && filters.contains(COSName.CCITTFAX_DECODE))
+                {
+//                    return new PDCcitt(image);TODO
+                }
+                else if (filters != null && filters.contains(COSName.JPX_DECODE))
+                {
+                    // throw new IOException( "JPXDecode has not been implemented for images" );
+                    // JPX Decode is not really supported right now, but if we are just doing
+                    // text extraction then we don't want to throw an exception, so for now
+                    // just return a PDPixelMap, which will break later on if it is
+                    // actually used, but for text extraction it is not used.
+//                    return new PDPixelMap(image);TODO
+                }
+                else
+                {
+//                    retval = new PDPixelMap(image);TODO
+                }
+            }
+            else if (PDXObjectForm.SUB_TYPE.equals(subtype))
+            {
+                retval = new PDXObjectForm(xstream);
+            }
+            else
+            {
+                LOG.warn("Skipping unknown XObject subtype '" + subtype + "'");
+            }
+        }
+        return retval;
+    }
 
     /**
      * Get the metadata that is part of the document catalog. This will return null if there is no meta data for this
