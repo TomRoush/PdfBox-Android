@@ -157,16 +157,13 @@ public class PDXObjectForm extends PDXObject
      */
     public void setMatrix(android.graphics.Matrix transform)
     {
-        COSArray matrix = new COSArray();
-        float[] values = new float[6];
-        transform.getValues(values);
-        matrix.add(new COSFloat((float) values[0]));
-        matrix.add(new COSFloat((float) values[2]));
-        matrix.add(new COSFloat((float) values[4]));
-        matrix.add(new COSFloat((float) values[1]));
-        matrix.add(new COSFloat((float) values[3]));
-        matrix.add(new COSFloat((float) values[5]));
-        getCOSStream().setItem(COSName.MATRIX, matrix);
+    	COSArray matrix = new COSArray();
+    	float[] values = new float[9];
+    	transform.getValues(values);
+    	for(int i = 0; i < 6; i++) {
+    		matrix.add(new COSFloat((float) values[i]));
+    	}
+    	getCOSStream().setItem(COSName.MATRIX, matrix);
     }
 
     /**

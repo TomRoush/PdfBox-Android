@@ -309,7 +309,7 @@ public class PDPageContentStream implements Closeable
      */
     public void drawImage(PDXObjectImage image, float x, float y) throws IOException
     {
-        drawXObject(image, x, y, image.getWidth(), image.getHeight());
+        drawXObject(image, x, y, (float)image.getWidth(), (float)image.getHeight());
     }
 
     /**
@@ -325,8 +325,21 @@ public class PDPageContentStream implements Closeable
      */
     public void drawXObject(PDXObject xobject, float x, float y, float width, float height) throws IOException
     {
+    	LOG.error("drawXObject");
         android.graphics.Matrix transform = new android.graphics.Matrix();
-        transform.setValues(new float[] {width, 0, x, height, 0, y});
+        LOG.error("Got transform");
+//        transform.setValues(new float[] {width, 0, x, 0, height, y, 0, 0, 1});
+//        transform,setValues(new float[] {
+//        scale_x, shear_x, trans_x,
+//        skew_y, scale_y, trans_y, 
+//        
+//    	}
+        transform.setValues(new float[] {
+                0, 0, 0, 
+                width, 0, 0,
+                height, x, y
+            });
+        LOG.error("Setting values");
         drawXObject(xobject, transform);
     }
 
@@ -340,29 +353,43 @@ public class PDPageContentStream implements Closeable
      */
     public void drawXObject(PDXObject xobject, android.graphics.Matrix transform) throws IOException
     {
+    	LOG.error("drawXObject");
         if (inTextMode)
         {
             throw new IOException("Error: drawXObject is not allowed within a text block.");
         }
         String xObjectPrefix = null;
+        LOG.error("prefix=null");
         if (xobject instanceof PDXObjectImage)
         {
+        	LOG.error("is image");
             xObjectPrefix = "Im";
         }
         else
         {
+        	LOG.error("is form");
             xObjectPrefix = "Form";
         }
         String objMapping = resources.addXObject(xobject, xObjectPrefix);
+        LOG.error("Mapped");
         saveGraphicsState();
+        LOG.error("Save graphics state");
         appendRawCommands(SPACE);
+        LOG.error("space");
         concatenate2CTM(transform);
+        LOG.error("transform");
         appendRawCommands(SPACE);
+        LOG.error("space");
         appendRawCommands("/");
+        LOG.error("slash");
         appendRawCommands(objMapping);
+        LOG.error("mapping");
         appendRawCommands(SPACE);
+        LOG.error("space");
         appendRawCommands(XOBJECT_DO);
+        LOG.error("do");
         restoreGraphicsState();
+        LOG.error("restore");
     }
 
     /**
@@ -509,6 +536,7 @@ public class PDPageContentStream implements Closeable
      */
     public void concatenate2CTM(android.graphics.Matrix at) throws IOException
     {
+    	LOG.error("concate");
         appendMatrix(at);
         appendRawCommands(CONCATENATE_MATRIX);
     }
@@ -1465,10 +1493,14 @@ public class PDPageContentStream implements Closeable
 
     private void appendMatrix(android.graphics.Matrix transform) throws IOException
     {
-        float[] values = new float[6];
+    	LOG.error("start append");
+        float[] values = new float[9];
+        LOG.error("made array");
         transform.getValues(values);
+        LOG.error("got values");
         for (double v : values)
         {
+        	LOG.error("" + v);
             appendRawCommands(v);
             appendRawCommands(SPACE);
         }

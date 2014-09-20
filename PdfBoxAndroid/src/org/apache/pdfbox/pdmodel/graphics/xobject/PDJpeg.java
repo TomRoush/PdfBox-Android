@@ -63,6 +63,7 @@ public class PDJpeg extends PDXObjectImage
         dic.setItem( COSName.FILTER, COSName.DCT_DECODE );
         dic.setItem( COSName.SUBTYPE, COSName.IMAGE);
         dic.setItem( COSName.TYPE, COSName.XOBJECT );
+        dic.setItem( COSName.COLORSPACE, COSName.DEVICERGB );
 
         getRGBImage();
         if (image != null)
@@ -90,7 +91,7 @@ public class PDJpeg extends PDXObjectImage
 //            }
 //        }
         setHeight( image.getHeight() );
-        setWidth( image.getWidth() );
+        setWidth( image.getWidth() );        
     }
 
     /**
@@ -232,17 +233,19 @@ public class PDJpeg extends PDXObjectImage
         // 2. try to read jpeg again. some jpegs have some strange header containing
         //    "Adobe " at some place. so just replace the header with a valid jpeg header.
         // TODO : not sure if it works for all cases
-        if (bi == null && readError)
+        if (bi == null /*&& readError TODO*/)
         {
-            byte[] newImage = replaceHeader(img);
-            ByteArrayInputStream bai = new ByteArrayInputStream(newImage);
+        	System.out.println("Creating image now");
+//            byte[] newImage = replaceHeader(img);
+            ByteArrayInputStream bai = new ByteArrayInputStream(img);
 //            bi = ImageIO.read(bai);
             byte[] buf = new byte[bai.available()];
             bai.read(buf);
-            BitmapFactory.decodeByteArray(buf, 0, buf.length);
+            bi = BitmapFactory.decodeByteArray(buf, 0, buf.length);
         }
         // If there is a 'soft mask' or 'mask' image then we use that as a transparency mask.
 //        image = applyMasks(bi);TODO
+        image = bi;
         return image;
     }
 
@@ -519,6 +522,6 @@ public class PDJpeg extends PDXObjectImage
     public void clear()
     {
         super.clear();
-//        image = null;TODO
+        image = null;
     }
 }

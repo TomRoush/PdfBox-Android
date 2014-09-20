@@ -145,7 +145,7 @@ public class PDAppearanceStream implements COSObjectable
         if (m != null)
         {
             COSArray matrix = new COSArray();
-            float[] values = new float[6];
+            float[] values = new float[9];
             m.getValues(values);
             for(int i = 0; i < 6; i++)// for (float v : values)
             {

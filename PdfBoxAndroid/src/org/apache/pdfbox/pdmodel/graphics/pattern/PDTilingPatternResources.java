@@ -242,11 +242,11 @@ public class PDTilingPatternResources extends PDPatternResources
     public void setMatrix(android.graphics.Matrix transform)
     {
         COSArray matrix = new COSArray();
-        float[] values = new float[6];
+        float[] values = new float[9];
         transform.getValues(values);
-        for (float v : values)
+        for (int i = 0; i < 6; i++)
         {
-            matrix.add(new COSFloat((float)v));
+            matrix.add(new COSFloat((float)values[i]));
         }
         getCOSDictionary().setItem(COSName.MATRIX, matrix);
     }
