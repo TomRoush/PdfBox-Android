@@ -66,6 +66,7 @@ public abstract class PDFunction implements COSObjectable
      *
      * {@inheritDoc}
      */
+    @Override
     public COSBase getCOSObject()
     {
         if (functionStream != null)
@@ -113,18 +114,23 @@ public abstract class PDFunction implements COSObjectable
      */
     public static PDFunction create( COSBase function ) throws IOException
     {
+        if (function == COSName.IDENTITY)
+        {
+            return new PDFunctionTypeIdentity(null);
+        }
+
         PDFunction retval = null;
         if( function instanceof COSObject )
         {
             function = ((COSObject)function).getObject();
         }
         COSDictionary functionDictionary = (COSDictionary)function;
-        int functionType =  functionDictionary.getInt( COSName.FUNCTION_TYPE );
-//        if( functionType == 0 )
-//        {
-//            retval = new PDFunctionType0(functionDictionary);
-//        }TODO
-        /*else*/ if( functionType == 2 )
+        int functionType = functionDictionary.getInt( COSName.FUNCTION_TYPE );
+        if( functionType == 0 )
+        {
+//            retval = new PDFunctionType0(functionDictionary);TODO
+        }
+        else if( functionType == 2 )
         {
             retval = new PDFunctionType2(functionDictionary);
         }
@@ -232,23 +238,11 @@ public abstract class PDFunction implements COSObjectable
         getDictionary().setItem(COSName.DOMAIN, domainValues);
     }
 
-
     /**
-     * Evaluates the function at the given input.
-     * ReturnValue = f(input)
-     *
-     * @param input The COSArray of input values for the function. 
-     * In many cases will be an array of a single value, but not always.
-     * 
-     * @return The of outputs the function returns based on those inputs. 
-     * In many cases will be an COSArray of a single value, but not always.
-     * 
-     * @throws IOException an IOExcpetion is thrown if something went wrong processing the function.
-     * 
+     * @deprecated Replaced by {@link #eval(float[] input)}
      */
     public COSArray eval(COSArray input) throws IOException
     {
-        // TODO should we mark this method as deprecated? 
         float[] outputValues = eval(input.toFloatArray());
         COSArray array = new COSArray();
         array.setFloatArray(outputValues);
@@ -306,7 +300,7 @@ public abstract class PDFunction implements COSObjectable
     protected float[] clipToRange(float[] inputValues) 
     {
         COSArray rangesArray = getRangeValues();
-        float[] result = null;
+        float[] result;
         if (rangesArray != null) 
         {
             float[] rangeValues = rangesArray.toFloatArray();
@@ -314,7 +308,8 @@ public abstract class PDFunction implements COSObjectable
             result = new float[numberOfRanges];
             for (int i=0; i<numberOfRanges; i++)
             {
-                result[i] = clipToRange(inputValues[i], rangeValues[2*i], rangeValues[2*i+1]);
+                int index = i << 1;
+                result[i] = clipToRange(inputValues[i], rangeValues[index], rangeValues[index + 1]);
             }
         }
         else
@@ -335,7 +330,15 @@ public abstract class PDFunction implements COSObjectable
      */
     protected float clipToRange(float x, float rangeMin, float rangeMax) 
     {
-        return Math.min(Math.max(x, rangeMin), rangeMax);
+        if (x < rangeMin)
+        {
+            return rangeMin;
+        }
+        else if (x > rangeMax)
+        {
+            return rangeMax;
+        }
+        return x;
     }
 
     /**
@@ -355,4 +358,12 @@ public abstract class PDFunction implements COSObjectable
         return yRangeMin + ((x - xRangeMin) * (yRangeMax - yRangeMin)/(xRangeMax - xRangeMin));
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString()
+    {
+        return "FunctionType" + getFunctionType();
+    }
 }

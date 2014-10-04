@@ -196,7 +196,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
     }
 
     /**
-     * Gets the summary of the table's purpose and structure.
+     * Gets the summary of the table’s purpose and structure.
      * 
      * @return the summary
      */
@@ -206,7 +206,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
     }
 
     /**
-     * Sets the summary of the table's purpose and structure.
+     * Sets the summary of the table’s purpose and structure.
      * 
      * @param summary the summary
      */

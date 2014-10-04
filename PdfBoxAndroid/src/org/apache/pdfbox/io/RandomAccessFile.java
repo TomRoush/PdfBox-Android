@@ -31,6 +31,7 @@ public class RandomAccessFile implements RandomAccess, Closeable
     /**
      * {@inheritDoc}
      */
+    @Override
     public void close() throws IOException
     {
         ras.close();
@@ -39,6 +40,7 @@ public class RandomAccessFile implements RandomAccess, Closeable
     /**
      * {@inheritDoc}
      */
+    @Override
     public void seek(long position) throws IOException
     {
         ras.seek(position);
@@ -47,6 +49,7 @@ public class RandomAccessFile implements RandomAccess, Closeable
     /**
      * {@inheritDoc}
      */
+    @Override
     public long getPosition() throws IOException {
         return ras.getFilePointer();
     }
@@ -54,6 +57,7 @@ public class RandomAccessFile implements RandomAccess, Closeable
     /**
      * {@inheritDoc}
      */
+    @Override
     public int read() throws IOException
     {
         return ras.read();
@@ -62,6 +66,7 @@ public class RandomAccessFile implements RandomAccess, Closeable
     /**
      * {@inheritDoc}
      */
+    @Override
     public int read(byte[] b, int offset, int length) throws IOException
     {
         return ras.read(b, offset, length);
@@ -70,6 +75,7 @@ public class RandomAccessFile implements RandomAccess, Closeable
     /**
      * {@inheritDoc}
      */
+    @Override
     public long length() throws IOException
     {
         return ras.length();
@@ -78,6 +84,7 @@ public class RandomAccessFile implements RandomAccess, Closeable
     /**
      * {@inheritDoc}
      */
+    @Override
     public void write(byte[] b, int offset, int length) throws IOException
     {
         ras.write(b, offset, length);
@@ -86,6 +93,7 @@ public class RandomAccessFile implements RandomAccess, Closeable
     /**
      * {@inheritDoc}
      */
+    @Override
     public void write(int b) throws IOException
     {
         ras.write(b);

@@ -3,25 +3,22 @@ package org.apache.pdfbox.cos;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.encoding.PDFDocEncodingCharset;
-import org.apache.pdfbox.encoding.PdfDocEncoding;
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.persistence.util.COSHEXTable;
 
 /**
  * This represents a string object in a PDF document.
- *
+ * 
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
  * @version $Revision: 1.30 $
  */
 public class COSString extends COSBase
 {
+
     /**
      * Log instance.
      */
@@ -86,20 +83,8 @@ public class COSString extends COSBase
     }
 
     /**
-     * Constructor.
-     *
-     * @param isDictionaryValue determines if this string represents a dictionary
-     * @deprecated Not needed anymore. Use {@link #COSString()} instead. PDFBOX-1437
-     */
-    @Deprecated
-    public COSString(boolean isDictionaryValue)
-    {
-        this();
-    }
-
-    /**
      * Explicit constructor for ease of manual PDF construction.
-     *
+     * 
      * @param value
      *            The string value of the object.
      */
@@ -142,7 +127,7 @@ public class COSString extends COSBase
 
     /**
      * Explicit constructor for ease of manual PDF construction.
-     *
+     * 
      * @param value
      *            The string value of the object.
      */
@@ -162,7 +147,7 @@ public class COSString extends COSBase
 
     /**
      * Forces the string to be written in literal form instead of hexadecimal form.
-     *
+     * 
      * @param v
      *            if v is true the string will be written in literal form, otherwise it will be written in hexa if
      *            necessary.
@@ -175,7 +160,7 @@ public class COSString extends COSBase
 
     /**
      * Forces the string to be written in hexadecimal form instead of literal form.
-     *
+     * 
      * @param v
      *            if v is true the string will be written in hexadecimal form otherwise it will be written in literal if
      *            necessary.
@@ -188,7 +173,7 @@ public class COSString extends COSBase
 
     /**
      * This will create a COS string from a string of hex characters.
-     *
+     * 
      * @param hex
      *            A hex string.
      * @return A cos string with the hex characters converted to their actual bytes.
@@ -202,7 +187,7 @@ public class COSString extends COSBase
 
     /**
      * Creates a COS string from a string of hex characters, optionally ignoring malformed input.
-     *
+     * 
      * @param hex
      *            A hex string.
      * @param force
@@ -235,9 +220,7 @@ public class COSString extends COSBase
                 }
                 else
                 {
-                    IOException exception = new IOException("Invalid hex string: " + hex);
-                    exception.initCause(e);
-                    throw exception;
+                    throw new IOException("Invalid hex string: " + hex, e);
                 }
             }
         }
@@ -246,7 +229,7 @@ public class COSString extends COSBase
 
     /**
      * This will take this string and create a hex representation of the bytes that make the string.
-     *
+     * 
      * @return A hex string representing the bytes in this string.
      */
     public String getHexString()
@@ -264,14 +247,14 @@ public class COSString extends COSBase
 
     /**
      * This will get the string that this object wraps.
-     *
+     * 
      * @return The wrapped string.
      */
     public String getString()
     {
-        if (str != null)
+        if (this.str != null)
         {
-            return str;
+            return this.str;
         }
         String retval;
         Charset charset = PDFDocEncodingCharset.INSTANCE;
@@ -291,47 +274,39 @@ public class COSString extends COSBase
             }
         }
 
-        retval = toString(data, start, data.length - start, charset);
+        retval = new String(data, start, data.length - start, charset);
         str = retval;
         return retval;
     }
 
-    private static String toString(byte[] data, int offset, int length, Charset charset)
-    {
-        //This is only needed until PDFBox switches to JavaSE-1.6
-        //This could be just: return new String(data, offset, length, charset);
-        CharBuffer charBuffer = charset.decode(ByteBuffer.wrap(data, offset, length));
-        return charBuffer.toString();
-    }
-
     /**
      * This will append a byte[] to the string.
-     *
+     * 
      * @param data
      *            The byte[] to add to this string.
-     *
+     * 
      * @throws IOException
      *             If an IO error occurs while writing the byte.
      */
     public void append(byte[] data) throws IOException
     {
         out.write(data);
-        str = null;
+        this.str = null;
     }
 
     /**
      * This will append a byte to the string.
-     *
+     * 
      * @param in
      *            The byte to add to this string.
-     *
+     * 
      * @throws IOException
      *             If an IO error occurs while writing the byte.
      */
     public void append(int in) throws IOException
     {
         out.write(in);
-        str = null;
+        this.str = null;
     }
 
     /**
@@ -340,12 +315,12 @@ public class COSString extends COSBase
     public void reset()
     {
         out.reset();
-        str = null;
+        this.str = null;
     }
 
     /**
      * This will get the bytes of the string.
-     *
+     * 
      * @return A byte array that represents the string.
      */
     public byte[] getBytes()
@@ -364,7 +339,7 @@ public class COSString extends COSBase
 
     /**
      * This will output this string as a PDF object.
-     *
+     * 
      * @param output
      *            The stream to write to.
      * @throws IOException
@@ -444,15 +419,13 @@ public class COSString extends COSBase
 
     /**
      * visitor pattern double dispatch method.
-     *
-     * @param visitor
-     *            The object to notify when visiting this object.
+     * 
+     * @param visitor The object to notify when visiting this object.
      * @return any object, depending on the visitor implementation, or null
-     * @throws COSVisitorException
-     *             If an error occurs while visiting this object.
+     * @throws IOException If an error occurs while visiting this object.
      */
     @Override
-    public Object accept(ICOSVisitor visitor) throws COSVisitorException
+    public Object accept(ICOSVisitor visitor) throws IOException
     {
         return visitor.visitFromString(this);
     }
@@ -466,7 +439,7 @@ public class COSString extends COSBase
         if (obj instanceof COSString)
         {
             COSString strObj = (COSString) obj;
-            return this.getString().equals(strObj.getString()) && forceHexForm == strObj.forceHexForm;
+            return this.getString().equals(strObj.getString()) && this.forceHexForm == strObj.forceHexForm;
         }
         return false;
     }

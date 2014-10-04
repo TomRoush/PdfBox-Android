@@ -21,44 +21,19 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.fontbox.util.ResourceLoader;
-
 /**
- * This will parse a CMap stream.
+ * Parses a CMap stream.
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * 
+ * @author Ben Litchfield
  */
 public class CMapParser
 {
-    private static final String BEGIN_CODESPACE_RANGE = "begincodespacerange";
-    private static final String BEGIN_BASE_FONT_CHAR = "beginbfchar";
-    private static final String BEGIN_BASE_FONT_RANGE = "beginbfrange";
-    private static final String BEGIN_CID_CHAR = "begincidchar";
-    private static final String BEGIN_CID_RANGE = "begincidrange";
-    private static final String USECMAP = "usecmap";
-
-    private static final String END_CODESPACE_RANGE = "endcodespacerange";
-    private static final String END_BASE_FONT_CHAR = "endbfchar";
-    private static final String END_BASE_FONT_RANGE = "endbfrange";
-    private static final String END_CID_CHAR = "endcidchar";
-    private static final String END_CID_RANGE = "endcidrange";
-    private static final String END_CMAP = "endcmap";
-
-    private static final String WMODE = "WMode";
-    private static final String CMAP_NAME = "CMapName";
-    private static final String CMAP_VERSION = "CMapVersion";
-    private static final String CMAP_TYPE = "CMapType";
-    private static final String REGISTRY = "Registry";
-    private static final String ORDERING = "Ordering";
-    private static final String SUPPLEMENT = "Supplement";
-
     private static final String MARK_END_OF_DICTIONARY = ">>";
     private static final String MARK_END_OF_ARRAY = "]";
 
@@ -75,19 +50,16 @@ public class CMapParser
      * Parse a CMAP file on the file system.
      * 
      * @param file The file to parse.
-     * 
      * @return A parsed CMAP file.
-     * 
      * @throws IOException If there is an issue while parsing the CMAP.
      */
     public CMap parse(File file) throws IOException
     {
-        String rootDir = file.getParent() + File.separator;
         FileInputStream input = null;
         try
         {
             input = new FileInputStream(file);
-            return parse(rootDir, input);
+            return parse(input);
         }
         finally
         {
@@ -96,21 +68,39 @@ public class CMapParser
                 input.close();
             }
         }
+    }
 
+    /**
+     * Parses a predefined CMap.
+     *
+     * @param name CMap name.
+     * @throws IOException If the CMap could not be parsed.
+     */
+    public CMap parsePredefined(String name) throws IOException
+    {
+        InputStream input = null;
+        try
+        {
+            input = getExternalCMap(name);
+            return parse(input);
+        }
+        finally
+        {
+            if (input != null)
+            {
+                input.close();
+            }
+        }
     }
 
     /**
      * This will parse the stream and create a cmap object.
      *
-     * @param resourceRoot The root path to the cmap file.  This will be used
-     *                     to find referenced cmap files.  It can be null.
      * @param input The CMAP stream to parse.
-     * 
      * @return The parsed stream as a java object.
-     *
      * @throws IOException If there is an error parsing the stream.
      */
-    public CMap parse(String resourceRoot, InputStream input) throws IOException
+    public CMap parse(InputStream input) throws IOException
     {
         PushbackInputStream cmapStream = new PushbackInputStream(input);
         CMap result = new CMap();
@@ -121,23 +111,19 @@ public class CMapParser
             if (token instanceof Operator)
             {
                 Operator op = (Operator) token;
-                if (op.op.equals(USECMAP))
+                if (op.op.equals("usecmap"))
                 {
                     LiteralName useCmapName = (LiteralName) previousToken;
-                    InputStream useStream = ResourceLoader.loadResource(resourceRoot + useCmapName.name);
-                    if (useStream == null)
-                    {
-                        throw new IOException("Error: Could not find referenced cmap stream " + useCmapName.name);
-                    }
-                    CMap useCMap = parse(resourceRoot, useStream);
+                    InputStream useStream = getExternalCMap(useCmapName.name);
+                    CMap useCMap = parse(useStream);
                     result.useCmap(useCMap);
                 }
-                else if (op.op.equals(END_CMAP))
+                else if (op.op.equals("endcmap"))
                 {
                     // end of CMap reached, stop reading as there isn't any interesting info anymore
                     break;
                 }
-                else if (op.op.equals(BEGIN_CODESPACE_RANGE))
+                else if (op.op.equals("begincodespacerange"))
                 {
                     Number cosCount = (Number) previousToken;
                     for (int j = 0; j < cosCount.intValue(); j++)
@@ -145,7 +131,7 @@ public class CMapParser
                         Object nextToken = parseNextToken(cmapStream);
                         if (nextToken instanceof Operator)
                         {
-                            if (!((Operator) nextToken).op.equals(END_CODESPACE_RANGE))
+                            if (!((Operator) nextToken).op.equals("endcodespacerange"))
                             {
                                 throw new IOException("Error : ~codespacerange contains an unexpected operator : "
                                         + ((Operator) nextToken).op);
@@ -160,7 +146,7 @@ public class CMapParser
                         result.addCodespaceRange(range);
                     }
                 }
-                else if (op.op.equals(BEGIN_BASE_FONT_CHAR))
+                else if (op.op.equals("beginbfchar"))
                 {
                     Number cosCount = (Number) previousToken;
                     for (int j = 0; j < cosCount.intValue(); j++)
@@ -168,7 +154,7 @@ public class CMapParser
                         Object nextToken = parseNextToken(cmapStream);
                         if (nextToken instanceof Operator)
                         {
-                            if (!((Operator) nextToken).op.equals(END_BASE_FONT_CHAR))
+                            if (!((Operator) nextToken).op.equals("endbfchar"))
                             {
                                 throw new IOException("Error : ~bfchar contains an unexpected operator : "
                                         + ((Operator) nextToken).op);
@@ -181,11 +167,11 @@ public class CMapParser
                         {
                             byte[] bytes = (byte[]) nextToken;
                             String value = createStringFromBytes(bytes);
-                            result.addMapping(inputCode, value);
+                            result.addCharMapping(inputCode, value);
                         }
                         else if (nextToken instanceof LiteralName)
                         {
-                            result.addMapping(inputCode, ((LiteralName) nextToken).name);
+                            result.addCharMapping(inputCode, ((LiteralName) nextToken).name);
                         }
                         else
                         {
@@ -194,7 +180,7 @@ public class CMapParser
                         }
                     }
                 }
-                else if (op.op.equals(BEGIN_BASE_FONT_RANGE))
+                else if (op.op.equals("beginbfrange"))
                 {
                     Number cosCount = (Number) previousToken;
 
@@ -203,7 +189,7 @@ public class CMapParser
                         Object nextToken = parseNextToken(cmapStream);
                         if (nextToken instanceof Operator)
                         {
-                            if (!((Operator) nextToken).op.equals(END_BASE_FONT_RANGE))
+                            if (!((Operator) nextToken).op.equals("endbfrange"))
                             {
                                 throw new IOException("Error : ~bfrange contains an unexpected operator : "
                                         + ((Operator) nextToken).op);
@@ -226,10 +212,10 @@ public class CMapParser
                         }
                         boolean done = false;
                         // don't add 1:1 mappings to reduce the memory footprint
-                        if (Arrays.equals(startCode, tokenBytes))
+                        /*if (Arrays.equals(startCode, tokenBytes))
                         {
                             done = true;
-                        }
+                        }*/
                         String value = null;
 
                         int arrayIndex = 0;
@@ -240,7 +226,7 @@ public class CMapParser
                                 done = true;
                             }
                             value = createStringFromBytes(tokenBytes);
-                            result.addMapping(startCode, value);
+                            result.addCharMapping(startCode, value);
                             increment(startCode);
 
                             if (array == null)
@@ -258,7 +244,7 @@ public class CMapParser
                         }
                     }
                 }
-                else if (op.op.equals(BEGIN_CID_CHAR))
+                else if (op.op.equals("begincidchar"))
                 {
                     Number cosCount = (Number) previousToken;
                     for (int j = 0; j < cosCount.intValue(); j++)
@@ -266,7 +252,7 @@ public class CMapParser
                         Object nextToken = parseNextToken(cmapStream);
                         if (nextToken instanceof Operator)
                         {
-                            if (!((Operator) nextToken).op.equals(END_CID_CHAR))
+                            if (!((Operator) nextToken).op.equals("endcidchar"))
                             {
                                 throw new IOException("Error : ~cidchar contains an unexpected operator : "
                                         + ((Operator) nextToken).op);
@@ -275,11 +261,11 @@ public class CMapParser
                         }
                         byte[] inputCode = (byte[]) nextToken;
                         int mappedCode = (Integer) parseNextToken(cmapStream);
-                        String mappedStr = createStringFromBytes(inputCode);
-                        result.addCIDMapping(mappedCode, mappedStr);
+                        int mappedCID = createIntFromBytes(inputCode);
+                        result.addCIDMapping(mappedCode, mappedCID);
                     }
                 }
-                else if (op.op.equals(BEGIN_CID_RANGE))
+                else if (op.op.equals("begincidrange"))
                 {
                     int numberOfLines = (Integer) previousToken;
                     for (int n = 0; n < numberOfLines; n++)
@@ -287,7 +273,7 @@ public class CMapParser
                         Object nextToken = parseNextToken(cmapStream);
                         if (nextToken instanceof Operator)
                         {
-                            if (!((Operator) nextToken).op.equals(END_CID_RANGE))
+                            if (!((Operator) nextToken).op.equals("endcidrange"))
                             {
                                 throw new IOException("Error : ~cidrange contains an unexpected operator : "
                                         + ((Operator) nextToken).op);
@@ -309,8 +295,8 @@ public class CMapParser
                             int endOfMappings = mappedCode + end - start;
                             while (mappedCode <= endOfMappings)
                             {
-                                String mappedStr = createStringFromBytes(startCode);
-                                result.addCIDMapping(mappedCode++, mappedStr);
+                                int mappedCID = createIntFromBytes(startCode);
+                                result.addCIDMapping(mappedCode++, mappedCID);
                                 increment(startCode);
                             }
                         }
@@ -320,7 +306,7 @@ public class CMapParser
             else if (token instanceof LiteralName)
             {
                 LiteralName literal = (LiteralName) token;
-                if (WMODE.equals(literal.name))
+                if ("WMode".equals(literal.name))
                 {
                     Object next = parseNextToken(cmapStream);
                     if (next instanceof Integer)
@@ -328,7 +314,7 @@ public class CMapParser
                         result.setWMode((Integer) next);
                     }
                 }
-                else if (CMAP_NAME.equals(literal.name))
+                else if ("CMapName".equals(literal.name))
                 {
                     Object next = parseNextToken(cmapStream);
                     if (next instanceof LiteralName)
@@ -336,7 +322,7 @@ public class CMapParser
                         result.setName(((LiteralName) next).name);
                     }
                 }
-                else if (CMAP_VERSION.equals(literal.name))
+                else if ("CMapVersion".equals(literal.name))
                 {
                     Object next = parseNextToken(cmapStream);
                     if (next instanceof Number)
@@ -348,7 +334,7 @@ public class CMapParser
                         result.setVersion((String) next);
                     }
                 }
-                else if (CMAP_TYPE.equals(literal.name))
+                else if ("CMapType".equals(literal.name))
                 {
                     Object next = parseNextToken(cmapStream);
                     if (next instanceof Integer)
@@ -356,7 +342,7 @@ public class CMapParser
                         result.setType((Integer) next);
                     }
                 }
-                else if (REGISTRY.equals(literal.name))
+                else if ("Registry".equals(literal.name))
                 {
                     Object next = parseNextToken(cmapStream);
                     if (next instanceof String)
@@ -364,7 +350,7 @@ public class CMapParser
                         result.setRegistry((String) next);
                     }
                 }
-                else if (ORDERING.equals(literal.name))
+                else if ("Ordering".equals(literal.name))
                 {
                     Object next = parseNextToken(cmapStream);
                     if (next instanceof String)
@@ -372,7 +358,7 @@ public class CMapParser
                         result.setOrdering((String) next);
                     }
                 }
-                else if (SUPPLEMENT.equals(literal.name))
+                else if ("Supplement".equals(literal.name))
                 {
                     Object next = parseNextToken(cmapStream);
                     if (next instanceof Integer)
@@ -384,6 +370,19 @@ public class CMapParser
             previousToken = token;
         }
         return result;
+    }
+
+    /**
+     * Returns an input stream containing the given "use" CMap.
+     */
+    protected InputStream getExternalCMap(String name) throws IOException
+    {
+        URL url = getClass().getResource(name);
+        if (url == null)
+        {
+            throw new IOException("Error: Could not find referenced cmap stream " + name);
+        }
+        return url.openStream();
     }
 
     private Object parseNextToken(PushbackInputStream is) throws IOException
@@ -702,25 +701,5 @@ public class CMapParser
         {
             op = theOp;
         }
-    }
-
-    /**
-     * A simple class to test parsing of cmap files.
-     * 
-     * @param args Some command line arguments.
-     * 
-     * @throws Exception If there is an error parsing the file.
-     */
-    public static void main(String[] args) throws Exception
-    {
-        if (args.length != 1)
-        {
-            System.err.println("usage: java org.apache.fontbox.cmap.CMapParser <CMAP File>");
-            System.exit(-1);
-        }
-        CMapParser parser = new CMapParser();
-        File cmapFile = new File(args[0]);
-        CMap result = parser.parse(cmapFile);
-        System.out.println("Result:" + result);
     }
 }

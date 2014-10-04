@@ -13,12 +13,16 @@ import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
+import org.apache.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
+import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
-import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObjectForm;
 
 /**
  * This class allows to import pages as Form XObjects into a PDF file and use them to create
@@ -108,7 +112,7 @@ public class LayerUtility
      * @return a Form XObject containing the original page's content
      * @throws IOException if an I/O error occurs
      */
-    public PDXObjectForm importPageAsForm(PDDocument sourceDoc, int pageNumber) throws IOException
+    public PDFormXObject importPageAsForm(PDDocument sourceDoc, int pageNumber) throws IOException
     {
         PDPage page = (PDPage)sourceDoc.getDocumentCatalog().getAllPages().get(pageNumber);
         return importPageAsForm(sourceDoc, page);
@@ -125,12 +129,12 @@ public class LayerUtility
      * @return a Form XObject containing the original page's content
      * @throws IOException if an I/O error occurs
      */
-    public PDXObjectForm importPageAsForm(PDDocument sourceDoc, PDPage page) throws IOException
+    public PDFormXObject importPageAsForm(PDDocument sourceDoc, PDPage page) throws IOException
     {
         COSStream pageStream = (COSStream)page.getContents().getCOSObject();
         PDStream newStream = new PDStream(targetDoc,
                 pageStream.getUnfilteredStream(), false);
-        PDXObjectForm form = new PDXObjectForm(newStream);
+        PDFormXObject form = new PDFormXObject(newStream);
 
         //Copy resources
         PDResources pageRes = page.findResources();
@@ -201,55 +205,55 @@ public class LayerUtility
      * @return the optional content group that was generated for the form usage
      * @throws IOException if an I/O error occurs
      */
-//    public PDOptionalContentGroup appendFormAsLayer(PDPage targetPage,
-//            PDXObjectForm form, android.graphics.Matrix transform,
-//            String layerName) throws IOException
-//    {
-//        PDDocumentCatalog catalog = targetDoc.getDocumentCatalog();
-//        PDOptionalContentProperties ocprops = catalog.getOCProperties();
-//        if (ocprops == null)
-//        {
-//            ocprops = new PDOptionalContentProperties();
-//            catalog.setOCProperties(ocprops);
-//        }
-//        if (ocprops.hasGroup(layerName))
-//        {
-//            throw new IllegalArgumentException("Optional group (layer) already exists: " + layerName);
-//        }
-//
-//        PDOptionalContentGroup layer = new PDOptionalContentGroup(layerName);
-//        ocprops.addGroup(layer);
-//
-//        PDResources resources = targetPage.findResources();
-//        PDPropertyList props = resources.getProperties();
-//        if (props == null)
-//        {
-//            props = new PDPropertyList();
-//            resources.setProperties(props);
-//        }
-//
-//        //Find first free resource name with the pattern "MC<index>"
-//        int index = 0;
-//        PDOptionalContentGroup ocg;
-//        COSName resourceName;
-//        do
-//        {
-//            resourceName = COSName.getPDFName("MC" + index);
-//            ocg = props.getOptionalContentGroup(resourceName);
-//            index++;
-//        } while (ocg != null);
-//        //Put mapping for our new layer/OCG
-//        props.putMapping(resourceName, layer);
-//
-//        PDPageContentStream contentStream = new PDPageContentStream(
-//                targetDoc, targetPage, true, !DEBUG);
-//        contentStream.beginMarkedContentSequence(COSName.OC, resourceName);
-//        contentStream.drawXObject(form, transform);
-//        contentStream.endMarkedContentSequence();
-//        contentStream.close();
-//
-//        return layer;
-//    }TODO
+    public PDOptionalContentGroup appendFormAsLayer(PDPage targetPage,
+            PDFormXObject form, android.graphics.Matrix transform,
+            String layerName) throws IOException
+    {
+        PDDocumentCatalog catalog = targetDoc.getDocumentCatalog();
+        PDOptionalContentProperties ocprops = catalog.getOCProperties();
+        if (ocprops == null)
+        {
+            ocprops = new PDOptionalContentProperties();
+            catalog.setOCProperties(ocprops);
+        }
+        if (ocprops.hasGroup(layerName))
+        {
+            throw new IllegalArgumentException("Optional group (layer) already exists: " + layerName);
+        }
+
+        PDOptionalContentGroup layer = new PDOptionalContentGroup(layerName);
+        ocprops.addGroup(layer);
+
+        PDResources resources = targetPage.findResources();
+        PDPropertyList props = resources.getProperties();
+        if (props == null)
+        {
+            props = new PDPropertyList();
+            resources.setProperties(props);
+        }
+
+        //Find first free resource name with the pattern "MC<index>"
+        int index = 0;
+        PDOptionalContentGroup ocg;
+        COSName resourceName;
+        do
+        {
+            resourceName = COSName.getPDFName("MC" + index);
+            ocg = props.getOptionalContentGroup(resourceName);
+            index++;
+        } while (ocg != null);
+        //Put mapping for our new layer/OCG
+        props.putMapping(resourceName, layer);
+
+        PDPageContentStream contentStream = new PDPageContentStream(
+                targetDoc, targetPage, true, !DEBUG);
+        contentStream.beginMarkedContentSequence(COSName.OC, resourceName);
+        contentStream.drawXObject(form, transform);
+        contentStream.endMarkedContentSequence();
+        contentStream.close();
+
+        return layer;
+    }
 
     private void transferDict(COSDictionary orgDict, COSDictionary targetDict,
             Set<String> filter, boolean inclusive) throws IOException

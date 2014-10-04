@@ -1,14 +1,14 @@
 package org.apache.pdfbox.pdmodel.common.function;
 
-import java.io.IOException;
-
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.common.PDRange;
 
+import java.io.IOException;
+
 /**
- * This class represents a type 3 function in a PDF document.
+ * This class represents a Type 3 (stitching) function in a PDF document.
  *
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
  * @version $Revision: 1.2 $

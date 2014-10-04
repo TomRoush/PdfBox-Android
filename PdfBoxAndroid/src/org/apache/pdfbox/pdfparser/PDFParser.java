@@ -18,8 +18,7 @@ import org.apache.pdfbox.cos.COSInteger;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.exceptions.WrappedIOException;
-import org.apache.pdfbox.io.RandomAccess;
+import org.apache.pdfbox.pdfparser.XrefTrailerResolver.XRefType;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.fdf.FDFDocument;
 import org.apache.pdfbox.persistence.util.COSObjectKey;
@@ -27,8 +26,7 @@ import org.apache.pdfbox.persistence.util.COSObjectKey;
 /**
  * This class will handle the parsing of the PDF document.
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.53 $
+ * @author Ben Litchfield
  */
 public class PDFParser extends BaseParser
 {
@@ -62,7 +60,7 @@ public class PDFParser extends BaseParser
      */
     private File tempDirectory = null;
 
-    private RandomAccess raf = null;
+    private final boolean useScratchFile;
 
     /**
      * Constructor.
@@ -73,35 +71,37 @@ public class PDFParser extends BaseParser
      */
     public PDFParser( InputStream input ) throws IOException 
     {
-        this(input, null, FORCE_PARSING);
-    }
-
-    /**
-     * Constructor to allow control over RandomAccessFile.
-     * @param input The input stream that contains the PDF document.
-     * @param rafi The RandomAccessFile to be used in internal COSDocument
-     *
-     * @throws IOException If there is an error initializing the stream.
-     */
-    public PDFParser(InputStream input, RandomAccess rafi) throws IOException 
-    {
-        this(input, rafi, FORCE_PARSING);
+        this(input, FORCE_PARSING);
     }
 
     /**
      * Constructor to allow control over RandomAccessFile.
      * Also enables parser to skip corrupt objects to try and force parsing
      * @param input The input stream that contains the PDF document.
-     * @param rafi The RandomAccessFile to be used in internal COSDocument
      * @param force When true, the parser will skip corrupt pdf objects and
      * will continue parsing at the next object in the file
      *
      * @throws IOException If there is an error initializing the stream.
      */
-    public PDFParser(InputStream input, RandomAccess rafi, boolean force) throws IOException 
+    public PDFParser(InputStream input, boolean force) throws IOException 
+    {
+        this(input, force, false);
+    }
+
+    /**
+     * Constructor to allow control over RandomAccessFile.
+     * Also enables parser to skip corrupt objects to try and force parsing
+     * @param input The input stream that contains the PDF document.
+     * @param force When true, the parser will skip corrupt pdf objects and
+     * will continue parsing at the next object in the file
+     * @param useScratchFiles enables the usage of a scratch file if set to true
+     *
+     * @throws IOException If there is an error initializing the stream.
+     */
+    public PDFParser(InputStream input, boolean force, boolean useScratchFiles) throws IOException 
     {
         super(input, force);
-        this.raf = rafi;
+        useScratchFile = useScratchFiles;
     }
 
     /**
@@ -141,20 +141,17 @@ public class PDFParser extends BaseParser
     {
         try
         {
-            if ( raf == null )
+            if( tempDirectory != null )
             {
-                if( tempDirectory != null )
-                {
-                    document = new COSDocument( tempDirectory );
-                }
-                else
-                {
-                    document = new COSDocument();
-                }
+                document = new COSDocument( tempDirectory, forceParsing, true );
+            }
+            else if(useScratchFile)
+            {
+                document = new COSDocument( null, forceParsing, true );
             }
             else
             {
-                document = new COSDocument( raf );
+                document = new COSDocument(forceParsing);
             }
             setDocument( document );
 
@@ -221,6 +218,7 @@ public class PDFParser extends BaseParser
 
             // get resolved xref table + trailer
             document.setTrailer( xrefTrailerResolver.getTrailer() );
+            document.setIsXRefStream(XRefType.STREAM == xrefTrailerResolver.getXrefType());
             document.addXRefTable( xrefTrailerResolver.getXrefTable() );
 
             if( !document.isEncrypted() )
@@ -233,23 +231,15 @@ public class PDFParser extends BaseParser
             }
             ConflictObj.resolveConflicts(document, conflictList);
         }
-        catch( Throwable t )
+        catch( IOException e )
         {
-            //so if the PDF is corrupt then close the document and clear
-            //all resources to it
+            // if the PDF is corrupt then close the document and clear all resources to it
             if( document != null )
             {
                 document.close();
                 document = null;
             }
-            if( t instanceof IOException )
-            {
-                throw (IOException)t;
-            }
-            else
-            {
-                throw new WrappedIOException( t );
-            }
+            throw e;
         }
         finally
         {
@@ -303,10 +293,10 @@ public class PDFParser extends BaseParser
         // read first line
         String header = readLine();
         // some pdf-documents are broken and the pdf-version is in one of the following lines
-        if ((header.indexOf( PDF_HEADER ) == -1) && (header.indexOf( FDF_HEADER ) == -1))
+        if (!header.contains(PDF_HEADER) && !header.contains(FDF_HEADER))
         {
             header = readLine();
-            while ((header.indexOf( PDF_HEADER ) == -1) && (header.indexOf( FDF_HEADER ) == -1))
+            while (!header.contains(PDF_HEADER) && !header.contains(FDF_HEADER))
             {
                 // if a line starts with a digit, it has to be the first one with data in it
                 if ((header.length() > 0) && (Character.isDigit(header.charAt(0))))
@@ -533,8 +523,8 @@ public class PDFParser extends BaseParser
         else
         {
             long number = -1;
-            int genNum = -1;
-            String objectKey = null;
+            int genNum;
+            String objectKey;
             boolean missingObjectNumber = false;
             try
             {
@@ -590,7 +580,7 @@ public class PDFParser extends BaseParser
                 pdfSource.unread( ' ' );
                 if( pb instanceof COSDictionary )
                 {
-                    pb = parseCOSStream( (COSDictionary)pb, getDocument().getScratchFile() );
+                    pb = parseCOSStream( (COSDictionary)pb );
 
                     // test for XRef type
                     final COSStream strmObj = (COSStream) pb;
@@ -724,10 +714,21 @@ public class PDFParser extends BaseParser
         {
             return false;
         }
-
+        
+        // check for trailer after xref
+        String str = readString();
+        byte[] b = str.getBytes("ISO-8859-1");
+        pdfSource.unread(b, 0, b.length);
+        
         // signal start of new XRef
-        xrefTrailerResolver.nextXrefObj( startByteOffset );
+        xrefTrailerResolver.nextXrefObj( startByteOffset, XRefType.TABLE );
 
+        if (str.startsWith("trailer"))
+        {
+            LOG.warn("skipping empty xref table");
+            return false;
+        }
+        
         /*
          * Xref tables can have multiple sections.
          * Each starts with a starting object id and a count.
@@ -736,10 +737,6 @@ public class PDFParser extends BaseParser
         {
             long currObjID = readObjectNumber(); // first obj id
             long count = readLong(); // the number of objects in the xref table
-            if (count == 0)
-            {
-                LOG.warn("Count in xref table is 0 at offset " + pdfSource.getOffset());
-            }
             skipSpaces();
             for(int i = 0; i < count; i++)
             {
@@ -753,7 +750,7 @@ public class PDFParser extends BaseParser
                 }
                 //Ignore table contents
                 String currentLine = readLine();
-                String[] splitString = currentLine.split(" ");
+                String[] splitString = currentLine.split("\\s");
                 if (splitString.length < 3)
                 {
                     LOG.warn("invalid xref line: " + currentLine);
@@ -872,10 +869,28 @@ public class PDFParser extends BaseParser
      */
     public void parseXrefStream( COSStream stream, long objByteOffset ) throws IOException
     {
-        xrefTrailerResolver.nextXrefObj( objByteOffset );
-        xrefTrailerResolver.setTrailer( stream );
+        parseXrefStream( stream, objByteOffset, true );
+    }
+        
+    /**
+     * Fills XRefTrailerResolver with data of given stream.
+     * Stream must be of type XRef.
+     * @param stream the stream to be read
+     * @param objByteOffset the offset to start at
+     * @param isStandalone should be set to true if the stream is not part of a hybrid xref table
+     * @throws IOException if there is an error parsing the stream
+     */
+    public void parseXrefStream( COSStream stream, long objByteOffset, boolean isStandalone ) throws IOException
+    {
+        // the cross reference stream of a hybrid xref table will be added to the existing one
+        // and we must not override the offset and the trailer
+        if ( isStandalone )
+        {
+            xrefTrailerResolver.nextXrefObj( objByteOffset, XRefType.STREAM );
+            xrefTrailerResolver.setTrailer( stream );
+        }        
         PDFXrefStreamParser parser =
-            new PDFXrefStreamParser( stream, document, forceParsing, xrefTrailerResolver );
+                new PDFXrefStreamParser( stream, document, forceParsing, xrefTrailerResolver );
         parser.parse();
     }
 
@@ -891,11 +906,11 @@ public class PDFParser extends BaseParser
     private static class ConflictObj
     {
 
-        private long offset;
-        private COSObjectKey objectKey;
-        private COSObject object;
+        private final long offset;
+        private final COSObjectKey objectKey;
+        private final COSObject object;
 
-        public ConflictObj(long offsetValue, COSObjectKey key, COSObject pdfObject)
+        ConflictObj(long offsetValue, COSObjectKey key, COSObject pdfObject)
         {
             this.offset = offsetValue;
             this.objectKey = key;
@@ -924,8 +939,7 @@ public class PDFParser extends BaseParser
                 do
                 {
                     ConflictObj o = conflicts.next();
-                    Long offset = new Long(o.offset);
-                    if (tolerantConflicResolver(values, offset, 4))
+                    if (tolerantConflicResolver(values, o.offset, 4))
                     {
                         COSObject pdfObject = document.getObjectFromPool(o.objectKey);
                         if (pdfObject.getObjectNumber() != null 
@@ -935,7 +949,7 @@ public class PDFParser extends BaseParser
                         }
                         else
                         {
-                            LOG.debug("Conflict object ["+o.objectKey+"] at offset "+offset
+                            LOG.debug("Conflict object [" + o.objectKey + "] at offset " + o.offset
                                     +" found in the xref table, but the object numbers differ. Ignoring this object."
                                     + " The document is maybe malformed.");
                         }

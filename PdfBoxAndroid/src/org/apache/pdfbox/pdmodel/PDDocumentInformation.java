@@ -1,6 +1,7 @@
 package org.apache.pdfbox.pdmodel;
 
 import java.io.IOException;
+
 import java.util.Calendar;
 import java.util.Set;
 import java.util.TreeSet;
@@ -8,6 +9,7 @@ import java.util.TreeSet;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
+
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 
 /**
@@ -17,7 +19,7 @@ import org.apache.pdfbox.pdmodel.common.COSObjectable;
  *
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
  * @author  Gerardo Ortiz
- *      
+ *
  * @version $Revision: 1.12 $
  */
 public class PDDocumentInformation implements COSObjectable
@@ -259,7 +261,6 @@ public class PDDocumentInformation implements COSObjectable
      * @param fieldName Name of custom metadata field from pdf document.
      *
      * @return String Value of metadata field
-     *
      */
     public String getCustomMetadataValue(String fieldName)
     {

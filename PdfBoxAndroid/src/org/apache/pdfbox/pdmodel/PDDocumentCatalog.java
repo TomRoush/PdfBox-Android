@@ -20,7 +20,7 @@ import org.apache.pdfbox.pdmodel.graphics.color.PDOutputIntent;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionFactory;
 import org.apache.pdfbox.pdmodel.interactive.action.PDDocumentCatalogAdditionalActions;
-import org.apache.pdfbox.pdmodel.interactive.action.type.PDURIDictionary;
+import org.apache.pdfbox.pdmodel.interactive.action.PDURIDictionary;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
@@ -35,8 +35,7 @@ import org.apache.pdfbox.pdmodel.interactive.viewerpreferences.PDViewerPreferenc
  */
 public class PDDocumentCatalog implements COSObjectable
 {
-	
-	private COSDictionary root;
+    private COSDictionary root;
     private PDDocument document;
 
     private PDAcroForm acroForm = null;
@@ -94,6 +93,8 @@ public class PDDocumentCatalog implements COSObjectable
      */
     public static final String PAGE_LAYOUT_TWO_PAGE_RIGHT = "TwoPageRight";
 
+
+
     /**
      * Constructor.
      *
@@ -138,7 +139,7 @@ public class PDDocumentCatalog implements COSObjectable
     {
         return root;
     }
-    
+
     /**
      * This will get the documents acroform.  This will return null if
      * no acroform is part of the document.
@@ -158,7 +159,7 @@ public class PDDocumentCatalog implements COSObjectable
         }
         return acroForm;
     }
-    
+
     /**
      * Set the acro form for this catalog.
      *
@@ -168,7 +169,7 @@ public class PDDocumentCatalog implements COSObjectable
     {
         root.setItem( COSName.ACRO_FORM, acro );
     }
-    
+
     /**
      * This will get the root node for the pages.
      *
@@ -178,7 +179,7 @@ public class PDDocumentCatalog implements COSObjectable
     {
         return new PDPageNode( (COSDictionary)root.getDictionaryObject( COSName.PAGES ) );
     }
-    
+
     /**
      * The PDF document contains a hierarchical structure of PDPageNode and PDPages, which
      * is mostly just a way to store this information.  This method will return a flat list
@@ -195,7 +196,7 @@ public class PDDocumentCatalog implements COSObjectable
         rootNode.getAllKids(retval);
         return retval;
     }
-    
+
     /**
      * Get the viewer preferences associated with this document or null if they
      * do not exist.

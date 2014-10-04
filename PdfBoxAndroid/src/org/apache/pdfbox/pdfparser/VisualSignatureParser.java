@@ -35,7 +35,7 @@ public class VisualSignatureParser extends BaseParser
 
     /**
      * This will parse the tokens making up the visual signature.
-     * 
+     *
      * @throws IOException If there is an error while parsing the visual signature.
      */
     public void parse() throws IOException 
@@ -215,7 +215,7 @@ public class VisualSignatureParser extends BaseParser
                 pdfSource.unread(' ');
                 if(pb instanceof COSDictionary) 
                 {
-                    pb = parseCOSStream((COSDictionary) pb, getDocument().getScratchFile());
+                    pb = parseCOSStream((COSDictionary) pb);
 
                 } 
                 else 

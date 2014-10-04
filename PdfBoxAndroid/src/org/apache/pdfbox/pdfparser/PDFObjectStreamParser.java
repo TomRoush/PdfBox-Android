@@ -1,7 +1,7 @@
 package org.apache.pdfbox.pdfparser;
 
 import java.io.IOException;
-import java.io.InputStream;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,9 +45,9 @@ public class PDFObjectStreamParser extends BaseParser
             COSStream strm, COSDocument doc, boolean forceParsing)
             throws IOException 
     {
-       super(strm.getUnfilteredStream(), forceParsing);
-       setDocument( doc );
-       stream = strm;
+        super(strm.getUnfilteredStream(), forceParsing);
+        setDocument(doc);
+        stream = strm;
     }
 
     /**
@@ -82,7 +82,7 @@ public class PDFObjectStreamParser extends BaseParser
             {
                 long objectNumber = readObjectNumber();
                 long offset = readLong();
-                objectNumbers.add( new Long( objectNumber ) );
+                objectNumbers.add( objectNumber);
             }
             COSObject object = null;
             COSBase cosObject = null;
@@ -91,6 +91,11 @@ public class PDFObjectStreamParser extends BaseParser
             {
                 object = new COSObject(cosObject);
                 object.setGenerationNumber( COSInteger.ZERO );
+                if (objectCounter >= objectNumbers.size())
+                {
+                    LOG.error("/ObjStm (object stream) has more objects than /N " + numberOfObjects);
+                    break;
+                }
                 COSInteger objNum =
                     COSInteger.get( objectNumbers.get( objectCounter).intValue() );
                 object.setObjectNumber( objNum );

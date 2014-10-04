@@ -3,27 +3,30 @@ package org.apache.pdfbox.pdmodel.graphics.shading;
 import org.apache.pdfbox.cos.COSDictionary;
 
 /**
- * This represents resources for a shading type 7 (Tensor-Product Patch Meshes).
- *
- * @version $Revision: 1.0 $
+ * Resources for a shading type 7 (Tensor-Product Patch Mesh).
  */
-public class PDShadingType7 extends PDShadingType4
+public class PDShadingType7 extends PDShadingType6
 {
+
     /**
      * Constructor using the given shading dictionary.
      *
-     * @param shadingDictionary The dictionary for this shading.
+     * @param shadingDictionary the dictionary for this shading
      */
     public PDShadingType7(COSDictionary shadingDictionary)
     {
         super(shadingDictionary);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public int getShadingType()
     {
-        return PDShadingResources.SHADING_TYPE6;
+        return PDShading.SHADING_TYPE7;
     }
+
+//    @Override
+//    public Paint toPaint(Matrix matrix)
+//    {
+//        return new Type7ShadingPaint(this, matrix);
+//    }TODO
 }

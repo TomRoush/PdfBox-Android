@@ -1,11 +1,6 @@
 package org.apache.pdfbox.pdmodel.interactive.action;
 
 import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.pdmodel.interactive.action.type.PDAction;
-import org.apache.pdfbox.pdmodel.interactive.action.type.PDActionJavaScript;
-import org.apache.pdfbox.pdmodel.interactive.action.type.PDActionLaunch;
-import org.apache.pdfbox.pdmodel.interactive.action.type.PDActionRemoteGoTo;
-import org.apache.pdfbox.pdmodel.interactive.action.type.PDActionURI;
 
 /**
  * This class will take a dictionary and determine which type of action to create.
@@ -41,10 +36,10 @@ public class PDActionFactory
             {
                 retval = new PDActionJavaScript( action );
             }
-//            else if( PDActionGoTo.SUB_TYPE.equals( type ) )
-//            {
-//                retval = new PDActionGoTo( action );
-//            }
+            else if( PDActionGoTo.SUB_TYPE.equals( type ) )
+            {
+                retval = new PDActionGoTo( action );
+            }
             else if( PDActionLaunch.SUB_TYPE.equals( type ) )
             {
                 retval = new PDActionLaunch( action );

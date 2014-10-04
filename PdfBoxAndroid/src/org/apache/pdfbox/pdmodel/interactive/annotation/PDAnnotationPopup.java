@@ -85,8 +85,8 @@ public class PDAnnotationPopup extends PDAnnotation
         PDAnnotationMarkup am = null;
         try
         {
-            am = (PDAnnotationMarkup)
-                PDAnnotation.createAnnotation( getDictionary().getDictionaryObject( "Parent", "P" ) );
+            am = (PDAnnotationMarkup) PDAnnotation.createAnnotation(
+                    getDictionary().getDictionaryObject(COSName.PARENT, COSName.P));
         }
         catch (IOException ioe)
         {

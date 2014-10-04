@@ -2,943 +2,516 @@ package org.apache.pdfbox.pdmodel.font;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.fontbox.afm.AFMParser;
-import org.apache.fontbox.afm.FontMetric;
+import org.apache.fontbox.afm.FontMetrics;
 import org.apache.fontbox.cmap.CMap;
-import org.apache.fontbox.cmap.CMapParser;
+import org.apache.fontbox.util.BoundingBox;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSFloat;
-import org.apache.pdfbox.cos.COSInteger;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.encoding.Encoding;
+import org.apache.pdfbox.cos.COSNumber;
+import org.apache.pdfbox.cos.COSStream;
+import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
-import org.apache.pdfbox.pdmodel.common.PDMatrix;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.util.ResourceLoader;
+import org.apache.pdfbox.pdmodel.font.encoding.GlyphList;
+import org.apache.pdfbox.util.Matrix;
+import org.apache.pdfbox.util.Vector;
 
 /**
  * This is the base class for all PDF fonts.
- *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
  * 
+ * @author Ben Litchfield
  */
-public abstract class PDFont implements COSObjectable
+public abstract class PDFont implements COSObjectable, PDFontLike
 {
-	
-	/**
-     * Log instance.
-     */
-    private static final Log LOG = LogFactory.getLog(PDFont.class);
+	private static final Log LOG = LogFactory.getLog(PDFont.class);
+	protected static final Matrix DEFAULT_FONT_MATRIX = new Matrix(0.001f, 0, 0, 0.001f, 0, 0);
 
-    /**
-     * The cos dictionary for this font.
-     */
-    protected COSDictionary font;
+	protected final COSDictionary dict;
+	private final CMap toUnicodeCMap;
+	private final FontMetrics afmStandard14; // AFM for standard 14 fonts
+	private final PDFontDescriptor fontDescriptor;
 
-    /**
-     * This is only used if this is a font object and it has an encoding.
-     */
-    private Encoding fontEncoding = null;
-
-    /**
-     *  The descriptor of the font.
-     */
-    private PDFontDescriptor fontDescriptor = null;
-
-    /**
-     *  The font matrix.
-     */
-    protected PDMatrix fontMatrix = null;
-
-    /**
-     * This is only used if this is a font object and it has an encoding and it is
-     * a type0 font with a cmap.
-     */
-    protected CMap cmap = null;
-
-    /**
-     * The CMap holding the ToUnicode mapping.
-     */
-    protected CMap toUnicodeCmap = null;
-    
-    private boolean hasToUnicode = false;
-    
-    private boolean widthsAreMissing = false;
-
-    protected static Map<String, CMap> cmapObjects =
-        Collections.synchronizedMap( new HashMap<String, CMap>() );
-
-    /**
-     *  A list a floats representing the widths.
-     */
-    private List<Float> widths = null;
-    
-    /**
-     * The static map of the default Adobe font metrics.
-     */
-    private static final Map<String, FontMetric> afmObjects =
-        Collections.unmodifiableMap( getAdobeFontMetrics() );
-    
- // TODO move the Map to PDType1Font as these are the 14 Standard fonts
-    // which are definitely Type 1 fonts
-    private static Map<String, FontMetric> getAdobeFontMetrics()
-    {
-        Map<String, FontMetric> metrics = new HashMap<String, FontMetric>();
-        addAdobeFontMetric( metrics, "Courier-Bold" );
-        addAdobeFontMetric( metrics, "Courier-BoldOblique" );
-        addAdobeFontMetric( metrics, "Courier" );
-        addAdobeFontMetric( metrics, "Courier-Oblique" );
-        addAdobeFontMetric( metrics, "Helvetica" );
-        addAdobeFontMetric( metrics, "Helvetica-Bold" );
-        addAdobeFontMetric( metrics, "Helvetica-BoldOblique" );
-        addAdobeFontMetric( metrics, "Helvetica-Oblique" );
-        addAdobeFontMetric( metrics, "Symbol" );
-        addAdobeFontMetric( metrics, "Times-Bold" );
-        addAdobeFontMetric( metrics, "Times-BoldItalic" );
-        addAdobeFontMetric( metrics, "Times-Italic" );
-        addAdobeFontMetric( metrics, "Times-Roman" );
-        addAdobeFontMetric( metrics, "ZapfDingbats" );
-
-        // PDFBOX-239
-        addAdobeFontMetric(metrics, "Arial", "Helvetica");
-        addAdobeFontMetric(metrics, "Arial,Bold", "Helvetica-Bold");
-        addAdobeFontMetric(metrics, "Arial,Italic", "Helvetica-Oblique");
-        addAdobeFontMetric(metrics, "Arial,BoldItalic", "Helvetica-BoldOblique");
-        
-        return metrics;
-    }
-    
-    protected static final String resourceRootCMAP = "org/apache/pdfbox/resources/cmap/";
-    private static final String resourceRootAFM = "org/apache/pdfbox/resources/afm/";
-
-    private static void addAdobeFontMetric(
-            Map<String, FontMetric> metrics, String name )
-    {
-        addAdobeFontMetric(metrics, name, name);
-    }
-    
-    private static void addAdobeFontMetric(Map<String, FontMetric> metrics, String name, String filePrefix)
-    {
-        try
-        {
-            String resource = resourceRootAFM + filePrefix + ".afm";
-            InputStream afmStream = ResourceLoader.loadResource( resource );
-            if( afmStream != null )
-            {
-                try
-                {
-                    AFMParser parser = new AFMParser( afmStream );
-                    parser.parse();
-                    metrics.put( name, parser.getResult() );
-                }
-                finally
-                {
-                    afmStream.close();
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            // ignore
-        }
-    }
-    
-    /**
-     * This will clear AFM resources that are stored statically.
-     * This is usually not a problem unless you want to reclaim
-     * resources for a long running process.
-     *
-     * SPECIAL NOTE: The font calculations are currently in COSObject, which
-     * is where they will reside until PDFont is mature enough to take them over.
-     * PDFont is the appropriate place for them and not in COSObject but we need font
-     * calculations for text extraction.  THIS METHOD WILL BE MOVED OR REMOVED
-     * TO ANOTHER LOCATION IN A FUTURE VERSION OF PDFBOX.
-     */
-    public static void clearResources()
-    {
-        cmapObjects.clear();
-    }
+	private List<Integer> widths;
+	private float avgFontWidth;
+	private float fontWidthOfSpace = -1f;
+	private Boolean isSymbolic;
 
 	/**
-     * Constructor.
-     */
-    public PDFont()
-    {
-        font = new COSDictionary();
-        font.setItem( COSName.TYPE, COSName.FONT );
-    }
-    
-    /**
-     * Constructor.
-     *
-     * @param fontDictionary The font dictionary according to the PDF specification.
-     */
-    public PDFont( COSDictionary fontDictionary )
-    {
-        font = fontDictionary;
-        determineEncoding();
-    }
-    
-    /**
-     * This will get the font descriptor for this font.
-     *
-     * @return The font descriptor for this font.
-     *
-     */
-    public PDFontDescriptor getFontDescriptor()
-    {
-        if(fontDescriptor == null)
-        {
-            COSDictionary fd = (COSDictionary)font.getDictionaryObject( COSName.FONT_DESC );
-            if (fd != null)
-            {
-                fontDescriptor = new PDFontDescriptorDictionary( fd );
-            }
-            else
-            {
-                getAFM();
-                if( afm != null )
-                {
-                    fontDescriptor = new PDFontDescriptorAFM( afm );
-                }
-            }
-        }
-        return fontDescriptor;
-    }
-    
-    /**
-     * This will set the font descriptor.
-     *
-     * @param fdDictionary The font descriptor.
-     */
-    public void setFontDescriptor( PDFontDescriptorDictionary fdDictionary )
-    {
-        COSDictionary dic = null;
-        if( fdDictionary != null )
-        {
-            dic = fdDictionary.getCOSDictionary();
-        }
-        font.setItem( COSName.FONT_DESC, dic );
-        fontDescriptor = fdDictionary;
-    }
-    
-    /**
-     * Determines the encoding for the font.
-     * This method as to be overwritten, as there are different
-     * possibilities to define a mapping.
-     */
-    protected abstract void determineEncoding();
+	 * Constructor for embedding.
+	 */
+	protected PDFont()
+	{
+		dict = new COSDictionary();
+		dict.setItem(COSName.TYPE, COSName.FONT);
+		toUnicodeCMap = null;
+		fontDescriptor = null;
+		afmStandard14 = null;
+	}
+	/**
+	 * Constructor for Standard 14.
+	 */
+	protected PDFont(String baseFont)
+	{
+		dict = new COSDictionary();
+		toUnicodeCMap = null;
+		fontDescriptor = null;
+		afmStandard14 = Standard14Fonts.getAFM(getName()); // may be null (it usually is)
+		if (afmStandard14 == null)
+		{
+			throw new IllegalArgumentException("No AFM for font " + baseFont);
+		}
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    public COSBase getCOSObject()
-    {
-        return font;
-    }
-    
-    /**
-     * This will get the font width for a character.
-     *
-     * @param c The character code to get the width for.
-     * @param offset The offset into the array.
-     * @param length The length of the data.
-     *
-     * @return The width is in 1000 unit of text space, ie 333 or 777
-     *
-     * @throws IOException If an error occurs while parsing.
-     */
-    public abstract float getFontWidth( byte[] c, int offset, int length ) throws IOException;
-    
-    /**
-     * This will get the font height for a character.
-     *
-     * @param c The character code to get the height for.
-     * @param offset The offset into the array.
-     * @param length The length of the data.
-     *
-     * @return The height is in 1000 unit of text space, ie 333 or 777
-     *
-     * @throws IOException If an error occurs while parsing.
-     */
-    public abstract float getFontHeight( byte[] c, int offset, int length ) throws IOException;
-    
-    /**
-     * This will get the width of this string for this font.
-     *
-     * @param string The string to get the width of.
-     *
-     * @return The width of the string in 1000 units of text space, ie 333 567...
-     *
-     * @throws IOException If there is an error getting the width information.
-     */
-    public float getStringWidth( String string ) throws IOException
-    {
-        byte[] data = string.getBytes("ISO-8859-1");
-        float totalWidth = 0;
-        for( int i=0; i<data.length; i++ )
-        {
-            totalWidth+=getFontWidth( data, i, 1 );
-        }
-        return totalWidth;
-    }
-    
-    /**
-     * This will get the average font width for all characters.
-     *
-     * @return The width is in 1000 unit of text space, ie 333 or 777
-     *
-     * @throws IOException If an error occurs while parsing.
-     */
-    public abstract float getAverageFontWidth() throws IOException;
-    
-    /**
-     * This will draw a string on a canvas using the font.
-     *
-     * @param string The string to draw.
-     * @param g The graphics to draw onto.
-     * @param fontSize The size of the font to draw.
-     * @param at The transformation matrix with all information for scaling and shearing of the font.
-     * @param x The x coordinate to draw at.
-     * @param y The y coordinate to draw at.
-     *
-     * @throws IOException If there is an error drawing the specific string.
-     * @deprecated use {@link PDFont#drawString(String, int[], Graphics, float, AffineTransform, float, float)} instead
-     */
-//    public void drawString( String string, Graphics g, float fontSize, AffineTransform at, float x, float y ) 
-//    throws IOException
-//    {
-//     TODO   drawString(string, null, g, fontSize, at, x, y);
-//    }
+	/**
+	 * Constructor.
+	 *
+	 * @param fontDictionary Font dictionary.
+	 */
+	protected PDFont(COSDictionary fontDictionary) throws IOException
+	{
+		dict = fontDictionary;
 
-    /**
-     * This will draw a string on a canvas using the font.
-     *
-     * @param string The string to draw.
-     * @param codePoints The codePoints of the given string.
-     * @param g The graphics to draw onto.
-     * @param fontSize The size of the font to draw.
-     * @param at The transformation matrix with all information for scaling and shearing of the font.
-     * @param x The x coordinate to draw at.
-     * @param y The y coordinate to draw at.
-     *
-     * @throws IOException If there is an error drawing the specific string.
-     */
-//    public abstract void drawString( String string, int[] codePoints, Graphics g, float fontSize,
-//        AffineTransform at, float x, float y ) throws IOException;TODO
-    
-    /**
-     * Used for multibyte encodings.
-     *
-     * @param data The array of data.
-     * @param offset The offset into the array.
-     * @param length The number of bytes to use.
-     *
-     * @return The int value of data from the array.
-     */
-    public int getCodeFromArray( byte[] data, int offset, int length )
-    {
-        int code = 0;
-        for( int i=0; i<length; i++ )
-        {
-            code <<= 8;
-            code |= (data[offset+i]+256)%256;
-        }
-        return code;
-    }
-    
-    /**
-     * This will attempt to get the font width from an AFM file.
-     *
-     * @param code The character code we are trying to get.
-     *
-     * @return The font width from the AFM file.
-     *
-     * @throws IOException if we cannot find the width.
-     */
-    protected float getFontWidthFromAFMFile( int code ) throws IOException
-    {
-        float retval = 0;
-        FontMetric metric = getAFM();
-        if( metric != null )
-        {
-            String characterName = fontEncoding.getName( code );
-            retval = metric.getCharacterWidth( characterName );
-        }
-        return retval;
-    }
-    
-    /**
-     * This will attempt to get the average font width from an AFM file.
-     *
-     * @return The average font width from the AFM file.
-     *
-     * @throws IOException if we cannot find the width.
-     */
-    protected float getAverageFontWidthFromAFMFile() throws IOException
-    {
-        float retval = 0;
-        FontMetric metric = getAFM();
-        if( metric != null )
-        {
-            retval = metric.getAverageCharacterWidth();
-        }
-        return retval;
-    }
-    
-    /**
-     * This will get an AFM object if one exists.
-     *
-     * @return The afm object from the name.
-     *
-     */
-    protected FontMetric getAFM()
-    {
-        if (isType1Font() && afm == null)
-        {
-            COSBase baseFont = font.getDictionaryObject( COSName.BASE_FONT );
-            String name = null;
-            if( baseFont instanceof COSName )
-            {
-                name = ((COSName)baseFont).getName();
-                if (name.indexOf("+") > -1)
-                {
-                    name = name.substring(name.indexOf("+")+1);
-                }
+		// standard 14 fonts use an AFM
+		afmStandard14 = Standard14Fonts.getAFM(getName()); // may be null (it usually is)
 
-            }
-            else if ( baseFont instanceof COSString )
-            {
-                COSString string = (COSString)baseFont;
-                name = string.getString();
-            }
-            if ( name != null )
-            {
-                afm = afmObjects.get( name );
-            }
-        }
-        return afm;
-    }
+		// font descriptor
+		COSDictionary fd = (COSDictionary) dict.getDictionaryObject(COSName.FONT_DESC);
+		if (fd != null)
+		{
+			fontDescriptor = new PDFontDescriptor(fd);
+		}
+		else if (afmStandard14 != null)
+		{
+			// build font descriptor from the AFM
+			fontDescriptor = PDType1FontEmbedder.buildFontDescriptor(afmStandard14);
+		}
+		else
+		{
+			fontDescriptor = null;
+		}
 
-    private FontMetric afm = null;
+		// ToUnicode CMap
+		COSBase toUnicode = dict.getDictionaryObject(COSName.TO_UNICODE);
+		if (toUnicode != null)
+		{
+			toUnicodeCMap = readCMap(toUnicode);
+			if (toUnicodeCMap != null && !toUnicodeCMap.hasUnicodeMappings())
+			{
+				LOG.warn("Invalid ToUnicode CMap in font " + getName());
+			}
+		}
+		else
+		{
+			toUnicodeCMap = null;
+		}
+	}
 
-    private COSBase encoding = null;
-    /**
-     * cache the {@link COSName#ENCODING} object from
-     * the font's dictionary since it is called so often.
-     * <p>
-     * Use this method instead of
-     * <pre>
-     *   font.getDictionaryObject(COSName.ENCODING);
-     * </pre>
-     * @return the encoding
-     */
-    protected COSBase getEncoding()
-    {
-        if (encoding == null)
-        {
-            encoding = font.getDictionaryObject( COSName.ENCODING );
-        }
-        return encoding;
-    }
-    
-    /**
-     * Set the encoding object from the fonts dictionary.
-     * @param encodingValue the given encoding.
-     */
-    protected void setEncoding(COSBase encodingValue)
-    {
-        font.setItem( COSName.ENCODING, encodingValue );
-        encoding = encodingValue;
-    }
-    
-    /**
-     * Encode the given value using the CMap of the font.
-     *
-     * @param code the code to encode.
-     * @param length the byte length of the given code.
-     * @param isCIDFont indicates that the used font is a CID font.
-     *
-     * @return The value of the encoded character.
-     * @throws IOException if something went wrong
-     */
-    protected String cmapEncoding( int code, int length, boolean isCIDFont, CMap sourceCmap ) throws IOException
-    {
-        String retval = null;
-        // there is not sourceCmap if this is a descendant font
-        if (sourceCmap == null)
-        {
-            sourceCmap = cmap;
-        }
-        if (sourceCmap != null)
-        {
-            retval = sourceCmap.lookup(code, length);
-            if (retval == null && isCIDFont)
-            {
-                retval = sourceCmap.lookupCID(code);
-            }
-        }
-        return retval;
-    }
-    
-    /**
-     * This will perform the encoding of a character if needed.
-     *
-     * @param c The character to encode.
-     * @param offset The offset into the array to get the data
-     * @param length The number of bytes to read.
-     *
-     * @return The value of the encoded character.
-     *
-     * @throws IOException If there is an error during the encoding.
-     */
-    public String encode( byte[] c, int offset, int length ) throws IOException
-    {
-        String retval = null;
-        int code = getCodeFromArray( c, offset, length );
-        if( toUnicodeCmap != null )
-        {
-            retval = cmapEncoding(code, length, false, toUnicodeCmap);
-        }
-        if( retval == null && cmap != null )
-        {
-            retval = cmapEncoding(code, length, false, cmap);
-        }
+	/**
+	 * Returns the AFM if this is a Standard 14 font.
+	 */
+	protected final FontMetrics getStandard14AFM()
+	{
+		return afmStandard14;
+	}
 
-        // there is no cmap but probably an encoding with a suitable mapping
-        if( retval == null )
-        {
-            if( fontEncoding != null )
-            {
-                retval = fontEncoding.getCharacter( code );
-            }
-            if( retval == null && (cmap == null || length == 2))
-            {
-                retval = getStringFromArray( c, offset, length );
-            }
-        }
-        return retval;
-    }
-    
-    public int encodeToCID( byte[] c, int offset, int length ) throws IOException
-    {
-        int code = -1;
-        if (encode(c, offset, length) != null) 
-        {
-            code = getCodeFromArray( c, offset, length );
-        }
-        return code;
-    }
-    
-    private static final String[] SINGLE_CHAR_STRING = new String[256];
-    private static final String[][] DOUBLE_CHAR_STRING = new String[256][256];
-    static
-    {
-        for( int i=0; i<256; i++ )
-        {
-            try
-            {
-                SINGLE_CHAR_STRING[i] = new String( new byte[] {(byte)i}, "ISO-8859-1" );
-            }
-            catch (UnsupportedEncodingException e)
-            {
-                // Nothing should happen here
-                LOG.error(e,e);
-            }
-            for( int j=0; j<256; j++ )
-            {
-                try
-                {
-                    DOUBLE_CHAR_STRING[i][j] = new String( new byte[] {(byte)i, (byte)j}, "UTF-16BE" );
-                }
-                catch (UnsupportedEncodingException e)
-                {
-                    // Nothing should happen here
-                    LOG.error(e,e);
-                }
-            }
-        }
-    }
+	@Override
+	public PDFontDescriptor getFontDescriptor()
+	{
+		return fontDescriptor;
+	}
 
-    private static String getStringFromArray( byte[] c, int offset, int length ) throws IOException
-    {
-        String retval = null;
-        if( length == 1 )
-        {
-            retval = SINGLE_CHAR_STRING[(c[offset]+256)%256];
-        }
-        else if( length == 2 )
-        {
-            retval = DOUBLE_CHAR_STRING[(c[offset]+256)%256][(c[offset+1]+256)%256];
-        }
-        else
-        {
-            throw new IOException( "Error:Unknown character length:" + length );
-        }
-        return retval;
-    }
-    
-    protected CMap parseCmap( String cmapRoot, InputStream cmapStream)
-    {
-        CMap targetCmap = null;
-        if( cmapStream != null )
-        {
-            CMapParser parser = new CMapParser();
-            try
-            {
-                targetCmap = parser.parse( cmapRoot, cmapStream );
-                // limit the cache to external CMaps
-                if (cmapRoot != null)
-                {
-                    cmapObjects.put( targetCmap.getName(), targetCmap );
-                }
-            }
-            catch (IOException exception)
-            {
-                LOG.error("An error occurs while reading a CMap", exception);
-            }
-        }
-        return targetCmap;
-    }
-    
-    /**
-     * The will set the encoding for this font.
-     *
-     * @param enc The font encoding.
-     */
-    public void setFontEncoding( Encoding enc )
-    {
-        fontEncoding = enc;
-    }
-    
-    /**
-     * This will get or create the encoder.
-     *
-     * @return The encoding to use.
-     */
-    public Encoding getFontEncoding()
-    {
-        return fontEncoding;
-    }
-    
-    /**
-     * This will always return "Font" for fonts.
-     *
-     * @return The type of object that this is.
-     */
-    public String getType()
-    {
-        return font.getNameAsString( COSName.TYPE );
-    }
-    
- // Memorized values to avoid repeated dictionary lookups
-    private String subtype = null;
-    private boolean type1Font;
-    private boolean type3Font;
-    private boolean trueTypeFont;
-    private boolean type0Font;
+	/**
+	 * Reads a CMap given a COS Stream or Name. May return null if a predefined CMap does not exist.
+	 *
+	 * @param base COSName or COSStream
+	 */
+	protected final CMap readCMap(COSBase base) throws IOException
+	{
+		if (base instanceof COSName)
+		{
+			// predefined CMap
+			String name = ((COSName)base).getName();
+			return CMapManager.getPredefinedCMap(name);
+		}
+		else if (base instanceof COSStream)
+		{
+			// embedded CMap
+			InputStream input = null;
+			try
+			{
+				input = ((COSStream)base).getUnfilteredStream();
+				return CMapManager.parseCMap(input);
+			}
+			finally
+			{
+				IOUtils.closeQuietly(input);
+			}
+		}
+		else
+		{
+			throw new IOException("Expected Name or Stream");
+		}
+	}
 
-    /**
-     * This will get the subtype of font, Type1, Type3, ...
-     *
-     * @return The type of font that this is.
-     */
-    public String getSubType()
-    {
-        if (subtype == null)
-        {
-            subtype = font.getNameAsString( COSName.SUBTYPE );
-            type1Font = "Type1".equals(subtype);
-            trueTypeFont = "TrueType".equals(subtype);
-            type0Font = "Type0".equals(subtype);
-            type3Font = "Type3".equals(subtype);
-        }
-        return subtype;
-    }
+	@Override
+	public COSDictionary getCOSObject()
+	{
+		return dict;
+	}
 
-    /**
-     * Determines if the font is a type 1 font.
-     * @return returns true if the font is a type 1 font
-     */
-    protected boolean isType1Font()
-    {
-        getSubType();
-        return type1Font;
-    }
-    
-    /**
-     * Determines if the font is a type 3 font.
-     * 
-     * @return returns true if the font is a type 3 font
-     */
-    public boolean isType3Font()
-    {
-        getSubType();
-        return type3Font;
-    }
-    
-    /**
-     * Determines if the font is a type 0 font.
-     * @return returns true if the font is a type 0 font
-     */
-    protected boolean isType0Font()
-    {
-        getSubType();
-        return type0Font;
-    }
+	@Override
+	public Vector getPositionVector(int code)
+	{
+		throw new UnsupportedOperationException("Horizontal fonts have no position vector");
+	}
 
-    private boolean isTrueTypeFont()
-    {
-        getSubType();
-        return trueTypeFont;
-    }
-    
-    /**
-     * Determines if the font is a symbolic font.
-     * 
-     * @return returns true if the font is a symbolic font
-     */
-    public boolean isSymbolicFont()
-    {
-        if (getFontDescriptor() != null)
-        {
-            return getFontDescriptor().isSymbolic();
-        }
-        return false;
-    }
-    
-    /**
-     * The PostScript name of the font.
-     *
-     * @return The postscript name of the font.
-     */
-    public String getBaseFont()
-    {
-        return font.getNameAsString( COSName.BASE_FONT );
-    }
-    
-    /**
-     * Set the PostScript name of the font.
-     *
-     * @param baseFont The postscript name for the font.
-     */
-    public void setBaseFont( String baseFont )
-    {
-        font.setName( COSName.BASE_FONT, baseFont );
-    }
-    
-    /**
-     * The code for the first char or -1 if there is none.
-     *
-     * @return The code for the first character.
-     */
-    public int getFirstChar()
-    {
-        return font.getInt( COSName.FIRST_CHAR, -1 );
-    }
+	/**
+	 * Returns the displacement vector (w0, w1) in text space, for the given character.
+	 * For horizontal text only the x component is used, for vertical text only the y component.
+	 *
+	 * @param code character code
+	 * @return displacement vector
+	 */
+	public Vector getDisplacement(int code) throws IOException
+	{
+		return new Vector(getWidth(code) / 1000, 0);
+	}
 
-    /**
-     * Set the first character this font supports.
-     *
-     * @param firstChar The first character.
-     */
-    public void setFirstChar( int firstChar )
-    {
-        font.setInt( COSName.FIRST_CHAR, firstChar );
-    }
+	@Override
+	public float getWidth(int code) throws IOException
+	{
+		// Acrobat overrides the widths in the font program on the conforming reader's system with
+		// the widths specified in the font dictionary." (Adobe Supplement to the ISO 32000)
+		//
+		// Note: The Adobe Supplement says that the override happens "If the font program is not
+		// embedded", however PDFBOX-427 shows that it also applies to embedded fonts.
 
-    /**
-     * The code for the last char or -1 if there is none.
-     *
-     * @return The code for the last character.
-     */
-    public int getLastChar()
-    {
-        return font.getInt( COSName.LAST_CHAR, -1 );
-    }
+		// Type1, Type1C, Type3
+		if (dict.containsKey(COSName.WIDTHS) || dict.containsKey(COSName.MISSING_WIDTH))
+		{
+			int firstChar = dict.getInt(COSName.FIRST_CHAR, -1);
+			int lastChar = dict.getInt(COSName.LAST_CHAR, -1);
+			if (getWidths().size() > 0 && code >= firstChar && code <= lastChar)
+			{
+				return getWidths().get(code - firstChar).floatValue();
+			}
 
-    /**
-     * Set the last character this font supports.
-     *
-     * @param lastChar The last character.
-     */
-    public void setLastChar( int lastChar )
-    {
-        font.setInt( COSName.LAST_CHAR, lastChar );
-    }
-    
-    /**
-     * The widths of the characters.  This will be null for the standard 14 fonts.
-     *
-     * @return The widths of the characters.
-     *
-     */
-    public List<Float> getWidths()
-    {
-        if (widths == null && !widthsAreMissing)
-        {
-            COSArray array = (COSArray)font.getDictionaryObject( COSName.WIDTHS );
-            if (array != null)
-            {
-                widths = COSArrayList.convertFloatCOSArrayToList(array);
-            }
-            else
-            {
-                widthsAreMissing = true;
-            }
-        }
-        return widths;
-    }
+			PDFontDescriptor fd = getFontDescriptor();
+			if (fd != null)
+			{
+				// if there's nothing to override with, then obviously we fall back to the font
+				return fd.getMissingWidth(); // default is 0
+			}
+		}
+		// if there's nothing to override with, then obviously we fall back to the font
+		return getWidthFromFont(code);
+	}
 
-    /**
-     * Set the widths of the characters code.
-     *
-     * @param widthsList The widths of the character codes.
-     */
-    public void setWidths(List<Float> widthsList)
-    {
-        widths = widthsList;
-        font.setItem( COSName.WIDTHS, COSArrayList.converterToCOSArray( widths ) );
-    }
-    
-    /**
-     * This will get the matrix that is used to transform glyph space to
-     * text space.  By default there are 1000 glyph units to 1 text space
-     * unit, but type3 fonts can use any value.
-     *
-     * Note:If this is a type3 font then it can be modified via the PDType3Font.setFontMatrix, otherwise this
-     * is a read-only property.
-     *
-     * @return The matrix to transform from glyph space to text space.
-     */
-    public PDMatrix getFontMatrix()
-    {
-        if (fontMatrix == null)
-        {
-            COSArray array = (COSArray)font.getDictionaryObject( COSName.FONT_MATRIX );
-            if( array == null )
-            {
-                array = new COSArray();
-                array.add( new COSFloat( 0.001f ) );
-                array.add( COSInteger.ZERO );
-                array.add( COSInteger.ZERO );
-                array.add( new COSFloat( 0.001f ) );
-                array.add( COSInteger.ZERO );
-                array.add( COSInteger.ZERO );
-            }
-            fontMatrix = new PDMatrix(array);
-        }
-        return fontMatrix;
-    }
-    /**
-     * This will get the fonts bounding box.
-     *
-     * @return The fonts bounding box.
-     *
-     * @throws IOException If there is an error getting the bounding box.
-     */
-    public abstract PDRectangle getFontBoundingBox() throws IOException;
+	//    @OverrideTODO
+	//    public abstract float getWidthFromFont(int code) throws IOException;
 
-    /**
-     * {@inheritDoc}
-     */
-    public boolean equals( Object other )
-    {
-        return other instanceof PDFont && ((PDFont)other).getCOSObject() == this.getCOSObject();
-    }
+	@Override
+	public abstract boolean isEmbedded();
 
-    /**
-     * {@inheritDoc}
-     */
-    public int hashCode()
-    {
-        return this.getCOSObject().hashCode();
-    }
-    
-    /**
-     * Determines the width of the given character.
-     * @param charCode the code of the given character
-     * @return the width of the character
-     */
-    public float getFontWidth( int charCode )
-    {
-        float width = -1;
-        int firstChar = getFirstChar();
-        int lastChar = getLastChar();
-        if (charCode >= firstChar && charCode <= lastChar)
-        {
-            // maybe the font doesn't provide any widths
-            if (!widthsAreMissing)
-            {
-                getWidths();
-                if (widths != null)
-                {
-                    width = widths.get(charCode-firstChar).floatValue();
-                }
-            }
-        }
-        else
-        {
-            PDFontDescriptor fd = getFontDescriptor();
-            if (fd instanceof PDFontDescriptorDictionary)
-            {
-                width = fd.getMissingWidth();
-            }
-        }
-        return width;
-    }
-    
-    /**
-     * Determines if a font as a ToUnicode entry.
-     * @return true if the font has a ToUnicode entry
-     */
-    protected boolean hasToUnicode()
-    {
-        return hasToUnicode;
-    }
-    
-    /**
-     * Sets hasToUnicode to the given value.
-     * @param hasToUnicodeValue the given value for hasToUnicode
-     */
-    protected void setHasToUnicode(boolean hasToUnicodeValue)
-    {
-        hasToUnicode = hasToUnicodeValue;
-    }
-    
-    /**
-     * Determines the width of the space character.
-     * @return the width of the space character
-     */
-    public abstract float getSpaceWidth();
+	//    @OverrideTODO
+	//    public abstract float getHeight(int code) throws IOException;
 
-    /**
-     * Returns the toUnicode mapping if present.
-     * 
-     * @return the CMap representing the toUnicode mapping
-     */
-    public CMap getToUnicodeCMap()
-    {
-        return toUnicodeCmap;
-    }
-    
-    /**
-     * Calling this will release all cached information.
-     */
-    public void clear()
-    {
-    }
+	/**
+	 * Returns the width of the given Unicode string.
+	 *
+	 * @param string The string to get the width of.
+	 * @return The width of the string in 1000 units of text space, ie 333 567...
+	 * @throws IOException If there is an error getting the width information.
+	 */
+	public float getStringWidth(String string) throws IOException
+	{
+		byte[] data = string.getBytes("ISO-8859-1"); // todo: *no*, these are *not* character codes
+		float totalWidth = 0;
+		for (int i = 0; i < data.length; i++)
+		{
+			totalWidth += getWidth(data[i]);
+		}
+		return totalWidth;
+	}
 
+	/**
+	 * This will get the average font width for all characters.
+	 *
+	 * @return The width is in 1000 unit of text space, ie 333 or 777
+	 */
+	// todo: this method is highly suspicious, the average glyph width is not usually a good metric
+	public float getAverageFontWidth()
+	{
+		float average;
+		if (avgFontWidth != 0.0f)
+		{
+			average = avgFontWidth;
+		}
+		else
+		{
+			float totalWidth = 0.0f;
+			float characterCount = 0.0f;
+			COSArray widths = (COSArray) dict.getDictionaryObject(COSName.WIDTHS);
+			if (widths != null)
+			{
+				for (int i = 0; i < widths.size(); i++)
+				{
+					COSNumber fontWidth = (COSNumber) widths.getObject(i);
+					if (fontWidth.floatValue() > 0)
+					{
+						totalWidth += fontWidth.floatValue();
+						characterCount += 1;
+					}
+				}
+			}
+
+			if (totalWidth > 0)
+			{
+				average = totalWidth / characterCount;
+			}
+			else
+			{
+				average = 0;
+			}
+			avgFontWidth = average;
+		}
+		return average;
+	}
+
+	/**
+	 * Reads a character code from a content stream string. Codes may be up to 4 bytes long.
+	 *
+	 * @param in string stream
+	 * @return character code
+	 * @throws IOException if the CMap or stream cannot be read
+	 */
+	public abstract int readCode(InputStream in) throws IOException;
+
+	/**
+	 * Returns the Unicode character sequence which corresponds to the given character code.
+	 *
+	 * @param code character code
+	 * @param customGlyphList a custom glyph list to use instead of the Adobe Glyph List
+	 * @return Unicode character(s)
+	 */
+	public String toUnicode(int code, GlyphList customGlyphList) throws IOException
+	{
+		return toUnicode(code);
+	}
+
+	/**
+	 * Returns the Unicode character sequence which corresponds to the given character code.
+	 *
+	 * @param code character code
+	 * @return Unicode character(s)
+	 */
+	public String toUnicode(int code) throws IOException
+	{
+		// if the font dictionary containsName a ToUnicode CMap, use that CMap
+		if (toUnicodeCMap != null)
+		{
+			if (toUnicodeCMap.getName() != null && toUnicodeCMap.getName().startsWith("Identity-"))
+			{
+				// handle the undocumented case of using Identity-H/V as a ToUnicode CMap, this
+				// isn't  actually valid as the Identity-x CMaps are code->CID maps, not
+				// code->Unicode maps. See sample_fonts_solidconvertor.pdf for an example.
+				return new String(new char[] { (char) code });
+			}
+			else
+			{
+				// proceed as normal
+				return toUnicodeCMap.toUnicode(code);
+			}
+		}
+
+		// if no value has been produced, there is no way to obtain Unicode for the character.
+		// this behaviour can be overridden is subclasses, but this method *must* return null here
+		return null;
+	}
+
+	/**
+	 * This will always return "Font" for fonts.
+	 * 
+	 * @return The type of object that this is.
+	 */
+	public String getType()
+	{
+		return dict.getNameAsString(COSName.TYPE);
+	}
+
+	/**
+	 * This will get the subtype of font.
+	 */
+	public String getSubType()
+	{
+		return dict.getNameAsString(COSName.SUBTYPE);
+	}
+
+	/**
+	 * Returns true the font is a symbolic (that is, it does not use the Adobe Standard Roman
+	 * character set).
+	 */
+	public final boolean isSymbolic()
+	{
+		if (isSymbolic == null)
+		{
+			Boolean result = isFontSymbolic();
+			if (result != null)
+			{
+				isSymbolic = result;
+			}
+			else
+			{
+				// unless we can prove that the font is symbolic, we assume that it is not
+				isSymbolic = true;
+			}
+		}
+		return isSymbolic;
+	}
+
+	/**
+	 * Internal implementation of isSymbolic, allowing for the fact that the result may be
+	 * indeterminate.
+	 */
+	protected Boolean isFontSymbolic()
+	{
+		return getSymbolicFlag();
+	}
+
+	/**
+	 * Returns the value of the symbolic flag,  allowing for the fact that the result may be
+	 * indeterminate.
+	 */
+	protected Boolean getSymbolicFlag()
+	{
+		if (getFontDescriptor() != null)
+		{
+			// fixme: isSymbolic() defaults to false if the flag is missing so we can't trust this
+			return getFontDescriptor().isSymbolic();
+		}
+		return null;
+	}
+
+	@Override
+	public abstract String getName();
+
+	@Override
+	public abstract BoundingBox getBoundingBox() throws IOException;
+
+	/**
+	 * The widths of the characters. This will be null for the standard 14 fonts.
+	 *
+	 * @return The widths of the characters.
+	 */
+	protected final List<Integer> getWidths()
+	{
+		if (widths == null)
+		{
+			COSArray array = (COSArray) dict.getDictionaryObject(COSName.WIDTHS);
+			if (array != null)
+			{
+				widths = COSArrayList.convertIntegerCOSArrayToList(array);
+			}
+			else
+			{
+				widths = Collections.emptyList();
+			}
+		}
+		return widths;
+	}
+
+	@Override
+	public Matrix getFontMatrix()
+	{
+		return DEFAULT_FONT_MATRIX;
+	}
+
+	/**
+	 * Determines the width of the space character.
+	 * 
+	 * @return the width of the space character
+	 */
+	public float getSpaceWidth()
+	{
+		if (fontWidthOfSpace == -1f)
+		{
+			COSBase toUnicode = dict.getDictionaryObject(COSName.TO_UNICODE);
+			try
+			{
+				if (toUnicode != null)
+				{
+					int spaceMapping = toUnicodeCMap.getSpaceMapping();
+					if (spaceMapping > -1)
+					{
+						fontWidthOfSpace = getWidth(spaceMapping);
+					}
+				}
+				else
+				{
+					fontWidthOfSpace = getWidth(32);
+				}
+				// use the average font width as fall back
+				if (fontWidthOfSpace <= 0)
+				{
+					fontWidthOfSpace = getAverageFontWidth();
+				}
+			}
+			catch (Exception e)
+			{
+				LOG.error("Can't determine the width of the space character, assuming 250", e);
+				fontWidthOfSpace = 250f;
+			}
+		}
+		return fontWidthOfSpace;
+	}
+
+	/**
+	 * Returns true if the font uses vertical writing mode.
+	 */
+	public abstract boolean isVertical();
+
+	/**
+	 * Returns true if this font is one of the "Standard 14" fonts and receives special handling.
+	 */
+	public boolean isStandard14()
+	{
+		// this logic is based on Acrobat's behaviour, see see PDFBOX-2372
+		// symbolic fonts are never standard: they don't use the Adobe Standard Roman character set
+		if (isSymbolic())
+		{
+			return false;
+		}
+		// embedded fonts never get special treatment
+		if (isEmbedded())
+		{
+			return false;
+		}
+		// if the name matches, this is a Standard 14 font
+		return Standard14Fonts.containsName(getName());
+	}
+
+	@Override
+	public boolean equals(Object other)
+	{
+		return other instanceof PDFont && ((PDFont) other).getCOSObject() == this.getCOSObject();
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return this.getCOSObject().hashCode();
+	}
+
+	@Override
+	public String toString()
+	{
+		return getClass().getSimpleName() + " " + getName();
+	}
 }

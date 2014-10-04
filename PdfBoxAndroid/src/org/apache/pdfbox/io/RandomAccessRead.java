@@ -8,11 +8,11 @@ import java.io.IOException;
 public interface RandomAccessRead extends SequentialRead
 {
 
-	/**
+    /**
      * Returns offset of next byte to be returned by a read method.
      * 
      * @return offset of next byte which will be returned with next {@link #read()}
-     *         (if no more bytes are left it returns a value >= length of source)
+     *         (if no more bytes are left it returns a value &gt;= length of source)
      *         
      * @throws IOException 
      */
@@ -35,5 +35,5 @@ public interface RandomAccessRead extends SequentialRead
      * length of the data stream.
      */
     public long length() throws IOException;
-	
+
 }

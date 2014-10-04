@@ -1,32 +1,24 @@
 package org.apache.pdfbox.pdmodel.font;
 
+import java.io.IOException;
+
 import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
 
 /**
- * This is implementation of the Multiple Master Type1 Font.
+ * Type 1 Multiple Master Font.
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.4 $
+ * @author Ben Litchfield
  */
 public class PDMMType1Font extends PDType1Font
 {
     /**
-     * Constructor.
-     */
-    public PDMMType1Font()
-    {
-        super();
-        font.setItem( COSName.SUBTYPE, COSName.MM_TYPE1 );
-    }
-
-    /**
-     * Constructor.
+     * Creates an MMType1Font from a Font dictionary in a PDF.
      *
-     * @param fontDictionary The font dictionary according to the PDF specification.
+     * @param fontDictionary font dictionary
+     * @param glyphList a custom glyph list for Unicode mapping
      */
-    public PDMMType1Font( COSDictionary fontDictionary )
+    public PDMMType1Font(COSDictionary fontDictionary) throws IOException
     {
-        super( fontDictionary );
+        super(fontDictionary);
     }
 }

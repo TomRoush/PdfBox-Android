@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,23 +16,24 @@ import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSNull;
 import org.apache.pdfbox.cos.COSStream;
+
 import org.apache.pdfbox.filter.Filter;
-import org.apache.pdfbox.filter.FilterManager;
+import org.apache.pdfbox.filter.FilterFactory;
 import org.apache.pdfbox.io.IOUtils;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
+
 import org.apache.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
 
 /**
  * A PDStream represents a stream in a PDF document. Streams are tied to a
  * single PDF document.
  * 
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.17 $
+ * @author Ben Litchfield
  */
 public class PDStream implements COSObjectable
 {
-
-	private COSStream stream;
+    private COSStream stream;
 
     /**
      * This will create a new PDStream object.
@@ -40,7 +42,7 @@ public class PDStream implements COSObjectable
     {
         // should only be called by PDMemoryStream
     }
-    
+
     /**
      * This will create a new PDStream object.
      * 
@@ -51,7 +53,7 @@ public class PDStream implements COSObjectable
     {
         stream = document.getDocument().createCOSStream();
     }
-    
+
     /**
      * Constructor.
      * 
@@ -62,7 +64,7 @@ public class PDStream implements COSObjectable
     {
         stream = str;
     }
-    
+
     /**
      * Constructor. Reads all data from the input stream and embeds it into the
      * document, this will close the InputStream.
@@ -78,7 +80,7 @@ public class PDStream implements COSObjectable
     {
         this(doc, str, false);
     }
-    
+
     /**
      * Constructor. Reads all data from the input stream and embeds it into the
      * document, this will close the InputStream.
@@ -126,7 +128,7 @@ public class PDStream implements COSObjectable
             }
         }
     }
-    
+
     /**
      * If there are not compression filters on the current stream then this will
      * add a compression filter, flate compression for example.
@@ -141,7 +143,7 @@ public class PDStream implements COSObjectable
             setFilters(filters);
         }
     }
-    
+
     /**
      * Create a pd stream from either a regular COSStream on a COSArray of cos
      * streams.
@@ -176,7 +178,7 @@ public class PDStream implements COSObjectable
         }
         return retval;
     }
-    
+
     /**
      * Convert this standard java object to a COS object.
      * 
@@ -186,7 +188,7 @@ public class PDStream implements COSObjectable
     {
         return stream;
     }
-    
+
     /**
      * This will get a stream that can be written to.
      * 
@@ -199,7 +201,7 @@ public class PDStream implements COSObjectable
     {
         return stream.createUnfilteredStream();
     }
-    
+
     /**
      * This will get a stream that can be read from.
      * 
@@ -212,7 +214,7 @@ public class PDStream implements COSObjectable
     {
         return stream.getUnfilteredStream();
     }
-    
+
     /**
      * This will get a stream with some filters applied but not others. This is
      * useful when doing images, ie filters = [flate,dct], we want to remove
@@ -227,7 +229,6 @@ public class PDStream implements COSObjectable
     public InputStream getPartiallyFilteredStream(List<String> stopFilters)
             throws IOException
     {
-        FilterManager manager = stream.getFilterManager();
         InputStream is = stream.getFilteredStream();
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         List<COSName> filters = getFilters();
@@ -241,7 +242,7 @@ public class PDStream implements COSObjectable
             }
             else
             {
-                Filter filter = manager.getFilter(nextFilter);
+                Filter filter = FilterFactory.INSTANCE.getFilter(nextFilter);
                 filter.decode(is, os, stream, i);
                 IOUtils.closeQuietly(is);
                 is = new ByteArrayInputStream(os.toByteArray());
@@ -250,7 +251,7 @@ public class PDStream implements COSObjectable
         }
         return is;
     }
-    
+
     /**
      * Get the cos stream associated with this object.
      * 
@@ -260,7 +261,7 @@ public class PDStream implements COSObjectable
     {
         return stream;
     }
-    
+
     /**
      * This will get the length of the filtered/compressed stream. This is
      * readonly in the PD Model and will be managed by this class.
@@ -271,7 +272,7 @@ public class PDStream implements COSObjectable
     {
         return stream.getInt(COSName.LENGTH, 0);
     }
-    
+
     /**
      * This will get the list of filters that are associated with this stream.
      * Or null if there are none.
@@ -306,7 +307,7 @@ public class PDStream implements COSObjectable
         COSBase obj = COSArrayList.converterToCOSArray(filters);
         stream.setItem(COSName.FILTER, obj);
     }
-    
+
     /**
      * Get the list of decode parameters. Each entry in the list will refer to
      * an entry in the filters list.
@@ -349,7 +350,7 @@ public class PDStream implements COSObjectable
 
         return retval;
     }
-    
+
     /**
      * This will set the list of decode parameterss.
      * 
@@ -361,7 +362,7 @@ public class PDStream implements COSObjectable
         stream.setItem(COSName.DECODE_PARMS,
                 COSArrayList.converterToCOSArray(decodeParams));
     }
-    
+
     /**
      * This will get the file specification for this stream. This is only
      * required for external files.
@@ -506,10 +507,10 @@ public class PDStream implements COSObjectable
     }
 
     /**
-     * A convenience method to get this stream as a string. Uses the default
-     * system encoding.
+     * A convenience method to get this stream as a string.
+     * The string is returned using ISO-8559-1 encoding.
      * 
-     * @return a String representation of this (input) stream.
+     * @return a String representation of this (input) stream using IS0-8559-1 encoding.
      * 
      * @throws IOException
      *             if there is an error while converting the stream to a string.

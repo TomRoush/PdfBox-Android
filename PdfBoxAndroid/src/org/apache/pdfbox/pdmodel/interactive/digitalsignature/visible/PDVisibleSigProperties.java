@@ -6,8 +6,7 @@ import java.io.InputStream;
 /**
  * This builder class is in order to create visible signature properties.
  * 
- * @author <a href="mailto:vakhtang.koroghlishvili@gmail.com"> vakhtang koroghlishvili (gogebashvili) </a>
- * 
+ * @author Vakhtang Koroghlishvili
  */
 public class PDVisibleSigProperties
 {
@@ -23,15 +22,15 @@ public class PDVisibleSigProperties
 
     /**
      * start building of visible signature
-     * 
-     * @throws IOException
+     *
+     * @throws IOException if the output could not be written
      */
-//    public void buildSignature() throws IOException
-//    {
-//        PDFTemplateBuilder builder = new PDVisibleSigBuilder();
-//        PDFTemplateCreator creator = new PDFTemplateCreator(builder);
-//        setVisibleSignature(creator.buildPDF(getPdVisibleSignature()));
-//    }TODO
+    public void buildSignature() throws IOException
+    {
+        PDFTemplateBuilder builder = new PDVisibleSigBuilder();
+        PDFTemplateCreator creator = new PDFTemplateCreator(builder);
+//        setVisibleSignature(creator.buildPDF(getPdVisibleSignature()));TODO
+    }
 
     /**
      * 
@@ -75,7 +74,7 @@ public class PDVisibleSigProperties
 
     /**
      * gets reason of signing
-     * @return 
+     * @return  the signing reason. 
      */
     public String getSignatureReason()
     {
@@ -95,7 +94,7 @@ public class PDVisibleSigProperties
 
     /**
      * returns your page
-     * @return the page number.
+     * @return  the page number.
      */
     public int getPage()
     {
@@ -190,5 +189,4 @@ public class PDVisibleSigProperties
     {
         this.visibleSignature = visibleSignature;
     }
-
 }

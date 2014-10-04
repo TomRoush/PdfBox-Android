@@ -28,7 +28,7 @@ public class InstructionSequence
      */
     public void addInteger(int value)
     {
-        this.instructions.add(Integer.valueOf(value));
+        this.instructions.add(value);
     }
 
     /**
@@ -37,7 +37,7 @@ public class InstructionSequence
      */
     public void addReal(float value)
     {
-        this.instructions.add(Float.valueOf(value));
+        this.instructions.add(value);
     }
 
     /**
@@ -46,7 +46,7 @@ public class InstructionSequence
      */
     public void addBoolean(boolean value)
     {
-        this.instructions.add(Boolean.valueOf(value));
+        this.instructions.add(value);
     }
 
     /**

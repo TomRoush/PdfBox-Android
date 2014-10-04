@@ -1,5 +1,11 @@
 package org.apache.pdfbox.util;
 
+import org.apache.pdfbox.cos.COSArray;
+import org.apache.pdfbox.cos.COSFloat;
+import org.apache.pdfbox.cos.COSNumber;
+
+import android.graphics.PointF;
+
 /**
  * This class will be used for matrix manipulation.
  *
@@ -10,9 +16,9 @@ public class Matrix implements Cloneable
 {
     static final float[] DEFAULT_SINGLE =
     {
-        1,0,0,
-        0,1,0,
-        0,0,1
+        1,0,0,  //  a  b  0
+        0,1,0,  //  c  d  0
+        0,0,1   //  tx ty 1
     };
 
     private float[] single;
@@ -24,6 +30,35 @@ public class Matrix implements Cloneable
     {
         single = new float[DEFAULT_SINGLE.length];
         reset();
+    }
+
+    /**
+     * Constructor.
+     */
+    public Matrix(COSArray array)
+    {
+        single = new float[DEFAULT_SINGLE.length];
+        single[0] = ((COSNumber)array.get(0)).floatValue();
+        single[1] = ((COSNumber)array.get(1)).floatValue();
+        single[3] = ((COSNumber)array.get(2)).floatValue();
+        single[4] = ((COSNumber)array.get(3)).floatValue();
+        single[6] = ((COSNumber)array.get(4)).floatValue();
+        single[7] = ((COSNumber)array.get(5)).floatValue();
+    }
+
+    /**
+     * Constructor.
+     */
+    public Matrix(float a, float b, float c, float d, float e, float f)
+    {
+        single = new float[DEFAULT_SINGLE.length];
+        single[0] = a;
+        single[1] = b;
+        single[3] = c;
+        single[4] = d;
+        single[6] = e;
+        single[7] = f;
+        single[8] = 1;
     }
 
     /**
@@ -42,12 +77,12 @@ public class Matrix implements Cloneable
      */
     public android.graphics.Matrix createAffineTransform()
     {
-//        AffineTransform retval = new AffineTransform(
+        android.graphics.Matrix retval = new android.graphics.Matrix();
+//        		(
 //            single[0], single[1],
 //            single[3], single[4],
 //            single[6], single[7] );
-    	android.graphics.Matrix retval = new android.graphics.Matrix();
-    	retval.setValues(single);
+        retval.setValues(single);
         return retval;
     }
 
@@ -56,22 +91,16 @@ public class Matrix implements Cloneable
      *
      * @param af The transform to get the values from.
      */
-    public void setFromAffineTransform( android.graphics.Matrix m/*AffineTransform af*/ )
+    public void setFromAffineTransform( android.graphics.Matrix af )
     {
-//        single[0] = (float)af.getScaleX();
-//        single[1] = (float)af.getShearY();
-//        single[3] = (float)af.getShearX();
-//        single[4] = (float)af.getScaleY();
-//        single[6] = (float)af.getTranslateX();
-//        single[7] = (float)af.getTranslateY();
     	float[] values = new float[9];
-    	m.getValues(values);
-    	single[0] = values[android.graphics.Matrix.MSCALE_X];
-        single[1] = values[android.graphics.Matrix.MSKEW_Y];
-        single[3] = values[android.graphics.Matrix.MSKEW_X];
-        single[4] = values[android.graphics.Matrix.MSCALE_Y];
-        single[6] = values[android.graphics.Matrix.MTRANS_X];
-        single[7] = values[android.graphics.Matrix.MTRANS_X];
+    	af.getValues(values);
+        single[0] = (float)values[android.graphics.Matrix.MSCALE_X];
+        single[1] = (float)values[android.graphics.Matrix.MSKEW_Y];
+        single[3] = (float)values[android.graphics.Matrix.MSKEW_X];
+        single[4] = (float)values[android.graphics.Matrix.MSCALE_Y];
+        single[6] = (float)values[android.graphics.Matrix.MTRANS_X];
+        single[7] = (float)values[android.graphics.Matrix.MTRANS_Y];
     }
 
     /**
@@ -137,6 +166,27 @@ public class Matrix implements Cloneable
         retval[2][1] = single[7];
         retval[2][2] = single[8];
         return retval;
+    }
+
+    /**
+     * Concatenates (premultiplies) the given matrix to this matrix.
+     *
+     * @param matrix The matrix to concatenate.
+     */
+    public void concatenate(Matrix matrix)
+    {
+        matrix.multiply(this, this);
+    }
+
+    /**
+     * Translates this matrix by the given vector.
+     *
+     * @param vector 2D vector
+     */
+    public void translate(Vector vector)
+    {
+        Matrix m = Matrix.getTranslatingInstance(vector.getX(), vector.getY());
+        concatenate(m);
     }
 
     /**
@@ -233,6 +283,56 @@ public class Matrix implements Cloneable
     }
 
     /**
+     * Transforms the given point by this matrix.
+     *
+     * @param point point to transform
+     */
+    public void transform(PointF point) {
+        float x = (float)point.x;
+        float y = (float)point.y;
+        float a = single[0];
+        float b = single[1];
+        float c = single[3];
+        float d = single[4];
+        float e = single[6];
+        float f = single[7];
+        point.set(x * a + y * c + e, x * b + y * d + f);
+    }
+
+    /**
+     * Transforms the given point by this matrix.
+     *
+     * @param x x-coordinate
+     * @param y y-coordinate
+     */
+    public PointF transformPoint(double x, double y) {
+        float a = single[0];
+        float b = single[1];
+        float c = single[3];
+        float d = single[4];
+        float e = single[6];
+        float f = single[7];
+        return new PointF((float)(x * a + y * c + e), (float)(x * b + y * d + f));
+    }
+
+    /**
+     * Transforms the given point by this matrix.
+     *
+     * @param vector @2D vector
+     */
+    public Vector transform(Vector vector) {
+        float a = single[0];
+        float b = single[1];
+        float c = single[3];
+        float d = single[4];
+        float e = single[6];
+        float f = single[7];
+        float x = vector.getX();
+        float y = vector.getY();
+        return new Vector(x * a + y * c + e, x * b + y * d + f);
+    }
+
+    /**
      * Create a new matrix with just the scaling operators.
      *
      * @return A new matrix with just the scaling operators.
@@ -297,24 +397,28 @@ public class Matrix implements Cloneable
     }
 
     /**
+     * Produces a copy of the first matrix, with the second matrix concatenated.
+     *
+     * @param a The matrix to copy.
+     * @param b The matrix to concatenate.
+     */
+    public static Matrix concatenate(Matrix a, Matrix b)
+    {
+        Matrix copy = a.clone();
+        copy.concatenate(b);
+        return copy;
+    }
+
+    /**
      * Clones this object.
      * @return cloned matrix as an object.
      */
-    public Object clone()
+    @Override
+    public Matrix clone()
     {
         Matrix clone = new Matrix();
         System.arraycopy( single, 0, clone.single, 0, 9 );
         return clone;
-    }
-
-    /**
-     * This will copy the text matrix data.
-     *
-     * @return a matrix that matches this one.
-     */
-    public Matrix copy()
-    {
-        return (Matrix) clone();
     }
 
     /**
@@ -403,5 +507,20 @@ public class Matrix implements Cloneable
     public float getYPosition()
     {
         return single[7];
+    }
+
+    /**
+     * Returns a COS array which represnets this matrix.
+     */
+    public COSArray toCOSArray()
+    {
+        COSArray array = new COSArray();
+        array.add(new COSFloat(0));
+        array.add(new COSFloat(1));
+        array.add(new COSFloat(3));
+        array.add(new COSFloat(4));
+        array.add(new COSFloat(6));
+        array.add(new COSFloat(7));
+        return array;
     }
 }

@@ -70,6 +70,7 @@ public class GlyphData
     {
         return boundingBox;
     }
+
     /**
      * @param boundingBoxValue The boundingBox to set.
      */
@@ -77,6 +78,7 @@ public class GlyphData
     {
         this.boundingBox = boundingBoxValue;
     }
+
     /**
      * @return Returns the numberOfContours.
      */
@@ -84,6 +86,7 @@ public class GlyphData
     {
         return numberOfContours;
     }
+
     /**
      * @param numberOfContoursValue The numberOfContours to set.
      */
@@ -100,7 +103,16 @@ public class GlyphData
     {
         return glyphDescription;
     }
-    
+
+    /**
+     * Returns the path of the glyph.
+     * @return the path
+     */
+//    public GeneralPath getPath()
+//    {
+//        return new GlyphRenderer(glyphDescription).getPath();
+//    }TODO
+
     /**
      * Returns the xMax value.
      * @return the XMax value
@@ -136,5 +148,4 @@ public class GlyphData
     {
         return yMin;
     }
-
 }

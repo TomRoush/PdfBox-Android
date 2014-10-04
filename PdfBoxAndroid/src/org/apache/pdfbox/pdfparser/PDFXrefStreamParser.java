@@ -1,7 +1,7 @@
 package org.apache.pdfbox.pdfparser;
 
 import java.io.IOException;
-import java.io.InputStream;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -80,7 +80,7 @@ public class PDFXrefStreamParser extends BaseParser
                 int size = ((COSInteger)indexIter.next()).intValue();
                 for(int i = 0; i < size; i++)
                 {
-                    objNums.add(new Integer(objID + i));
+                    objNums.add(objID + i);
                 }
             }
             Iterator<Integer> objIter = objNums.iterator();
@@ -129,7 +129,7 @@ public class PDFXrefStreamParser extends BaseParser
                         {
                             genNum += (currLine[i + w0 + w1] & 0x00ff) << ((w2 - i - 1) * 8);
                         }
-                        COSObjectKey objKey = new COSObjectKey(objID.intValue(), genNum);
+                        COSObjectKey objKey = new COSObjectKey(objID, genNum);
                         xrefTrailerResolver.setXRef(objKey, offset);
                         break;
                     case 2:
@@ -152,7 +152,7 @@ public class PDFXrefStreamParser extends BaseParser
                         {
                             objstmObjNr += (currLine[i + w0] & 0x00ff) << ((w1 - i - 1) * 8);
                         }    
-                        objKey = new COSObjectKey( objID.intValue(), 0 );
+                        objKey = new COSObjectKey( objID, 0 );
                         xrefTrailerResolver.setXRef( objKey, -objstmObjNr );
                         break;
                     default:

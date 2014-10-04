@@ -74,7 +74,7 @@ public class InstructionSequenceBuilder extends Parser.AbstractSyntaxHandler
             Matcher m = INTEGER_PATTERN.matcher(token);
             if (m.matches())
             {
-                getCurrentSequence().addInteger(parseInt(token.toString()));
+                getCurrentSequence().addInteger(parseInt(token));
                 return;
             }
 
@@ -87,7 +87,7 @@ public class InstructionSequenceBuilder extends Parser.AbstractSyntaxHandler
 
             //TODO Maybe implement radix numbers, such as 8#1777 or 16#FFFE
 
-            getCurrentSequence().addName(token.toString());
+            getCurrentSequence().addName(token);
         }
     }
 

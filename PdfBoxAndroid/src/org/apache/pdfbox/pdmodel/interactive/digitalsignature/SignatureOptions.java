@@ -1,5 +1,6 @@
 package org.apache.pdfbox.pdmodel.interactive.digitalsignature;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -7,19 +8,27 @@ import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.pdfparser.VisualSignatureParser;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSigProperties;
 
-public class SignatureOptions
+/**
+ * TODO description needed
+ */
+public class SignatureOptions implements Closeable
 {
     private COSDocument visualSignature;
-
     private int preferedSignatureSize;
-    
     private int pageNo;
-  
+
+    /**
+     * Creates the default signature options.
+     */
+    public SignatureOptions()
+    {
+        pageNo = 1;
+    }
+
     /**
      * Set the page number.
      * 
      * @param pageNo the page number
-     * 
      */
     public void setPage(int pageNo)
     {
@@ -40,7 +49,6 @@ public class SignatureOptions
      * Reads the visual signature from the given input stream.
      *  
      * @param is the input stream containing the visual signature
-     * 
      * @throws IOException when something went wrong during parsing 
      */
     public void setVisualSignature(InputStream is) throws IOException
@@ -56,8 +64,6 @@ public class SignatureOptions
      * @param visSignatureProperties the <code>PDVisibleSigProperties</code> object containing the visual signature
      * 
      * @throws IOException when something went wrong during parsing
-     * 
-     * @since 1.8.3
      */
     public void setVisualSignature(PDVisibleSigProperties visSignatureProperties) throws IOException
     { 
@@ -95,5 +101,18 @@ public class SignatureOptions
         {
             preferedSignatureSize = size;
         }
-    } 
+    }
+
+    /**
+     * Closes the visual signature COSDocument, if any.
+     *
+     * @throws IOException if the document could not be closed
+     */
+    public void close() throws IOException
+    {
+        if (visualSignature != null)
+        {
+            visualSignature.close();
+        }
+    }
 }

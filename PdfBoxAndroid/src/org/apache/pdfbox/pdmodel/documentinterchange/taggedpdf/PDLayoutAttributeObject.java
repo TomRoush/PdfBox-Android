@@ -64,28 +64,28 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      */
     public static final String PLACEMENT_INLINE                = "Inline";
     /**
-     * Placement: Before: Placed so that the before edge of the element's
+     * Placement: Before: Placed so that the before edge of the element’s
      * allocation rectangle coincides with that of the nearest enclosing
      * reference area. The element may float, if necessary, to achieve the
      * specified placement. The element shall be treated as a block occupying
      * the full extent of the enclosing reference area in the inline direction.
      * Other content shall be stacked so as to begin at the after edge of the
-     * element's allocation rectangle.
+     * element’s allocation rectangle.
      */
     public static final String PLACEMENT_BEFORE                = "Before";
     /**
-     * Placement: Start: Placed so that the start edge of the element's
+     * Placement: Start: Placed so that the start edge of the element’s
      * allocation rectangle coincides with that of the nearest enclosing
      * reference area. The element may float, if necessary, to achieve the
-     * specified placement. Other content that would intrude into the element's
+     * specified placement. Other content that would intrude into the element’s
      * allocation rectangle shall be laid out as a runaround.
      */
     public static final String PLACEMENT_START                 = "Start";
     /**
-     * Placement: End: Placed so that the end edge of the element's allocation
+     * Placement: End: Placed so that the end edge of the element’s allocation
      * rectangle coincides with that of the nearest enclosing reference area.
      * The element may float, if necessary, to achieve the specified placement.
-     * Other content that would intrude into the element's allocation rectangle
+     * Other content that would intrude into the element’s allocation rectangle
      * shall be laid out as a runaround.
      */
     public static final String PLACEMENT_END                   = "End";
@@ -182,26 +182,26 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      */
     public static final String HEIGHT_AUTO                     = "Auto";
     /**
-     * BlockAlign: Before: Before edge of the first child's allocation rectangle
-     * aligned with that of the table cell's content rectangle.
+     * BlockAlign: Before: Before edge of the first child’s allocation rectangle
+     * aligned with that of the table cell’s content rectangle.
      */
     public static final String BLOCK_ALIGN_BEFORE              = "Before";
     /**
      * BlockAlign: Middle: Children centered within the table cell. The distance
-     * between the before edge of the first child's allocation rectangle and
-     * that of the table cell's content rectangle shall be the same as the
-     * distance between the after edge of the last child's allocation rectangle
-     * and that of the table cell's content rectangle.
+     * between the before edge of the first child’s allocation rectangle and
+     * that of the table cell’s content rectangle shall be the same as the
+     * distance between the after edge of the last child’s allocation rectangle
+     * and that of the table cell’s content rectangle.
      */
     public static final String BLOCK_ALIGN_MIDDLE              = "Middle";
     /**
-     * BlockAlign: After: After edge of the last child's allocation rectangle
-     * aligned with that of the table cell's content rectangle.
+     * BlockAlign: After: After edge of the last child’s allocation rectangle
+     * aligned with that of the table cell’s content rectangle.
      */
     public static final String BLOCK_ALIGN_AFTER               = "After";
     /**
      * BlockAlign: Justify: Children aligned with both the before and after
-     * edges of the table cell's content rectangle. The first child shall be
+     * edges of the table cell’s content rectangle. The first child shall be
      * placed as described for {@link #BLOCK_ALIGN_BEFORE} and the last child as
      * described for {@link #BLOCK_ALIGN_AFTER}, with equal spacing between the
      * children. If there is only one child, it shall be aligned with the before
@@ -209,20 +209,20 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      */
     public static final String BLOCK_ALIGN_JUSTIFY             = "Justify";
     /**
-     * InlineAlign: Start: Start edge of each child's allocation rectangle
-     * aligned with that of the table cell's content rectangle.
+     * InlineAlign: Start: Start edge of each child’s allocation rectangle
+     * aligned with that of the table cell’s content rectangle.
      */
     public static final String INLINE_ALIGN_START              = "Start";
     /**
      * InlineAlign: Center: Each child centered within the table cell. The
-     * distance between the start edges of the child's allocation rectangle and
-     * the table cell's content rectangle shall be the same as the distance
+     * distance between the start edges of the child’s allocation rectangle and
+     * the table cell’s content rectangle shall be the same as the distance
      * between their end edges.
      */
     public static final String INLINE_ALIGN_CENTER             = "Center";
     /**
-     * InlineAlign: End: End edge of each child's allocation rectangle aligned
-     * with that of the table cell's content rectangle.
+     * InlineAlign: End: End edge of each child’s allocation rectangle aligned
+     * with that of the table cell’s content rectangle.
      */
     public static final String INLINE_ALIGN_END                = "End";
     /**
@@ -305,31 +305,31 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      */
     public static final String GLYPH_ORIENTATION_VERTICAL_AUTO = "Auto";
     /**
-     * GlyphOrientationVertical: -180 degrees
+     * GlyphOrientationVertical: -180°
      */
     public static final String GLYPH_ORIENTATION_VERTICAL_MINUS_180_DEGREES = "-180";
     /**
-     * GlyphOrientationVertical: -90 degrees
+     * GlyphOrientationVertical: -90°
      */
     public static final String GLYPH_ORIENTATION_VERTICAL_MINUS_90_DEGREES = "-90";
     /**
-     * GlyphOrientationVertical: 0 degrees
+     * GlyphOrientationVertical: 0°
      */
     public static final String GLYPH_ORIENTATION_VERTICAL_ZERO_DEGREES = "0";
     /**
-     * GlyphOrientationVertical: 90 degrees
+     * GlyphOrientationVertical: 90°
      */
     public static final String GLYPH_ORIENTATION_VERTICAL_90_DEGREES = "90";
     /**
-     * GlyphOrientationVertical: 180 degrees
+     * GlyphOrientationVertical: 180°
      */
     public static final String GLYPH_ORIENTATION_VERTICAL_180_DEGREES = "180";
     /**
-     * GlyphOrientationVertical: 270 degrees
+     * GlyphOrientationVertical: 270°
      */
     public static final String GLYPH_ORIENTATION_VERTICAL_270_DEGREES = "270";
     /**
-     * GlyphOrientationVertical: 360 degrees
+     * GlyphOrientationVertical: 360°
      */
     public static final String GLYPH_ORIENTATION_VERTICAL_360_DEGREES = "360";
 
@@ -849,7 +849,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Gets the width of the element's content rectangle in the
+     * Gets the width of the element’s content rectangle in the
      * inline-progression direction (Width). The default value is
      * {@link #WIDTH_AUTO}.
      * 
@@ -861,7 +861,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the width of the element's content rectangle in the
+     * Sets the width of the element’s content rectangle in the
      * inline-progression direction (Width) to {@link #WIDTH_AUTO}.
      */
     public void setWidthAuto()
@@ -870,7 +870,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the width of the element's content rectangle in the
+     * Sets the width of the element’s content rectangle in the
      * inline-progression direction (Width).
      * 
      * @param width the width
@@ -881,7 +881,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the width of the element's content rectangle in the
+     * Sets the width of the element’s content rectangle in the
      * inline-progression direction (Width).
      * 
      * @param width the width
@@ -892,7 +892,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Gets the height of the element's content rectangle in the
+     * Gets the height of the element’s content rectangle in the
      * block-progression direction (Height). The default value is
      * {@link #HEIGHT_AUTO}.
      * 
@@ -904,7 +904,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the height of the element's content rectangle in the
+     * Sets the height of the element’s content rectangle in the
      * block-progression direction (Height) to {@link #HEIGHT_AUTO}.
      */
     public void setHeightAuto()
@@ -913,7 +913,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the height of the element's content rectangle in the
+     * Sets the height of the element’s content rectangle in the
      * block-progression direction (Height).
      * 
      * @param height the height
@@ -924,7 +924,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the height of the element's content rectangle in the
+     * Sets the height of the element’s content rectangle in the
      * block-progression direction (Height).
      * 
      * @param height the height
@@ -1049,7 +1049,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Gets the offset to account for the separation between the table cell's
+     * Gets the offset to account for the separation between the table cell’s
      * content rectangle and the surrounding border (TPadding). The default
      * value is 0.
      * 
@@ -1091,7 +1091,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Gets the distance by which the element's baseline shall be shifted
+     * Gets the distance by which the element’s baseline shall be shifted
      * relative to that of its parent element (BaselineShift). The default value
      * is 0.
      * 
@@ -1103,7 +1103,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the distance by which the element's baseline shall be shifted
+     * Sets the distance by which the element’s baseline shall be shifted
      * relative to that of its parent element (BaselineShift).
      * 
      * @param baselineShift the baseline shift
@@ -1114,7 +1114,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the distance by which the element's baseline shall be shifted
+     * Sets the distance by which the element’s baseline shall be shifted
      * relative to that of its parent element (BaselineShift).
      * 
      * @param baselineShift the baseline shift
@@ -1125,7 +1125,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Gets the element's preferred height in the block-progression direction
+     * Gets the element’s preferred height in the block-progression direction
      * (LineHeight). The default value is {@link #LINE_HEIGHT_NORMAL}.
      * 
      * @return the line height (a Float or a String)
@@ -1136,7 +1136,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the element's preferred height in the block-progression direction
+     * Sets the element’s preferred height in the block-progression direction
      * (LineHeight) to {@link #LINE_HEIGHT_NORMAL}.
      */
     public void setLineHeightNormal()
@@ -1145,7 +1145,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the element's preferred height in the block-progression direction
+     * Sets the element’s preferred height in the block-progression direction
      * (LineHeight) to {@link #LINE_HEIGHT_AUTO}.
      */
     public void setLineHeightAuto()
@@ -1154,7 +1154,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the element's preferred height in the block-progression direction
+     * Sets the element’s preferred height in the block-progression direction
      * (LineHeight).
      * 
      * @param lineHeight the line height
@@ -1165,7 +1165,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the element's preferred height in the block-progression direction
+     * Sets the element’s preferred height in the block-progression direction
      * (LineHeight).
      * 
      * @param lineHeight the line height

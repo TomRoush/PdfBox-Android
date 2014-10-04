@@ -7,18 +7,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
 
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.exceptions.COSVisitorException;
+
 import org.apache.pdfbox.pdfparser.PDFParser;
+
 import org.apache.pdfbox.pdfwriter.COSWriter;
-import org.apache.pdfbox.util.XMLUtil;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -236,9 +237,8 @@ public class FDFDocument implements Closeable
      * @param fileName The file to save as.
      *
      * @throws IOException If there is an error saving the document.
-     * @throws COSVisitorException If an error occurs while generating the data.
      */
-    public void save( File fileName ) throws IOException, COSVisitorException
+    public void save( File fileName ) throws IOException
     {
         save( new FileOutputStream( fileName ) );
     }
@@ -249,9 +249,8 @@ public class FDFDocument implements Closeable
      * @param fileName The file to save as.
      *
      * @throws IOException If there is an error saving the document.
-     * @throws COSVisitorException If an error occurs while generating the data.
      */
-    public void save( String fileName ) throws IOException, COSVisitorException
+    public void save( String fileName ) throws IOException
     {
         save( new FileOutputStream( fileName ) );
     }
@@ -262,9 +261,8 @@ public class FDFDocument implements Closeable
      * @param output The stream to write to.
      *
      * @throws IOException If there is an error writing the document.
-     * @throws COSVisitorException If an error occurs while generating the data.
      */
-    public void save( OutputStream output ) throws IOException, COSVisitorException
+    public void save( OutputStream output ) throws IOException
     {
         COSWriter writer = null;
         try
@@ -288,9 +286,8 @@ public class FDFDocument implements Closeable
      * @param fileName The file to save as.
      *
      * @throws IOException If there is an error saving the document.
-     * @throws COSVisitorException If an error occurs while generating the data.
      */
-    public void saveXFDF( File fileName ) throws IOException, COSVisitorException
+    public void saveXFDF( File fileName ) throws IOException
     {
         saveXFDF( new BufferedWriter( new FileWriter( fileName ) ) );
     }
@@ -301,9 +298,8 @@ public class FDFDocument implements Closeable
      * @param fileName The file to save as.
      *
      * @throws IOException If there is an error saving the document.
-     * @throws COSVisitorException If an error occurs while generating the data.
      */
-    public void saveXFDF( String fileName ) throws IOException, COSVisitorException
+    public void saveXFDF( String fileName ) throws IOException
     {
         saveXFDF( new BufferedWriter( new FileWriter( fileName ) ) );
     }
@@ -314,9 +310,8 @@ public class FDFDocument implements Closeable
      * @param output The stream to write to.
      *
      * @throws IOException If there is an error writing the document.
-     * @throws COSVisitorException If an error occurs while generating the data.
      */
-    public void saveXFDF( Writer output ) throws IOException, COSVisitorException
+    public void saveXFDF( Writer output ) throws IOException
     {
         try
         {

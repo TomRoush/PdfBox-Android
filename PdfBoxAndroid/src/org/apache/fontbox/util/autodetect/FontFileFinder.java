@@ -63,9 +63,8 @@ public class FontFileFinder
      * Automagically finds a list of font files on local system.
      * 
      * @return List&lt;URI&gt; of font files
-     * @throws IOException io exception {@inheritDoc}
      */
-    public List<URI> find() throws IOException
+    public List<URI> find()
     {
         if (fontDirFinder == null)
         {
@@ -85,9 +84,8 @@ public class FontFileFinder
      * 
      * @param dir directory to search
      * @return list&lt;URI&gt; of font files
-     * @throws IOException thrown if an I/O exception of some sort has occurred
      */
-    public List<URI> find(String dir) throws IOException
+    public List<URI> find(String dir)
     {
         List<URI> results = new java.util.ArrayList<URI>();
         File directory = new File(dir);
@@ -154,16 +152,12 @@ public class FontFileFinder
     /**
      * Check if the given name belongs to a font file.
      * 
-     * @param filename the given filename
+     * @param file the given file
      * @return true if the given filename has a typical font file ending
      */
     private boolean checkFontfile(File file)
     {
         String name = file.getName().toLowerCase();
-        if (name.endsWith(".ttf") || name.endsWith(".otf") || name.endsWith(".pfb") || name.endsWith(".ttc"))
-        {
-            return true;
-        }
-        return false;
+        return name.endsWith(".ttf") || name.endsWith(".otf") || name.endsWith(".pfb") || name.endsWith(".ttc");
     }
 }

@@ -1,10 +1,11 @@
 package org.apache.pdfbox.pdmodel.common;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.SequenceInputStream;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -15,8 +16,7 @@ import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.cos.ICOSVisitor;
-import org.apache.pdfbox.exceptions.COSVisitorException;
-import org.apache.pdfbox.io.RandomAccess;
+
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
 
 /**
@@ -42,7 +42,7 @@ public class COSStreamArray extends COSStream
      */
     public COSStreamArray( COSArray array )
     {
-        super( new COSDictionary(), null );
+        super( new COSDictionary() );
         streams = array;
         if( array.size() > 0 )
         {
@@ -69,17 +69,6 @@ public class COSStreamArray extends COSStream
     public int getStreamCount()
     {
         return streams.size();
-    }
-
-    /**
-     * This will get the scratch file associated with this stream.
-     *
-     * @return The scratch file where this stream is being stored.
-     * 
-     */
-    public RandomAccess getScratchFile()
-    {
-        return firstStream.getScratchFile();
     }
 
     /**
@@ -122,9 +111,9 @@ public class COSStreamArray extends COSStream
      *
      * @throws IOException If there is an error parsing the stream.
      */
-    public List getStreamTokens() throws IOException
+    public List<Object> getStreamTokens() throws IOException
     {
-        List retval = null;
+        List<Object> retval = null;
         if( streams.size() > 0 )
         {
             PDFStreamParser parser = new PDFStreamParser( this );
@@ -133,7 +122,7 @@ public class COSStreamArray extends COSStream
         }
         else
         {
-            retval = new ArrayList();
+            retval = new ArrayList<Object>();
         }
         return retval;
     }
@@ -191,9 +180,9 @@ public class COSStreamArray extends COSStream
      *
      * @param visitor The object to notify when visiting this object.
      * @return any object, depending on the visitor implementation, or null
-     * @throws COSVisitorException If an error occurs while visiting this object.
+     * @throws IOException if the output could not be written
      */
-    public Object accept(ICOSVisitor visitor) throws COSVisitorException
+    public Object accept(ICOSVisitor visitor) throws IOException
     {
         return streams.accept( visitor );
     }

@@ -5,11 +5,9 @@ import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 
 /**
- * This represents resources for an axial shading.
- *
- * @version $Revision: 1.0 $
+ * Resources for an axial shading.
  */
-public class PDShadingType2 extends PDShadingResources
+public class PDShadingType2 extends PDShading
 {
     private COSArray coords = null;
     private COSArray domain = null;
@@ -18,19 +16,17 @@ public class PDShadingType2 extends PDShadingResources
     /**
      * Constructor using the given shading dictionary.
      *
-     * @param shadingDictionary The dictionary for this shading.
+     * @param shadingDictionary the dictionary for this shading
      */
     public PDShadingType2(COSDictionary shadingDictionary)
     {
         super(shadingDictionary);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public int getShadingType()
     {
-        return PDShadingResources.SHADING_TYPE2;
+        return PDShading.SHADING_TYPE2;
     }
 
     /**
@@ -100,7 +96,7 @@ public class PDShadingType2 extends PDShadingResources
     /**
      * This will get the Coords values for this shading.
      *
-     * @return the coords values
+     * @return the coordinate values
      */
     public COSArray getCoords()
     {
@@ -114,7 +110,7 @@ public class PDShadingType2 extends PDShadingResources
     /**
      * Sets the Coords entry for this shading.
      *
-     * @param newCoords the coords array
+     * @param newCoords the coordinates array
      */
     public void setCoords(COSArray newCoords)
     {
@@ -128,4 +124,10 @@ public class PDShadingType2 extends PDShadingResources
             getCOSDictionary().setItem(COSName.COORDS, newCoords);
         }
     }
+
+//    @Override
+//    public Paint toPaint(Matrix matrix)
+//    {
+//        return new AxialShadingPaint(this, matrix);
+//    }TODO
 }

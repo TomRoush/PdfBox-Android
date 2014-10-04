@@ -21,8 +21,8 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.COSStreamArray;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObject;
-import org.apache.pdfbox.pdmodel.graphics.xobject.PDXObjectImage;
+import org.apache.pdfbox.pdmodel.graphics.PDXObject;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 /**
  * This class is a convenience for creating page content streams.  You MUST
@@ -42,8 +42,8 @@ public class PDPageContentStream implements Closeable
     private boolean inTextMode = false;
     private PDResources resources;
 
-//    private PDColorSpace currentStrokingColorSpace = new PDDeviceGray();TODO
-//    private PDColorSpace currentNonStrokingColorSpace = new PDDeviceGray();TODO
+//    private PDColorSpace currentStrokingColorSpace = PDDeviceGray.INSTANCE;TODO
+//    private PDColorSpace currentNonStrokingColorSpace = PDDeviceGray.INSTANCE;TODO
 
     // cached storage component for getting color values
     private float[] colorComponents = new float[4];
@@ -114,6 +114,7 @@ public class PDPageContentStream implements Closeable
 
     private static final byte[] OPENING_BRACKET = getISOBytes("[");
     private static final byte[] CLOSING_BRACKET = getISOBytes("]");
+    private static final byte[] NEWLINE = getISOBytes("\n");
 
     private static final int SPACE = 32;
 
@@ -245,7 +246,6 @@ public class PDPageContentStream implements Closeable
             resources = new PDResources();
             sourcePage.setResources(resources);
         }
-
     }
 
     /**
@@ -307,9 +307,9 @@ public class PDPageContentStream implements Closeable
      *
      * @throws IOException If there is an error writing to the stream.
      */
-    public void drawImage(PDXObjectImage image, float x, float y) throws IOException
+    public void drawImage(PDImageXObject image, float x, float y) throws IOException
     {
-        drawXObject(image, x, y, (float)image.getWidth(), (float)image.getHeight());
+        drawXObject(image, x, y, image.getWidth(), image.getHeight());
     }
 
     /**
@@ -325,23 +325,99 @@ public class PDPageContentStream implements Closeable
      */
     public void drawXObject(PDXObject xobject, float x, float y, float width, float height) throws IOException
     {
-    	LOG.error("drawXObject");
-        android.graphics.Matrix transform = new android.graphics.Matrix();
-        LOG.error("Got transform");
-//        transform.setValues(new float[] {width, 0, x, 0, height, y, 0, 0, 1});
-//        transform,setValues(new float[] {
-//        scale_x, shear_x, trans_x,
-//        skew_y, scale_y, trans_y, 
-//        
-//    	}
-        transform.setValues(new float[] {
-                0, 0, 0, 
-                width, 0, 0,
-                height, x, y
-            });
-        LOG.error("Setting values");
-        drawXObject(xobject, transform);
+    	android.graphics.Matrix transform = new android.graphics.Matrix();
+//      transform.setValues(new float[] {width, 0, x, 0, height, y, 0, 0, 1});
+//      transform,setValues(new float[] {
+//      scale_x, shear_x, trans_x,
+//      skew_y, scale_y, trans_y, 
+//      
+//  	}
+      transform.setValues(new float[] {
+              0, 0, 0, 
+              width, 0, 0,
+              height, x, y
+          });
+      drawXObject(xobject, transform);
     }
+
+    /**
+     * Draw an inline image at the x,y coordinates, with the default size of the image.
+     *
+     * @param inlineImage The inline image to draw.
+     * @param x The x-coordinate to draw the inline image.
+     * @param y The y-coordinate to draw the inline image.
+     *
+     * @throws IOException If there is an error writing to the stream.
+     */
+//    public void drawInlineImage(PDInlineImage inlineImage, float x, float y) throws IOException
+//    {
+//        drawInlineImage(inlineImage, x, y, inlineImage.getWidth(), inlineImage.getHeight());
+//    }TODO
+    
+    /**
+     * Draw an inline image at the x,y coordinates and a certain width and height.
+     *
+     * @param inlineImage The inline image to draw.
+     * @param x The x-coordinate to draw the inline image.
+     * @param y The y-coordinate to draw the inline image.
+     * @param width The width of the inline image to draw.
+     * @param height The height of the inline image to draw.
+     *
+     * @throws IOException If there is an error writing to the stream.
+     */
+//    public void drawInlineImage(PDInlineImage inlineImage, float x, float y, float width, float height) throws IOException
+//    {
+//        AffineTransform transform = new AffineTransform(width, 0, 0, height, x, y);
+//        
+//        if (inTextMode)
+//        {
+//            throw new IOException("Error: drawInlineImage is not allowed within a text block.");
+//        }
+//        saveGraphicsState();
+//        concatenate2CTM(transform);
+//        appendRawCommands("BI\n");
+//        appendRawCommands("/W");
+//        appendRawCommands(SPACE);
+//        appendRawCommands(Integer.toString(inlineImage.getWidth()));
+//        appendRawCommands(SPACE);
+//        appendRawCommands("/H");
+//        appendRawCommands(SPACE);
+//        appendRawCommands(Integer.toString(inlineImage.getHeight()));
+//        appendRawCommands(SPACE);
+//        appendRawCommands("/CS");
+//        appendRawCommands(SPACE);
+//        appendRawCommands("/");
+//        appendRawCommands(inlineImage.getColorSpace().getName());
+//        appendRawCommands(NEWLINE);
+//        if (inlineImage.getDecode() != null && inlineImage.getDecode().size() > 0)
+//        {
+//            appendRawCommands("/D");
+//            appendRawCommands(SPACE);
+//            appendRawCommands(OPENING_BRACKET);
+//            appendRawCommands(SPACE);
+//            for (COSBase cosBase : inlineImage.getDecode())
+//            {
+//                COSInteger cosInt = (COSInteger) cosBase;
+//                appendRawCommands(Integer.toString(cosInt.intValue()));
+//                appendRawCommands(SPACE);
+//            }
+//            appendRawCommands(CLOSING_BRACKET);
+//            appendRawCommands("\n");
+//        }
+//        if (inlineImage.isStencil())
+//        {
+//            appendRawCommands("/IM true\n");
+//        }
+//        appendRawCommands("/BPC");
+//        appendRawCommands(SPACE);
+//        appendRawCommands(Integer.toString(inlineImage.getBitsPerComponent()));
+//        appendRawCommands(NEWLINE);
+//        appendRawCommands("ID\n");
+//        appendRawCommands(inlineImage.getStream().getByteArray());
+//        appendRawCommands(NEWLINE);
+//        appendRawCommands("EI\n");
+//        restoreGraphicsState();
+//    }TODO
 
     /**
      * Draw an xobject(form or image) using the given {@link AffineTransform} to position
@@ -353,43 +429,29 @@ public class PDPageContentStream implements Closeable
      */
     public void drawXObject(PDXObject xobject, android.graphics.Matrix transform) throws IOException
     {
-    	LOG.error("drawXObject");
         if (inTextMode)
         {
             throw new IOException("Error: drawXObject is not allowed within a text block.");
         }
         String xObjectPrefix = null;
-        LOG.error("prefix=null");
-        if (xobject instanceof PDXObjectImage)
+        if (xobject instanceof PDImageXObject)
         {
-        	LOG.error("is image");
             xObjectPrefix = "Im";
         }
         else
         {
-        	LOG.error("is form");
             xObjectPrefix = "Form";
         }
         String objMapping = resources.addXObject(xobject, xObjectPrefix);
-        LOG.error("Mapped");
         saveGraphicsState();
-        LOG.error("Save graphics state");
         appendRawCommands(SPACE);
-        LOG.error("space");
         concatenate2CTM(transform);
-        LOG.error("transform");
         appendRawCommands(SPACE);
-        LOG.error("space");
         appendRawCommands("/");
-        LOG.error("slash");
         appendRawCommands(objMapping);
-        LOG.error("mapping");
         appendRawCommands(SPACE);
-        LOG.error("space");
         appendRawCommands(XOBJECT_DO);
-        LOG.error("do");
         restoreGraphicsState();
-        LOG.error("restore");
     }
 
     /**
@@ -536,7 +598,6 @@ public class PDPageContentStream implements Closeable
      */
     public void concatenate2CTM(android.graphics.Matrix at) throws IOException
     {
-    	LOG.error("concate");
         appendMatrix(at);
         appendRawCommands(CONCATENATE_MATRIX);
     }
@@ -637,8 +698,9 @@ public class PDPageContentStream implements Closeable
 //            appendRawCommands(components[i]);
 //            appendRawCommands(SPACE);
 //        }
-//        if (currentStrokingColorSpace instanceof PDSeparation || currentStrokingColorSpace instanceof PDPattern
-//                || currentStrokingColorSpace instanceof PDDeviceN || currentStrokingColorSpace instanceof PDICCBased)
+//        if (currentStrokingColorSpace instanceof PDSeparation ||
+//            currentStrokingColorSpace instanceof PDPattern ||
+//            currentStrokingColorSpace instanceof PDICCBased)
 //        {
 //            appendRawCommands(SET_STROKING_COLOR_COMPLEX);
 //        }
@@ -649,7 +711,7 @@ public class PDPageContentStream implements Closeable
 //    }TODO
 
     /**
-     * Set the stroking color, specified as RGB.
+     * Set the stroking color, specified as RGB or Gray.
      *
      * @param color The color to set.
      * @throws IOException If an IO error occurs while writing to the stream.
@@ -666,19 +728,14 @@ public class PDPageContentStream implements Closeable
 //            color.getColorComponents(colorComponents);
 //            setStrokingColor(colorComponents[0]);
 //        }
-//        else if (colorSpace.getType() == ColorSpace.TYPE_CMYK)
-//        {
-//            color.getColorComponents(colorComponents);
-//            setStrokingColor(colorComponents[0], colorComponents[1], colorComponents[2], colorComponents[3]);
-//        }
 //        else
 //        {
-//            throw new IOException("Error: unknown colorspace:" + colorSpace);
+//            throw new IOException("Error: unknown color space:" + colorSpace);
 //        }
 //    }TODO
 
     /**
-     * Set the non stroking color, specified as RGB.
+     * Set the non stroking color, specified as RGB or Gray.
      *
      * @param color The color to set.
      * @throws IOException If an IO error occurs while writing to the stream.
@@ -695,14 +752,9 @@ public class PDPageContentStream implements Closeable
 //            color.getColorComponents(colorComponents);
 //            setNonStrokingColor(colorComponents[0]);
 //        }
-//        else if (colorSpace.getType() == ColorSpace.TYPE_CMYK)
-//        {
-//            color.getColorComponents(colorComponents);
-//            setNonStrokingColor(colorComponents[0], colorComponents[1], colorComponents[2], colorComponents[3]);
-//        }
 //        else
 //        {
-//            throw new IOException("Error: unknown colorspace:" + colorSpace);
+//            throw new IOException("Error: unknown color space:" + colorSpace);
 //        }
 //    }TODO
 
@@ -808,9 +860,9 @@ public class PDPageContentStream implements Closeable
 //            appendRawCommands(components[i]);
 //            appendRawCommands(SPACE);
 //        }
-//        if (currentNonStrokingColorSpace instanceof PDSeparation || currentNonStrokingColorSpace instanceof PDPattern
-//                || currentNonStrokingColorSpace instanceof PDDeviceN
-//                || currentNonStrokingColorSpace instanceof PDICCBased)
+//        if (currentNonStrokingColorSpace instanceof PDSeparation ||
+//            currentNonStrokingColorSpace instanceof PDPattern ||
+//            currentNonStrokingColorSpace instanceof PDICCBased)
 //        {
 //            appendRawCommands(SET_NON_STROKING_COLOR_COMPLEX);
 //        }
@@ -955,8 +1007,8 @@ public class PDPageContentStream implements Closeable
 //    }TODO
 
     /**
-     * Append a cubic BÃ©zier curve to the current path. The curve extends from the current
-     * point to the point (x3 , y3 ), using (x1 , y1 ) and (x2 , y2 ) as the BÃ©zier control points
+     * Append a cubic Bézier curve to the current path. The curve extends from the current
+     * point to the point (x3 , y3 ), using (x1 , y1 ) and (x2 , y2 ) as the Bézier control points
      * @param x1 x coordinate of the point 1
      * @param y1 y coordinate of the point 1
      * @param x2 x coordinate of the point 2
@@ -987,8 +1039,8 @@ public class PDPageContentStream implements Closeable
     }
 
     /**
-     * Append a cubic BÃ©zier curve to the current path. The curve extends from the current
-     * point to the point (x3 , y3 ), using the current point and (x2 , y2 ) as the BÃ©zier control points
+     * Append a cubic Bézier curve to the current path. The curve extends from the current
+     * point to the point (x3 , y3 ), using the current point and (x2 , y2 ) as the Bézier control points
      * @param x2 x coordinate of the point 2
      * @param y2 y coordinate of the point 2
      * @param x3 x coordinate of the point 3
@@ -1013,8 +1065,8 @@ public class PDPageContentStream implements Closeable
     }
 
     /**
-     * Append a cubic BÃ©zier curve to the current path. The curve extends from the current
-     * point to the point (x3 , y3 ), using (x1 , y1 ) and (x3 , y3 ) as the BÃ©zier control points
+     * Append a cubic Bézier curve to the current path. The curve extends from the current
+     * point to the point (x3 , y3 ), using (x1 , y1 ) and (x3 , y3 ) as the Bézier control points
      * @param x1 x coordinate of the point 1
      * @param y1 y coordinate of the point 1
      * @param x3 x coordinate of the point 3
@@ -1493,14 +1545,10 @@ public class PDPageContentStream implements Closeable
 
     private void appendMatrix(android.graphics.Matrix transform) throws IOException
     {
-    	LOG.error("start append");
         float[] values = new float[9];
-        LOG.error("made array");
         transform.getValues(values);
-        LOG.error("got values");
         for (double v : values)
         {
-        	LOG.error("" + v);
             appendRawCommands(v);
             appendRawCommands(SPACE);
         }

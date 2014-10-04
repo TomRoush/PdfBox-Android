@@ -1,15 +1,12 @@
 package org.apache.pdfbox.cos;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.util.DateConverter;
 
@@ -27,8 +24,7 @@ public class COSDictionary extends COSBase
 	 * The name-value pairs of this dictionary. The pairs are kept in the
 	 * order they were added to the dictionary.
 	 */
-	protected final Map<COSName, COSBase> items =
-			new LinkedHashMap<COSName, COSBase>();
+	protected Map<COSName, COSBase> items = new LinkedHashMap<COSName, COSBase>();
 
 	/**
 	 * Constructor.
@@ -119,31 +115,6 @@ public class COSDictionary extends COSBase
 	public COSBase getDictionaryObject( String key )
 	{
 		return getDictionaryObject( COSName.getPDFName( key ) );
-	}
-
-	/**
-	 * This is a special case of getDictionaryObject that takes multiple keys, it will handle
-	 * the situation where multiple keys could get the same value, ie if either CS or ColorSpace
-	 * is used to get the colorspace.
-	 * This will get an object from this dictionary.  If the object is a reference then it will
-	 * dereference it and get it from the document.  If the object is COSNull then
-	 * null will be returned.
-	 *
-	 * @param firstKey The first key to try.
-	 * @param secondKey The second key to try.
-	 *
-	 * @return The object that matches the key.
-	 * 
-	 * @deprecated  use {@link #getDictionaryObject(COSName, COSName)} using COSName constants instead
-	 */
-	public COSBase getDictionaryObject( String firstKey, String secondKey )
-	{
-		COSBase retval = getDictionaryObject( COSName.getPDFName( firstKey ) );
-		if( retval == null )
-		{
-			retval = getDictionaryObject( COSName.getPDFName( secondKey ) );
-		}
-		return retval;
 	}
 
 	/**
@@ -550,6 +521,68 @@ public class COSDictionary extends COSBase
 		setItem( key, fltVal );
 	}
 
+    /**
+     * Sets the given boolean value at bitPos in the flags.
+     *
+     * @param field The COSName of the field to set the value into.
+     * @param bitFlag the bit position to set the value in.
+     * @param value the value the bit position should have.
+     */
+    public void setFlag(COSName field, int bitFlag, boolean value)
+    {
+        int currentFlags = getInt(field, 0);
+        if (value)
+        {
+            currentFlags = currentFlags | bitFlag;
+        }
+        else
+        {
+            currentFlags &= ~bitFlag;
+        }
+        setInt(field, currentFlags);
+    }
+
+    /**
+     * This is a convenience method that will get the dictionary object that
+     * is expected to be a name. Null is returned if the entry does not exist in the dictionary.
+     *
+     * @param key The key to the item in the dictionary.
+     * @return The COS name.
+     */
+    public COSName getCOSName(COSName key)
+    {
+        COSBase name = getDictionaryObject( key );
+        if( name != null )
+        {
+            if ( name instanceof COSName )
+            {
+                return (COSName) name;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * This is a convenience method that will get the dictionary object that
+     * is expected to be a name. Default is returned if the entry does not exist in the dictionary.
+     *
+     * @param key The key to the item in the dictionary.
+     * @param defaultValue The value to return if the dictionary item is null.
+     * @return The COS name.
+     */
+    public COSName getCOSName(COSName key, COSName defaultValue)
+    {
+        COSBase name = getDictionaryObject( key );
+        if( name != null )
+        {
+            if ( name instanceof COSName )
+            {
+                return (COSName) name;
+            }
+        }
+        return defaultValue;
+    }
+
 	/**
 	 * This is a convenience method that will get the dictionary object that
 	 * is expected to be a name and convert it to a string.  Null is returned
@@ -754,13 +787,12 @@ public class COSDictionary extends COSBase
 	/**
 	 * This is a convenience method that will get the dictionary object that
 	 * is expected to be a name and convert it to a string.  Null is returned
-	 * if the entry does not exist in the dictionary.
+	 * if the entry does not exist in the dictionary or if the date was invalid.
 	 *
 	 * @param key The key to the item in the dictionary.
-	 * @return The name converted to a string.
-	 * @throws IOException If there is an error converting to a date.
+	 * @return The name converted to a date.
 	 */
-	public Calendar getDate( String key ) throws IOException
+	public Calendar getDate( String key )
 	{
 		return getDate( COSName.getPDFName( key ) );
 	}
@@ -768,14 +800,12 @@ public class COSDictionary extends COSBase
 	/**
 	 * This is a convenience method that will get the dictionary object that
 	 * is expected to be a name and convert it to a string.  Null is returned
-	 * if the entry does not exist in the dictionary.
+	 * if the entry does not exist in the dictionary or if the date was invalid.
 	 *
 	 * @param key The key to the item in the dictionary.
-	 * @return The name converted to a string.
-	 *
-	 * @throws IOException If there is an error converting to a date.
+	 * @return The name converted to a date.
 	 */
-	public Calendar getDate( COSName key ) throws IOException
+	public Calendar getDate( COSName key )
 	{
 		COSString date = (COSString)getDictionaryObject( key );
 		return DateConverter.toCalendar( date );
@@ -784,14 +814,13 @@ public class COSDictionary extends COSBase
 	/**
 	 * This is a convenience method that will get the dictionary object that
 	 * is expected to be a date.  Null is returned
-	 * if the entry does not exist in the dictionary.
+	 * if the entry does not exist in the dictionary or if the date was invalid.
 	 *
 	 * @param key The key to the item in the dictionary.
 	 * @param defaultValue The default value to return.
-	 * @return The name converted to a string.
-	 * @throws IOException If there is an error converting to a date.
+	 * @return The name converted to a date.
 	 */
-	public Calendar getDate( String key, Calendar defaultValue ) throws IOException
+	public Calendar getDate( String key, Calendar defaultValue )
 	{
 		return getDate( COSName.getPDFName( key ), defaultValue );
 	}
@@ -799,14 +828,13 @@ public class COSDictionary extends COSBase
 	/**
 	 * This is a convenience method that will get the dictionary object that
 	 * is expected to be a date.  Null is returned
-	 * if the entry does not exist in the dictionary.
+	 * if the entry does not exist in the dictionary or if the date was invalid.
 	 *
 	 * @param key The key to the item in the dictionary.
 	 * @param defaultValue The default value to return.
-	 * @return The name converted to a string.
-	 * @throws IOException If there is an error converting to a date.
+	 * @return The name converted to a date.
 	 */
-	public Calendar getDate( COSName key, Calendar defaultValue ) throws IOException
+	public Calendar getDate( COSName key, Calendar defaultValue )
 	{
 		Calendar retval = getDate( key );
 		if( retval == null )
@@ -1239,6 +1267,20 @@ public class COSDictionary extends COSBase
 		return retval;
 	}
 
+    /**
+     * Gets the boolean value from the flags at the given bit position.
+     *
+     * @param field The COSName of the field to get the flag from.
+     * @param bitFlag the bitPosition to get the value from.
+     *
+     * @return true if the number at bitPos is '1'
+     */
+    public boolean getFlag(COSName field, int bitFlag)
+    {
+        int ff = getInt(field, 0);
+        return (ff & bitFlag) == bitFlag;
+    }
+
 	/**
 	 * This will remove an item for the dictionary.  This
 	 * will do nothing of the object does not exist.
@@ -1272,18 +1314,6 @@ public class COSDictionary extends COSBase
 	public COSBase getItem( String key )
 	{
 		return getItem( COSName.getPDFName(key) );
-	}
-
-	/**
-	 * This will get the keys for all objects in the dictionary in the sequence that
-	 * they were added.
-	 *
-	 * @deprecated Use the {@link #entrySet()} method instead.
-	 * @return a list of the keys in the sequence of insertion
-	 */
-	public List<COSName> keyList()
-	{
-		return new ArrayList<COSName>(items.keySet());
 	}
 
 	/**
@@ -1326,9 +1356,9 @@ public class COSDictionary extends COSBase
 	 * @param visitor The object to notify when visiting this object.
 	 * @return The object that the visitor returns.
 	 *
-	 * @throws COSVisitorException If there is an error visiting this object.
+	 * @throws IOException If there is an error visiting this object.
 	 */
-	public Object accept(ICOSVisitor  visitor) throws COSVisitorException
+	public Object accept(ICOSVisitor  visitor) throws IOException
 	{
 		return visitor.visitFromDictionary(this);
 	}
@@ -1394,34 +1424,42 @@ public class COSDictionary extends COSBase
 		}
 	}
 
-	/**
-	 * Nice method, gives you every object you want
-	 * Arrays works properly too. Try "P/Annots/[k]/Rect"
-	 * where k means the index of the Annotsarray.
-	 *
-	 * @param objPath the relative path to the object.
-	 * @return the object
-	 */
-	public COSBase getObjectFromPath(String objPath)
-	{
-		COSBase retval = null;
-		String[] path = objPath.split(PATH_SEPARATOR);
-		retval = this;
+    /**
+     * Nice method, gives you every object you want
+     * Arrays works properly too. Try "P/Annots/[k]/Rect"
+     * where k means the index of the Annotsarray.
+     *
+     * @param objPath the relative path to the object.
+     * @return the object
+     */
+    public COSBase getObjectFromPath(String objPath)
+    {
+        COSBase retval = null;
+        String[] path = objPath.split(PATH_SEPARATOR);
+        retval = this;
+        for (String pathString : path)
+        {
+            if (retval instanceof COSArray)
+            {
+                int idx = Integer.parseInt(pathString.replaceAll("\\[", "").replaceAll("\\]", ""));
+                retval = ((COSArray) retval).getObject(idx);
+            }
+            else if (retval instanceof COSDictionary)
+            {
+                retval = ((COSDictionary) retval).getDictionaryObject(pathString);
+            }
+        }
+        return retval;
+    }
 
-		for (int i = 0; i < path.length; i++)
-		{
-			if(retval instanceof COSArray)
-			{
-				int idx = new Integer(path[i].replaceAll("\\[","").replaceAll("\\]","")).intValue();
-				retval = ((COSArray)retval).getObject(idx);
-			}
-			else if (retval instanceof COSDictionary)
-			{
-				retval = ((COSDictionary)retval).getDictionaryObject( path[i] );
-			}
-		}
-		return retval;
-	}
+    /**
+     * Returns an unmodifiable view of this dictionary.
+     * @return an unmodifiable view of this dictionary
+     */
+    public COSDictionary asUnmodifiableDictionary()
+    {
+        return new UnmodifiableCOSDictionary(this);
+    }
 
 	/**
 	 * {@inheritDoc}

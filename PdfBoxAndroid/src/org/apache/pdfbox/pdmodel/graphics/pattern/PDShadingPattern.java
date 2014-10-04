@@ -1,0 +1,157 @@
+package org.apache.pdfbox.pdmodel.graphics.pattern;
+
+import java.io.IOException;
+
+import org.apache.pdfbox.cos.COSArray;
+import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSFloat;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSNumber;
+import org.apache.pdfbox.pdmodel.graphics.shading.PDShading;
+import org.apache.pdfbox.pdmodel.graphics.state.PDExternalGraphicsState;
+import org.apache.pdfbox.util.Matrix;
+
+/**
+ * A shading pattern dictionary.
+ * @author Andreas Lehmk�hler
+ */
+public class PDShadingPattern extends PDAbstractPattern
+{
+    private PDExternalGraphicsState extendedGraphicsState;
+    private PDShading shading;
+    private COSArray matrix = null;
+
+    /**
+     * Creates a new shading pattern.
+     */
+    public PDShadingPattern()
+    {
+        super();
+        getCOSDictionary().setInt(COSName.PATTERN_TYPE, PDAbstractPattern.TYPE_SHADING_PATTERN);
+    }
+
+    /**
+     * Creates a new shading pattern from the given COS dictionary.
+     * @param resourceDictionary The COSDictionary for this pattern resource.
+     */
+    public PDShadingPattern(COSDictionary resourceDictionary)
+    {
+        super(resourceDictionary);
+    }
+
+    @Override
+    public int getPatternType()
+    {
+        return PDAbstractPattern.TYPE_SHADING_PATTERN;
+    }
+
+    /**
+     * This will get the optional Matrix of a Pattern.
+     * It maps the form space into the user space.
+     * @return the form matrix
+     */
+    public Matrix getMatrix()
+    {
+        Matrix returnMatrix = null;
+        if (matrix == null)
+        {
+            matrix = (COSArray)getCOSDictionary().getDictionaryObject( COSName.MATRIX );
+        }
+        if( matrix != null )
+        {
+            returnMatrix = new Matrix();
+            returnMatrix.setValue(0, 0, ((COSNumber) matrix.get(0)).floatValue());
+            returnMatrix.setValue(0, 1, ((COSNumber) matrix.get(1)).floatValue());
+            returnMatrix.setValue(1, 0, ((COSNumber) matrix.get(2)).floatValue());
+            returnMatrix.setValue(1, 1, ((COSNumber) matrix.get(3)).floatValue());
+            returnMatrix.setValue(2, 0, ((COSNumber) matrix.get(4)).floatValue());
+            returnMatrix.setValue(2, 1, ((COSNumber) matrix.get(5)).floatValue());
+        }
+        return returnMatrix;
+    }
+
+    /**
+     * Sets the optional Matrix entry for the Pattern.
+     * @param transform the transformation matrix
+     */
+    public void setMatrix(android.graphics.Matrix transform)
+    {
+        matrix = new COSArray();
+        float[] values = new float[9];
+        transform.getValues(values);
+        for (float v : values)
+        {
+            matrix.add(new COSFloat(v));
+        }
+        getCOSDictionary().setItem(COSName.MATRIX, matrix);
+    }
+
+    /**
+     * This will get the extended graphics state for this pattern.
+     * @return The extended graphics state for this pattern.
+     */
+    public PDExternalGraphicsState getExtendedGraphicsState()
+    {
+        if (extendedGraphicsState == null) 
+        {
+            COSDictionary dictionary = (COSDictionary)getCOSDictionary().getDictionaryObject( COSName.EXT_G_STATE );
+            if( dictionary != null )
+            {
+                extendedGraphicsState = new PDExternalGraphicsState( dictionary );
+            }
+        }
+        return extendedGraphicsState;
+    }
+
+    /**
+     * This will set the extended graphics state for this pattern.
+     * @param extendedGraphicsState The new extended graphics state for this pattern.
+     */
+    public void setExtendedGraphicsState( PDExternalGraphicsState extendedGraphicsState )
+    {
+        this.extendedGraphicsState = extendedGraphicsState;
+        if (extendedGraphicsState != null)
+        {
+            getCOSDictionary().setItem( COSName.EXT_G_STATE, extendedGraphicsState );
+        }
+        else
+        {
+            getCOSDictionary().removeItem(COSName.EXT_G_STATE);
+        }
+    }
+
+    /**
+     * This will get the shading resources for this pattern.
+     * @return The shading resources for this pattern.
+     * @throws IOException if something went wrong
+     */
+    public PDShading getShading() throws IOException
+    {
+        if (shading == null) 
+        {
+            COSDictionary dictionary = (COSDictionary)getCOSDictionary().getDictionaryObject( COSName.SHADING );
+            if( dictionary != null )
+            {
+                shading = PDShading.create(dictionary);
+            }
+        }
+        return shading;
+    }
+
+    /**
+     * This will set the shading resources for this pattern.
+     * @param shadingResources The new shading resources for this pattern.
+     */
+    public void setShading( PDShading shadingResources )
+    {
+        shading = shadingResources;
+        if (shadingResources != null)
+        {
+            getCOSDictionary().setItem( COSName.SHADING, shadingResources );
+        }
+        else
+        {
+            getCOSDictionary().removeItem(COSName.SHADING);
+        }
+    }
+}

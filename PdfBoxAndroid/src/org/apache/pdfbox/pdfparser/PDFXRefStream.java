@@ -5,10 +5,10 @@ import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
@@ -17,12 +17,10 @@ import org.apache.pdfbox.cos.COSInteger;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.io.RandomAccessBuffer;
 import org.apache.pdfbox.pdfwriter.COSWriterXRefEntry;
 
 /**
  * @author Alexander Funk
- * @version $Revision: $
  */
 public class PDFXRefStream implements PDFXRef
 {
@@ -46,7 +44,7 @@ public class PDFXRefStream implements PDFXRef
      */
     public PDFXRefStream()
     {
-        this.stream = new COSStream(new COSDictionary(), new RandomAccessBuffer());
+        this.stream = new COSStream(new COSDictionary());
         streamData = new TreeMap<Integer, Object>();
         objectNumbers = new TreeSet<Integer>();
     }
@@ -145,7 +143,7 @@ public class PDFXRefStream implements PDFXRef
     /**
      * determines the minimal length required for all the lengths.
      * 
-     * @return
+     * @return the length information
      */
     private int[] getWEntry()
     {

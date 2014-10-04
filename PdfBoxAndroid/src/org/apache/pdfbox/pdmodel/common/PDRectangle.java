@@ -10,7 +10,7 @@ import org.apache.pdfbox.cos.COSNumber;
  * This represents a rectangle in a PDF document.
  *
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.12 $
+ * 
  */
 public class PDRectangle implements COSObjectable
 {
@@ -23,11 +23,7 @@ public class PDRectangle implements COSObjectable
      */
     public PDRectangle()
     {
-        rectArray = new COSArray();
-        rectArray.add( new COSFloat( 0.0f ) );
-        rectArray.add( new COSFloat( 0.0f ) );
-        rectArray.add( new COSFloat( 0.0f ) );
-        rectArray.add( new COSFloat( 0.0f ) );
+        this(0.0f, 0.0f, 0.0f, 0.0f);
     }
 
     /**
@@ -38,11 +34,24 @@ public class PDRectangle implements COSObjectable
      */
     public PDRectangle( float width, float height )
     {
+        this(0.0f, 0.0f, width, height);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param x the x coordinate of the rectangle
+     * @param y the y coordinate of the rectangle
+     * @param width The width of the rectangle.
+     * @param height The height of the rectangle.
+     */
+    public PDRectangle( float x, float y, float width, float height )
+    {
         rectArray = new COSArray();
-        rectArray.add( new COSFloat( 0.0f ) );
-        rectArray.add( new COSFloat( 0.0f ) );
-        rectArray.add( new COSFloat( width ) );
-        rectArray.add( new COSFloat( height ) );
+        rectArray.add( new COSFloat( x ) );
+        rectArray.add( new COSFloat( y ) );
+        rectArray.add( new COSFloat( x + width ) );
+        rectArray.add( new COSFloat( y + height ) );
     }
 
     /**
@@ -228,7 +237,7 @@ public class PDRectangle implements COSObjectable
 //    public Dimension createDimension()
 //    {
 //        return new Dimension( (int)getWidth(), (int)getHeight() );
-//    }
+//    }TODO
 
     /**
     * This will move the rectangle the given relative amount.

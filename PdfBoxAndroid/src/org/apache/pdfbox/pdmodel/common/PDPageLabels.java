@@ -272,7 +272,7 @@ public class PDPageLabels implements COSObjectable
         private int numPages;
         private int currentPage;
 
-        public LabelGenerator(PDPageLabelRange label, int pages)
+        LabelGenerator(PDPageLabelRange label, int pages)
         {
             this.labelInfo = label;
             this.numPages = pages;

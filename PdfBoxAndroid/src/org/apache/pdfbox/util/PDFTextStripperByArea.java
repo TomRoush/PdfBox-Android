@@ -7,14 +7,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDStream;
+import org.apache.pdfbox.text.TextPosition;
 
-import android.graphics.Rect;
+import android.graphics.RectF;
 
 /**
  * This will extract text from a specified region in the PDF.
@@ -25,8 +25,8 @@ import android.graphics.Rect;
 public class PDFTextStripperByArea extends PDFTextStripper
 {
     private List<String> regions = new ArrayList<String>();
-    private Map<String,Rect> regionArea = new HashMap<String,Rect>();
-    private Map<String,Vector<ArrayList<TextPosition>>> regionCharacterList = 
+    private Map<String,RectF> regionArea = new HashMap<String,RectF>();
+    private Map<String,Vector<ArrayList<TextPosition>>> regionCharacterList =
         new HashMap<String,Vector<ArrayList<TextPosition>>>();
     private Map<String,StringWriter> regionText = new HashMap<String,StringWriter>();
 
@@ -37,42 +37,6 @@ public class PDFTextStripperByArea extends PDFTextStripper
     public PDFTextStripperByArea() throws IOException
     {
         super();
-        setPageSeparator( "" );
-    }
-
-        
-    /**
-     * Instantiate a new PDFTextStripperArea object. Loading all of the operator
-     * mappings from the properties object that is passed in. Does not convert
-     * the text to more encoding-specific output.
-     * 
-     * @param props
-     *            The properties containing the mapping of operators to
-     *            PDFOperator classes.
-     * 
-     * @throws IOException
-     *             If there is an error reading the properties.
-     */
-    public PDFTextStripperByArea(Properties props) throws IOException
-    {
-        super(props);
-        setPageSeparator("");
-    }
-
-    /**
-     * Instantiate a new PDFTextStripperArea object. This object will load
-     * properties from PDFTextStripper.properties and will apply
-     * encoding-specific conversions to the output text.
-     * 
-     * @param encoding
-     *            The encoding that the output will be written in.
-     * @throws IOException
-     *             If there is an error reading the properties.
-     */
-    public PDFTextStripperByArea(String encoding) throws IOException
-    {
-        super(encoding);
-        setPageSeparator("");
     }
     
    /**
@@ -81,7 +45,7 @@ public class PDFTextStripperByArea extends PDFTextStripper
      * @param regionName The name of the region.
      * @param rect The rectangle area to retrieve the text from.
      */
-    public void addRegion( String regionName, Rect rect )
+    public void addRegion( String regionName, RectF rect )
     {
         regions.add( regionName );
         regionArea.put( regionName, rect );
@@ -143,14 +107,15 @@ public class PDFTextStripperByArea extends PDFTextStripper
     /**
      * {@inheritDoc}
      */
+    @Override
     protected void processTextPosition( TextPosition text )
     {
         Iterator<String> regionIter = regionArea.keySet().iterator();
         while( regionIter.hasNext() )
         {
             String region = regionIter.next();
-            Rect rect = regionArea.get( region );
-            if( rect.contains( (int)text.getX(), (int)text.getY() ) )
+            RectF rect = regionArea.get( region );
+            if( rect.contains( text.getX(), text.getY() ) )
             {
                 charactersByArticle = (Vector)regionCharacterList.get( region );
                 super.processTextPosition( text );

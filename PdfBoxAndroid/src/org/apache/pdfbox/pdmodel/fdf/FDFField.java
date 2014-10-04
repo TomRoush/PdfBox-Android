@@ -2,6 +2,7 @@ package org.apache.pdfbox.pdmodel.fdf;
 
 import java.io.IOException;
 import java.io.Writer;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,14 +14,17 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.pdmodel.common.COSArrayList;
+
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.PDTextStream;
+
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionFactory;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAdditionalActions;
-import org.apache.pdfbox.pdmodel.interactive.action.type.PDAction;
+import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
+
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
-import org.apache.pdfbox.util.XMLUtil;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -115,9 +119,9 @@ public class FDFField implements COSObjectable
         List<FDFField> kids = getKids();
         if( kids != null )
         {
-            for( int i=0; i<kids.size(); i++ )
+            for (FDFField kid : kids)
             {
-                ((FDFField)kids.get( i ) ).writeXML( output );
+                ((FDFField) kid).writeXML(output);
             }
         }
         output.write( "</field>\n");
@@ -282,7 +286,7 @@ public class FDFField implements COSObjectable
         COSNumber ff = (COSNumber)field.getDictionaryObject( COSName.FF );
         if( ff != null )
         {
-            retval = new Integer( ff.intValue() );
+            retval = ff.intValue();
         }
         return retval;
     }
@@ -326,7 +330,7 @@ public class FDFField implements COSObjectable
         COSNumber ff = (COSNumber)field.getDictionaryObject( COSName.SET_FF );
         if( ff != null )
         {
-            retval = new Integer( ff.intValue() );
+            retval = ff.intValue();
         }
         return retval;
     }
@@ -370,7 +374,7 @@ public class FDFField implements COSObjectable
         COSNumber ff = (COSNumber)field.getDictionaryObject( COSName.CLR_FF );
         if( ff != null )
         {
-            retval = new Integer( ff.intValue() );
+            retval = ff.intValue();
         }
         return retval;
     }
@@ -414,7 +418,7 @@ public class FDFField implements COSObjectable
         COSNumber f = (COSNumber)field.getDictionaryObject( "F" );
         if( f != null )
         {
-            retval = new Integer( f.intValue() );
+            retval = f.intValue();
         }
         return retval;
     }
@@ -458,7 +462,7 @@ public class FDFField implements COSObjectable
         COSNumber ff = (COSNumber)field.getDictionaryObject( COSName.SET_F );
         if( ff != null )
         {
-            retval = new Integer( ff.intValue() );
+            retval = ff.intValue();
         }
         return retval;
     }
@@ -502,7 +506,7 @@ public class FDFField implements COSObjectable
         COSNumber ff = (COSNumber)field.getDictionaryObject( COSName.CLR_F );
         if( ff != null )
         {
-            retval = new Integer( ff.intValue() );
+            retval = ff.intValue();
         }
         return retval;
     }

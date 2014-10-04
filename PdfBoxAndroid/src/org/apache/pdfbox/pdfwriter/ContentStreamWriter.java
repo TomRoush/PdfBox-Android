@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.pdfbox.contentstream.operator.Operator;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSBoolean;
@@ -13,8 +14,6 @@ import org.apache.pdfbox.cos.COSFloat;
 import org.apache.pdfbox.cos.COSInteger;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.util.ImageParameters;
-import org.apache.pdfbox.util.PDFOperator;
 
 /**
  * A class that will take a list of tokens and write out a stream with them.
@@ -116,14 +115,13 @@ public class ContentStreamWriter
             output.write( COSWriter.DICT_CLOSE );
             output.write( SPACE );
         }
-        else if( o instanceof PDFOperator )
+        else if( o instanceof Operator)
         {
-            PDFOperator op = (PDFOperator)o;
-            if( op.getOperation().equals( "BI" ) )
+            Operator op = (Operator)o;
+            if( op.getName().equals( "BI" ) )
             {
                 output.write( "BI".getBytes("ISO-8859-1") );
-                ImageParameters params = op.getImageParameters();
-                COSDictionary dic = params.getDictionary();
+                COSDictionary dic = op.getImageParameters();
                 for( COSName key : dic.keySet() )
                 {
                     Object value = dic.getDictionaryObject( key );
@@ -138,7 +136,7 @@ public class ContentStreamWriter
             }
             else
             {
-                output.write( op.getOperation().getBytes("ISO-8859-1") );
+                output.write( op.getName().getBytes("ISO-8859-1") );
                 output.write( EOL );
             }
         }

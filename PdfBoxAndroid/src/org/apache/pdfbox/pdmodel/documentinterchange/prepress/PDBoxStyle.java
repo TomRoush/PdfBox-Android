@@ -66,13 +66,12 @@ public class PDBoxStyle implements COSObjectable
     }
 
     /**
-     * Get the color to be used for the guidelines.  This is guaranteed to
-     * not return null.  The color space will always be DeviceRGB and the
-     * default color is [0,0,0].
+     * Get the RGB color to be used for the guidelines.  This is guaranteed to
+     * not return null. The default color is [0,0,0].
      *
      *@return The guideline color.
      */
-//    public PDColorState getGuidelineColor()
+//    public PDColor getGuidelineColor()
 //    {
 //        COSArray colorValues = (COSArray)dictionary.getDictionaryObject( "C" );
 //        if( colorValues == null )
@@ -83,9 +82,8 @@ public class PDBoxStyle implements COSObjectable
 //            colorValues.add( COSInteger.ZERO );
 //            dictionary.setItem( "C", colorValues );
 //        }
-//        PDColorState instance = new PDColorState( colorValues );
-//        instance.setColorSpace( PDDeviceRGB.INSTANCE );
-//        return instance;
+//        PDColor color = new PDColor(colorValues.toFloatArray());
+//        return color;
 //    }TODO
 
     /**
@@ -94,12 +92,12 @@ public class PDBoxStyle implements COSObjectable
      *
      * @param color The new colorspace value.
      */
-//    public void setGuideLineColor( PDColorState color )
+//    public void setGuideLineColor( PDColor color )
 //    {
 //        COSArray values = null;
 //        if( color != null )
 //        {
-//            values = color.getCOSColorSpaceValue();
+//            values = color.toCOSArray();
 //        }
 //        dictionary.setItem( "C", values );
 //    }TODO
@@ -168,22 +166,21 @@ public class PDBoxStyle implements COSObjectable
         COSArray lineArray = new COSArray();
         lineArray.add( d );
         //dash phase is not specified and assumed to be zero.
-        lineArray.add( COSInteger.ZERO );
-        pattern = new PDLineDashPattern( lineArray );
+        pattern = new PDLineDashPattern( lineArray, 0 );
         return pattern;
     }
 
     /**
      * Set the line dash pattern associated with this box style.
      *
-     * @param pattern The patter for this box style.
+     * @param dashArray The patter for this box style.
      */
-    public void setLineDashPattern( PDLineDashPattern pattern )
+    public void setLineDashPattern( COSArray dashArray )
     {
         COSArray array = null;
-        if( pattern != null )
+        if( dashArray != null )
         {
-            array = pattern.getCOSDashPattern();
+            array = dashArray;
         }
         dictionary.setItem( "D", array );
     }

@@ -1,20 +1,21 @@
 package org.apache.pdfbox.pdmodel.common;
 
+import org.apache.pdfbox.cos.COSArray;
+import org.apache.pdfbox.cos.COSBase;
+import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSInteger;
+import org.apache.pdfbox.cos.COSFloat;
+import org.apache.pdfbox.cos.COSString;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSNull;
+import org.apache.pdfbox.cos.COSNumber;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSFloat;
-import org.apache.pdfbox.cos.COSInteger;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSNull;
-import org.apache.pdfbox.cos.COSNumber;
-import org.apache.pdfbox.cos.COSString;
+import org.apache.pdfbox.cos.COSObject;
 
 /**
  * This is an implementation of a List that will sync its contents to a COSArray.
@@ -78,16 +79,9 @@ public class COSArrayList<E> implements List<E>
     }
 
     /**
-     * @deprecated use the {@link #COSArrayList(Object, COSBase, COSDictionary, COSName)} method instead
-     */
-    public COSArrayList( E actualObject, COSBase item, COSDictionary dictionary, String dictionaryKey )
-    {
-        this( actualObject, item, dictionary, COSName.getPDFName(dictionaryKey) );
-    }
-
-    /**
      * {@inheritDoc}
      */
+    @Override
     public int size()
     {
         return actual.size();
@@ -96,6 +90,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isEmpty()
     {
         return actual.isEmpty();
@@ -104,6 +99,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean contains(Object o)
     {
         return actual.contains(o);
@@ -112,6 +108,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Iterator<E> iterator()
     {
         return actual.iterator();
@@ -120,6 +117,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Object[] toArray()
     {
         return actual.toArray();
@@ -128,6 +126,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public <X>X[] toArray(X[] a)
     {
         return actual.toArray(a);
@@ -137,6 +136,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean add(E o)
     {
         //when adding if there is a parentDict then change the item
@@ -172,6 +172,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean remove(Object o)
     {
         boolean retval = true;
@@ -191,6 +192,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean containsAll(Collection<?> c)
     {
         return actual.containsAll( c );
@@ -199,6 +201,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean addAll(Collection<? extends E> c)
     {
         //when adding if there is a parentDict then change the item
@@ -217,6 +220,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean addAll(int index, Collection<? extends E> c)
     {
         //when adding if there is a parentDict then change the item
@@ -248,17 +252,26 @@ public class COSArrayList<E> implements List<E>
      *
      * @return A list that is part of the core Java collections.
      */
-    public static List<Integer> convertIntegerCOSArrayToList( COSArray intArray )
+    public static List<Integer> convertIntegerCOSArrayToList(COSArray intArray)
     {
         List<Integer> retval = null;
         if (intArray != null)
         {
             List<Integer> numbers = new ArrayList<Integer>();
-            for( int i=0; i<intArray.size(); i++ )
+            for (int i = 0; i < intArray.size(); i++)
             {
-                numbers.add( new Integer( ((COSNumber)intArray.get( i )).intValue() ) );
+                COSNumber num;
+                if (intArray.get(i) instanceof COSObject)
+                {
+                    num = (COSNumber) ((COSObject) intArray.get(i)).getObject();
+                }
+                else
+                {
+                    num = (COSNumber) intArray.get(i);
+                }
+                numbers.add(num.intValue());
             }
-            retval = new COSArrayList<Integer>( numbers, intArray );
+            retval = new COSArrayList<Integer>(numbers, intArray);
         }
         return retval;
     }
@@ -279,7 +292,7 @@ public class COSArrayList<E> implements List<E>
             List<Float> numbers = new ArrayList<Float>();
             for( int i=0; i<floatArray.size(); i++ )
             {
-                numbers.add( new Float( ((COSNumber)floatArray.get( i )).floatValue() ) );
+                numbers.add( ((COSNumber)floatArray.get( i )).floatValue());
             }
             retval = new COSArrayList<Float>( numbers, floatArray );
         }
@@ -343,9 +356,9 @@ public class COSArrayList<E> implements List<E>
     public static COSArray convertStringListToCOSNameCOSArray( List<String> strings )
     {
         COSArray retval = new COSArray();
-        for( int i=0; i<strings.size(); i++ )
+        for (String string : strings)
         {
-            retval.add( COSName.getPDFName( strings.get( i ) ) );
+            retval.add(COSName.getPDFName(string));
         }
         return retval;
     }
@@ -361,9 +374,9 @@ public class COSArrayList<E> implements List<E>
     public static COSArray convertStringListToCOSStringCOSArray( List<String> strings )
     {
         COSArray retval = new COSArray();
-        for( int i=0; i<strings.size(); i++ )
+        for (String string : strings)
         {
-            retval.add( new COSString( strings.get( i ) ) );
+            retval.add(new COSString(string));
         }
         return retval;
     }
@@ -460,6 +473,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean removeAll(Collection<?> c)
     {
         array.removeAll( toCOSObjectList( c ) );
@@ -469,6 +483,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean retainAll(Collection<?> c)
     {
         array.retainAll( toCOSObjectList( c ) );
@@ -478,6 +493,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void clear()
     {
         //when adding if there is a parentDict then change the item
@@ -493,6 +509,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(Object o)
     {
         return actual.equals( o );
@@ -501,6 +518,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int hashCode()
     {
         return actual.hashCode();
@@ -509,6 +527,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public E get(int index)
     {
         return actual.get( index );
@@ -518,6 +537,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public E set(int index, E element)
     {
         if( element instanceof String )
@@ -549,6 +569,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void add(int index, E element)
     {
         //when adding if there is a parentDict then change the item
@@ -580,6 +601,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public E remove(int index)
     {
         if( array.size() > index && array.get( index ) instanceof DualCOSObjectable )
@@ -598,6 +620,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int indexOf(Object o)
     {
         return actual.indexOf( o );
@@ -606,6 +629,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int lastIndexOf(Object o)
     {
         return actual.indexOf( o );
@@ -615,6 +639,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public ListIterator<E> listIterator()
     {
         return actual.listIterator();
@@ -623,6 +648,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public ListIterator<E> listIterator(int index)
     {
         return actual.listIterator( index );
@@ -631,6 +657,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public List<E> subList(int fromIndex, int toIndex)
     {
         return actual.subList( fromIndex, toIndex );
@@ -639,6 +666,7 @@ public class COSArrayList<E> implements List<E>
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "COSArrayList{" + array.toString() + "}";

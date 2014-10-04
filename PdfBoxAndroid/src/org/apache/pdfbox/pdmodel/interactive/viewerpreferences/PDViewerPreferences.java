@@ -3,6 +3,7 @@ package org.apache.pdfbox.pdmodel.interactive.viewerpreferences;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
+
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 
 /**
@@ -394,7 +395,7 @@ public class PDViewerPreferences implements COSObjectable
      */
     public void setReadingDirection( String value )
     {
-        prefs.setName( COSName.DIRECTION, value.toString() );
+        prefs.setName( COSName.DIRECTION, value);
     }
 
     /**

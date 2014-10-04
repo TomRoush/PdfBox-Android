@@ -8,30 +8,26 @@ import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.util.Matrix;
 
 /**
- * This represents resources for a function based shading.
- *
+ * Resources for a function based shading.
  */
-public class PDShadingType1 extends PDShadingResources
+public class PDShadingType1 extends PDShading
 {
-
     private COSArray domain = null;
 
     /**
      * Constructor using the given shading dictionary.
      *
-     * @param shadingDictionary The dictionary for this shading.
+     * @param shadingDictionary the dictionary for this shading
      */
     public PDShadingType1(COSDictionary shadingDictionary)
     {
         super(shadingDictionary);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public int getShadingType()
     {
-        return PDShadingResources.SHADING_TYPE1;
+        return PDShading.SHADING_TYPE1;
     }
 
     /**
@@ -41,19 +37,19 @@ public class PDShadingType1 extends PDShadingResources
      */
     public Matrix getMatrix()
     {
-        Matrix retval = null;
+        Matrix matrix = null;
         COSArray array = (COSArray) getCOSDictionary().getDictionaryObject(COSName.MATRIX);
         if (array != null)
         {
-            retval = new Matrix();
-            retval.setValue(0, 0, ((COSNumber) array.get(0)).floatValue());
-            retval.setValue(0, 1, ((COSNumber) array.get(1)).floatValue());
-            retval.setValue(1, 0, ((COSNumber) array.get(2)).floatValue());
-            retval.setValue(1, 1, ((COSNumber) array.get(3)).floatValue());
-            retval.setValue(2, 0, ((COSNumber) array.get(4)).floatValue());
-            retval.setValue(2, 1, ((COSNumber) array.get(5)).floatValue());
+            matrix = new Matrix();
+            matrix.setValue(0, 0, ((COSNumber) array.get(0)).floatValue());
+            matrix.setValue(0, 1, ((COSNumber) array.get(1)).floatValue());
+            matrix.setValue(1, 0, ((COSNumber) array.get(2)).floatValue());
+            matrix.setValue(1, 1, ((COSNumber) array.get(3)).floatValue());
+            matrix.setValue(2, 0, ((COSNumber) array.get(4)).floatValue());
+            matrix.setValue(2, 1, ((COSNumber) array.get(5)).floatValue());
         }
-        return retval;
+        return matrix;
     }
 
     /**
@@ -66,9 +62,9 @@ public class PDShadingType1 extends PDShadingResources
         COSArray matrix = new COSArray();
         float[] values = new float[9];
         transform.getValues(values);
-        for (int i = 0; i < 6; i++)
+        for (float v : values)
         {
-            matrix.add(new COSFloat((float) values[i]));
+            matrix.add(new COSFloat((float) v));
         }
         getCOSDictionary().setItem(COSName.MATRIX, matrix);
     }
@@ -97,4 +93,10 @@ public class PDShadingType1 extends PDShadingResources
         domain = newDomain;
         getCOSDictionary().setItem(COSName.DOMAIN, newDomain);
     }
+
+//    @Override
+//    public Paint toPaint(Matrix matrix)
+//    {
+//        return new Type1ShadingPaint(this, matrix);
+//    }TODO
 }

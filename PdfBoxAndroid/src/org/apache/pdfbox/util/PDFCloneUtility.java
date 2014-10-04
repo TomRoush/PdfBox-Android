@@ -67,9 +67,9 @@ public class PDFCloneUtility
           {
               COSArray array = new COSArray();
               List list = (List)base;
-              for( int i=0; i<list.size(); i++ )
+              for (Object obj : list)
               {
-                  array.add( cloneForNewDocument( list.get( i ) ) );
+                  array.add(cloneForNewDocument(obj));
               }
               retval = array;
           }
@@ -172,9 +172,9 @@ public class PDFCloneUtility
           {
               COSArray array = new COSArray();
               List list = (List)base;
-              for( int i = 0; i < list.size(); i++ )
+              for (Object obj : list)
               {
-                  array.add( cloneForNewDocument( list.get( i ) ) );
+                  array.add(cloneForNewDocument(obj));
               }
               ((List)target).add(array);
           }

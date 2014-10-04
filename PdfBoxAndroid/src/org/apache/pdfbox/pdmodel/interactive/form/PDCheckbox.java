@@ -1,44 +1,40 @@
 package org.apache.pdfbox.pdmodel.interactive.form;
 
-import java.io.IOException;
-
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 
 /**
- * A class for handling the PDF field as a checkbox.
+ * A check box toggles between two states, on and off.
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
+ * @author Ben Litchfield
  * @author sug
- * @version $Revision: 1.11 $
  */
-public class PDCheckbox extends PDChoiceButton
+public final class PDCheckbox extends PDButton
 {
-    private static final COSName KEY = COSName.getPDFName("AS");
-    private static final COSName OFF_VALUE = COSName.getPDFName("Off");
 
     private COSName value;
 
     /**
-     * @see PDField#PDField(PDAcroForm,COSDictionary)
-     *
-     * @param theAcroForm The acroForm for this field.
-     * @param field The checkbox field dictionary
+     * Constructor.
+     * 
+     * @param theAcroForm The form that this field is part of.
+     * @param field the PDF object to represent as a field.
+     * @param parentNode the parent node of the node to be created
      */
-    public PDCheckbox( PDAcroForm theAcroForm, COSDictionary field)
+    public PDCheckbox( PDAcroForm theAcroForm, COSDictionary field, PDFieldTreeNode parentNode)
     {
-        super( theAcroForm, field);
-        COSDictionary ap = (COSDictionary) field.getDictionaryObject(COSName.getPDFName("AP"));
+        super( theAcroForm, field, parentNode);
+        COSDictionary ap = (COSDictionary) field.getDictionaryObject(COSName.AP);
         if( ap != null )
         {
-            COSBase n = ap.getDictionaryObject(COSName.getPDFName("N"));
+            COSBase n = ap.getDictionaryObject(COSName.N);
 
             if( n instanceof COSDictionary )
             {
                 for( COSName name : ((COSDictionary)n).keySet() )
                 {
-                    if( !name.equals( OFF_VALUE ))
+                    if( !name.equals( COSName.OFF ))
                     {
                         value = name;
                     }
@@ -48,7 +44,7 @@ public class PDCheckbox extends PDChoiceButton
         }
         else
         {
-            value = (COSName)getDictionary().getDictionaryObject( "V" );
+            value = (COSName)getDictionary().getDictionaryObject( COSName.V);
         }
     }
 
@@ -61,7 +57,7 @@ public class PDCheckbox extends PDChoiceButton
     {
         boolean retval = false;
         String onValue = getOnValue();
-        COSName radioValue = (COSName)getDictionary().getDictionaryObject( KEY );
+        COSName radioValue = (COSName)getDictionary().getDictionaryObject( COSName.AS );
         if( radioValue != null && value != null && radioValue.getName().equals( onValue ) )
         {
             retval = true;
@@ -75,7 +71,7 @@ public class PDCheckbox extends PDChoiceButton
      */
     public void check()
     {
-        getDictionary().setItem(KEY, value);
+        getDictionary().setItem(COSName.AS, value);
     }
 
     /**
@@ -83,23 +79,7 @@ public class PDCheckbox extends PDChoiceButton
      */
     public void unCheck()
     {
-        getDictionary().setItem(KEY, OFF_VALUE);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public void setValue(String newValue)
-    {
-        getDictionary().setName( "V", newValue );
-        if( newValue == null )
-        {
-            getDictionary().setItem( KEY, OFF_VALUE );
-        }
-        else
-        {
-            getDictionary().setName( KEY, newValue );
-        }
+        getDictionary().setItem(COSName.AS, COSName.OFF);
     }
 
     /**
@@ -109,7 +89,7 @@ public class PDCheckbox extends PDChoiceButton
      */
     public String getOffValue()
     {
-        return OFF_VALUE.getName();
+        return COSName.OFF.getName();
     }
 
     /**
@@ -120,15 +100,15 @@ public class PDCheckbox extends PDChoiceButton
     public String getOnValue()
     {
         String retval = null;
-        COSDictionary ap = (COSDictionary) getDictionary().getDictionaryObject(COSName.getPDFName("AP"));
-        COSBase n = ap.getDictionaryObject(COSName.getPDFName("N"));
+        COSDictionary ap = (COSDictionary) getDictionary().getDictionaryObject(COSName.AP);
+        COSBase n = ap.getDictionaryObject(COSName.N);
 
         //N can be a COSDictionary or a COSStream
         if( n instanceof COSDictionary )
         {
             for( COSName key :((COSDictionary)n).keySet() )
             {
-                if( !key.equals( OFF_VALUE) )
+                if( !key.equals( COSName.OFF) )
                 {
                     retval = key.getName();
                 }
@@ -137,16 +117,29 @@ public class PDCheckbox extends PDChoiceButton
         return retval;
     }
 
-    /**
-     * getValue gets the fields value to as a string.
-     *
-     * @return The string value of this field.
-     *
-     * @throws IOException If there is an error getting the value.
-     */
-    public String getValue() throws IOException
+    @Override
+    public COSName getValue()
     {
-        return getDictionary().getNameAsString( "V" );
+        return getDictionary().getCOSName( COSName.V );
     }
 
+    @Override
+    public void setValue(Object value)
+    {
+        if (value == null)
+        {
+            getDictionary().removeItem(COSName.V);
+            getDictionary().setItem( COSName.AS, COSName.OFF );
+        }
+        else if (value instanceof COSName)
+        {
+            getDictionary().setItem(COSName.V, (COSName)value);
+            getDictionary().setItem( COSName.AS, (COSName)value);
+        }
+        else
+        {
+            throw new RuntimeException( "The value of a checkbox has to be a name object." );
+        }
+    }
+    
 }

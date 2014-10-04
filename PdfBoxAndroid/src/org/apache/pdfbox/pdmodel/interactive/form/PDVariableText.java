@@ -1,59 +1,35 @@
 package org.apache.pdfbox.pdmodel.interactive.form;
 
-import java.io.IOException;
-
+import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.util.BitFlagHelper;
 
 /**
- * A class for handling PDF fields that display text.
+ * Base class for fields which use "Variable Text".
+ * These fields construct an appearance stream dynamically at viewing time.
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.7 $
+ * @author Ben Litchfield
  */
 public abstract class PDVariableText extends PDField
 {
-	
-	/**
-     * A Ff flag.
-     */
-    public static final int FLAG_MULTILINE = 1 << 12;
     /**
-     * A Ff flag.
+     * Ff flags.
      */
-    public static final int FLAG_PASSWORD = 1 << 13;
-    /**
-     * A Ff flag.
-     */
-    public static final int FLAG_FILE_SELECT = 1 << 20;
-    /**
-     * A Ff flag.
-     */
-    public static final int FLAG_DO_NOT_SPELL_CHECK = 1 << 22;
-    /**
-     * A Ff flag.
-     */
-    public static final int FLAG_DO_NOT_SCROLL = 1 << 23;
-    /**
-     * A Ff flag.
-     */
-    public static final int FLAG_COMB = 1 << 24;
-    /**
-     * A Ff flag.
-     */
-    public static final int FLAG_RICH_TEXT = 1 << 25;
+    private static final int FLAG_MULTILINE = 1 << 12;
+    private static final int FLAG_PASSWORD = 1 << 13;
+    private static final int FLAG_FILE_SELECT = 1 << 20;
+    private static final int FLAG_DO_NOT_SPELL_CHECK = 1 << 22;
+    private static final int FLAG_DO_NOT_SCROLL = 1 << 23;
+    private static final int FLAG_COMB = 1 << 24;
+    private static final int FLAG_RICH_TEXT = 1 << 25;
 
 
     /**
      * DA    Default appearance.
      */
-    private COSString da;
-
-    private PDAppearance appearance;
-
+    private COSString defaultAppearance;
 
     /**
      * A Q value.
@@ -75,56 +51,21 @@ public abstract class PDVariableText extends PDField
      *
      * @param theAcroForm The acroform.
      */
-    public PDVariableText( PDAcroForm theAcroForm )
+    PDVariableText(PDAcroForm theAcroForm)
     {
         super( theAcroForm );
     }
 
     /**
-     * @see org.apache.pdfbox.pdmodel.interactive.form.PDField#PDField(PDAcroForm,COSDictionary)
-     *
-     * @param theAcroForm The acroForm for this field.
-     * @param field The field's dictionary.
+     * Constructor.
+     * 
+     * @param theAcroForm The form that this field is part of.
+     * @param field the PDF object to represent as a field.
+     * @param parentNode the parent node of the node to be created
      */
-    public PDVariableText( PDAcroForm theAcroForm, COSDictionary field)
+    protected PDVariableText(PDAcroForm theAcroForm, COSDictionary field, PDFieldTreeNode parentNode)
     {
-        super( theAcroForm, field);
-        da = (COSString) field.getDictionaryObject(COSName.DA);
-    }
-    
-    /**
-     * @see org.apache.pdfbox.pdmodel.interactive.form.PDField#setValue(java.lang.String)
-     *
-     * @param value The new value for this text field.
-     *
-     * @throws IOException If there is an error calculating the appearance stream.
-     */
-    public void setValue(String value) throws IOException
-    {
-        COSString fieldValue = new COSString(value);
-        getDictionary().setItem( COSName.V, fieldValue );
-
-        //hmm, not sure what the case where the DV gets set to the field
-        //value, for now leave blank until we can come up with a case
-        //where it needs to be in there
-        //getDictionary().setItem( COSName.getPDFName( "DV" ), fieldValue );
-        if(appearance == null)
-        {
-            this.appearance = new PDAppearance( getAcroForm(), this );
-        }
-        appearance.setAppearanceValue(value);
-    }
-
-    /**
-     * getValue gets the fields value to as a string.
-     *
-     * @return The string value of this field.
-     *
-     * @throws IOException If there is an error getting the value.
-     */
-    public String getValue() throws IOException
-    {
-        return getDictionary().getString( COSName.V );
+        super( theAcroForm, field, parentNode);
     }
 
     /**
@@ -132,7 +73,7 @@ public abstract class PDVariableText extends PDField
      */
     public boolean isMultiline()
     {
-        return BitFlagHelper.getFlag( getDictionary(), COSName.FF, FLAG_MULTILINE );
+        return getDictionary().getFlag( COSName.FF, FLAG_MULTILINE );
     }
 
     /**
@@ -142,7 +83,7 @@ public abstract class PDVariableText extends PDField
      */
     public void setMultiline( boolean multiline )
     {
-        BitFlagHelper.setFlag( getDictionary(), COSName.FF, FLAG_MULTILINE, multiline );
+        getDictionary().setFlag( COSName.FF, FLAG_MULTILINE, multiline );
     }
 
     /**
@@ -150,7 +91,7 @@ public abstract class PDVariableText extends PDField
      */
     public boolean isPassword()
     {
-        return BitFlagHelper.getFlag( getDictionary(), COSName.FF, FLAG_PASSWORD );
+        return getDictionary().getFlag( COSName.FF, FLAG_PASSWORD );
     }
 
     /**
@@ -160,7 +101,7 @@ public abstract class PDVariableText extends PDField
      */
     public void setPassword( boolean password )
     {
-        BitFlagHelper.setFlag( getDictionary(), COSName.FF, FLAG_PASSWORD, password );
+        getDictionary().setFlag( COSName.FF, FLAG_PASSWORD, password );
     }
 
     /**
@@ -168,7 +109,7 @@ public abstract class PDVariableText extends PDField
      */
     public boolean isFileSelect()
     {
-        return BitFlagHelper.getFlag( getDictionary(), COSName.FF, FLAG_FILE_SELECT );
+        return getDictionary().getFlag( COSName.FF, FLAG_FILE_SELECT );
     }
 
     /**
@@ -178,7 +119,7 @@ public abstract class PDVariableText extends PDField
      */
     public void setFileSelect( boolean fileSelect )
     {
-        BitFlagHelper.setFlag( getDictionary(), COSName.FF, FLAG_FILE_SELECT, fileSelect );
+        getDictionary().setFlag( COSName.FF, FLAG_FILE_SELECT, fileSelect );
     }
 
     /**
@@ -186,7 +127,7 @@ public abstract class PDVariableText extends PDField
      */
     public boolean doNotSpellCheck()
     {
-        return BitFlagHelper.getFlag( getDictionary(), COSName.FF, FLAG_DO_NOT_SPELL_CHECK );
+        return getDictionary().getFlag( COSName.FF, FLAG_DO_NOT_SPELL_CHECK );
     }
 
     /**
@@ -196,7 +137,7 @@ public abstract class PDVariableText extends PDField
      */
     public void setDoNotSpellCheck( boolean doNotSpellCheck )
     {
-        BitFlagHelper.setFlag( getDictionary(), COSName.FF, FLAG_DO_NOT_SPELL_CHECK, doNotSpellCheck );
+        getDictionary().setFlag( COSName.FF, FLAG_DO_NOT_SPELL_CHECK, doNotSpellCheck );
     }
 
     /**
@@ -204,7 +145,7 @@ public abstract class PDVariableText extends PDField
      */
     public boolean doNotScroll()
     {
-        return BitFlagHelper.getFlag( getDictionary(), COSName.FF, FLAG_DO_NOT_SCROLL );
+        return getDictionary().getFlag( COSName.FF, FLAG_DO_NOT_SCROLL );
     }
 
     /**
@@ -214,15 +155,15 @@ public abstract class PDVariableText extends PDField
      */
     public void setDoNotScroll( boolean doNotScroll )
     {
-        BitFlagHelper.setFlag( getDictionary(), COSName.FF, FLAG_DO_NOT_SCROLL, doNotScroll );
+        getDictionary().setFlag( COSName.FF, FLAG_DO_NOT_SCROLL, doNotScroll );
     }
 
     /**
      * @return true if the field is not suppose to comb the text display.
      */
-    public boolean shouldComb()
+    public boolean isComb()
     {
-        return BitFlagHelper.getFlag( getDictionary(), COSName.FF, FLAG_COMB );
+        return getDictionary().getFlag( COSName.FF, FLAG_COMB );
     }
 
     /**
@@ -232,7 +173,7 @@ public abstract class PDVariableText extends PDField
      */
     public void setComb( boolean comb )
     {
-        BitFlagHelper.setFlag( getDictionary(), COSName.FF, FLAG_COMB, comb );
+        getDictionary().setFlag( COSName.FF, FLAG_COMB, comb );
     }
 
     /**
@@ -240,7 +181,7 @@ public abstract class PDVariableText extends PDField
      */
     public boolean isRichText()
     {
-        return BitFlagHelper.getFlag( getDictionary(), COSName.FF, FLAG_RICH_TEXT );
+        return getDictionary().getFlag( COSName.FF, FLAG_RICH_TEXT );
     }
 
     /**
@@ -250,15 +191,60 @@ public abstract class PDVariableText extends PDField
      */
     public void setRichText( boolean richText )
     {
-        BitFlagHelper.setFlag( getDictionary(), COSName.FF, FLAG_RICH_TEXT, richText );
+        getDictionary().setFlag( COSName.FF, FLAG_RICH_TEXT, richText );
     }
 
     /**
+     * Get the default appearance.
+     * 
      * @return the DA element of the dictionary object
      */
-    protected COSString getDefaultAppearance()
+    public COSString getDefaultAppearance()
     {
-        return da;
+        if (defaultAppearance == null)
+        {
+            COSBase daValue =  getDictionary().getItem(COSName.DA);
+            if (daValue != null)
+            {
+                defaultAppearance = (COSString)daValue;
+            }
+        }
+        // the default appearance is inheritable
+        // maybe the parent provides a default appearance
+        if (defaultAppearance == null)
+        {
+            PDFieldTreeNode parent = getParent();
+            if (parent instanceof PDVariableText)
+            {
+                defaultAppearance = ((PDVariableText)parent).getDefaultAppearance();
+            }
+        }
+        // the default appearance is inheritable
+        // the acroform should provide a default appearance
+        if (defaultAppearance == null)
+        {
+            defaultAppearance = getAcroForm().getDefaultAppearance(); 
+        }
+        return defaultAppearance;
+    }
+
+    /**
+     * Set the default appearance.
+     * 
+     * @param daValue a string describing the default appearance
+     */
+    public void setDefaultAppearance(String daValue)
+    {
+        if (daValue != null)
+        {
+            defaultAppearance = new COSString(daValue);
+            getDictionary().setItem(COSName.DA, defaultAppearance);
+        }
+        else
+        {
+            defaultAppearance = null;
+            getDictionary().removeItem(COSName.DA);
+        }
     }
 
     /**
@@ -278,6 +264,12 @@ public abstract class PDVariableText extends PDField
         {
             retval = number.intValue();
         }
+        else
+        {
+            // the Q value is inheritable
+            // the acroform should provide a Q default value
+            retval = getAcroForm().getQ();
+        }
         return retval;
     }
 
@@ -289,6 +281,20 @@ public abstract class PDVariableText extends PDField
     public void setQ( int q )
     {
         getDictionary().setInt( COSName.Q, q );
+    }
+    
+    @Override
+    public Object getDefaultValue()
+    {
+        // Text fields don't support the "DV" entry.
+        return null;
+    }
+
+    @Override
+    public void setDefaultValue(Object value)
+    {
+        // Text fields don't support the "DV" entry.
+        throw new RuntimeException( "Text fields don't support the \"DV\" entry." );
     }
 
 }

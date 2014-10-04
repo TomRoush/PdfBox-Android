@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 
-import org.apache.pdfbox.exceptions.COSVisitorException;
-
 /**
  * This class represents a floating point number in a PDF document.
  *
@@ -63,7 +61,7 @@ public class COSFloat extends COSNumber
     private String removeNullDigits(String value)
     {
         // remove fraction digit "0" only
-        if (value.indexOf(".") > -1 && !value.endsWith(".0"))
+        if (value.indexOf('.') > -1 && !value.endsWith(".0"))
         {
             while (value.endsWith("0") && !value.endsWith(".0"))
             {
@@ -142,9 +140,9 @@ public class COSFloat extends COSNumber
      *
      * @param visitor The object to notify when visiting this object.
      * @return any object, depending on the visitor implementation, or null
-     * @throws COSVisitorException If an error occurs while visiting this object.
+     * @throws IOException If an error occurs while visiting this object.
      */
-    public Object accept(ICOSVisitor visitor) throws COSVisitorException
+    public Object accept(ICOSVisitor visitor) throws IOException
     {
         return visitor.visitFromFloat(this);
     }

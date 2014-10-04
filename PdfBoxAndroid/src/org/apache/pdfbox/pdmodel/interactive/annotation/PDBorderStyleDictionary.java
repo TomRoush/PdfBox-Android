@@ -1,9 +1,10 @@
 package org.apache.pdfbox.pdmodel.interactive.annotation;
 
-import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSInteger;
+
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.graphics.PDLineDashPattern;
 
@@ -133,15 +134,15 @@ public class PDBorderStyleDictionary implements COSObjectable
     /**
      * This will set the dash style used for drawing the border.
      *
-     * @param d
+     * @param dashArray
      *            the dash style to use
      */
-    public void setDashStyle( PDLineDashPattern d )
+    public void setDashStyle( COSArray dashArray )
     {
         COSArray array = null;
-        if( d != null )
+        if( dashArray != null )
         {
-            array = d.getCOSDashPattern();
+            array = dashArray;
         }
         getDictionary().setItem( "D", array );
     }

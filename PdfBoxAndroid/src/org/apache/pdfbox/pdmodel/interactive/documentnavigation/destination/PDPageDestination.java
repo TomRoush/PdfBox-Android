@@ -6,7 +6,9 @@ import java.util.List;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSNumber;
+
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageNode;
 
@@ -116,8 +118,9 @@ public abstract class PDPageDestination extends PDDestination
             else if (page instanceof COSDictionary)
             {
                 COSBase parent = page;
-                while (((COSDictionary) parent).getDictionaryObject("Parent", "P") != null) {
-                    parent = ((COSDictionary) parent).getDictionaryObject( "Parent", "P" );
+                while (((COSDictionary) parent).getDictionaryObject(COSName.PARENT, COSName.P) != null)
+                {
+                    parent = ((COSDictionary) parent).getDictionaryObject(COSName.PARENT, COSName.P);
                 }
                 // now parent is the pages node
                 PDPageNode pages = new PDPageNode((COSDictionary) parent);

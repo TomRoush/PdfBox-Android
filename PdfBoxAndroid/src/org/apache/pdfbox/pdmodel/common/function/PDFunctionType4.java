@@ -1,7 +1,5 @@
 package org.apache.pdfbox.pdmodel.common.function;
 
-import java.io.IOException;
-
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.pdmodel.common.PDRange;
 import org.apache.pdfbox.pdmodel.common.function.type4.ExecutionContext;
@@ -9,8 +7,10 @@ import org.apache.pdfbox.pdmodel.common.function.type4.InstructionSequence;
 import org.apache.pdfbox.pdmodel.common.function.type4.InstructionSequenceBuilder;
 import org.apache.pdfbox.pdmodel.common.function.type4.Operators;
 
+import java.io.IOException;
+
 /**
- * This class represents a type 4 function in a PDF document.
+ * This class represents a Type 4 (PostScript calculator) function in a PDF document.
  * <p>
  * See section 3.9.4 of the PDF 1.4 Reference.
  *

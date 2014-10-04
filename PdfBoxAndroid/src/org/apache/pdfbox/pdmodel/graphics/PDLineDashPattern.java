@@ -1,169 +1,70 @@
 package org.apache.pdfbox.pdmodel.graphics;
 
-import java.util.List;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSInteger;
-import org.apache.pdfbox.cos.COSNumber;
+
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 
+import java.util.Arrays;
+
 /**
- * This class represents the line dash pattern for a graphics state.  See PDF
- * Reference 1.5 section 4.3.2
- *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.7 $
+ * A line dash pattern for stroking paths.
+ * Instances of PDLineDashPattern are immutable.
+ * @author Ben Litchfield
+ * @author John Hewson
  */
-public class PDLineDashPattern implements COSObjectable, Cloneable
+public final class PDLineDashPattern implements COSObjectable
 {
-    
-    /**
-     * Log instance.
-     */
-    private static final Log LOG = LogFactory.getLog(PDLineDashPattern.class);
-    
-    private COSArray lineDashPattern = null;
+    private final int phase;
+    private final float[] array;
 
     /**
-     * Creates a blank line dash pattern.  With no dashes and a phase of 0.
+     * Creates a new line dash pattern, with no dashes and a phase of 0.
      */
     public PDLineDashPattern()
     {
-        lineDashPattern = new COSArray();
-        lineDashPattern.add( new COSArray() );
-        lineDashPattern.add( COSInteger.ZERO );
+        array = new float[] { };
+        phase = 0;
     }
 
     /**
-     * Constructs a line dash pattern from an existing array.
-     *
-     * @param ldp The existing line dash pattern.
+     * Creates a new line dash pattern from a dash array and phase.
+     * @param array the dash array
+     * @param phase the phase
      */
-    public PDLineDashPattern( COSArray ldp )
+    public PDLineDashPattern(COSArray array, int phase)
     {
-        lineDashPattern = ldp;
+        this.array = array.toFloatArray();
+        this.phase = phase;
     }
 
-    /**
-     * Constructs a line dash pattern from an existing array.
-     *
-     * @param ldp The existing line dash pattern.
-     * @param phase The phase for the line dash pattern.
-     */
-    public PDLineDashPattern( COSArray ldp, int phase )
-    {
-        lineDashPattern = new COSArray();
-        lineDashPattern.add( ldp );
-        lineDashPattern.add( COSInteger.get( phase ) );
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public Object clone()
-    {
-        PDLineDashPattern pattern = null;
-        try
-        {
-            pattern = (PDLineDashPattern)super.clone();
-            pattern.setDashPattern(getDashPattern());
-            pattern.setPhaseStart(getPhaseStart());
-        }
-        catch(CloneNotSupportedException e)
-        {
-            LOG.error(e,e);
-        }
-        return pattern;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public COSBase getCOSObject()
     {
-        return lineDashPattern;
+        COSArray cos = new COSArray();
+        cos.add(COSArrayList.converterToCOSArray(Arrays.asList(array)));
+        cos.add(COSInteger.get(phase));
+        return cos;
     }
 
     /**
-     * This will get the line dash pattern phase.  The dash phase specifies the
-     * distance into the dash pattern at which to start the dash.
-     *
-     * @return The line dash pattern phase.
+     * Returns the dash phase.
+     * This specifies the distance into the dash pattern at which to start the dash.
+     * @return the dash phase
      */
-    public int getPhaseStart()
+    public int getPhase()
     {
-        COSNumber phase = (COSNumber)lineDashPattern.get( 1 );
-        return phase.intValue();
+        return phase;
     }
 
     /**
-     * This will set the line dash pattern phase.
-     *
-     * @param phase The new line dash patter phase.
+     * Returns the dash array.
+     * @return the dash array
      */
-    public void setPhaseStart( int phase )
+    public float[] getDashArray()
     {
-        lineDashPattern.set( 1, phase );
+        return array.clone();
     }
-
-    /**
-     * This will return a list of java.lang.Integer objects that represent the line
-     * dash pattern appearance.
-     *
-     * @return The line dash pattern.
-     */
-    public List getDashPattern()
-    {
-        COSArray dashPatterns = (COSArray)lineDashPattern.get( 0 );
-        return COSArrayList.convertIntegerCOSArrayToList( dashPatterns );
-    }
-
-    /**
-     * Get the line dash pattern as a COS object.
-     *
-     * @return The cos array line dash pattern.
-     */
-    public COSArray getCOSDashPattern()
-    {
-        return (COSArray)lineDashPattern.get( 0 );
-    }
-
-    /**
-     * This will replace the existing line dash pattern.
-     *
-     * @param dashPattern A list of java.lang.Integer objects.
-     */
-    public void setDashPattern( List dashPattern )
-    {
-        lineDashPattern.set( 0, COSArrayList.converterToCOSArray( dashPattern ) );
-    }
-    
-    /**
-     * Checks if the dashPattern is empty or all values equals 0.
-     * 
-     * @return true if the dashPattern is empty or all values equals 0  
-     */
-    public boolean isDashPatternEmpty() 
-    {
-        float[] dashPattern = getCOSDashPattern().toFloatArray();
-        boolean dashPatternEmpty = true;
-        if (dashPattern != null) 
-        {
-            int arraySize = dashPattern.length;
-            for(int i=0;i<arraySize;i++) 
-            {
-                if (dashPattern[i] > 0) 
-                {
-                    dashPatternEmpty = false;
-                    break;
-                }
-            }
-        }
-        return dashPatternEmpty;
-    }
-
 }

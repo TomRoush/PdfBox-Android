@@ -209,6 +209,7 @@ public abstract class TTFDataStream implements Closeable
      * 
      * @throws IOException If there is an error closing the resources.
      */
+    @Override
     public abstract void close() throws IOException;
 
     /**

@@ -1,54 +1,40 @@
 package org.apache.pdfbox.pdmodel.interactive.form;
 
-import java.io.IOException;
-
 import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSString;
 
 /**
- * A class for handling the PDF field as a PDPushButton.
+ * A pushbutton is a purely interactive control that responds immediately to user
+ * input without retaining a permanent value.
  *
  * @author sug
- * @version $Revision: 1.3 $
  */
-public class PDPushButton extends PDField
+public class PDPushButton extends PDButton
 {
 
     /**
-     * @see PDField#PDField(PDAcroForm, COSDictionary)
-     *
-     * @param theAcroForm The acroForm for this field.
-     * @param field The field for this push button.
+     * Constructor.
+     * 
+     * @param theAcroForm The form that this field is part of.
+     * @param field the PDF object to represent as a field.
+     * @param parentNode the parent node of the node to be created
      */
-    public PDPushButton( PDAcroForm theAcroForm, COSDictionary field)
+    public PDPushButton( PDAcroForm theAcroForm, COSDictionary field, PDFieldTreeNode parentNode)
     {
-        super(theAcroForm, field);
+        super(theAcroForm, field, parentNode);
     }
 
-    /**
-     * @see PDField#setValue(java.lang.String)
-     *
-     * @param value The new value for the field.
-     *
-     * @throws IOException If there is an error creating the appearance stream.
-     */
-    public void setValue(String value) throws IOException
+    @Override
+    public Object getValue()
     {
-        COSString fieldValue = new COSString(value);
-        getDictionary().setItem( COSName.getPDFName( "V" ), fieldValue );
-        getDictionary().setItem( COSName.getPDFName( "DV" ), fieldValue );
+        // PushButton fields don't support the "V" entry.
+        return null;
     }
 
-    /**
-     * getValue gets the fields value to as a string.
-     *
-     * @return The string value of this field.
-     *
-     * @throws IOException If there is an error getting the value.
-     */
-    public String getValue() throws IOException
+    @Override
+    public void setValue(Object value)
     {
-        return getDictionary().getString( "V" );
+        // PushButton fields don't support the "V" entry.
+        throw new RuntimeException( "PushButton fields don't support the \"V\" entry." );
     }
+
 }

@@ -2,7 +2,6 @@ package org.apache.pdfbox.util;
 
 import java.io.IOException;
 import java.util.List;
-
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 

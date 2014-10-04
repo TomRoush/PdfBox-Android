@@ -5,30 +5,26 @@ import java.util.List;
 
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.exceptions.OutlineNotLocalException;
 import org.apache.pdfbox.pdmodel.PDDestinationNameTreeNode;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentNameDictionary;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement;
+import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionFactory;
-import org.apache.pdfbox.pdmodel.interactive.action.type.PDAction;
-import org.apache.pdfbox.pdmodel.interactive.action.type.PDActionGoTo;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionGoTo;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDNamedDestination;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageXYZDestination;
-import org.apache.pdfbox.util.BitFlagHelper;
 
 /**
  * This represents an outline in a pdf document.
  *
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.7 $
  */
 public class PDOutlineItem extends PDOutlineNode
 {
-
     private static final int ITALIC_FLAG = 1;
     private static final int BOLD_FLAG = 2;
 
@@ -198,65 +194,64 @@ public class PDOutlineItem extends PDOutlineNode
      */
     public PDPage findDestinationPage( PDDocument doc ) throws IOException
     {
-        PDPage page = null;
-        PDDestination rawDest = getDestination();
-        if( rawDest == null )
+        PDDestination dest = getDestination();
+        if( dest == null )
         {
             PDAction outlineAction = getAction();
             if( outlineAction instanceof PDActionGoTo )
             {
-                rawDest = ((PDActionGoTo)outlineAction).getDestination();
-            }
-            else if( outlineAction == null )
-            {
-                //if the outline action is null then this outline does not refer
-                //to anything and we will just return null.
+                dest = ((PDActionGoTo)outlineAction).getDestination();
             }
             else
             {
-                throw new OutlineNotLocalException( "Error: Outline does not reference a local page." );
+                return null;
             }
         }
 
-        PDPageDestination pageDest = null;
-        if( rawDest instanceof PDNamedDestination )
+        PDPageDestination pageDestination;
+        if( dest instanceof PDNamedDestination )
         {
             //if we have a named destination we need to lookup the PDPageDestination
-            PDNamedDestination namedDest = (PDNamedDestination)rawDest;
+            PDNamedDestination namedDest = (PDNamedDestination)dest;
             PDDocumentNameDictionary namesDict = doc.getDocumentCatalog().getNames();
             if( namesDict != null )
             {
                 PDDestinationNameTreeNode destsTree = namesDict.getDests();
                 if( destsTree != null )
                 {
-                    pageDest = (PDPageDestination)destsTree.getValue( namedDest.getNamedDestination() );
+                    pageDestination = (PDPageDestination)destsTree.getValue( namedDest.getNamedDestination() );
+                }
+                else
+                {
+                    return null;
                 }
             }
+            else
+            {
+                return null;
+            }
         }
-        else if( rawDest instanceof PDPageDestination)
+        else if( dest instanceof PDPageDestination)
         {
-            pageDest = (PDPageDestination) rawDest;
+            pageDestination = (PDPageDestination) dest;
         }
-        else if( rawDest == null )
+        else if( dest == null )
         {
-            //if the destination is null then we will simply return a null page.
+            return null;
         }
         else
         {
-            throw new IOException( "Error: Unknown destination type " + rawDest );
+            throw new IOException( "Error: Unknown destination type " + dest );
         }
 
-        if( pageDest != null )
+        PDPage page = pageDestination.getPage();
+        if( page == null )
         {
-            page = pageDest.getPage();
-            if( page == null )
+            int pageNumber = pageDestination.getPageNumber();
+            if( pageNumber != -1 )
             {
-                int pageNumber = pageDest.getPageNumber();
-                if( pageNumber != -1 )
-                {
-                    List allPages = doc.getDocumentCatalog().getAllPages();
-                    page = (PDPage)allPages.get( pageNumber );
-                }
+                List allPages = doc.getDocumentCatalog().getAllPages();
+                page = (PDPage)allPages.get( pageNumber );
             }
         }
 
@@ -310,14 +305,14 @@ public class PDOutlineItem extends PDOutlineNode
     }
 
     /**
-     * Get the text color of this node.  Default is black and this method
+     * Get the RGB text color of this node.  Default is black and this method
      * will never return null.
      *
      * @return The structure element of this node.
      */
-//    public PDColorState getTextColor()
+//    public PDColor getTextColor()
 //    {
-//        PDColorState retval = null;
+//        PDColor retval = null;
 //        COSArray csValues = (COSArray)node.getDictionaryObject( COSName.C );
 //        if( csValues == null )
 //        {
@@ -325,23 +320,22 @@ public class PDOutlineItem extends PDOutlineNode
 //            csValues.growToSize( 3, new COSFloat( 0 ) );
 //            node.setItem( COSName.C, csValues );
 //        }
-//        retval = new PDColorState(csValues);
-//        retval.setColorSpace( PDDeviceRGB.INSTANCE );
+//        retval = new PDColor(csValues.toFloatArray());
 //        return retval;
 //    }TODO
 
     /**
-     * Set the text color for this node.  The colorspace must be a PDDeviceRGB.
+     * Set the RGB text color for this node.
      *
      * @param textColor The text color for this node.
      */
-//    public void setTextColor( PDColorState textColor )
+//    public void setTextColor( PDColor textColor )
 //    {
-//        node.setItem( COSName.C, textColor.getCOSColorSpaceValue() );
+//        node.setItem( COSName.C, textColor.toCOSArray() );
 //    }TODO
 
     /**
-     * Set the text color for this node.  The colorspace must be a PDDeviceRGB.
+     * Set the RGB text color for this node.
      *
      * @param textColor The text color for this node.
      */
@@ -361,7 +355,7 @@ public class PDOutlineItem extends PDOutlineNode
      */
     public boolean isItalic()
     {
-        return BitFlagHelper.getFlag( node, COSName.F, ITALIC_FLAG );
+        return node.getFlag( COSName.F, ITALIC_FLAG );
     }
 
     /**
@@ -371,7 +365,7 @@ public class PDOutlineItem extends PDOutlineNode
      */
     public void setItalic( boolean italic )
     {
-        BitFlagHelper.setFlag( node, COSName.F, ITALIC_FLAG, italic );
+        node.setFlag( COSName.F, ITALIC_FLAG, italic );
     }
 
     /**
@@ -381,7 +375,7 @@ public class PDOutlineItem extends PDOutlineNode
      */
     public boolean isBold()
     {
-        return BitFlagHelper.getFlag( node, COSName.F, BOLD_FLAG );
+        return node.getFlag( COSName.F, BOLD_FLAG );
     }
 
     /**
@@ -391,7 +385,7 @@ public class PDOutlineItem extends PDOutlineNode
      */
     public void setBold( boolean bold )
     {
-        BitFlagHelper.setFlag( node, COSName.F, BOLD_FLAG, bold );
+        node.setFlag( COSName.F, BOLD_FLAG, bold );
     }
 
 }
