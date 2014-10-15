@@ -567,6 +567,10 @@ public class COSWriter implements ICOSVisitor, Closeable
         {
           trailer.removeItem( COSName.PREV );
         }
+        if (!doc.isXRefStream())
+        {
+        	trailer.removeItem( COSName.XREF_STM );
+        }
         // Remove a checksum if present
         trailer.removeItem( COSName.DOC_CHECKSUM );
         
@@ -1316,7 +1320,13 @@ public class COSWriter implements ICOSVisitor, Closeable
         COSDocument cosDoc = document.getDocument();
         COSDictionary trailer = cosDoc.getTrailer();
         COSArray idArray = (COSArray)trailer.getDictionaryObject( COSName.ID );
-        if( idArray == null || incrementalUpdate)
+        boolean missingID = true;
+        // check for an existing documentID
+        if (idArray != null && idArray.size() == 2)
+        {
+        	missingID = false;
+        }
+        if( missingID || incrementalUpdate)
         {
             MessageDigest md5;
             try
@@ -1342,10 +1352,12 @@ public class COSWriter implements ICOSVisitor, Closeable
                     md5.update( values.next().toString().getBytes("ISO-8859-1") );
                 }
             }
+            // reuse origin documentID if available as first value
+            COSString firstID = missingID ? new COSString( md5.digest() ) : (COSString)idArray.get(0);
+            COSString secondID = new COSString( md5.digest() );
             idArray = new COSArray();
-            COSString id = new COSString( md5.digest() );
-            idArray.add( id );
-            idArray.add( id );
+            idArray.add( firstID );
+            idArray.add( secondID );
             trailer.setItem( COSName.ID, idArray );
         }
         cosDoc.accept(this);

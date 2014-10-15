@@ -48,6 +48,8 @@ public class PDFTextStripper extends PDFTextStreamEngine
 	private static float DEFAULT_INDENT_THRESHOLD = 2.0f;
 	private static float DEFAULT_DROP_THRESHOLD = 2.5f;
 
+	private static final boolean useCustomQuicksort;
+
 	// enable the ability to set the default indent/drop thresholds
 	// with -D system properties:
 	//    pdftextstripper.indent
@@ -90,6 +92,24 @@ public class PDFTextStripper extends PDFTextStreamEngine
 				// ignore and use default
 			}
 		}
+
+		// check if we need to use the custom quicksort algorithm as a
+		// workaround to the transitivity issue of TextPositionComparator:
+		// https://issues.apache.org/jira/browse/PDFBOX-1512
+		boolean is16orLess = false;
+		try
+		{
+			String[] versionComponents = System.getProperty("java.version").split("\\.");
+			int javaMajorVersion = Integer.parseInt(versionComponents[0]);
+			int javaMinorVersion = Integer.parseInt(versionComponents[1]);
+			is16orLess = javaMajorVersion == 1 && javaMinorVersion <= 6;
+		}
+		catch (SecurityException x)
+		{
+			// when run in an applet ignore and use default
+			// assume 1.7 or higher so that quicksort is used
+		}
+		useCustomQuicksort = !is16orLess;
 	}
 
 	/**
@@ -458,7 +478,17 @@ public class PDFTextStripper extends PDFTextStreamEngine
 			if (getSortByPosition())
 			{
 				TextPositionComparator comparator = new TextPositionComparator();
-				Collections.sort(textList, comparator);
+				// because the TextPositionComparator is not transitive, but
+				// JDK7+ enforces transitivity on comparators, we need to use
+				// a custom quicksort implementation (which is slower, unfortunately).
+				if(useCustomQuicksort)
+				{
+					QuickSort.sort( textList, comparator );
+				}
+				else
+				{
+					Collections.sort( textList, comparator );
+				}
 			}
 			Iterator<TextPosition> textIter = textList.iterator();
 			// Before we can display the text, we need to do some normalizing.

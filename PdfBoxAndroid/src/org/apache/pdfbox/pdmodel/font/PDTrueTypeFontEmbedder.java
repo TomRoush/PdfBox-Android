@@ -42,6 +42,7 @@ class PDTrueTypeFontEmbedder
 {
 	private final Encoding fontEncoding;
 	private final TrueTypeFont ttf;
+	private final PDFontDescriptor fontDescriptor;
 
 	/**
 	 * Creates a new TrueType font for embedding.
@@ -78,6 +79,7 @@ class PDTrueTypeFontEmbedder
 
 		fd.setFontFile2(stream);
 		dict.setItem(COSName.FONT_DESC, fd);
+		fontDescriptor = fd;
 			}
 
 	// creates a new font descriptor dictionary for the given TTF
@@ -309,5 +311,13 @@ class PDTrueTypeFontEmbedder
 	public TrueTypeFont getTrueTypeFont()
 	{
 		return ttf;
+	}
+
+	/**
+	 * Returns the font descriptor.
+	 */
+	public PDFontDescriptor getFontDescriptor()
+	{
+		return fontDescriptor;
 	}
 }

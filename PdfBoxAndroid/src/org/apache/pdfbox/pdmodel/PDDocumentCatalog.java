@@ -35,8 +35,8 @@ import org.apache.pdfbox.pdmodel.interactive.viewerpreferences.PDViewerPreferenc
  */
 public class PDDocumentCatalog implements COSObjectable
 {
-    private COSDictionary root;
-    private PDDocument document;
+    private final COSDictionary root;
+    private final PDDocument document;
 
     private PDAcroForm acroForm = null;
 
@@ -293,10 +293,10 @@ public class PDDocumentCatalog implements COSObjectable
     public PDMetadata getMetadata()
     {
         PDMetadata retval = null;
-        COSStream stream = (COSStream)root.getDictionaryObject( COSName.METADATA );
-        if( stream != null )
+        COSBase metaObj = root.getDictionaryObject( COSName.METADATA );
+        if(metaObj instanceof COSStream)
         {
-            retval = new PDMetadata( stream );
+            retval = new PDMetadata((COSStream) metaObj);
         }
         return retval;
     }

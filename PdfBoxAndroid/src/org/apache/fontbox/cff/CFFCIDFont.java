@@ -166,14 +166,14 @@ public class CFFCIDFont extends CFFFont
     }
 
     /**
-     * Returns the defaultWidthX for the given CID.
+     * Returns the defaultWidthX for the given GID.
      *
-     * @param cid CID
+     * @param gid GID
      * @return defaultWidthX
      */
-    private int getDefaultWidthX(int cid)
+    private int getDefaultWidthX(int gid)
     {
-        int fdArrayIndex = this.fdSelect.getFDIndex(cid);
+        int fdArrayIndex = this.fdSelect.getFDIndex(gid);
         if (fdArrayIndex == -1)
         {
             return 1000;
@@ -183,14 +183,14 @@ public class CFFCIDFont extends CFFFont
     }
 
     /**
-     * Returns the nominalWidthX for the given CID.
+     * Returns the nominalWidthX for the given GID.
      *
-     * @param cid CID
+     * @param gid GID
      * @return defaultWidthX
      */
-    private int getNominalWidthX(int cid)
+    private int getNominalWidthX(int gid)
     {
-        int fdArrayIndex = this.fdSelect.getFDIndex(cid);
+        int fdArrayIndex = this.fdSelect.getFDIndex(gid);
         if (fdArrayIndex == -1)
         {
             return 0;
@@ -198,7 +198,12 @@ public class CFFCIDFont extends CFFFont
         Map<String, Object> privDict = this.privateDictionaries.get(fdArrayIndex);
         return privDict.containsKey("nominalWidthX") ? ((Number)privDict.get("nominalWidthX")).intValue() : 0;
     }
-
+    
+    /**
+    * Returns the LocalSubrIndex for the given GID.
+    *
+    * @param gid GID
+    */
     private IndexData getLocalSubrIndex(int gid)
     {
         int fdArrayIndex = this.fdSelect.getFDIndex(gid);
@@ -230,7 +235,8 @@ public class CFFCIDFont extends CFFFont
             }
             Type2CharStringParser parser = new Type2CharStringParser(fontName, cid);
             List<Object> type2seq = parser.parse(bytes, globalSubrIndex, getLocalSubrIndex(gid));
-            type2 = new CIDKeyedType2CharString(reader, fontName, cid, gid, type2seq, getDefaultWidthX(cid), getNominalWidthX(cid));
+            type2 = new CIDKeyedType2CharString(reader, fontName, cid, gid, type2seq, 
+            		getDefaultWidthX(cid), getNominalWidthX(cid));
             charStringCache.put(cid, type2);
         }
         return type2;

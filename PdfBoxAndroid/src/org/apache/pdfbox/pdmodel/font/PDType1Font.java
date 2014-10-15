@@ -67,6 +67,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 	private final Type1Font type1font; // embedded font
 	private final Type1Equivalent type1Equivalent; // embedded or system font for rendering
 	private final boolean isEmbedded;
+	private final boolean isDamaged;
 	private Matrix fontMatrix;
 
 	/**
@@ -76,6 +77,8 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 	 */
 	private PDType1Font(String baseFont)
 	{
+		super(baseFont);
+		
 		dict.setItem(COSName.SUBTYPE, COSName.TYPE1);
 		dict.setName(COSName.BASE_FONT, baseFont);
 		encoding = new WinAnsiEncoding();
@@ -85,6 +88,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 		type1font = null;
 		type1Equivalent = ExternalFonts.getType1EquivalentFont(getBaseFont());
 		isEmbedded = false;
+		isDamaged = false;
 	}
 
 	/**
@@ -102,6 +106,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 		type1font = embedder.getType1Font();
 		type1Equivalent = embedder.getType1Font();
 		isEmbedded = true;
+		isDamaged = false;
 	}
 
 	/**
@@ -114,6 +119,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 		super(fontDictionary);
 		PDFontDescriptor fd = getFontDescriptor();
 		Type1Font t1 = null;
+		boolean fontIsDamaged = false;
 		if (fd != null)
 		{
 			// a Type1 font may contain a Type1C font
@@ -146,14 +152,17 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 				catch (DamagedFontException e)
 				{
 					LOG.warn("Can't read damaged embedded Type1 font " + fd.getFontName());
+					fontIsDamaged = true;
 				}
 				catch (IOException e)
 				{
 					LOG.error("Can't read the embedded Type1 font " + fd.getFontName(), e);
+					fontIsDamaged = true;
 				}
 			}
 		}
 		isEmbedded = t1 != null;
+		isDamaged = fontIsDamaged;
 
 		// try to find a suitable .pfb font to substitute
 		if (t1 == null)
@@ -412,5 +421,11 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 			}
 		}
 		return fontMatrix;
+	}
+
+	@Override
+	public boolean isDamaged()
+	{
+		return isDamaged;
 	}
 }

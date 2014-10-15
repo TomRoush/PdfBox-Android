@@ -36,7 +36,7 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 	protected final COSDictionary dict;
 	private final CMap toUnicodeCMap;
 	private final FontMetrics afmStandard14; // AFM for standard 14 fonts
-	private final PDFontDescriptor fontDescriptor;
+	private PDFontDescriptor fontDescriptor;
 
 	private List<Integer> widths;
 	private float avgFontWidth;
@@ -46,7 +46,7 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 	/**
 	 * Constructor for embedding.
 	 */
-	protected PDFont()
+	PDFont()
 	{
 		dict = new COSDictionary();
 		dict.setItem(COSName.TYPE, COSName.FONT);
@@ -57,16 +57,16 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 	/**
 	 * Constructor for Standard 14.
 	 */
-	protected PDFont(String baseFont)
+	PDFont(String baseFont)
 	{
 		dict = new COSDictionary();
 		toUnicodeCMap = null;
-		fontDescriptor = null;
-		afmStandard14 = Standard14Fonts.getAFM(getName()); // may be null (it usually is)
+		afmStandard14 = Standard14Fonts.getAFM(baseFont);
 		if (afmStandard14 == null)
 		{
 			throw new IllegalArgumentException("No AFM for font " + baseFont);
 		}
+		fontDescriptor = PDType1FontEmbedder.buildFontDescriptor(afmStandard14);
 	}
 
 	/**
@@ -125,6 +125,14 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 	public PDFontDescriptor getFontDescriptor()
 	{
 		return fontDescriptor;
+	}
+
+	/**
+	 * Sets the font descriptor when embedding a font.
+	 */
+	protected final void setFontDescriptor(PDFontDescriptor fontDescriptor)
+	{
+		this.fontDescriptor = fontDescriptor;
 	}
 
 	/**
@@ -226,19 +234,21 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 	/**
 	 * Returns the width of the given Unicode string.
 	 *
-	 * @param string The string to get the width of.
+	 * @param text The text to get the width of.
 	 * @return The width of the string in 1000 units of text space, ie 333 567...
 	 * @throws IOException If there is an error getting the width information.
 	 */
-	public float getStringWidth(String string) throws IOException
+	public float getStringWidth(String text) throws IOException
 	{
-		byte[] data = string.getBytes("ISO-8859-1"); // todo: *no*, these are *not* character codes
-		float totalWidth = 0;
-		for (int i = 0; i < data.length; i++)
+		float width = 0;
+		int offset = 0, length = text.length();
+		while (offset < length)
 		{
-			totalWidth += getWidth(data[i]);
+			int codePoint = text.codePointAt(offset);
+			offset += Character.charCount(codePoint);
+			width += getWidth(codePoint); // todo: *no* getWidth expects a PDF char code, not a Unicode code point
 		}
-		return totalWidth;
+		return width;
 	}
 
 	/**
@@ -389,7 +399,7 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 	 * Returns the value of the symbolic flag,  allowing for the fact that the result may be
 	 * indeterminate.
 	 */
-	protected Boolean getSymbolicFlag()
+	protected final Boolean getSymbolicFlag()
 	{
 		if (getFontDescriptor() != null)
 		{
@@ -496,6 +506,9 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 		// if the name matches, this is a Standard 14 font
 		return Standard14Fonts.containsName(getName());
 	}
+
+	@Override
+	public abstract boolean isDamaged();
 
 	@Override
 	public boolean equals(Object other)

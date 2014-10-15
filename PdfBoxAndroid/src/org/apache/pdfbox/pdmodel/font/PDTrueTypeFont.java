@@ -82,6 +82,7 @@ public class PDTrueTypeFont extends PDSimpleFont
 
 	private final TrueTypeFont ttf;
 	private final boolean isEmbedded;
+	private final boolean isDamaged;
 
 	/**
 	 * Creates a new TrueType font from a Font dictionary.
@@ -93,6 +94,7 @@ public class PDTrueTypeFont extends PDSimpleFont
 		super(fontDictionary);
 
 		TrueTypeFont ttfFont = null;
+		boolean fontIsDamaged = false;
 		if (getFontDescriptor() != null)
 		{
 			PDFontDescriptor fd = super.getFontDescriptor();
@@ -107,15 +109,18 @@ public class PDTrueTypeFont extends PDSimpleFont
 				}
 				catch (NullPointerException e) // TTF parser is buggy
 				{
-					throw new IOException("Could not read embedded TTF for font " + getBaseFont(), e);
+					LOG.warn("Could not read embedded TTF for font " + getBaseFont(), e);
+					fontIsDamaged = true;
 				}
 				catch (IOException e)
 				{
-					throw new IOException("Could not read embedded TTF for font " + getBaseFont(), e);
+					LOG.warn("Could not read embedded TTF for font " + getBaseFont(), e);
+					fontIsDamaged = true;
 				}
 			}
 		}
 		isEmbedded = ttfFont != null;
+		isDamaged = fontIsDamaged;
 
 		// substitute
 		if (ttfFont == null)
@@ -157,7 +162,10 @@ public class PDTrueTypeFont extends PDSimpleFont
 		PDTrueTypeFontEmbedder embedder = new PDTrueTypeFontEmbedder(document, dict, ttfStream);
 		encoding = embedder.getFontEncoding();
 		ttf = embedder.getTrueTypeFont();
+		setFontDescriptor(embedder.getFontDescriptor());
 		isEmbedded = true;
+		isDamaged = false;
+		glyphList = GlyphList.getAdobeGlyphList();
 	}
 
 	@Override
@@ -176,6 +184,12 @@ public class PDTrueTypeFont extends PDSimpleFont
 	public BoundingBox getBoundingBox() throws IOException
 	{
 		return ttf.getFontBBox();
+	}
+
+	@Override
+	public boolean isDamaged()
+	{
+		return isDamaged;
 	}
 
 	/**
