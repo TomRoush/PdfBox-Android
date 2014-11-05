@@ -6,6 +6,8 @@ import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 
+import android.graphics.Bitmap;
+
 /**
  * An image in a PDF document.
  *
@@ -18,7 +20,7 @@ public interface PDImage extends COSObjectable
      * @return content of this image as a buffered image.
      * @throws IOException
      */
-//    public BufferedImage getImage() throws IOException;TODO
+    public Bitmap getImage() throws IOException;
 
     /**
      * Returns an ARGB image filled with the given paint and using this image as a mask.

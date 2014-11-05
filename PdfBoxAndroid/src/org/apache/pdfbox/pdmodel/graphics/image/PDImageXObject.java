@@ -3,6 +3,7 @@ package org.apache.pdfbox.pdmodel.graphics.image;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,6 +16,8 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
+
+import android.graphics.Bitmap;
 
 /**
  * An Image XObject.
@@ -29,7 +32,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
      */
     private static final Log LOG = LogFactory.getLog(PDImageXObject.class);
 
-//    private BufferedImage cachedImage;TODO
+    private Bitmap cachedImage;
 //    private PDColorSpace colorSpace;TODO
 //    private Map<String, PDColorSpace> colorSpaces;  // from current resource dictionary TODO
 
@@ -44,7 +47,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
 //        // thumbnails are special, any non-null subtype is treated as being "Image"
 //        PDStream pdStream = new PDStream(cosStream);
 //        return new PDImageXObject(pdStream, null);
-//    }TOOD
+//    }
 
     /**
      * Creates an Image XObject in the given document.
@@ -87,19 +90,19 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * @param colorSpaces the color spaces in the current resources dictionary, null for masks
      * @throws java.io.IOException if there is an error creating the XObject.
      */
-//    public PDImageXObject(PDStream stream, Map<String, PDColorSpace> colorSpaces) throws IOException
-//    {
-//        this(stream, colorSpaces, stream.getStream().getDecodeResult());
-//    }TODO
+    public PDImageXObject(PDStream stream /*, Map<String, PDColorSpace> colorSpaces*/) throws IOException
+    {
+        this(stream, /*colorSpaces,*/ stream.getStream().getDecodeResult());
+    }
 
     // repairs parameters using decode result
-//    private PDImageXObject(PDStream stream, Map<String, PDColorSpace> colorSpaces,
-//                           DecodeResult decodeResult)
-//    {
-//        super(repair(stream, decodeResult), COSName.IMAGE);
-////        this.colorSpaces = colorSpaces;TOOD
-////        this.colorSpace = decodeResult.getJPXColorSpace();TODO
-//    }TODO
+    private PDImageXObject(PDStream stream, //Map<String, PDColorSpace> colorSpaces,
+                           DecodeResult decodeResult)
+    {
+        super(repair(stream, decodeResult), COSName.IMAGE);
+//        this.colorSpaces = colorSpaces;TOOD
+//        this.colorSpace = decodeResult.getJPXColorSpace();TODO
+    }
 
     // repairs parameters using decode result
     private static PDStream repair(PDStream stream, DecodeResult decodeResult)
@@ -153,18 +156,19 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * {@inheritDoc}
      * The returned images are cached for the lifetime of this XObject.
      */
-//    @Override
-//    public BufferedImage getImage() throws IOException
-//    {
-//        if (cachedImage != null)
-//        {
-//            return cachedImage;
-//        }
-//
-//        // get image as RGB
-//        BufferedImage image = SampledImageReader.getRGBImage(this, getColorKeyMask());
-//
-//        // soft mask (overrides explicit mask)
+    @Override
+    public Bitmap getImage() throws IOException
+    {
+    	LOG.error("Better reach here");
+        if (cachedImage != null)
+        {
+            return cachedImage;
+        }
+
+        // get image as RGB
+        Bitmap image = SampledImageReader.getRGBImage(this, getColorKeyMask());
+
+        // soft mask (overrides explicit mask)
 //        PDImageXObject softMask = getSoftMask();
 //        if (softMask != null)
 //        {
@@ -178,11 +182,11 @@ public final class PDImageXObject extends PDXObject implements PDImage
 //            {
 //                image = applyMask(image, mask.getOpaqueImage(), false);
 //            }
-//        }
-//
-//        cachedImage = image;
-//        return image;
-//    }TODO
+//        } TODO
+
+        cachedImage = image;
+        return image;
+    }
 
     /**
      * {@inheritDoc}
@@ -329,6 +333,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         }
         else
         {
+        	LOG.debug(getCOSStream().getInt(COSName.BITS_PER_COMPONENT, COSName.BPC));
             return getCOSStream().getInt(COSName.BITS_PER_COMPONENT, COSName.BPC);
         }
     }

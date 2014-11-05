@@ -44,11 +44,11 @@ public class PDXObject implements COSObjectable
         COSStream stream = (COSStream)base;
         String subtype = stream.getNameAsString(COSName.SUBTYPE);
 
-//        if (COSName.IMAGE.getName().equals(subtype))
-//        {
-//            return new PDImageXObject(new PDStream(stream), resources.getColorSpaces());
-//        }TOOD
-        /*else*/ if (COSName.FORM.getName().equals(subtype))
+        if (COSName.IMAGE.getName().equals(subtype))
+        {
+            return new PDImageXObject(new PDStream(stream)); //, resources.getColorSpaces());
+        }
+        if (COSName.FORM.getName().equals(subtype))
         {
             return new PDFormXObject(new PDStream(stream), name);
         }
