@@ -377,7 +377,7 @@ public class CMapParser
      */
     protected InputStream getExternalCMap(String name) throws IOException
     {
-        URL url = getClass().getResource(name);
+        URL url = getClass().getResource("/org/apache/fontbox/resources/cmap/" + name);
         if (url == null)
         {
             throw new IOException("Error: Could not find referenced cmap stream " + name);

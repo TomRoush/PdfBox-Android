@@ -92,24 +92,24 @@ public class PDFTextStripper extends PDFTextStreamEngine
 				// ignore and use default
 			}
 		}
-
-		// check if we need to use the custom quicksort algorithm as a
-		// workaround to the transitivity issue of TextPositionComparator:
-		// https://issues.apache.org/jira/browse/PDFBOX-1512
-		boolean is16orLess = false;
-		try
-		{
-			String[] versionComponents = System.getProperty("java.version").split("\\.");
-			int javaMajorVersion = Integer.parseInt(versionComponents[0]);
-			int javaMinorVersion = Integer.parseInt(versionComponents[1]);
-			is16orLess = javaMajorVersion == 1 && javaMinorVersion <= 6;
-		}
-		catch (SecurityException x)
-		{
-			// when run in an applet ignore and use default
-			// assume 1.7 or higher so that quicksort is used
-		}
-		useCustomQuicksort = !is16orLess;
+		// We can't get a Java version, so we'll assume its higher and use quicksort
+//		// check if we need to use the custom quicksort algorithm as a
+//		// workaround to the transitivity issue of TextPositionComparator:
+//		// https://issues.apache.org/jira/browse/PDFBOX-1512
+//		boolean is16orLess = false;
+//		try
+//		{
+//			String[] versionComponents = System.getProperty("java.version").split("\\.");
+//			int javaMajorVersion = Integer.parseInt(versionComponents[0]);
+//			int javaMinorVersion = Integer.parseInt(versionComponents[1]);
+//			is16orLess = javaMajorVersion == 1 && javaMinorVersion <= 6;
+//		}
+//		catch (SecurityException x)
+//		{
+//			// when run in an applet ignore and use default
+//			// assume 1.7 or higher so that quicksort is used
+//		}
+		useCustomQuicksort = true;	// !is16orLess;
 	}
 
 	/**
