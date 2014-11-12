@@ -3,9 +3,9 @@ package org.apache.pdfbox.pdmodel.interactive.annotation;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionFactory;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalActions;
-import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
 
 /**
  * This is the class that represents a widget.
@@ -214,7 +214,7 @@ public class PDAnnotationWidget extends PDAnnotation
     // TODO where to get acroForm from?
 //    public PDField getParent() throws IOException
 //    {
-//        COSBase parent = this.getDictionary().getDictionaryObject(COSName.PARENT);
+//        COSBase parent = this.getCOSObject().getDictionaryObject(COSName.PARENT);
 //        if (parent instanceof COSDictionary)
 //        {
 //            PDAcroForm acroForm = null;

@@ -1,13 +1,13 @@
 package org.apache.pdfbox.pdmodel.interactive.form;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A button field represents an interactive control on the screen
@@ -37,7 +37,7 @@ public abstract class PDButton extends PDField
     /**
      * Constructor.
      * 
-     * @param theAcroForm The form that this field is part of.
+     * @param aroForm The form that this field is part of.
      * @param field the PDF object to represent as a field.
      * @param parentNode the parent node of the node to be created
      */

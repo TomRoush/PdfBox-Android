@@ -386,7 +386,7 @@ public final class PDAcroForm implements COSObjectable
         COSDictionary drDict = null;
         if( dr != null )
         {
-            drDict = dr.getCOSDictionary();
+            drDict = dr.getCOSObject();
         }
         acroForm.setItem( COSName.DR, drDict );
     }

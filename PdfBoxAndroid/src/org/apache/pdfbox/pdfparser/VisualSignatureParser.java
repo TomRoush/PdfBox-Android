@@ -19,7 +19,7 @@ public class VisualSignatureParser extends BaseParser
     /**
      * Log instance.
      */
-    private static final Log LOG = LogFactory.getLog(PDFParser.class);
+    private static final Log LOG = LogFactory.getLog(VisualSignatureParser.class);
 
     /**
      * Constructor.

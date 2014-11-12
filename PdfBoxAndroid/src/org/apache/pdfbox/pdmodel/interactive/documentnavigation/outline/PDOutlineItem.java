@@ -1,7 +1,6 @@
 package org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
@@ -250,8 +249,7 @@ public class PDOutlineItem extends PDOutlineNode
             int pageNumber = pageDestination.getPageNumber();
             if( pageNumber != -1 )
             {
-                List allPages = doc.getDocumentCatalog().getAllPages();
-                page = (PDPage)allPages.get( pageNumber );
+                page = doc.getPage( pageNumber );
             }
         }
 

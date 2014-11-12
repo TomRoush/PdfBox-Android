@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.pdfbox.pdfparser.NonSequentialPDFParser;
 import org.apache.pdfbox.pdfparser.PDFObjectStreamParser;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
 import org.apache.pdfbox.persistence.util.COSObjectKey;
@@ -26,687 +27,692 @@ import org.apache.pdfbox.persistence.util.COSObjectKey;
 public class COSDocument extends COSBase implements Closeable
 {
 
-    /**
-     * Log instance.
-     */
-    private static final Log LOG = LogFactory.getLog(COSDocument.class);
+	/**
+	 * Log instance.
+	 */
+	private static final Log LOG = LogFactory.getLog(COSDocument.class);
 
-    private float version = 1.4f;
+	private float version = 1.4f;
 
-    /**
-     * Maps ObjectKeys to a COSObject. Note that references to these objects
-     * are also stored in COSDictionary objects that map a name to a specific object.
-     */
-    private final Map<COSObjectKey, COSObject> objectPool =
-        new HashMap<COSObjectKey, COSObject>();
+	/**
+	 * Maps ObjectKeys to a COSObject. Note that references to these objects
+	 * are also stored in COSDictionary objects that map a name to a specific object.
+	 */
+	private final Map<COSObjectKey, COSObject> objectPool =
+			new HashMap<COSObjectKey, COSObject>();
 
-    /**
-     * Maps object and generation id to object byte offsets.
-     */
-    private final Map<COSObjectKey, Long> xrefTable =
-        new HashMap<COSObjectKey, Long>();
+	/**
+	 * Maps object and generation id to object byte offsets.
+	 */
+	private final Map<COSObjectKey, Long> xrefTable =
+			new HashMap<COSObjectKey, Long>();
 
-    /**
-     * Document trailer dictionary.
-     */
-    private COSDictionary trailer;
-    
-    /**
-     * Signature interface.
-     */
-    private SignatureInterface signatureInterface;
+	/**
+	 * Document trailer dictionary.
+	 */
+	private COSDictionary trailer;
 
-    private String headerString = "%PDF-" + version;
+	/**
+	 * Signature interface.
+	 */
+	private SignatureInterface signatureInterface;
 
-    private boolean warnMissingClose = true;
-    
-    /** signal that document is already decrypted, e.g. with {@link NonSequentialPDFParser} */
-    private boolean isDecrypted = false;
-    
-    private long startXref;
-    
-    private boolean closed = false;
+	private String headerString = "%PDF-" + version;
 
-    private boolean isXRefStream;
-    
-    private final File scratchDirectory;
-    
-    private final boolean useScratchFile;
-    
-    /**
-     * Flag to skip malformed or otherwise unparseable input where possible.
-     */
-    private final boolean forceParsing;
+	private boolean warnMissingClose = true;
 
-    /**
-     * Constructor.
-     *
-     * @param forceParsingValue flag to skip malformed or otherwise unparseable
-     *                     document content where possible
-     */
-    public COSDocument(boolean forceParsingValue) 
-    {
-        this(null, forceParsingValue, false);
-    }
+	/**
+	 * signal that document is already decrypted,
+	 * e.g. with {@link NonSequentialPDFParser}
+	 */
+	private boolean isDecrypted = false;
 
-    /**
-     * Constructor.
-     *
-     * @param forceParsingValue flag to skip malformed or otherwise unparseable
-     *                     document content where possible
-     * @param useScratchFiles enables the usage of a scratch file if set to true
-     *                     
-     */
-    public COSDocument(boolean forceParsingValue, boolean useScratchFiles) 
-    {
-        this(null, forceParsingValue, useScratchFiles);
-    }
+	private long startXref;
 
-    /**
-     * Constructor that will use a temporary file in the given directory
-     * for storage of the PDF streams. The temporary file is automatically
-     * removed when this document gets closed.
-     *
-     * @param scratchDir directory for the temporary file,
-     *                   or <code>null</code> to use the system default
-     * @param forceParsingValue flag to skip malformed or otherwise unparseable
-     *                     document content where possible
-     * @param useScratchFiles enables the usage of a scratch file if set to true
-     * 
-     */
-    public COSDocument(File scratchDir, boolean forceParsingValue, boolean useScratchFiles) 
-    {
-        forceParsing = forceParsingValue;
-        scratchDirectory = scratchDir;
-        useScratchFile = useScratchFiles;
-    }
+	private boolean closed = false;
 
-    /**
-     * Constructor. Uses memory to store stream.
-     */
-    public COSDocument()
-    {
-        this(false, false);
-    }
+	private boolean isXRefStream;
 
-    /**
-     * Creates a new COSStream using the current configuration for scratch files.
-     * 
-     * @return the new COSStream
-     */
-    public COSStream createCOSStream()
-    {
-        return new COSStream( useScratchFile, scratchDirectory);
-    }
+	private final File scratchDirectory;
 
-    /**
-     * Creates a new COSStream using the current configuration for scratch files.
-     *
-     * @param dictionary the corresponding dictionary
-     * 
-     * @return the new COSStream
-     */
-    public COSStream createCOSStream(COSDictionary dictionary)
-    {
-        return new COSStream( dictionary, useScratchFile, scratchDirectory );
-    }
+	private final boolean useScratchFile;
 
-    /**
-     * This will get the first dictionary object by type.
-     *
-     * @param type The type of the object.
-     *
-     * @return This will return an object with the specified type.
-     * @throws IOException If there is an error getting the object
-     */
-    public COSObject getObjectByType( COSName type ) throws IOException
-    {
-        for( COSObject object : objectPool.values() )
-        {
-            COSBase realObject = object.getObject();
-            if( realObject instanceof COSDictionary )
-            {
-                try
-                {
-                    COSDictionary dic = (COSDictionary)realObject;
-                    COSBase typeItem = dic.getItem(COSName.TYPE);
-                    if (typeItem != null && typeItem instanceof COSName)
-                    {
-                        COSName objectType = (COSName) typeItem;
-                        if (objectType.equals(type))
-                        {
-                            return object;
-                        }
-                    }
-                    else if (typeItem != null)
-                    {
-                        LOG.debug("Expected a /Name object after /Type, got '" + typeItem + "' instead");
-                    }
-                }
-                catch (ClassCastException e)
-                {
-                    LOG.warn(e, e);
-                }
-            }
-        }
-        return null;
-    }
+	/**
+	 * Flag to skip malformed or otherwise unparseable input where possible.
+	 */
+	private final boolean forceParsing;
 
-    /**
-     * This will get all dictionary objects by type.
-     *
-     * @param type The type of the object.
-     *
-     * @return This will return an object with the specified type.
-     * @throws IOException If there is an error getting the object
-     */
-    public List<COSObject> getObjectsByType( String type ) throws IOException
-    {
-        return getObjectsByType( COSName.getPDFName( type ) );
-    }
+	/**
+	 * Constructor.
+	 *
+	 * @param forceParsingValue flag to skip malformed or otherwise unparseable
+	 *                     document content where possible
+	 */
+	public COSDocument(boolean forceParsingValue) 
+	{
+		this(null, forceParsingValue, false);
+	}
 
-    /**
-     * This will get a dictionary object by type.
-     *
-     * @param type The type of the object.
-     *
-     * @return This will return an object with the specified type.
-     * @throws IOException If there is an error getting the object
-     */
-    public List<COSObject> getObjectsByType( COSName type ) throws IOException
-    {
-        List<COSObject> retval = new ArrayList<COSObject>();
-        for( COSObject object : objectPool.values() )
-        {
-            COSBase realObject = object.getObject();
-            if( realObject instanceof COSDictionary )
-            {
-                try
-                {
-                    COSDictionary dic = (COSDictionary)realObject;
-                    COSBase typeItem = dic.getItem(COSName.TYPE);
-                    if (typeItem != null && typeItem instanceof COSName)
-                    {
-                        COSName objectType = (COSName) typeItem;
-                        if (objectType.equals(type))
-                        {
-                            retval.add( object );
-                        }
-                    }
-                    else if (typeItem != null)
-                    {
-                        LOG.debug("Expected a /Name object after /Type, got '" + typeItem + "' instead");
-                    }
-                }
-                catch (ClassCastException e)
-                {
-                    LOG.warn(e, e);
-                }
-            }
-        }
-        return retval;
-    }
+	/**
+	 * Constructor.
+	 *
+	 * @param forceParsingValue flag to skip malformed or otherwise unparseable
+	 *                     document content where possible
+	 * @param useScratchFiles enables the usage of a scratch file if set to true
+	 *                     
+	 */
+	public COSDocument(boolean forceParsingValue, boolean useScratchFiles) 
+	{
+		this(null, forceParsingValue, useScratchFiles);
+	}
 
-    /**
-     * This will print contents to stdout.
-     */
-    public void print()
-    {
-        for( COSObject object : objectPool.values() )
-        {
-            System.out.println( object);
-        }
-    }
+	/**
+	 * Constructor that will use a temporary file in the given directory
+	 * for storage of the PDF streams. The temporary file is automatically
+	 * removed when this document gets closed.
+	 *
+	 * @param scratchDir directory for the temporary file,
+	 *                   or <code>null</code> to use the system default
+	 * @param forceParsingValue flag to skip malformed or otherwise unparseable
+	 *                     document content where possible
+	 * @param useScratchFiles enables the usage of a scratch file if set to true
+	 * 
+	 */
+	public COSDocument(File scratchDir, boolean forceParsingValue, boolean useScratchFiles) 
+	{
+		forceParsing = forceParsingValue;
+		scratchDirectory = scratchDir;
+		useScratchFile = useScratchFiles;
+	}
 
-    /**
-     * This will set the version of this PDF document.
-     *
-     * @param versionValue The version of the PDF document.
-     */
-    public void setVersion( float versionValue )
-    {
-        // update header string
-        if (versionValue != version) 
-        {
-            headerString = headerString.replaceFirst(String.valueOf(version), String.valueOf(versionValue));
-        }
-        version = versionValue;
-    }
+	/**
+	 * Constructor. Uses memory to store stream.
+	 */
+	public COSDocument()
+	{
+		this(false, false);
+	}
 
-    /**
-     * This will get the version of this PDF document.
-     *
-     * @return This documents version.
-     */
-    public float getVersion()
-    {
-        return version;
-    }
+	/**
+	 * Creates a new COSStream using the current configuration for scratch files.
+	 * 
+	 * @return the new COSStream
+	 */
+	public COSStream createCOSStream()
+	{
+		return new COSStream( useScratchFile, scratchDirectory);
+	}
 
-    /** Signals that the document is decrypted completely.
-     *  Needed e.g. by {@link NonSequentialPDFParser} to circumvent
-     *  additional decryption later on. */
-    public void setDecrypted()
-    {
-        isDecrypted = true;
-    }
+	/**
+	 * Creates a new COSStream using the current configuration for scratch files.
+	 *
+	 * @param dictionary the corresponding dictionary
+	 * 
+	 * @return the new COSStream
+	 */
+	public COSStream createCOSStream(COSDictionary dictionary)
+	{
+		return new COSStream( dictionary, useScratchFile, scratchDirectory );
+	}
 
-    /**
-     * This will tell if this is an encrypted document.
-     *
-     * @return true If this document is encrypted.
-     */
-    public boolean isEncrypted()
-    {
-        if ( isDecrypted )
-        {
-            return false;
-        }
-        boolean encrypted = false;
-        if( trailer != null )
-        {
-            encrypted = trailer.getDictionaryObject( COSName.ENCRYPT ) != null;
-        }
-        return encrypted;
-    }
+	/**
+	 * This will get the first dictionary object by type.
+	 *
+	 * @param type The type of the object.
+	 *
+	 * @return This will return an object with the specified type.
+	 * @throws IOException If there is an error getting the object
+	 */
+	public COSObject getObjectByType( COSName type ) throws IOException
+	{
+		for( COSObject object : objectPool.values() )
+		{
+			COSBase realObject = object.getObject();
+			if( realObject instanceof COSDictionary )
+			{
+				try
+				{
+					COSDictionary dic = (COSDictionary)realObject;
+					COSBase typeItem = dic.getItem(COSName.TYPE);
+					if (typeItem != null && typeItem instanceof COSName)
+					{
+						COSName objectType = (COSName) typeItem;
+						if (objectType.equals(type))
+						{
+							return object;
+						}
+					}
+					else if (typeItem != null)
+					{
+						LOG.debug("Expected a /Name object after /Type, got '" + typeItem + "' instead");
+					}
+				}
+				catch (ClassCastException e)
+				{
+					LOG.warn(e, e);
+				}
+			}
+		}
+		return null;
+	}
 
-    /**
-     * This will get the encryption dictionary if the document is encrypted or null
-     * if the document is not encrypted.
-     *
-     * @return The encryption dictionary.
-     */
-    public COSDictionary getEncryptionDictionary()
-    {
-        return (COSDictionary)trailer.getDictionaryObject( COSName.ENCRYPT );
-    }
+	/**
+	 * This will get all dictionary objects by type.
+	 *
+	 * @param type The type of the object.
+	 *
+	 * @return This will return an object with the specified type.
+	 * @throws IOException If there is an error getting the object
+	 */
+	public List<COSObject> getObjectsByType( String type ) throws IOException
+	{
+		return getObjectsByType( COSName.getPDFName( type ) );
+	}
 
-    /**
-     * This will return the signature interface.
-     * @return the signature interface 
-     */
-    public SignatureInterface getSignatureInterface() 
-    {
-        return signatureInterface;
-    }
-    
-    /**
-     * This will set the encryption dictionary, this should only be called when
-     * encrypting the document.
-     *
-     * @param encDictionary The encryption dictionary.
-     */
-    public void setEncryptionDictionary( COSDictionary encDictionary )
-    {
-        trailer.setItem( COSName.ENCRYPT, encDictionary );
-    }
+	/**
+	 * This will get a dictionary object by type.
+	 *
+	 * @param type The type of the object.
+	 *
+	 * @return This will return an object with the specified type.
+	 * @throws IOException If there is an error getting the object
+	 */
+	public List<COSObject> getObjectsByType( COSName type ) throws IOException
+	{
+		List<COSObject> retval = new ArrayList<COSObject>();
+		for( COSObject object : objectPool.values() )
+		{
+			COSBase realObject = object.getObject();
+			if( realObject instanceof COSDictionary )
+			{
+				try
+				{
+					COSDictionary dic = (COSDictionary)realObject;
+					COSBase typeItem = dic.getItem(COSName.TYPE);
+					if (typeItem != null && typeItem instanceof COSName)
+					{
+						COSName objectType = (COSName) typeItem;
+						if (objectType.equals(type))
+						{
+							retval.add( object );
+						}
+					}
+					else if (typeItem != null)
+					{
+						LOG.debug("Expected a /Name object after /Type, got '" + typeItem + "' instead");
+					}
+				}
+				catch (ClassCastException e)
+				{
+					LOG.warn(e, e);
+				}
+			}
+		}
+		return retval;
+	}
 
-    /**
-     * This will return a list of signature dictionaries as COSDictionary.
-     *
-     * @return list of signature dictionaries as COSDictionary
-     * @throws IOException if no document catalog can be found
-     */
-    public List<COSDictionary> getSignatureDictionaries() throws IOException
-    {
-        List<COSDictionary> signatureFields = getSignatureFields(false);
-        List<COSDictionary> signatures = new LinkedList<COSDictionary>();
-        for ( COSDictionary dict : signatureFields )
-        {
-            COSBase dictionaryObject = dict.getDictionaryObject(COSName.V);
-            if (dictionaryObject != null)
-            {
-                signatures.add((COSDictionary)dictionaryObject);
-            }
-        }
-        return signatures;
-    }
+	/**
+	 * This will print contents to stdout.
+	 */
+	public void print()
+	{
+		for( COSObject object : objectPool.values() )
+		{
+			System.out.println( object);
+		}
+	}
 
-    /**
-     * This will return a list of signature fields.
-     *
-     * @return list of signature dictionaries as COSDictionary
-     * @throws IOException if no document catalog can be found
-     */
-    public List<COSDictionary> getSignatureFields(boolean onlyEmptyFields) throws IOException
-    {
-        COSObject documentCatalog = getCatalog();
-        if (documentCatalog != null)
-        {
-            COSDictionary acroForm = (COSDictionary)documentCatalog.getDictionaryObject(COSName.ACRO_FORM);
-            if (acroForm != null)
-            {
-                COSArray fields = (COSArray)acroForm.getDictionaryObject(COSName.FIELDS);
-                if (fields != null)
-                {
-                    // Some fields may contain twice references to a single field. 
-                    // This will prevent such double entries.
-                    HashMap<COSObjectKey, COSDictionary> signatures = new HashMap<COSObjectKey, COSDictionary>();
-                    for ( Object object : fields )
-                    {
-                        COSObject dict = (COSObject)object;
-                        if (COSName.SIG.equals(dict.getItem(COSName.FT)))
-                        {
-                            COSBase dictionaryObject = dict.getDictionaryObject(COSName.V);
-                            if (dictionaryObject == null || (dictionaryObject != null && !onlyEmptyFields))
-                            {
-                                signatures.put(new COSObjectKey(dict), (COSDictionary)dict.getObject());
-                            }
-                        }
-                    }
-                    return new LinkedList<COSDictionary>(signatures.values());
-                }
-            }
-        }
-        return Collections.emptyList();
-    }
-    
-    /**
-     * This will get the document ID.
-     *
-     * @return The document id.
-     */
-    public COSArray getDocumentID()
-    {
-        return (COSArray) getTrailer().getDictionaryObject(COSName.ID);
-    }
+	/**
+	 * This will set the version of this PDF document.
+	 *
+	 * @param versionValue The version of the PDF document.
+	 */
+	public void setVersion( float versionValue )
+	{
+		// update header string
+		if (versionValue != version) 
+		{
+			headerString = headerString.replaceFirst(String.valueOf(version), String.valueOf(versionValue));
+		}
+		version = versionValue;
+	}
 
-    /**
-     * This will set the document ID.
-     *
-     * @param id The document id.
-     */
-    public void setDocumentID( COSArray id )
-    {
-        getTrailer().setItem(COSName.ID, id);
-    }
-    
-    /**
-     * Set the signature interface to the given value.
-     * @param sigInterface the signature interface
-     */
-    public void setSignatureInterface(SignatureInterface sigInterface) 
-    {
-        signatureInterface = sigInterface;
-    }
+	/**
+	 * This will get the version of this PDF document.
+	 *
+	 * @return This documents version.
+	 */
+	public float getVersion()
+	{
+		return version;
+	}
 
-    /**
-     * This will get the document catalog.
-     *
-     * Maybe this should move to an object at PDFEdit level
-     *
-     * @return catalog is the root of all document activities
-     *
-     * @throws IOException If no catalog can be found.
-     */
-    public COSObject getCatalog() throws IOException
-    {
-        COSObject catalog = getObjectByType( COSName.CATALOG );
-        if( catalog == null )
-        {
-            throw new IOException( "Catalog cannot be found" );
-        }
-        return catalog;
-    }
+	/**
+	 * Signals that the document is decrypted completely.
+	 * Needed e.g. by {@link NonSequentialPDFParser} to circumvent
+	 * additional decryption later on.
+	*/
+	public void setDecrypted()
+	{
+		isDecrypted = true;
+	}
 
-    /**
-     * This will get a list of all available objects.
-     *
-     * @return A list of all objects.
-     */
-    public List<COSObject> getObjects()
-    {
-        return new ArrayList<COSObject>(objectPool.values());
-    }
+	/**
+	 * This will tell if this is an encrypted document.
+	 *
+	 * @return true If this document is encrypted.
+	 */
+	public boolean isEncrypted()
+	{
+		if ( isDecrypted )
+		{
+			return false;
+		}
+		boolean encrypted = false;
+		if( trailer != null )
+		{
+			encrypted = trailer.getDictionaryObject( COSName.ENCRYPT ) != null;
+		}
+		return encrypted;
+	}
 
-    /**
-     * This will get the document trailer.
-     *
-     * @return the document trailer dict
-     */
-    public COSDictionary getTrailer()
-    {
-        return trailer;
-    }
+	/**
+	 * This will get the encryption dictionary if the document is encrypted or null
+	 * if the document is not encrypted.
+	 *
+	 * @return The encryption dictionary.
+	 */
+	public COSDictionary getEncryptionDictionary()
+	{
+		return (COSDictionary)trailer.getDictionaryObject( COSName.ENCRYPT );
+	}
 
-    /**
-     * // MIT added, maybe this should not be supported as trailer is a persistence construct.
-     * This will set the document trailer.
-     *
-     * @param newTrailer the document trailer dictionary
-     */
-    public void setTrailer(COSDictionary newTrailer)
-    {
-        trailer = newTrailer;
-    }
+	/**
+	 * This will return the signature interface.
+	 * @return the signature interface 
+	 */
+	public SignatureInterface getSignatureInterface() 
+	{
+		return signatureInterface;
+	}
 
-    /**
-     * visitor pattern double dispatch method.
-     *
-     * @param visitor The object to notify when visiting this object.
-     * @return any object, depending on the visitor implementation, or null
-     * @throws IOException If an error occurs while visiting this object.
-     */
-    @Override
-    public Object accept(ICOSVisitor visitor) throws IOException
-    {
-        return visitor.visitFromDocument( this );
-    }
+	/**
+	 * This will set the encryption dictionary, this should only be called when
+	 * encrypting the document.
+	 *
+	 * @param encDictionary The encryption dictionary.
+	 */
+	public void setEncryptionDictionary( COSDictionary encDictionary )
+	{
+		trailer.setItem( COSName.ENCRYPT, encDictionary );
+	}
 
-    /**
-     * This will close all storage and delete the tmp files.
-     *
-     *  @throws IOException If there is an error close resources.
-     */
-    public void close() throws IOException
-    {
-        if (!closed) 
-        {
-            if (trailer != null)
-            {
-                trailer.clear();
-                trailer = null;
-            }
-            // Clear object pool
-            List<COSObject> list = getObjects();
-            if (list != null && !list.isEmpty()) 
-            {
-                for (COSObject object : list) 
-                {
-                    COSBase cosObject = object.getObject();
-                    // clear the resources of the pooled objects
-                    if (cosObject instanceof COSStream)
-                    {
-                        ((COSStream)cosObject).close();
-                    }
-                    else if (cosObject instanceof COSDictionary)
-                    {
-                        ((COSDictionary)cosObject).clear();
-                    }
-                    else if (cosObject instanceof COSArray)
-                    {
-                        ((COSArray)cosObject).clear();
-                    }
-                    // TODO are there other kind of COSObjects to be cleared?
-                }
-                list.clear();
-            }
-            closed = true;
-        }
-    }
+	/**
+	 * This will return a list of signature dictionaries as COSDictionary.
+	 *
+	 * @return list of signature dictionaries as COSDictionary
+	 * @throws IOException if no document catalog can be found
+	 */
+	public List<COSDictionary> getSignatureDictionaries() throws IOException
+	{
+		List<COSDictionary> signatureFields = getSignatureFields(false);
+		List<COSDictionary> signatures = new LinkedList<COSDictionary>();
+		for ( COSDictionary dict : signatureFields )
+		{
+			COSBase dictionaryObject = dict.getDictionaryObject(COSName.V);
+			if (dictionaryObject != null)
+			{
+				signatures.add((COSDictionary)dictionaryObject);
+			}
+		}
+		return signatures;
+	}
 
-    /**
-     * Warn the user in the finalizer if he didn't close the PDF document. The method also
-     * closes the document just in case, to avoid abandoned temporary files. It's still a good
-     * idea for the user to close the PDF document at the earliest possible to conserve resources.
-     * @throws IOException if an error occurs while closing the temporary files
-     */
-    @Override
-    protected void finalize() throws IOException
-    {
-        if (!closed) 
-        {
-            if (warnMissingClose) 
-            {
-                LOG.warn( "Warning: You did not close a PDF Document" );
-            }
-            close();
-        }
-    }
+	/**
+	 * This will return a list of signature fields.
+	 *
+	 * @return list of signature dictionaries as COSDictionary
+	 * @throws IOException if no document catalog can be found
+	 */
+	public List<COSDictionary> getSignatureFields(boolean onlyEmptyFields) throws IOException
+	{
+		COSObject documentCatalog = getCatalog();
+		if (documentCatalog != null)
+		{
+			COSDictionary acroForm = (COSDictionary)documentCatalog.getDictionaryObject(COSName.ACRO_FORM);
+			if (acroForm != null)
+			{
+				COSArray fields = (COSArray)acroForm.getDictionaryObject(COSName.FIELDS);
+				if (fields != null)
+				{
+					// Some fields may contain twice references to a single field. 
+					// This will prevent such double entries.
+					HashMap<COSObjectKey, COSDictionary> signatures = new HashMap<COSObjectKey, COSDictionary>();
+					for ( Object object : fields )
+					{
+						COSObject dict = (COSObject)object;
+						if (COSName.SIG.equals(dict.getItem(COSName.FT)))
+						{
+							COSBase dictionaryObject = dict.getDictionaryObject(COSName.V);
+							if (dictionaryObject == null || (dictionaryObject != null && !onlyEmptyFields))
+							{
+								signatures.put(new COSObjectKey(dict), (COSDictionary)dict.getObject());
+							}
+						}
+					}
+					return new LinkedList<COSDictionary>(signatures.values());
+				}
+			}
+		}
+		return Collections.emptyList();
+	}
 
-    /**
-     * Controls whether this instance shall issue a warning if the PDF document wasn't closed
-     * properly through a call to the {@link #close()} method. If the PDF document is held in
-     * a cache governed by soft references it is impossible to reliably close the document
-     * before the warning is raised. By default, the warning is enabled.
-     * @param warn true enables the warning, false disables it.
-     */
-    public void setWarnMissingClose(boolean warn)
-    {
-        this.warnMissingClose = warn;
-    }
+	/**
+	 * This will get the document ID.
+	 *
+	 * @return The document id.
+	 */
+	public COSArray getDocumentID()
+	{
+		return (COSArray) getTrailer().getDictionaryObject(COSName.ID);
+	}
 
-    /**
-     * @return Returns the headerString.
-     */
-    public String getHeaderString()
-    {
-        return headerString;
-    }
-    /**
-     * @param header The headerString to set.
-     */
-    public void setHeaderString(String header)
-    {
-        headerString = header;
-    }
+	/**
+	 * This will set the document ID.
+	 *
+	 * @param id The document id.
+	 */
+	public void setDocumentID( COSArray id )
+	{
+		getTrailer().setItem(COSName.ID, id);
+	}
 
-    /**
-     * This method will search the list of objects for types of ObjStm.  If it finds
-     * them then it will parse out all of the objects from the stream that is contains.
-     *
-     * @throws IOException If there is an error parsing the stream.
-     */
-    public void dereferenceObjectStreams() throws IOException
-    {
-        for( COSObject objStream : getObjectsByType( COSName.OBJ_STM ) )
-        {
-            COSStream stream = (COSStream)objStream.getObject();
-            PDFObjectStreamParser parser =
-                new PDFObjectStreamParser(stream, this, forceParsing);
-            parser.parse();
-            for( COSObject next : parser.getObjects() )
-            {
-                COSObjectKey key = new COSObjectKey( next );
-                if ( objectPool.get(key) == null || objectPool.get(key).getObject() == null ||
-                     // xrefTable stores negated objNr of objStream for objects in objStreams
-                     (xrefTable.containsKey(key) && xrefTable.get(key) == -objStream.getObjectNumber().longValue()) )
-                {
-                    COSObject obj = getObjectFromPool(key);
-                    obj.setObject(next.getObject());
-                }
-            }
-        }
-    }
+	/**
+	 * Set the signature interface to the given value.
+	 * @param sigInterface the signature interface
+	 */
+	public void setSignatureInterface(SignatureInterface sigInterface) 
+	{
+		signatureInterface = sigInterface;
+	}
 
-    /**
-     * This will get an object from the pool.
-     *
-     * @param key The object key.
-     *
-     * @return The object in the pool or a new one if it has not been parsed yet.
-     *
-     * @throws IOException If there is an error getting the proxy object.
-     */
-    public COSObject getObjectFromPool(COSObjectKey key) throws IOException
-    {
-        COSObject obj = null;
-        if( key != null )
-        {
-            obj = objectPool.get(key);
-        }
-        if (obj == null)
-        {
-            // this was a forward reference, make "proxy" object
-            obj = new COSObject(null);
-            if( key != null )
-            {
-                obj.setObjectNumber( COSInteger.get( key.getNumber() ) );
-                obj.setGenerationNumber( COSInteger.get( key.getGeneration() ) );
-                objectPool.put(key, obj);
-            }
-        }
-        return obj;
-    }
+	/**
+	 * This will get the document catalog.
+	 *
+	 * Maybe this should move to an object at PDFEdit level
+	 *
+	 * @return catalog is the root of all document activities
+	 *
+	 * @throws IOException If no catalog can be found.
+	 */
+	public COSObject getCatalog() throws IOException
+	{
+		COSObject catalog = getObjectByType( COSName.CATALOG );
+		if( catalog == null )
+		{
+			throw new IOException( "Catalog cannot be found" );
+		}
+		return catalog;
+	}
 
-    /**
-     * Removes an object from the object pool.
-     * @param key the object key
-     * @return the object that was removed or null if the object was not found
-     */
-    public COSObject removeObject(COSObjectKey key)
-    {
-        return objectPool.remove(key);
-    }
+	/**
+	 * This will get a list of all available objects.
+	 *
+	 * @return A list of all objects.
+	 */
+	public List<COSObject> getObjects()
+	{
+		return new ArrayList<COSObject>(objectPool.values());
+	}
 
-    /**
-     * Populate XRef HashMap with given values.
-     * Each entry maps ObjectKeys to byte offsets in the file.
-     * @param xrefTableValues  xref table entries to be added
-     */
-    public void addXRefTable( Map<COSObjectKey, Long> xrefTableValues )
-    {
-        xrefTable.putAll( xrefTableValues );
-    }
+	/**
+	 * This will get the document trailer.
+	 *
+	 * @return the document trailer dict
+	 */
+	public COSDictionary getTrailer()
+	{
+		return trailer;
+	}
 
-    /**
-     * Returns the xrefTable which is a mapping of ObjectKeys
-     * to byte offsets in the file.
-     * @return mapping of ObjectsKeys to byte offsets
-     */
-    public Map<COSObjectKey, Long> getXrefTable()
-    {
-        return xrefTable;
-    }
+	/**
+	 * // MIT added, maybe this should not be supported as trailer is a persistence construct.
+	 * This will set the document trailer.
+	 *
+	 * @param newTrailer the document trailer dictionary
+	 */
+	public void setTrailer(COSDictionary newTrailer)
+	{
+		trailer = newTrailer;
+	}
 
-    /**
-     * This method set the startxref value of the document. This will only 
-     * be needed for incremental updates.
-     * 
-     * @param startXrefValue the value for startXref
-     */
-    public void setStartXref(long startXrefValue)
-    {
-        startXref = startXrefValue;
-    }
+	/**
+	 * visitor pattern double dispatch method.
+	 *
+	 * @param visitor The object to notify when visiting this object.
+	 * @return any object, depending on the visitor implementation, or null
+	 * @throws IOException If an error occurs while visiting this object.
+	 */
+	@Override
+	public Object accept(ICOSVisitor visitor) throws IOException
+	{
+		return visitor.visitFromDocument( this );
+	}
 
-    /**
-     * Return the startXref Position of the parsed document. This will only be needed for incremental updates.
-     * 
-     * @return a long with the old position of the startxref
-     */
-    public long getStartXref()
-    {
-      return startXref;
-    }
+	/**
+	 * This will close all storage and delete the tmp files.
+	 *
+	 *  @throws IOException If there is an error close resources.
+	 */
+	public void close() throws IOException
+	{
+		if (!closed) 
+		{
+			if (trailer != null)
+			{
+				trailer.clear();
+				trailer = null;
+			}
+			// Clear object pool
+			List<COSObject> list = getObjects();
+			if (list != null && !list.isEmpty()) 
+			{
+				for (COSObject object : list) 
+				{
+					COSBase cosObject = object.getObject();
+					// clear the resources of the pooled objects
+					if (cosObject instanceof COSStream)
+					{
+						((COSStream)cosObject).close();
+					}
+					else if (cosObject instanceof COSDictionary)
+					{
+						((COSDictionary)cosObject).clear();
+					}
+					else if (cosObject instanceof COSArray)
+					{
+						((COSArray)cosObject).clear();
+					}
+					// TODO are there other kind of COSObjects to be cleared?
+				}
+				list.clear();
+			}
+			closed = true;
+		}
+	}
 
-    /**
-     * Determines if the trailer is a XRef stream or not.
-     * 
-     * @return true if the trailer is a XRef stream
-     */
-    public boolean isXRefStream()
-    {
-        return isXRefStream;
-    }
-    
-    /**
-     * Sets isXRefStream to the given value.
-     * 
-     * @param isXRefStreamValue the new value for isXRefStream
-     */
-    public void setIsXRefStream(boolean isXRefStreamValue)
-    {
-        isXRefStream = isXRefStreamValue;
-    }
+	/**
+	 * Warn the user in the finalizer if he didn't close the PDF document. The method also
+	 * closes the document just in case, to avoid abandoned temporary files. It's still a good
+	 * idea for the user to close the PDF document at the earliest possible to conserve resources.
+	 * @throws IOException if an error occurs while closing the temporary files
+	 */
+	@Override
+	protected void finalize() throws IOException
+	{
+		if (!closed) 
+		{
+			if (warnMissingClose) 
+			{
+				LOG.warn( "Warning: You did not close a PDF Document" );
+			}
+			close();
+		}
+	}
+
+	/**
+	 * Controls whether this instance shall issue a warning if the PDF document wasn't closed
+	 * properly through a call to the {@link #close()} method. If the PDF document is held in
+	 * a cache governed by soft references it is impossible to reliably close the document
+	 * before the warning is raised. By default, the warning is enabled.
+	 * @param warn true enables the warning, false disables it.
+	 */
+	public void setWarnMissingClose(boolean warn)
+	{
+		this.warnMissingClose = warn;
+	}
+
+	/**
+	 * @return Returns the headerString.
+	 */
+	public String getHeaderString()
+	{
+		return headerString;
+	}
+	/**
+	 * @param header The headerString to set.
+	 */
+	public void setHeaderString(String header)
+	{
+		headerString = header;
+	}
+
+	/**
+	 * This method will search the list of objects for types of ObjStm.  If it finds
+	 * them then it will parse out all of the objects from the stream that is contains.
+	 *
+	 * @throws IOException If there is an error parsing the stream.
+	 */
+	public void dereferenceObjectStreams() throws IOException
+	{
+		for( COSObject objStream : getObjectsByType( COSName.OBJ_STM ) )
+		{
+			COSStream stream = (COSStream)objStream.getObject();
+			PDFObjectStreamParser parser =
+					new PDFObjectStreamParser(stream, this, forceParsing);
+			parser.parse();
+			for( COSObject next : parser.getObjects() )
+			{
+				COSObjectKey key = new COSObjectKey( next );
+				if ( objectPool.get(key) == null || objectPool.get(key).getObject() == null ||
+						// xrefTable stores negated objNr of objStream for objects in objStreams
+						(xrefTable.containsKey(key) && xrefTable.get(key) == -objStream.getObjectNumber().longValue()) )
+				{
+					COSObject obj = getObjectFromPool(key);
+					obj.setObject(next.getObject());
+				}
+			}
+		}
+	}
+
+	/**
+	 * This will get an object from the pool.
+	 *
+	 * @param key The object key.
+	 *
+	 * @return The object in the pool or a new one if it has not been parsed yet.
+	 *
+	 * @throws IOException If there is an error getting the proxy object.
+	 */
+	public COSObject getObjectFromPool(COSObjectKey key) throws IOException
+	{
+		COSObject obj = null;
+		if( key != null )
+		{
+			obj = objectPool.get(key);
+		}
+		if (obj == null)
+		{
+			// this was a forward reference, make "proxy" object
+			obj = new COSObject(null);
+			if( key != null )
+			{
+				obj.setObjectNumber( COSInteger.get( key.getNumber() ) );
+				obj.setGenerationNumber( COSInteger.get( key.getGeneration() ) );
+				objectPool.put(key, obj);
+			}
+		}
+		return obj;
+	}
+
+	/**
+	 * Removes an object from the object pool.
+	 * @param key the object key
+	 * @return the object that was removed or null if the object was not found
+	 */
+	public COSObject removeObject(COSObjectKey key)
+	{
+		return objectPool.remove(key);
+	}
+
+	/**
+	 * Populate XRef HashMap with given values.
+	 * Each entry maps ObjectKeys to byte offsets in the file.
+	 * @param xrefTableValues  xref table entries to be added
+	 */
+	public void addXRefTable( Map<COSObjectKey, Long> xrefTableValues )
+	{
+		xrefTable.putAll( xrefTableValues );
+	}
+
+	/**
+	 * Returns the xrefTable which is a mapping of ObjectKeys
+	 * to byte offsets in the file.
+	 * @return mapping of ObjectsKeys to byte offsets
+	 */
+	public Map<COSObjectKey, Long> getXrefTable()
+	{
+		return xrefTable;
+	}
+
+	/**
+	 * This method set the startxref value of the document. This will only 
+	 * be needed for incremental updates.
+	 * 
+	 * @param startXrefValue the value for startXref
+	 */
+	public void setStartXref(long startXrefValue)
+	{
+		startXref = startXrefValue;
+	}
+
+	/**
+	 * Return the startXref Position of the parsed document. This will only be needed for incremental updates.
+	 * 
+	 * @return a long with the old position of the startxref
+	 */
+	public long getStartXref()
+	{
+		return startXref;
+	}
+
+	/**
+	 * Determines if the trailer is a XRef stream or not.
+	 * 
+	 * @return true if the trailer is a XRef stream
+	 */
+	public boolean isXRefStream()
+	{
+		return isXRefStream;
+	}
+
+	/**
+	 * Sets isXRefStream to the given value.
+	 * 
+	 * @param isXRefStreamValue the new value for isXRefStream
+	 */
+	public void setIsXRefStream(boolean isXRefStreamValue)
+	{
+		isXRefStream = isXRefStreamValue;
+	}
 }

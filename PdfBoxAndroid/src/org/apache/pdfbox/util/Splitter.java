@@ -1,12 +1,11 @@
 package org.apache.pdfbox.util;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 
 /**
  * Split a document into several other documents.
@@ -178,11 +177,11 @@ public class Splitter
     {
         createNewDocumentIfNecessary();
         PDPage imported = getDestinationDocument().importPage(page);
-        imported.setCropBox(page.findCropBox());
-        imported.setMediaBox(page.findMediaBox());
+        imported.setCropBox(page.getCropBox());
+        imported.setMediaBox(page.getMediaBox());
         // only the resources of the page will be copied
         imported.setResources(page.getResources());
-        imported.setRotation(page.findRotation());
+        imported.setRotation(page.getRotation());
     }
 
     /**

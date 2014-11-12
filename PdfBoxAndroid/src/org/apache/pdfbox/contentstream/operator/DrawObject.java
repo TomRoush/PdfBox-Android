@@ -24,8 +24,7 @@ public class DrawObject extends OperatorProcessor
     {
         COSName name = (COSName) arguments.get(0);
 
-        Map<String,PDXObject> xobjects = context.getXObjects();
-        PDXObject xobject = xobjects.get(name.getName());
+        PDXObject xobject = context.getResources().getXObject(name);
         if (context instanceof PDFMarkedContentExtractor)
         {
             ((PDFMarkedContentExtractor) context).xobject(xobject);

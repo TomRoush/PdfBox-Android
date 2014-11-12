@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSDocument;
+import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdfwriter.COSWriter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -66,9 +67,9 @@ public class PDFTemplateStructure
     private PDStream imageFormStream;
     private PDResources imageFormResources;
     private List<PDFieldTreeNode> acroFormFields;
-    private String innerFormName;
-    private String imageFormName;
-    private String imageName;
+    private COSName innerFormName;
+    private COSName imageFormName;
+    private COSName imageName;
     private COSDocument visualSignature;
     private PDFormXObject imageForm;
     private COSDictionary widgetDictionary;
@@ -417,7 +418,7 @@ public class PDFTemplateStructure
      * Gets name of inner form
      * @return the inner forms's name
      */
-    public String getInnerFormName()
+    public COSName getInnerFormName()
     {
         return innerFormName;
     }
@@ -426,7 +427,7 @@ public class PDFTemplateStructure
      * Sets inner form name
      * @param innerFormName
      */
-    public void setInnerFormName(String innerFormName)
+    public void setInnerFormName(COSName innerFormName)
     {
         this.innerFormName = innerFormName;
     }
@@ -496,7 +497,7 @@ public class PDFTemplateStructure
      * Gets image form name
      * @return the image form's name
      */
-    public String getImageFormName()
+    public COSName getImageFormName()
     {
         return imageFormName;
     }
@@ -505,7 +506,7 @@ public class PDFTemplateStructure
      * Sets image form name
      * @param imageFormName
      */
-    public void setImageFormName(String imageFormName)
+    public void setImageFormName(COSName imageFormName)
     {
         this.imageFormName = imageFormName;
     }
@@ -514,7 +515,7 @@ public class PDFTemplateStructure
      * Gets visible signature image name
      * @return the visible signature's image name
      */
-    public String getImageName()
+    public COSName getImageName()
     {
         return imageName;
     }
@@ -523,7 +524,7 @@ public class PDFTemplateStructure
      * Sets visible signature image name
      * @param imageName
      */
-    public void setImageName(String imageName)
+    public void setImageName(COSName imageName)
     {
         this.imageName = imageName;
     }
