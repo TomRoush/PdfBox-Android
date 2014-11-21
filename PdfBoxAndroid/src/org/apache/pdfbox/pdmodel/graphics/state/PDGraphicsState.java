@@ -29,8 +29,8 @@ public class PDGraphicsState implements Cloneable
     private boolean strokeAdjustment = false;
     private BlendMode blendMode = BlendMode.COMPATIBLE;
     private PDSoftMask softMask;
-    private double alphaConstants = 1.0;
-    private double nonStrokingAlphaConstants = 1.0;
+    private double alphaConstant = 1.0;
+    private double nonStrokingAlphaConstant = 1.0;
     private boolean alphaSource = false;
 
     // DEVICE-DEPENDENT parameters
@@ -44,18 +44,12 @@ public class PDGraphicsState implements Cloneable
     private double smoothness = 0;
 
     /**
-     * Constructor with a given pagesize to initialize the clipping path.
+     * Constructor with a given page size to initialize the clipping path.
      * @param page the size of the page
      */
     public PDGraphicsState(PDRectangle page)
     {
-//        clippingPath = new Area(new GeneralPath(new Rectangle(page.createDimension())));TODO
-        if (page.getLowerLeftX() != 0 || page.getLowerLeftY() != 0)
-        {
-            //Compensate for offset
-            this.currentTransformationMatrix = this.currentTransformationMatrix.multiply(
-                    Matrix.getTranslatingInstance(-page.getLowerLeftX(), -page.getLowerLeftY()));
-        }
+//        clippingPath = new Area(new GeneralPath(page.toGeneralPath()));TODO
     }
 
     /**
@@ -183,9 +177,9 @@ public class PDGraphicsState implements Cloneable
      *
      * @return The value of the stroke alpha constants parameter.
      */
-    public double getAlphaConstants()
+    public double getAlphaConstant()
     {
-        return alphaConstants;
+        return alphaConstant;
     }
 
     /**
@@ -193,9 +187,9 @@ public class PDGraphicsState implements Cloneable
      *
      * @param value The value of the stroke alpha constants parameter.
      */
-    public void setAlphaConstants(double value)
+    public void setAlphaConstant(double value)
     {
-        alphaConstants = value;
+        alphaConstant = value;
     }
 
     /**
@@ -203,9 +197,9 @@ public class PDGraphicsState implements Cloneable
      *
      * @return The value of the non-stroke alpha constants parameter.
      */
-    public double getNonStrokeAlphaConstants()
+    public double getNonStrokeAlphaConstant()
     {
-        return nonStrokingAlphaConstants;
+        return nonStrokingAlphaConstant;
     }
 
     /**
@@ -213,9 +207,9 @@ public class PDGraphicsState implements Cloneable
      *
      * @param value The value of the non-stroke alpha constants parameter.
      */
-    public void setNonStrokeAlphaConstants(double value)
+    public void setNonStrokeAlphaConstant(double value)
     {
-        nonStrokingAlphaConstants = value;
+        nonStrokingAlphaConstant = value;
     }
 
     /**

@@ -1,7 +1,5 @@
 package org.apache.pdfbox.pdmodel.interactive.annotation;
 
-import java.util.Map;
-
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
@@ -29,11 +27,11 @@ public class PDAppearanceDictionary implements COSObjectable
     /**
      * Constructor for reading.
      *
-     * @param dict The annotations dictionary.
+     * @param dictionary The annotations dictionary.
      */
-    public PDAppearanceDictionary( COSDictionary dict )
+    public PDAppearanceDictionary( COSDictionary dictionary )
     {
-        dictionary = dict;
+        this.dictionary = dictionary;
     }
 
     @Override
@@ -82,7 +80,7 @@ public class PDAppearanceDictionary implements COSObjectable
      */
     public void setNormalAppearance( PDAppearanceStream ap )
     {
-        dictionary.setItem( COSName.N, ap.getStream() );
+        dictionary.setItem( COSName.N, ap );
     }
 
     /**
@@ -95,7 +93,6 @@ public class PDAppearanceDictionary implements COSObjectable
      */
     public PDAppearanceEntry getRolloverAppearance()
     {
-        Map<String,PDAppearanceStream> retval = null;
         COSBase entry = dictionary.getDictionaryObject( COSName.R );
         if( entry == null )
         {
@@ -127,7 +124,7 @@ public class PDAppearanceDictionary implements COSObjectable
      */
     public void setRolloverAppearance( PDAppearanceStream ap )
     {
-        dictionary.setItem( COSName.R, ap.getStream() );
+        dictionary.setItem( COSName.R, ap );
     }
 
     /**
@@ -171,7 +168,6 @@ public class PDAppearanceDictionary implements COSObjectable
      */
     public void setDownAppearance( PDAppearanceStream ap )
     {
-        dictionary.setItem( COSName.D, ap.getStream() );
+        dictionary.setItem( COSName.D, ap );
     }
-
 }

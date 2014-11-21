@@ -7,19 +7,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.cos.COSName;
-
-import org.apache.pdfbox.pdfparser.PDFParser;
-
+import org.apache.pdfbox.pdfparser.NonSequentialPDFParser;
 import org.apache.pdfbox.pdfwriter.COSWriter;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -27,8 +24,7 @@ import org.w3c.dom.Element;
  * This is the in-memory representation of the FDF document.  You need to call
  * close() on this object when you are done using it!!
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.6 $
+ * @author Ben Litchfield
  */
 public class FDFDocument implements Closeable
 {
@@ -183,7 +179,7 @@ public class FDFDocument implements Closeable
      */
     public static FDFDocument load( InputStream input ) throws IOException
     {
-        PDFParser parser = new PDFParser( input );
+        NonSequentialPDFParser parser = new NonSequentialPDFParser( input, false );
         parser.parse();
         return parser.getFDFDocument();
     }

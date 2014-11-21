@@ -43,6 +43,8 @@ public class PDFParser extends BaseParser
     private static final String PDF_HEADER = "%PDF-";
     private static final String FDF_HEADER = "%FDF-";
     
+    protected boolean isFDFDocument = false;
+    
     private static final String PDF_DEFAULT_VERSION = "1.4";
     private static final String FDF_DEFAULT_VERSION = "1.0";
     

@@ -2,7 +2,6 @@ package org.apache.pdfbox.pdmodel.fdf;
 
 import java.io.IOException;
 import java.io.Writer;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,17 +13,13 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.cos.COSString;
-
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
+import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDTextStream;
-
+import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionFactory;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAdditionalActions;
-import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
-
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
-
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -32,8 +27,7 @@ import org.w3c.dom.NodeList;
 /**
  * This represents an FDF field that is part of the FDF document.
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.5 $
+ * @author Ben Litchfield
  */
 public class FDFField implements COSObjectable
 {
@@ -164,7 +158,7 @@ public class FDFField implements COSObjectable
             {
                 actuals.add( new FDFField( (COSDictionary)kids.getObject( i ) ) );
             }
-            retval = new COSArrayList( actuals, kids );
+            retval = new COSArrayList<FDFField>( actuals, kids );
         }
         return retval;
     }
@@ -253,7 +247,7 @@ public class FDFField implements COSObjectable
         COSBase cos = null;
         if( value instanceof List )
         {
-            cos = COSArrayList.convertStringListToCOSStringCOSArray( (List)value );
+            cos = COSArrayList.convertStringListToCOSStringCOSArray( (List<String>)value );
         }
         else if( value instanceof String )
         {
@@ -614,7 +608,7 @@ public class FDFField implements COSObjectable
      */
     public void setIconFit( FDFIconFit fit )
     {
-        field.setItem( "IF", fit );
+        field.setItem( COSName.IF, fit );
     }
 
     /**
@@ -623,13 +617,13 @@ public class FDFField implements COSObjectable
      *
      * @return A list of all options.
      */
-    public List getOptions()
+    public List<Object> getOptions()
     {
-        List retval = null;
+        List<Object> retval = null;
         COSArray array = (COSArray)field.getDictionaryObject( COSName.OPT );
         if( array != null )
         {
-            List objects = new ArrayList();
+            List<Object> objects = new ArrayList<Object>();
             for( int i=0; i<array.size(); i++ )
             {
                 COSBase next = array.getObject( i );
@@ -643,7 +637,7 @@ public class FDFField implements COSObjectable
                     objects.add( new FDFOptionElement( value ) );
                 }
             }
-            retval = new COSArrayList( objects, array );
+            retval = new COSArrayList<Object>( objects, array );
         }
         return retval;
     }

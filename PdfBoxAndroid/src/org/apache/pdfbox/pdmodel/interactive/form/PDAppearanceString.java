@@ -33,9 +33,9 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceEntry;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 
 /**
- * A default appearance string contains any graphics state or text state operators needed to establish the graphics
- * state parameters, such as text size and colour, for displaying the field?s variable text. Only operators that are
- * allowed within text objects shall occur in this string.
+ * A default appearance string contains any graphics state or text state operators needed to
+ * establish the graphics state parameters, such as text size and colour, for displaying the field's
+ * variable text. Only operators that are allowed within text objects shall occur in this string.
  *
  * @author Stephan Gerhard
  * @author Ben Litchfield
@@ -129,7 +129,7 @@ public final class PDAppearanceString
 		List<Object> tokens = new ArrayList<Object>();
 		if(appearanceStream != null)
 		{
-			tokens = getStreamTokens(appearanceStream.getStream());
+			tokens = getStreamTokens(appearanceStream.getCOSStream());
 		}
 		return tokens;
 	}
@@ -393,8 +393,9 @@ public final class PDAppearanceString
 		printWriter.println(leftOffset + " " + verticalOffset + " Td");
 
 		// add the value as hex string to deal with non ISO-8859-1 data values
-		if (!isMultiLineValue(value))
-		{
+		if (!isMultiLineValue(value) || stringWidth > borderEdge.getWidth() - paddingLeft -
+                paddingRight)
+        {
 			printWriter.println("<" + new COSString(value).getHexString() + "> Tj");
 		}
 		else
@@ -457,7 +458,7 @@ public final class PDAppearanceString
 	 */
 	private void writeToStream(byte[] data, PDAppearanceStream appearanceStream) throws IOException
 	{
-		OutputStream out = appearanceStream.getStream().createUnfilteredStream();
+		OutputStream out = appearanceStream.getCOSStream().createUnfilteredStream();
 		out.write(data);
 		out.flush();
 	}
@@ -515,7 +516,8 @@ public final class PDAppearanceString
 	}
 
 	/**
-	 * My "not so great" method for calculating the fontsize. It does not work superb, but it handles ok.
+	 * My "not so great" method for calculating the fontsize. It does not work superb, but it
+	 * handles ok.
 	 * @return the calculated font-size
 	 *
 	 * @throws IOException If there is an error getting the font height.
@@ -567,8 +569,8 @@ public final class PDAppearanceString
 
 
 	/**
-	 * Calculates where to start putting the text in the box. The positioning is not quite as accurate as when Acrobat
-	 * places the elements, but it works though.
+	 * Calculates where to start putting the text in the box. The positioning is not quite as
+	 * accurate as when Acrobat places the elements, but it works though.
 	 *
 	 * @return the sting for representing the start position of the text
 	 *
@@ -603,7 +605,8 @@ public final class PDAppearanceString
 			}
 			else
 			{
-				LOG.debug( "Unable to calculate the vertical offset for non-simple fonts - using 0 instead" );
+				LOG.debug( "Unable to calculate the vertical offset for non-simple fonts - "
+						+ "using 0 instead" );
 			}
 		}
 		return verticalOffset;

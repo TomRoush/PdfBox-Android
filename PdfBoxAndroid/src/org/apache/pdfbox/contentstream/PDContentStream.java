@@ -3,6 +3,7 @@ package org.apache.pdfbox.contentstream;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.util.Matrix;
 
 /**
  * A content stream.
@@ -17,7 +18,7 @@ public interface PDContentStream
     public COSStream getContentStream();
 
     /**
-     * Returns this stream's resources, if any.
+     * Returns this stream's resources
      */
     public PDResources getResources();
 
@@ -26,5 +27,8 @@ public interface PDContentStream
      */
     public PDRectangle getBBox();
 
-    // todo: Matrix
+    /**
+     * Returns the matrix which transforms from the stream's space to user space.
+     */
+    public Matrix getMatrix();
 }

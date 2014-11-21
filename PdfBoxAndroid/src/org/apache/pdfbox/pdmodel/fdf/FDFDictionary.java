@@ -11,7 +11,6 @@ import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.cos.COSString;
-
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
@@ -23,8 +22,7 @@ import org.w3c.dom.NodeList;
 /**
  * This represents an FDF dictionary that is part of the FDF document.
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.9 $
+ * @author Ben Litchfield
  */
 public class FDFDictionary implements COSObjectable
 {
@@ -83,7 +81,7 @@ public class FDFDictionary implements COSObjectable
                 else if( child.getTagName().equals( "fields" ) )
                 {
                     NodeList fields = child.getChildNodes();
-                    List fieldList = new ArrayList();
+                    List<FDFField> fieldList = new ArrayList<FDFField>();
                     for( int f=0; f<fields.getLength(); f++ )
                     {
                         fieldList.add( new FDFField( (Element)fields.item( f ) ) );
@@ -101,7 +99,7 @@ public class FDFDictionary implements COSObjectable
                 else if( child.getTagName().equals( "annots" ) )
                 {
                     NodeList annots = child.getChildNodes();
-                    List annotList = new ArrayList();
+                    List<FDFAnnotationText> annotList = new ArrayList<FDFAnnotationText>();
                     for( int j=0; j<annots.getLength(); j++ )
                     {
                         Node annotNode = annots.item( i );
@@ -146,13 +144,13 @@ public class FDFDictionary implements COSObjectable
             output.write( "<ids original=\"" + original.getHexString() + "\" " );
             output.write( "modified=\"" + modified.getHexString() + "\" />\n");
         }
-        List fields = getFields();
+        List<FDFField> fields = getFields();
         if( fields != null && fields.size() > 0 )
         {
             output.write( "<fields>\n" );
-            for (Object field : fields)
+            for (FDFField field : fields)
             {
-                ((FDFField) field).writeXML(output);
+                field.writeXML(output);
             }
             output.write( "</fields>\n" );
         }
@@ -227,9 +225,9 @@ public class FDFDictionary implements COSObjectable
      *
      * @return A list of FDF fields.
      */
-    public List getFields()
+    public List<FDFField> getFields()
     {
-        List retval = null;
+        List<FDFField> retval = null;
         COSArray fieldArray = (COSArray)fdf.getDictionaryObject( COSName.FIELDS );
         if( fieldArray != null )
         {
@@ -238,7 +236,7 @@ public class FDFDictionary implements COSObjectable
             {
                 fields.add( new FDFField( (COSDictionary)fieldArray.getObject( i ) ) );
             }
-            retval = new COSArrayList( fields, fieldArray );
+            retval = new COSArrayList<FDFField>( fields, fieldArray );
         }
         return retval;
     }
@@ -248,7 +246,7 @@ public class FDFDictionary implements COSObjectable
      *
      * @param fields The list of fields.
      */
-    public void setFields( List fields )
+    public void setFields( List<FDFField> fields )
     {
         fdf.setItem( COSName.FIELDS, COSArrayList.converterToCOSArray( fields ) );
     }
@@ -279,9 +277,9 @@ public class FDFDictionary implements COSObjectable
      *
      * @return A list of FDF pages.
      */
-    public List getPages()
+    public List<FDFPage> getPages()
     {
-        List retval = null;
+        List<FDFPage> retval = null;
         COSArray pageArray = (COSArray)fdf.getDictionaryObject( COSName.PAGES );
         if( pageArray != null )
         {
@@ -290,7 +288,7 @@ public class FDFDictionary implements COSObjectable
             {
                 pages.add( new FDFPage( (COSDictionary)pageArray.get( i ) ) );
             }
-            retval = new COSArrayList( pages, pageArray );
+            retval = new COSArrayList<FDFPage>( pages, pageArray );
         }
         return retval;
     }
@@ -341,9 +339,9 @@ public class FDFDictionary implements COSObjectable
      *
      * @throws IOException If there is an error creating the annotation list.
      */
-    public List getAnnotations() throws IOException
+    public List<FDFAnnotation> getAnnotations() throws IOException
     {
-        List retval = null;
+        List<FDFAnnotation> retval = null;
         COSArray annotArray = (COSArray)fdf.getDictionaryObject( COSName.ANNOTS );
         if( annotArray != null )
         {
@@ -352,7 +350,7 @@ public class FDFDictionary implements COSObjectable
             {
                 annots.add( FDFAnnotation.create( (COSDictionary)annotArray.getObject( i ) ) );
             }
-            retval = new COSArrayList( annots, annotArray );
+            retval = new COSArrayList<FDFAnnotation>( annots, annotArray );
         }
         return retval;
     }
@@ -363,7 +361,7 @@ public class FDFDictionary implements COSObjectable
      *
      * @param annots The list of annotations.
      */
-    public void setAnnotations( List annots )
+    public void setAnnotations( List<FDFAnnotationText> annots )
     {
         fdf.setItem( COSName.ANNOTS, COSArrayList.converterToCOSArray( annots ) );
     }
@@ -416,9 +414,9 @@ public class FDFDictionary implements COSObjectable
      *
      * @throws IOException If there is an error creating the file spec.
      */
-    public List getEmbeddedFDFs() throws IOException
+    public List<PDFileSpecification> getEmbeddedFDFs() throws IOException
     {
-        List retval = null;
+        List<PDFileSpecification> retval = null;
         COSArray embeddedArray = (COSArray)fdf.getDictionaryObject( COSName.EMBEDDED_FDFS );
         if( embeddedArray != null )
         {
@@ -427,7 +425,7 @@ public class FDFDictionary implements COSObjectable
             {
                 embedded.add( PDFileSpecification.createFS( embeddedArray.get( i ) ) );
             }
-            retval = new COSArrayList( embedded, embeddedArray );
+            retval = new COSArrayList<PDFileSpecification>( embedded, embeddedArray );
         }
         return retval;
     }

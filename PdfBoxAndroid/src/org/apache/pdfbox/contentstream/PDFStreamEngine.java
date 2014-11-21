@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.pdfbox.contentstream;
 
 import java.io.ByteArrayInputStream;
@@ -25,10 +41,15 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDFontFactory;
+import org.apache.pdfbox.pdmodel.font.PDType3CharProc;
+import org.apache.pdfbox.pdmodel.font.PDType3Font;
+import org.apache.pdfbox.pdmodel.graphics.blend.BlendMode;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.pattern.PDTilingPattern;
 import org.apache.pdfbox.pdmodel.graphics.state.PDGraphicsState;
 import org.apache.pdfbox.pdmodel.graphics.state.PDTextState;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.pdfbox.util.Vector;
 
@@ -153,7 +174,7 @@ public class PDFStreamEngine
 	 */
 	public void showTransparencyGroup(PDFormXObject form) throws IOException
 	{
-		showForm(form);
+		processTransparencyGroup(form);
 	}
 
 	/**
@@ -183,18 +204,172 @@ public class PDFStreamEngine
 		processStream(contentStream);
 	}
 
-	// todo: a temporary workaround for tiling patterns (overrides matrix and bbox)
-	public final void processChildStreamWithMatrix(PDTilingPattern contentStream, PDPage page,
-			Matrix matrix, PDRectangle bbox) throws IOException
+	/**
+	 * Processes a transparency group stream.
+	 */
+	protected void processTransparencyGroup(PDFormXObject group)
+			throws IOException
 	{
-		initPage(page);
+		if (currentPage == null)
+		{
+			throw new IllegalStateException("No current page, call " +
+					"#processChildStream(PDContentStream, PDPage) instead");
+		}
 
-		// transform ctm
-		Matrix concat = matrix.multiply(getGraphicsState().getCurrentTransformationMatrix());
-		getGraphicsState().setCurrentTransformationMatrix(concat);
+		PDResources parent = pushResources(group);
+		saveGraphicsState();
 
-		processStream(contentStream, bbox);
-		currentPage = null;
+		// transform the CTM using the stream's matrix (this is the FontMatrix)
+		getGraphicsState().getCurrentTransformationMatrix().concatenate(group.getMatrix());
+
+		// note: we don't clip to the BBox as it is often wrong, see PDFBOX-1917
+
+		// render into a normal opaque buffer
+		PDGraphicsState state = getGraphicsState();
+		state.setBlendMode(BlendMode.NORMAL);
+		state.setAlphaConstant(1.0);
+		state.setNonStrokeAlphaConstant(1.0);
+		state.setSoftMask(null);
+
+		processStreamOperators(group);
+
+		restoreGraphicsState();
+		popResources(parent);
+	}
+
+	/**
+	 * Processes a Type 3 character stream.
+	 *
+	 * @param charProc Type 3 character procedure
+	 * @param textRenderingMatrix the Text Rendering Matrix
+	 */
+	protected void processType3Stream(PDType3CharProc charProc, Matrix textRenderingMatrix)
+			throws IOException
+	{
+		if (currentPage == null)
+		{
+			throw new IllegalStateException("No current page, call " +
+					"#processChildStream(PDContentStream, PDPage) instead");
+		}
+
+		PDResources parent = pushResources(charProc);
+		saveGraphicsState();
+
+		// replace the CTM with the TRM
+		getGraphicsState().setCurrentTransformationMatrix(textRenderingMatrix);
+
+		// transform the CTM using the stream's matrix (this is the FontMatrix)
+		getGraphicsState().getCurrentTransformationMatrix().concatenate(charProc.getMatrix());
+
+		// note: we don't clip to the BBox as it is often wrong, see PDFBOX-1917
+
+        // save text matrices (Type 3 stream may contain BT/ET, see PDFBOX-2137)
+        Matrix textMatrixOld = textMatrix;
+        textMatrix = new Matrix();
+        Matrix textLineMatrixOld = textLineMatrix;
+        textLineMatrix = new Matrix();
+
+        processStreamOperators(charProc);
+
+        // restore text matrices
+        textMatrix = textMatrixOld;
+        textLineMatrix = textLineMatrixOld;
+
+		restoreGraphicsState();
+		popResources(parent);
+	}
+
+	/**
+	 * Process the given annotation with the specified appearance stream.
+	 *
+	 * @param annotation The annotation containing the appearance stream to process.
+	 * @param appearance The appearance stream to process.
+	 */
+	protected void processAnnotation(PDAnnotation annotation, PDAppearanceStream appearance)
+			throws IOException
+	{
+		PDResources parent = pushResources(appearance);
+		saveGraphicsState();
+
+		PDRectangle bbox = appearance.getBBox();
+		PDRectangle rect = annotation.getRectangle();
+		Matrix matrix = appearance.getMatrix();
+
+		// transformed appearance box
+		PDRectangle transformedBox = bbox.transform(matrix);
+
+		// compute a matrix which scales and translates the transformed appearance box to align
+		// with the edges of the annotation's rectangle
+		Matrix a = Matrix.getTranslatingInstance(rect.getLowerLeftX(), rect.getLowerLeftY());
+		a.concatenate(Matrix.getScaleInstance(rect.getWidth() / transformedBox.getWidth(),
+				rect.getHeight() / transformedBox.getHeight()));
+		a.concatenate(Matrix.getTranslatingInstance(-transformedBox.getLowerLeftX(),
+				-transformedBox.getLowerLeftY()));
+
+		// Matrix shall be concatenated with A to form a matrix AA that maps from the appearance’s
+		// coordinate system to the annotation’s rectangle in default user space
+		Matrix aa = Matrix.concatenate(matrix, a);
+
+		// make matrix AA the CTM
+		getGraphicsState().setCurrentTransformationMatrix(aa);
+
+		// clip to bounding box
+		clipToRect(bbox);
+
+		processStreamOperators(appearance);
+
+		restoreGraphicsState();
+		popResources(parent);
+	}
+
+
+	/**
+     * Processes the given tiling pattern.
+     *
+     * @param tilingPattern tiling patten
+     */
+    protected final void processTilingPattern(PDTilingPattern tilingPattern) throws IOException
+    {
+        PDResources parent = pushResources(tilingPattern);
+        saveGraphicsState();
+
+        // note: we don't transform the CTM using the stream's matrix, as TilingPaint handles this
+
+        // clip to bounding box
+        PDRectangle bbox = tilingPattern.getBBox();
+        clipToRect(bbox);
+
+        processStreamOperators(tilingPattern);
+
+        restoreGraphicsState();
+        popResources(parent);
+    }
+
+	/**
+	 * Shows the given annotation.
+	 *
+	 * @param annotation An annotation on the current page.
+	 * @throws IOException If an error occurred reading the annotation
+	 */
+	public void showAnnotation(PDAnnotation annotation) throws IOException
+	{
+		PDAppearanceStream appearanceStream = getAppearance(annotation);
+		if (appearanceStream != null)
+		{
+			processAnnotation(annotation, appearanceStream);
+		}
+	}
+
+	/**
+	 * Returns the appearance stream to process for the given annotation. May be used to render
+	 * a specific appearance such as "hover".
+	 *
+	 * @param annotation The current annotation.
+	 * @return The stream to process.
+	 */
+	public PDAppearanceStream getAppearance(PDAnnotation annotation)
+	{
+		return annotation.getNormalAppearanceStream();
 	}
 
 	/**
@@ -233,38 +408,34 @@ public class PDFStreamEngine
 	 * @param patternBBox fixme: temporary workaround for tiling patterns
 	 * @throws IOException if there is an exception while processing the stream
 	 */
-	private void processStream(PDContentStream contentStream, PDRectangle patternBBox) throws IOException
+	private void processStream(PDContentStream contentStream, PDRectangle patternBBox)
+			throws IOException
 	{
-		// resource lookup: first look for stream resources, then fallback to the current page
-		PDResources parentResources = resources;
-		PDResources streamResources = contentStream.getResources();
-		if (streamResources != null)
-		{
-			resources = streamResources;
-		}
-		else
-		{
-			resources = currentPage.getResources();
-		}
+		PDResources parent = pushResources(contentStream);
+		saveGraphicsState();
 
-		// bounding box (for clipping)
+		// transform the CTM using the stream's matrix
+		getGraphicsState().getCurrentTransformationMatrix().concatenate(contentStream.getMatrix());
+
+		// clip to bounding box
 		PDRectangle bbox = contentStream.getBBox();
-		if (patternBBox  !=null)
+		if (patternBBox != null)
 		{
 			bbox = patternBBox;
 		}
-		if (contentStream != currentPage && bbox != null)
-		{
-			//            Area clip = new Area(new GeneralPath(new Rectangle(bbox.createDimension()))); TODO
-			//        	clip.transform(getGraphicsState().getCurrentTransformationMatrix().createAffineTransform());
-			saveGraphicsState();
-			//            getGraphicsState().intersectClippingPath(clip);
-		}
+		clipToRect(bbox);
 
-		// fixme: stream matrix
-		Matrix oldSubStreamMatrix = subStreamMatrix;
-		subStreamMatrix = getGraphicsState().getCurrentTransformationMatrix();
+		processStreamOperators(contentStream);
 
+		restoreGraphicsState();
+		popResources(parent);
+	}
+
+	/**
+	 * Processes the operators of the given content stream.
+	 */
+	private void processStreamOperators(PDContentStream contentStream) throws IOException
+	{
 		List<COSBase> arguments = new ArrayList<COSBase>();
 		PDFStreamParser parser = new PDFStreamParser(contentStream.getContentStream(), forceParsing);
 		try
@@ -292,17 +463,52 @@ public class PDFStreamEngine
 		{
 			parser.close();
 		}
+	}
 
-		if (contentStream != currentPage && bbox != null)
+	/**
+	 * Pushes the given stream's resources, returning the previous resources.
+	 */
+	private PDResources pushResources(PDContentStream contentStream)
+	{
+		// resource lookup: first look for stream resources, then fallback to the current page
+		PDResources parentResources = resources;
+		PDResources streamResources = contentStream.getResources();
+		if (streamResources != null)
 		{
-			restoreGraphicsState();
+			resources = streamResources;
+		}
+		else
+		{
+			resources = currentPage.getResources();
 		}
 		
-		// restore page resources
-		resources = parentResources;
+		// resources are required in PDF
+		if (resources == null)
+		{
+			resources = new PDResources();
+		}
+		return parentResources;
+	}
 
-		// fixme: stream matrix
-		subStreamMatrix = oldSubStreamMatrix;
+	/**
+	 * Pops the current resources, replacing them with the given resources.
+	 */
+	private void popResources(PDResources parentResources)
+	{
+		resources = parentResources;
+	}
+
+	/**
+	 * Transforms the given rectangle using the CTM and then intersects it with the current
+	 * clipping area.
+	 */
+	private void clipToRect(PDRectangle rectangle)
+	{
+		if (rectangle != null)
+		{
+			//            PDRectangle clip = rectangle.transform(getGraphicsState().getCurrentTransformationMatrix());
+			//            getGraphicsState().intersectClippingPath(new Area(clip.toGeneralPath()));
+		}
 	}
 
 	/**
@@ -464,7 +670,9 @@ public class PDFStreamEngine
 			Vector w = font.getDisplacement(code);
 
 			// process the decoded glyph
+			saveGraphicsState();
 			showGlyph(textRenderingMatrix, font, code, unicode, w);
+			restoreGraphicsState();
 
 			// calculate the combined displacements
 			float tx, ty;
@@ -498,7 +706,52 @@ public class PDFStreamEngine
 	protected void showGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
 			Vector displacement) throws IOException
 	{
+		if (font instanceof PDType3Font)
+		{
+			showType3Glyph(textRenderingMatrix, (PDType3Font)font, code, unicode, displacement);
+		}
+		else
+		{
+			showFontGlyph(textRenderingMatrix, font, code, unicode, displacement);
+		}
+	}
+
+	/**
+	 * Called when a glyph is to be processed.This method is intended for overriding in subclasses,
+	 * the default implementation does nothing.
+	 *
+	 * @param textRenderingMatrix the current text rendering matrix, T<sub>rm</sub>
+	 * @param font the current font
+	 * @param code internal PDF character code for the glyph
+	 * @param unicode the Unicode text for this glyph, or null if the PDF does provide it
+	 * @param displacement the displacement (i.e. advance) of the glyph in text space
+	 * @throws IOException if the glyph cannot be processed
+	 */
+	protected void showFontGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
+			Vector displacement) throws IOException
+	{
 		// overridden in subclasses
+	}
+
+	/**
+	 * Called when a glyph is to be processed.This method is intended for overriding in subclasses,
+	 * the default implementation does nothing.
+	 *
+	 * @param textRenderingMatrix the current text rendering matrix, T<sub>rm</sub>
+	 * @param font the current font
+	 * @param code internal PDF character code for the glyph
+	 * @param unicode the Unicode text for this glyph, or null if the PDF does provide it
+	 * @param displacement the displacement (i.e. advance) of the glyph in text space
+	 * @throws IOException if the glyph cannot be processed
+	 */
+	protected void showType3Glyph(Matrix textRenderingMatrix, PDType3Font font, int code,
+			String unicode, Vector displacement) throws IOException
+	{
+		PDType3CharProc charProc = font.getCharProc(code);
+		if (charProc != null)
+		{
+			processType3Stream(charProc, textRenderingMatrix);
+		}
 	}
 
 	/**
@@ -648,31 +901,6 @@ public class PDFStreamEngine
 		getGraphicsState().getCurrentTransformationMatrix().createAffineTransform().mapPoints(position);
 		return new PointF(position[0], position[1]);
 	}
-
-	/**
-	 * use the current transformation matrix to transformPoint a PDRectangle.
-	 * 
-	 * @param rect the PDRectangle to transformPoint
-	 * @return the transformed coordinates as a GeneralPath
-	 */
-	//    public GeneralPath transformedPDRectanglePath(PDRectangle rect)
-	//    {
-	//        float x1 = rect.getLowerLeftX();
-	//        float y1 = rect.getLowerLeftY();
-	//        float x2 = rect.getUpperRightX();
-	//        float y2 = rect.getUpperRightY();
-	//        Point2D p0 = transformedPoint(x1, y1);
-	//        Point2D p1 = transformedPoint(x2, y1);
-	//        Point2D p2 = transformedPoint(x2, y2);
-	//        Point2D p3 = transformedPoint(x1, y2);
-	//        GeneralPath path = new GeneralPath();
-	//        path.moveTo((float) p0.getX(), (float) p0.getY());
-	//        path.lineTo((float) p1.getX(), (float) p1.getY());
-	//        path.lineTo((float) p2.getX(), (float) p2.getY());
-	//        path.lineTo((float) p3.getX(), (float) p3.getY());
-	//        path.closePath();
-	//        return path;
-	//    }TODO
 
 	// transforms a width using the CTM
 	protected float transformWidth(float width)
