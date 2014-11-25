@@ -43,7 +43,6 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDFontFactory;
 import org.apache.pdfbox.pdmodel.font.PDType3CharProc;
 import org.apache.pdfbox.pdmodel.font.PDType3Font;
-import org.apache.pdfbox.pdmodel.graphics.blend.BlendMode;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.pattern.PDTilingPattern;
 import org.apache.pdfbox.pdmodel.graphics.state.PDGraphicsState;
@@ -219,17 +218,10 @@ public class PDFStreamEngine
 		PDResources parent = pushResources(group);
 		saveGraphicsState();
 
-		// transform the CTM using the stream's matrix (this is the FontMatrix)
+		// transform the CTM using the stream's matrix
 		getGraphicsState().getCurrentTransformationMatrix().concatenate(group.getMatrix());
 
 		// note: we don't clip to the BBox as it is often wrong, see PDFBOX-1917
-
-		// render into a normal opaque buffer
-		PDGraphicsState state = getGraphicsState();
-		state.setBlendMode(BlendMode.NORMAL);
-		state.setAlphaConstant(1.0);
-		state.setNonStrokeAlphaConstant(1.0);
-		state.setSoftMask(null);
 
 		processStreamOperators(group);
 
@@ -263,17 +255,17 @@ public class PDFStreamEngine
 
 		// note: we don't clip to the BBox as it is often wrong, see PDFBOX-1917
 
-        // save text matrices (Type 3 stream may contain BT/ET, see PDFBOX-2137)
-        Matrix textMatrixOld = textMatrix;
-        textMatrix = new Matrix();
-        Matrix textLineMatrixOld = textLineMatrix;
-        textLineMatrix = new Matrix();
+		// save text matrices (Type 3 stream may contain BT/ET, see PDFBOX-2137)
+		Matrix textMatrixOld = textMatrix;
+		textMatrix = new Matrix();
+		Matrix textLineMatrixOld = textLineMatrix;
+		textLineMatrix = new Matrix();
 
-        processStreamOperators(charProc);
+		processStreamOperators(charProc);
 
-        // restore text matrices
-        textMatrix = textMatrixOld;
-        textLineMatrix = textLineMatrixOld;
+		// restore text matrices
+		textMatrix = textMatrixOld;
+		textLineMatrix = textLineMatrixOld;
 
 		restoreGraphicsState();
 		popResources(parent);
@@ -295,28 +287,32 @@ public class PDFStreamEngine
 		PDRectangle rect = annotation.getRectangle();
 		Matrix matrix = appearance.getMatrix();
 
-		// transformed appearance box
-		PDRectangle transformedBox = bbox.transform(matrix);
+		// zero-sized rectangles are not valid
+		if (rect.getWidth() > 0 && rect.getHeight() > 0)
+		{
+			// transformed appearance box
+			PDRectangle transformedBox = bbox.transform(matrix);
 
-		// compute a matrix which scales and translates the transformed appearance box to align
-		// with the edges of the annotation's rectangle
-		Matrix a = Matrix.getTranslatingInstance(rect.getLowerLeftX(), rect.getLowerLeftY());
-		a.concatenate(Matrix.getScaleInstance(rect.getWidth() / transformedBox.getWidth(),
-				rect.getHeight() / transformedBox.getHeight()));
-		a.concatenate(Matrix.getTranslatingInstance(-transformedBox.getLowerLeftX(),
-				-transformedBox.getLowerLeftY()));
+			// compute a matrix which scales and translates the transformed appearance box to align
+			// with the edges of the annotation's rectangle
+			Matrix a = Matrix.getTranslatingInstance(rect.getLowerLeftX(), rect.getLowerLeftY());
+			a.concatenate(Matrix.getScaleInstance(rect.getWidth() / transformedBox.getWidth(),
+					rect.getHeight() / transformedBox.getHeight()));
+			a.concatenate(Matrix.getTranslatingInstance(-transformedBox.getLowerLeftX(),
+					-transformedBox.getLowerLeftY()));
 
-		// Matrix shall be concatenated with A to form a matrix AA that maps from the appearance’s
-		// coordinate system to the annotation’s rectangle in default user space
-		Matrix aa = Matrix.concatenate(matrix, a);
+			// Matrix shall be concatenated with A to form a matrix AA that maps from the appearance’s
+			// coordinate system to the annotation’s rectangle in default user space
+			Matrix aa = Matrix.concatenate(matrix, a);
 
-		// make matrix AA the CTM
-		getGraphicsState().setCurrentTransformationMatrix(aa);
+			// make matrix AA the CTM
+			getGraphicsState().setCurrentTransformationMatrix(aa);
 
-		// clip to bounding box
-		clipToRect(bbox);
+			// clip to bounding box
+			clipToRect(bbox);
 
-		processStreamOperators(appearance);
+			processStreamOperators(appearance);
+		}
 
 		restoreGraphicsState();
 		popResources(parent);
@@ -324,26 +320,26 @@ public class PDFStreamEngine
 
 
 	/**
-     * Processes the given tiling pattern.
-     *
-     * @param tilingPattern tiling patten
-     */
-    protected final void processTilingPattern(PDTilingPattern tilingPattern) throws IOException
-    {
-        PDResources parent = pushResources(tilingPattern);
-        saveGraphicsState();
+	 * Processes the given tiling pattern.
+	 *
+	 * @param tilingPattern tiling patten
+	 */
+	protected final void processTilingPattern(PDTilingPattern tilingPattern) throws IOException
+	{
+		PDResources parent = pushResources(tilingPattern);
+		saveGraphicsState();
 
-        // note: we don't transform the CTM using the stream's matrix, as TilingPaint handles this
+		// note: we don't transform the CTM using the stream's matrix, as TilingPaint handles this
 
-        // clip to bounding box
-        PDRectangle bbox = tilingPattern.getBBox();
-        clipToRect(bbox);
+		// clip to bounding box
+		PDRectangle bbox = tilingPattern.getBBox();
+		clipToRect(bbox);
 
-        processStreamOperators(tilingPattern);
+		processStreamOperators(tilingPattern);
 
-        restoreGraphicsState();
-        popResources(parent);
-    }
+		restoreGraphicsState();
+		popResources(parent);
+	}
 
 	/**
 	 * Shows the given annotation.
@@ -481,7 +477,7 @@ public class PDFStreamEngine
 		{
 			resources = currentPage.getResources();
 		}
-		
+
 		// resources are required in PDF
 		if (resources == null)
 		{

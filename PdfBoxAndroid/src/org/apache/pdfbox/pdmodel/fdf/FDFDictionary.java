@@ -11,8 +11,8 @@ import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
+import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
 import org.apache.pdfbox.pdmodel.common.filespecification.PDSimpleFileSpecification;
 import org.w3c.dom.Element;
@@ -84,7 +84,6 @@ public class FDFDictionary implements COSObjectable
                     List<FDFField> fieldList = new ArrayList<FDFField>();
                     for( int f=0; f<fields.getLength(); f++ )
                     {
-                        fieldList.add( new FDFField( (Element)fields.item( f ) ) );
                         Node currentNode = fields.item( f );
                         if (currentNode instanceof Element) 
                         {

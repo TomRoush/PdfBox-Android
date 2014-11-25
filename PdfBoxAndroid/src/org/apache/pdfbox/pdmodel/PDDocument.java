@@ -78,7 +78,7 @@ public class PDDocument implements Closeable
 
 	// the File to read incremental data from
 	private File incrementalFile;
-	
+
 	// the access permissions of the document
 	private AccessPermission accessPermission;
 
@@ -310,17 +310,20 @@ public class PDDocument implements Closeable
 					{
 						COSDictionary cosBaseDict = (COSDictionary) base;
 
-						// Appearance Dictionary auslesen und setzen
-						PDAppearanceDictionary ap = new PDAppearanceDictionary(
-								(COSDictionary) cosBaseDict.getItem(COSName.AP));
+						// read and set Appearance Dictionary
+						PDAppearanceDictionary ap =
+								new PDAppearanceDictionary((COSDictionary)cosBaseDict.getDictionaryObject(COSName.AP));
 						ap.getCOSObject().setDirect(true);
 						signatureField.getWidget().setAppearance(ap);
 
-						// AcroForm DefaultRessource auslesen und setzen
+						// read and set AcroForm DefaultResource
 						COSBase dr = cosBaseDict.getItem(COSName.DR);
-						dr.setDirect(true);
-						dr.setNeedToBeUpdate(true);
-						acroFormDict.setItem(COSName.DR, dr);
+						if (dr != null)
+						{
+							dr.setDirect(true);
+							dr.setNeedToBeUpdate(true);
+							acroFormDict.setItem(COSName.DR, dr);
+						}
 						sigFieldNotFound = false;
 					}
 				}
@@ -514,8 +517,21 @@ public class PDDocument implements Closeable
 	 */
 	public PDDocument(COSDocument doc, BaseParser usedParser)
 	{
+		this(doc, usedParser, null);
+	}
+
+	/**
+	 * Constructor that uses an existing document. The COSDocument that is passed in must be valid.
+	 * 
+	 * @param doc The COSDocument that this document wraps.
+	 * @param usedParser the parser which is used to read the pdf
+	 * @param permission he access permissions of the pdf
+	 */
+	public PDDocument(COSDocument doc, BaseParser usedParser, AccessPermission permission)
+	{
 		document = doc;
 		parser = usedParser;
+		accessPermission = permission;
 	}
 
 	/**

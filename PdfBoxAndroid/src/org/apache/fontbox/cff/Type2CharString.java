@@ -16,12 +16,12 @@
  */
 package org.apache.fontbox.cff;
 
-import org.apache.fontbox.type1.Type1CharStringReader;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.fontbox.type1.Type1CharStringReader;
 
 /**
  * Represents a Type 2 CharString by converting it into an equivalent Type 1 CharString.
@@ -64,22 +64,6 @@ public class Type2CharString extends Type1CharString
     public int getGID()
     {
         return gid;
-    }
-
-    /**
-     * Returns the advance width of this glyph.
-     */
-    public int getWidth()
-    {
-        int width = super.getWidth();
-        if (width == 0)
-        {
-            return defWidthX;
-        }
-        else
-        {
-            return width;
-        }
     }
 
     /**
