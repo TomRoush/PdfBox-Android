@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.contentstream.PDContentStream;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
@@ -29,6 +31,11 @@ import org.apache.pdfbox.util.Matrix;
  */
 public class PDPage implements COSObjectable, PDContentStream
 {
+	/**
+	 * Log instance
+	 */
+	private static final Log LOG = LogFactory.getLog(PDPage.class);
+
 	private final COSDictionary page;
 	private PDResources pageResources;
 	private PDRectangle mediaBox;
@@ -170,6 +177,11 @@ public class PDPage implements COSObjectable, PDContentStream
 				mediaBox = new PDRectangle(array);
 			}
 		}
+		if (mediaBox == null)
+		{
+			LOG.debug("Can't find MediaBox, will use U.S. Letter");
+			mediaBox = PDRectangle.LETTER;
+		}
 		return mediaBox;
 	}
 
@@ -208,7 +220,7 @@ public class PDPage implements COSObjectable, PDContentStream
 			return getMediaBox();
 		}
 	}
-	
+
 	@Override
 	public Matrix getMatrix() {
 		// todo: take into account user-space unit redefinition as scale?

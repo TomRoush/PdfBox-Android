@@ -102,50 +102,50 @@ public final class ExternalFonts
 	{
 		// substitutes for standard 14 fonts
 		substitutes.put("Courier",
-	            Arrays.asList("CourierNew", "CourierNewPSMT", "LiberationMono", "NimbusMonL-Regu","DroidSansMono"));
-	    substitutes.put("Courier-Bold",
-	            Arrays.asList("CourierNewPS-BoldMT", "CourierNew-Bold", "LiberationMono-Bold",
-	                    "NimbusMonL-Bold","DroidSansMono"));
-	    substitutes.put("Courier-Oblique",
-	            Arrays.asList("CourierNewPS-ItalicMT","CourierNew-Italic",
-	                    "LiberationMono-Italic", "NimbusMonL-ReguObli","DroidSansMono"));
-	    substitutes.put("Courier-BoldOblique",
-	            Arrays.asList("CourierNewPS-BoldItalicMT","CourierNew-BoldItalic",
-	                    "LiberationMono-BoldItalic", "NimbusMonL-BoldObli","DroidSansMono"));
-	    substitutes.put("Helvetica",
-	            Arrays.asList("ArialMT", "Arial", "LiberationSans", "NimbusSanL-Regu","Roboto-Regular"));
-	    substitutes.put("Helvetica-Bold",
-	            Arrays.asList("Arial-BoldMT", "Arial-Bold", "LiberationSans-Bold",
-	                    "NimbusSanL-Bold","Roboto-Bold"));
-	    substitutes.put("Helvetica-Oblique",
-	            Arrays.asList("Arial-ItalicMT", "Arial-Italic", "Helvetica-Italic",
-	                    "LiberationSans-Italic", "NimbusSanL-ReguItal", "Roboto-Italic"));
-	    substitutes.put("Helvetica-BoldOblique",
-	            Arrays.asList("Arial-BoldItalicMT", "Helvetica-BoldItalic",
-	                    "LiberationSans-BoldItalic", "NimbusSanL-BoldItal","Roboto-BoldItalic"));
-	    substitutes.put("Times-Roman",
-	            Arrays.asList("TimesNewRomanPSMT", "TimesNewRoman", "TimesNewRomanPS",
-	                    "LiberationSerif", "NimbusRomNo9L-Regu","DroidSerif-Regular"));
-	    substitutes.put("Times-Bold",
-	            Arrays.asList("TimesNewRomanPS-BoldMT", "TimesNewRomanPS-Bold",
-	                    "TimesNewRoman-Bold", "LiberationSerif-Bold",
-	                    "NimbusRomNo9L-Medi", "DroidSerif-Bold"));
-	    substitutes.put("Times-Italic",
-	            Arrays.asList("TimesNewRomanPS-ItalicMT", "TimesNewRomanPS-Italic",
-	                    "TimesNewRoman-Italic", "LiberationSerif-Italic",
-	                    "NimbusRomNo9L-ReguItal","DroidSerif-Italic"));
-	    substitutes.put("Times-BoldItalic",
-	            Arrays.asList("TimesNewRomanPS-BoldItalicMT", "TimesNewRomanPS-BoldItalic",
-	                    "TimesNewRoman-BoldItalic", "LiberationSerif-BoldItalic",
-	                    "NimbusRomNo9L-MediItal","DroidSerif-BoldItalic"));
-	    substitutes.put("Symbol", Arrays.asList("SymbolMT", "StandardSymL"));
-	    substitutes.put("ZapfDingbats", Arrays.asList("ZapfDingbatsITC", "Dingbats"));
+				Arrays.asList("CourierNew", "CourierNewPSMT", "LiberationMono", "NimbusMonL-Regu","DroidSansMono"));
+		substitutes.put("Courier-Bold",
+				Arrays.asList("CourierNewPS-BoldMT", "CourierNew-Bold", "LiberationMono-Bold",
+						"NimbusMonL-Bold","DroidSansMono"));
+		substitutes.put("Courier-Oblique",
+				Arrays.asList("CourierNewPS-ItalicMT","CourierNew-Italic",
+						"LiberationMono-Italic", "NimbusMonL-ReguObli","DroidSansMono"));
+		substitutes.put("Courier-BoldOblique",
+				Arrays.asList("CourierNewPS-BoldItalicMT","CourierNew-BoldItalic",
+						"LiberationMono-BoldItalic", "NimbusMonL-BoldObli","DroidSansMono"));
+		substitutes.put("Helvetica",
+				Arrays.asList("ArialMT", "Arial", "LiberationSans", "NimbusSanL-Regu","Roboto-Regular"));
+		substitutes.put("Helvetica-Bold",
+				Arrays.asList("Arial-BoldMT", "Arial-Bold", "LiberationSans-Bold",
+						"NimbusSanL-Bold","Roboto-Bold"));
+		substitutes.put("Helvetica-Oblique",
+				Arrays.asList("Arial-ItalicMT", "Arial-Italic", "Helvetica-Italic",
+						"LiberationSans-Italic", "NimbusSanL-ReguItal", "Roboto-Italic"));
+		substitutes.put("Helvetica-BoldOblique",
+				Arrays.asList("Arial-BoldItalicMT", "Helvetica-BoldItalic",
+						"LiberationSans-BoldItalic", "NimbusSanL-BoldItal","Roboto-BoldItalic"));
+		substitutes.put("Times-Roman",
+				Arrays.asList("TimesNewRomanPSMT", "TimesNewRoman", "TimesNewRomanPS",
+						"LiberationSerif", "NimbusRomNo9L-Regu","DroidSerif-Regular"));
+		substitutes.put("Times-Bold",
+				Arrays.asList("TimesNewRomanPS-BoldMT", "TimesNewRomanPS-Bold",
+						"TimesNewRoman-Bold", "LiberationSerif-Bold",
+						"NimbusRomNo9L-Medi", "DroidSerif-Bold"));
+		substitutes.put("Times-Italic",
+				Arrays.asList("TimesNewRomanPS-ItalicMT", "TimesNewRomanPS-Italic",
+						"TimesNewRoman-Italic", "LiberationSerif-Italic",
+						"NimbusRomNo9L-ReguItal","DroidSerif-Italic"));
+		substitutes.put("Times-BoldItalic",
+				Arrays.asList("TimesNewRomanPS-BoldItalicMT", "TimesNewRomanPS-BoldItalic",
+						"TimesNewRoman-BoldItalic", "LiberationSerif-BoldItalic",
+						"NimbusRomNo9L-MediItal","DroidSerif-BoldItalic"));
+		substitutes.put("Symbol", Arrays.asList("SymbolMT", "StandardSymL"));
+		substitutes.put("ZapfDingbats", Arrays.asList("ZapfDingbatsITC", "Dingbats"));
 
-	    // extra substitute mechanism for CJK CIDFonts when all we know is the ROS
-	    substitutes.put("$Adobe-CNS1", Arrays.asList("AdobeMingStd-Light"));
-	    substitutes.put("$Adobe-Japan1", Arrays.asList("KozMinPr6N-Regular"));
-	    substitutes.put("$Adobe-Korea1", Arrays.asList("AdobeGothicStd-Bold"));
-	    substitutes.put("$Adobe-GB1", Arrays.asList("AdobeHeitiStd-Regular"));
+		// extra substitute mechanism for CJK CIDFonts when all we know is the ROS
+		substitutes.put("$Adobe-CNS1", Arrays.asList("AdobeMingStd-Light"));
+		substitutes.put("$Adobe-Japan1", Arrays.asList("KozMinPr6N-Regular"));
+		substitutes.put("$Adobe-Korea1", Arrays.asList("AdobeGothicStd-Bold"));
+		substitutes.put("$Adobe-GB1", Arrays.asList("AdobeHeitiStd-Regular"));
 
 		// Acrobat also uses alternative names for Standard 14 fonts, which we map to those above
 		// these include names such as "Arial" and "TimesNewRoman"
@@ -164,9 +164,7 @@ public final class ExternalFonts
 	 */
 	private static List<String> copySubstitutes(String postScriptName)
 	{
-		List<String> copy = new ArrayList<String>(substitutes.get(postScriptName));
-		copy.add(0, postScriptName);
-		return copy;
+		return new ArrayList<String>(substitutes.get(postScriptName));
 	}
 
 	/**

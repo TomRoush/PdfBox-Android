@@ -1,7 +1,5 @@
 package org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible;
 
-import java.util.List;
-
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -55,7 +53,7 @@ public class PDVisibleSignDesigner
 //        signatureImageStream(jpegStream);
 //
 //        // create PD document
-//        PDDocument document = PDDocument.load(documentStream);
+//        PDDocument document = PDDocument.loadLegacy(documentStream);
 //
 //        // calculate height an width of document
 //        calculatePageSize(document, page);

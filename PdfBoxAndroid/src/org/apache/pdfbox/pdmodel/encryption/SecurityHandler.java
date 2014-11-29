@@ -17,8 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
@@ -148,7 +150,13 @@ public abstract class SecurityHandler
 		while (objectIter.hasNext())
 		{
 			COSObject nextObj = objectIter.next();
-			if (nextObj.getObject() != encryptionDict)
+			COSBase nextCOSBase = nextObj.getObject();
+			boolean isSignatureDictionary = false;
+			if (nextCOSBase instanceof COSDictionary)
+			{
+				isSignatureDictionary = COSName.SIG.equals(((COSDictionary) nextCOSBase).getCOSName(COSName.TYPE));
+			}
+			if (!isSignatureDictionary && nextCOSBase!= encryptionDict)
 			{
 				decryptObject(nextObj);
 			}
@@ -306,19 +314,18 @@ public abstract class SecurityHandler
 					SecretKey aesKey = new SecretKeySpec(finalKey, "AES");
 					IvParameterSpec ips = new IvParameterSpec(iv);
 					decryptCipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, aesKey, ips);
-					CipherInputStream cipherStream = new CipherInputStream(data, decryptCipher);
 
-					try
+					byte[] buffer = new byte[256];
+					for (int n = 0; -1 != (n = data.read(buffer));)
 					{
-						byte[] buffer = new byte[4096];
-						for (int n = 0; -1 != (n = cipherStream.read(buffer));)
+						if (data.available() > 0)
 						{
-							output.write(buffer, 0, n);
+							output.write(decryptCipher.update(buffer,0, n ));
 						}
-					}
-					finally
-					{
-						cipherStream.close();
+						else
+						{
+							output.write(decryptCipher.doFinal(buffer,0, n ));
+						}
 					}
 				}
 				catch (InvalidKeyException e)
@@ -333,6 +340,14 @@ public abstract class SecurityHandler
 				{
 					throw new IOException(e);
 				}
+				catch (IllegalBlockSizeException e)
+				{
+					throw new IOException(e);
+				}
+				catch (BadPaddingException e)
+				{
+					throw new IOException(e);
+				}
 			}
 			else
 			{
@@ -340,7 +355,6 @@ public abstract class SecurityHandler
 				rc4.write(data, output);
 			}
 		}
-
 		output.flush();
 	}
 

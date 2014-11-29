@@ -69,7 +69,7 @@ public class Overlay
 	 * @param useNonSeqParser indicates whether the nonsequential parser is used
 	 * @throws IOException if something went wrong
 	 */
-	public void overlay(Map<Integer, String> specificPageOverlayFile, boolean useNonSeqParser)
+	public void overlay(Map<Integer, String> specificPageOverlayFile)
 			throws IOException
 	{
 		PDDocument sourcePDFDocument = null;
@@ -81,42 +81,42 @@ public class Overlay
 		PDDocument evenPageOverlay = null;
 		try
 		{
-			sourcePDFDocument = loadPDF(inputFileName,useNonSeqParser);
+			sourcePDFDocument = loadPDF(inputFileName);
 			if (defaultOverlayFilename != null)
 			{
-				defaultOverlay = loadPDF(defaultOverlayFilename, useNonSeqParser);
+				defaultOverlay = loadPDF(defaultOverlayFilename);
 				defaultOverlayPage = getLayoutPage(defaultOverlay);
 			}
 			if (firstPageOverlayFilename != null)
 			{
-				firstPageOverlay = loadPDF(firstPageOverlayFilename, useNonSeqParser);
+				firstPageOverlay = loadPDF(firstPageOverlayFilename);
 				firstPageOverlayPage = getLayoutPage(firstPageOverlay);
 			}
 			if (lastPageOverlayFilename != null)
 			{
-				lastPageOverlay = loadPDF(lastPageOverlayFilename, useNonSeqParser);
+				lastPageOverlay = loadPDF(lastPageOverlayFilename);
 				lastPageOverlayPage = getLayoutPage(lastPageOverlay);
 			}
 			if (oddPageOverlayFilename != null)
 			{
-				oddPageOverlay = loadPDF(oddPageOverlayFilename, useNonSeqParser);
+				oddPageOverlay = loadPDF(oddPageOverlayFilename);
 				oddPageOverlayPage = getLayoutPage(oddPageOverlay);
 			}
 			if (evenPageOverlayFilename != null)
 			{
-				evenPageOverlay = loadPDF(evenPageOverlayFilename, useNonSeqParser);
+				evenPageOverlay = loadPDF(evenPageOverlayFilename);
 				evenPageOverlayPage = getLayoutPage(evenPageOverlay);
 			}
 			if (allPagesOverlayFilename != null)
 			{
-				allPagesOverlay = loadPDF(allPagesOverlayFilename, useNonSeqParser);
+				allPagesOverlay = loadPDF(allPagesOverlayFilename);
 				specificPageOverlayPage = getLayoutPages(allPagesOverlay);
 				useAllOverlayPages = true;
 				numberOfOverlayPages = specificPageOverlayPage.size();
 			}
 			for (Map.Entry<Integer, String> e : specificPageOverlayFile.entrySet())
 			{
-				PDDocument doc = loadPDF(e.getValue(), useNonSeqParser);
+				PDDocument doc = loadPDF(e.getValue());
 				specificPageOverlay.put(e.getKey(), doc);
 				specificPageOverlayPage.put(e.getKey(), getLayoutPage(doc));
 			}
@@ -163,370 +163,361 @@ public class Overlay
 		}
 	}
 
-	private PDDocument loadPDF(String pdfName, boolean useNonSeqParser) throws IOException
+	private PDDocument loadPDF(String pdfName) throws IOException
 	{
-		PDDocument pdf = null;
-		if (useNonSeqParser)
-		{
-			pdf = PDDocument.loadNonSeq(new File(pdfName), null);
-		}
-		else
-		{
-			pdf = PDDocument.load(pdfName);
-		}
-		return pdf;
+		return PDDocument.load(new File(pdfName));
 	}
 
 	/**
 	 * Stores the overlay page information.
 	 */
-	 private static class LayoutPage
-	 {
-		 private final PDRectangle overlayMediaBox;
-		 private final COSStream overlayContentStream;
-		 private final COSDictionary overlayResources;
+	private static class LayoutPage
+	{
+		private final PDRectangle overlayMediaBox;
+		private final COSStream overlayContentStream;
+		private final COSDictionary overlayResources;
 
-		 private LayoutPage(PDRectangle mediaBox, COSStream contentStream, COSDictionary resources)
-		 {
-			 overlayMediaBox = mediaBox;
-			 overlayContentStream = contentStream;
-			 overlayResources = resources;
-		 }
-	 }
+		private LayoutPage(PDRectangle mediaBox, COSStream contentStream, COSDictionary resources)
+		{
+			overlayMediaBox = mediaBox;
+			overlayContentStream = contentStream;
+			overlayResources = resources;
+		}
+	}
 
-	 private LayoutPage getLayoutPage(PDDocument doc) throws IOException
-	 {
-		 PDPage page = doc.getPage(0);
-		 COSBase contents = page.getCOSObject().getDictionaryObject(COSName.CONTENTS);
-		 PDResources resources = page.getResources();
-		 if (resources == null)
-		 {
-			 resources = new PDResources();
-		 }
-		 return new LayoutPage(page.getMediaBox(), createContentStream(contents),
-				 resources.getCOSObject());
-	 }
+	private LayoutPage getLayoutPage(PDDocument doc) throws IOException
+	{
+		PDPage page = doc.getPage(0);
+		COSBase contents = page.getCOSObject().getDictionaryObject(COSName.CONTENTS);
+		PDResources resources = page.getResources();
+		if (resources == null)
+		{
+			resources = new PDResources();
+		}
+		return new LayoutPage(page.getMediaBox(), createContentStream(contents),
+				resources.getCOSObject());
+	}
 
-	 private HashMap<Integer,LayoutPage> getLayoutPages(PDDocument doc) throws IOException
-	 {
-		 PDDocumentCatalog catalog = doc.getDocumentCatalog();
-		 int numberOfPages = doc.getNumberOfPages();
-		 HashMap<Integer,LayoutPage> layoutPages = new HashMap<Integer, Overlay.LayoutPage>(numberOfPages);
-		 for (int i=0;i<numberOfPages;i++)
-		 {
-			 PDPage page = doc.getPage(i);
-			 COSBase contents = page.getCOSObject().getDictionaryObject(COSName.CONTENTS);
-			 PDResources resources = page.getResources();
-			 if (resources == null)
-			 {
-				 resources = new PDResources();
-			 }
-			 layoutPages.put(i,new LayoutPage(page.getMediaBox(), createContentStream(contents), resources.getCOSObject()));
-		 }
-		 return layoutPages;
-	 }
+	private HashMap<Integer,LayoutPage> getLayoutPages(PDDocument doc) throws IOException
+	{
+		PDDocumentCatalog catalog = doc.getDocumentCatalog();
+		int numberOfPages = doc.getNumberOfPages();
+		HashMap<Integer,LayoutPage> layoutPages = new HashMap<Integer, Overlay.LayoutPage>(numberOfPages);
+		for (int i=0;i<numberOfPages;i++)
+		{
+			PDPage page = doc.getPage(i);
+			COSBase contents = page.getCOSObject().getDictionaryObject(COSName.CONTENTS);
+			PDResources resources = page.getResources();
+			if (resources == null)
+			{
+				resources = new PDResources();
+			}
+			layoutPages.put(i,new LayoutPage(page.getMediaBox(), createContentStream(contents), resources.getCOSObject()));
+		}
+		return layoutPages;
+	}
 
-	 private COSStream createContentStream(COSBase contents) throws IOException
-	 {
-		 List<COSStream> contentStreams = createContentStreamList(contents);
-		 // concatenate streams
-		 COSStream concatStream = new COSStream();
-		 OutputStream out = concatStream.createUnfilteredStream();
-		 for (COSStream contentStream : contentStreams)
-		 {
-			 InputStream in = contentStream.getUnfilteredStream();
-			 byte[] buf = new byte[2048];
-			 int n;
-			 while ((n = in.read(buf)) > 0)
-			 {
-				 out.write(buf, 0, n);
-			 }
-			 out.flush();
-		 }
-		 out.close();
-		 concatStream.setFilters(COSName.FLATE_DECODE);
-		 return concatStream;
-	 }
+	private COSStream createContentStream(COSBase contents) throws IOException
+	{
+		List<COSStream> contentStreams = createContentStreamList(contents);
+		// concatenate streams
+		COSStream concatStream = new COSStream();
+		OutputStream out = concatStream.createUnfilteredStream();
+		for (COSStream contentStream : contentStreams)
+		{
+			InputStream in = contentStream.getUnfilteredStream();
+			byte[] buf = new byte[2048];
+			int n;
+			while ((n = in.read(buf)) > 0)
+			{
+				out.write(buf, 0, n);
+			}
+			out.flush();
+		}
+		out.close();
+		concatStream.setFilters(COSName.FLATE_DECODE);
+		return concatStream;
+	}
 
-	 private List<COSStream> createContentStreamList(COSBase contents) throws IOException
-	 {
-		 List<COSStream> contentStreams = new ArrayList<COSStream>();
-		 if (contents instanceof COSStream)
-		 {
-			 contentStreams.add((COSStream) contents);
-		 }
-		 else if (contents instanceof COSArray)
-		 {
-			 for (COSBase item : (COSArray) contents)
-			 {
-				 contentStreams.addAll(createContentStreamList(item));
-			 }
-		 }
-		 else if (contents instanceof COSObject)
-		 {
-			 contentStreams.addAll(createContentStreamList(((COSObject) contents).getObject()));
-		 }
-		 else
-		 {
-			 throw new IOException("Contents are unknown type:" + contents.getClass().getName());
-		 }
-		 return contentStreams;
-	 }
+	private List<COSStream> createContentStreamList(COSBase contents) throws IOException
+	{
+		List<COSStream> contentStreams = new ArrayList<COSStream>();
+		if (contents instanceof COSStream)
+		{
+			contentStreams.add((COSStream) contents);
+		}
+		else if (contents instanceof COSArray)
+		{
+			for (COSBase item : (COSArray) contents)
+			{
+				contentStreams.addAll(createContentStreamList(item));
+			}
+		}
+		else if (contents instanceof COSObject)
+		{
+			contentStreams.addAll(createContentStreamList(((COSObject) contents).getObject()));
+		}
+		else
+		{
+			throw new IOException("Contents are unknown type:" + contents.getClass().getName());
+		}
+		return contentStreams;
+	}
 
-	 private void processPages(PDDocument document) throws IOException
-	 {
-		 int pageCount = 0;
-		 for (PDPage page : document.getPages())
-		 {
-			 COSDictionary pageDictionary = page.getCOSObject();
-			 COSBase contents = pageDictionary.getDictionaryObject(COSName.CONTENTS);
-			 COSArray contentArray = new COSArray();
-			 switch (position)
-			 {
-			 case FOREGROUND:
-				 // save state
-				 contentArray.add(createStream("q\n"));
-				 // original content
-				 if (contents instanceof COSStream)
-				 {
-					 contentArray.add(contents);
-				 }
-				 else if (contents instanceof COSArray)
-				 {
-					 contentArray.addAll((COSArray) contents);
-				 }
-				 else
-				 {
-					 throw new IOException("Unknown content type:" + contents.getClass().getName());
-				 }
-				 // restore state
-				 contentArray.add(createStream("Q\n"));
-				 // overlay content
-				 overlayPage(contentArray, page, pageCount + 1, document.getNumberOfPages());
-				 break;
-			 case BACKGROUND:
-				 // overlay content
-				 overlayPage(contentArray, page, pageCount + 1, document.getNumberOfPages());
-				 // original content
-				 if (contents instanceof COSStream)
-				 {
-					 contentArray.add(contents);
-				 }
-				 else if (contents instanceof COSArray)
-				 {
-					 contentArray.addAll((COSArray) contents);
-				 }
-				 else
-				 {
-					 throw new IOException("Unknown content type:" + contents.getClass().getName());
-				 }
-				 break;
-			 default:
-				 throw new IOException("Unknown type of position:" + position);
-			 }
-			 pageDictionary.setItem(COSName.CONTENTS, contentArray);
-			 pageCount++;
-		 }
-	 }
+	private void processPages(PDDocument document) throws IOException
+	{
+		int pageCount = 0;
+		for (PDPage page : document.getPages())
+		{
+			COSDictionary pageDictionary = page.getCOSObject();
+			COSBase contents = pageDictionary.getDictionaryObject(COSName.CONTENTS);
+			COSArray contentArray = new COSArray();
+			switch (position)
+			{
+			case FOREGROUND:
+				// save state
+				contentArray.add(createStream("q\n"));
+				// original content
+				if (contents instanceof COSStream)
+				{
+					contentArray.add(contents);
+				}
+				else if (contents instanceof COSArray)
+				{
+					contentArray.addAll((COSArray) contents);
+				}
+				else
+				{
+					throw new IOException("Unknown content type:" + contents.getClass().getName());
+				}
+				// restore state
+				contentArray.add(createStream("Q\n"));
+				// overlay content
+				overlayPage(contentArray, page, pageCount + 1, document.getNumberOfPages());
+				break;
+			case BACKGROUND:
+				// overlay content
+				overlayPage(contentArray, page, pageCount + 1, document.getNumberOfPages());
+				// original content
+				if (contents instanceof COSStream)
+				{
+					contentArray.add(contents);
+				}
+				else if (contents instanceof COSArray)
+				{
+					contentArray.addAll((COSArray) contents);
+				}
+				else
+				{
+					throw new IOException("Unknown content type:" + contents.getClass().getName());
+				}
+				break;
+			default:
+				throw new IOException("Unknown type of position:" + position);
+			}
+			pageDictionary.setItem(COSName.CONTENTS, contentArray);
+			pageCount++;
+		}
+	}
 
-	 private void overlayPage(COSArray array, PDPage page, int pageNumber, int numberOfPages)
-			 throws IOException
-	 {
-		 LayoutPage layoutPage = null;
-		 if (!useAllOverlayPages && specificPageOverlayPage.containsKey(pageNumber))
-		 {
-			 layoutPage = specificPageOverlayPage.get(pageNumber);
-		 }
-		 else if ((pageNumber == 1) && (firstPageOverlayPage != null))
-		 {
-			 layoutPage = firstPageOverlayPage;
-		 }
-		 else if ((pageNumber == numberOfPages) && (lastPageOverlayPage != null))
-		 {
-			 layoutPage = lastPageOverlayPage;
-		 }
-		 else if ((pageNumber % 2 == 1) && (oddPageOverlayPage != null))
-		 {
-			 layoutPage = oddPageOverlayPage;
-		 }
-		 else if ((pageNumber % 2 == 0) && (evenPageOverlayPage != null))
-		 {
-			 layoutPage = evenPageOverlayPage;
-		 }
-		 else if (defaultOverlayPage != null)
-		 {
-			 layoutPage = defaultOverlayPage;
-		 }
-		 else if (useAllOverlayPages)
-		 {
-			 int usePageNum = (pageNumber -1 ) % numberOfOverlayPages;
-			 layoutPage = specificPageOverlayPage.get(usePageNum);
-		 }
-		 if (layoutPage != null)
-		 {
-			 PDResources resources = page.getResources();
-			 if (resources == null)
-			 {
-				 resources = new PDResources();
-				 page.setResources(resources);
-			 }
-			 COSName xObjectId = createOverlayXObject(page, layoutPage,
-					 layoutPage.overlayContentStream);
-			 array.add(createOverlayStream(page, layoutPage, xObjectId));
-		 }
-	 }
+	private void overlayPage(COSArray array, PDPage page, int pageNumber, int numberOfPages)
+			throws IOException
+	{
+		LayoutPage layoutPage = null;
+		if (!useAllOverlayPages && specificPageOverlayPage.containsKey(pageNumber))
+		{
+			layoutPage = specificPageOverlayPage.get(pageNumber);
+		}
+		else if ((pageNumber == 1) && (firstPageOverlayPage != null))
+		{
+			layoutPage = firstPageOverlayPage;
+		}
+		else if ((pageNumber == numberOfPages) && (lastPageOverlayPage != null))
+		{
+			layoutPage = lastPageOverlayPage;
+		}
+		else if ((pageNumber % 2 == 1) && (oddPageOverlayPage != null))
+		{
+			layoutPage = oddPageOverlayPage;
+		}
+		else if ((pageNumber % 2 == 0) && (evenPageOverlayPage != null))
+		{
+			layoutPage = evenPageOverlayPage;
+		}
+		else if (defaultOverlayPage != null)
+		{
+			layoutPage = defaultOverlayPage;
+		}
+		else if (useAllOverlayPages)
+		{
+			int usePageNum = (pageNumber -1 ) % numberOfOverlayPages;
+			layoutPage = specificPageOverlayPage.get(usePageNum);
+		}
+		if (layoutPage != null)
+		{
+			PDResources resources = page.getResources();
+			if (resources == null)
+			{
+				resources = new PDResources();
+				page.setResources(resources);
+			}
+			COSName xObjectId = createOverlayXObject(page, layoutPage,
+					layoutPage.overlayContentStream);
+			array.add(createOverlayStream(page, layoutPage, xObjectId));
+		}
+	}
 
-	 private COSName createOverlayXObject(PDPage page, LayoutPage layoutPage, COSStream contentStream)
-	 {
-		 PDFormXObject xobjForm = new PDFormXObject(new PDStream(contentStream));
-		 xobjForm.setResources(new PDResources(layoutPage.overlayResources));
-		 xobjForm.setFormType(1);
-		 xobjForm.setBBox( layoutPage.overlayMediaBox.createRetranslatedRectangle());
-		 xobjForm.setMatrix(new android.graphics.Matrix());
-		 PDResources resources = page.getResources();
-		 return resources.add(xobjForm, "OL");
-	 }
+	private COSName createOverlayXObject(PDPage page, LayoutPage layoutPage, COSStream contentStream)
+	{
+		PDFormXObject xobjForm = new PDFormXObject(new PDStream(contentStream));
+		xobjForm.setResources(new PDResources(layoutPage.overlayResources));
+		xobjForm.setFormType(1);
+		xobjForm.setBBox( layoutPage.overlayMediaBox.createRetranslatedRectangle());
+		xobjForm.setMatrix(new android.graphics.Matrix());
+		PDResources resources = page.getResources();
+		return resources.add(xobjForm, "OL");
+	}
 
-	 private COSStream createOverlayStream(PDPage page, LayoutPage layoutPage, COSName xObjectId)
-			 throws IOException
-	 {
-		 // create a new content stream that executes the XObject content
-		 PDRectangle pageMediaBox = page.getMediaBox();
-		 float scale = 1;
-		 float hShift = (pageMediaBox.getWidth() - layoutPage.overlayMediaBox.getWidth()) / 2.0f;
-		 float vShift = (pageMediaBox.getHeight() - layoutPage.overlayMediaBox.getHeight()) / 2.0f;
-		 return createStream("q\nq " + scale + " 0 0 " + scale + " " + hShift + " " + vShift
-				 + " cm /" + xObjectId.getName() + " Do Q\nQ\n");
-	 }
+	private COSStream createOverlayStream(PDPage page, LayoutPage layoutPage, COSName xObjectId)
+			throws IOException
+	{
+		// create a new content stream that executes the XObject content
+		PDRectangle pageMediaBox = page.getMediaBox();
+		float scale = 1;
+		float hShift = (pageMediaBox.getWidth() - layoutPage.overlayMediaBox.getWidth()) / 2.0f;
+		float vShift = (pageMediaBox.getHeight() - layoutPage.overlayMediaBox.getHeight()) / 2.0f;
+		return createStream("q\nq " + scale + " 0 0 " + scale + " " + hShift + " " + vShift
+				+ " cm /" + xObjectId.getName() + " Do Q\nQ\n");
+	}
 
-	 private COSStream createStream(String content) throws IOException
-	 {
-		 COSStream stream = new COSStream();
-		 OutputStream out = stream.createUnfilteredStream();
-		 out.write(content.getBytes("ISO-8859-1"));
-		 out.close();
-		 stream.setFilters(COSName.FLATE_DECODE);
-		 return stream;
-	 }
+	private COSStream createStream(String content) throws IOException
+	{
+		COSStream stream = new COSStream();
+		OutputStream out = stream.createUnfilteredStream();
+		out.write(content.getBytes("ISO-8859-1"));
+		out.close();
+		stream.setFilters(COSName.FLATE_DECODE);
+		return stream;
+	}
 
-	 /**
-	  * Sets the overlay position.
-	  * 
-	  * @param overlayPosition the overlay position
-	  */
-	 public void setOverlayPosition(Position overlayPosition)
-	 {
-		 position = overlayPosition;
-	 }
+	/**
+	 * Sets the overlay position.
+	 * 
+	 * @param overlayPosition the overlay position
+	 */
+	public void setOverlayPosition(Position overlayPosition)
+	{
+		position = overlayPosition;
+	}
 
-	 /**
-	  * Sets the file to be overlayed.
-	  * 
-	  * @param inputFile the file to be overlayed
-	  */
-	 public void setInputFile(String inputFile)
-	 {
-		 inputFileName = inputFile;
-	 }
+	/**
+	 * Sets the file to be overlayed.
+	 * 
+	 * @param inputFile the file to be overlayed
+	 */
+	public void setInputFile(String inputFile)
+	{
+		inputFileName = inputFile;
+	}
 
-	 /**
-	  * Returns the input file.
-	  * 
-	  * @return the input file
-	  */
-	 public String getInputFile()
-	 {
-		 return inputFileName;
-	 }
+	/**
+	 * Returns the input file.
+	 * 
+	 * @return the input file
+	 */
+	public String getInputFile()
+	{
+		return inputFileName;
+	}
 
-	 /**
-	  * Sets the output file.
-	  * 
-	  * @param outputFile the output file
-	  */
-	 public void setOutputFile(String outputFile)
-	 {
-		 outputFilename = outputFile;
-	 }
+	/**
+	 * Sets the output file.
+	 * 
+	 * @param outputFile the output file
+	 */
+	public void setOutputFile(String outputFile)
+	{
+		outputFilename = outputFile;
+	}
 
-	 /**
-	  * Returns the output file.
-	  * 
-	  * @return the output file
-	  */
-	 public String getOutputFile()
-	 {
-		 return outputFilename;
-	 }
+	/**
+	 * Returns the output file.
+	 * 
+	 * @return the output file
+	 */
+	public String getOutputFile()
+	{
+		return outputFilename;
+	}
 
-	 /**
-	  * Sets the default overlay file.
-	  * 
-	  * @param defaultOverlayFile the default overlay file
-	  */
-	 public void setDefaultOverlayFile(String defaultOverlayFile)
-	 {
-		 defaultOverlayFilename = defaultOverlayFile;
-	 }
+	/**
+	 * Sets the default overlay file.
+	 * 
+	 * @param defaultOverlayFile the default overlay file
+	 */
+	public void setDefaultOverlayFile(String defaultOverlayFile)
+	{
+		defaultOverlayFilename = defaultOverlayFile;
+	}
 
-	 /**
-	  * Returns the default overlay file.
-	  * 
-	  * @return the default overlay file
-	  */
-	 public String getDefaultOverlayFile()
-	 {
-		 return defaultOverlayFilename;
-	 }
+	/**
+	 * Returns the default overlay file.
+	 * 
+	 * @return the default overlay file
+	 */
+	public String getDefaultOverlayFile()
+	{
+		return defaultOverlayFilename;
+	}
 
-	 /**
-	  * Sets the first page overlay file.
-	  * 
-	  * @param firstPageOverlayFile the first page overlay file
-	  */
-	 public void setFirstPageOverlayFile(String firstPageOverlayFile)
-	 {
-		 firstPageOverlayFilename = firstPageOverlayFile;
-	 }
+	/**
+	 * Sets the first page overlay file.
+	 * 
+	 * @param firstPageOverlayFile the first page overlay file
+	 */
+	public void setFirstPageOverlayFile(String firstPageOverlayFile)
+	{
+		firstPageOverlayFilename = firstPageOverlayFile;
+	}
 
-	 /**
-	  * Sets the last page overlay file.
-	  * 
-	  * @param lastPageOverlayFile the last page overlay file
-	  */
-	 public void setLastPageOverlayFile(String lastPageOverlayFile)
-	 {
-		 lastPageOverlayFilename = lastPageOverlayFile;
-	 }
+	/**
+	 * Sets the last page overlay file.
+	 * 
+	 * @param lastPageOverlayFile the last page overlay file
+	 */
+	public void setLastPageOverlayFile(String lastPageOverlayFile)
+	{
+		lastPageOverlayFilename = lastPageOverlayFile;
+	}
 
-	 /**
-	  * Sets the all pages overlay file.
-	  * 
-	  * @param allPagesOverlayFile the all pages overlay file
-	  */
-	 public void setAllPagesOverlayFile(String allPagesOverlayFile)
-	 {
-		 allPagesOverlayFilename = allPagesOverlayFile;
-	 }
+	/**
+	 * Sets the all pages overlay file.
+	 * 
+	 * @param allPagesOverlayFile the all pages overlay file
+	 */
+	public void setAllPagesOverlayFile(String allPagesOverlayFile)
+	{
+		allPagesOverlayFilename = allPagesOverlayFile;
+	}
 
-	 /**
-	  * Sets the odd page overlay file.
-	  * 
-	  * @param oddPageOverlayFile the odd page overlay file
-	  */
-	 public void setOddPageOverlayFile(String oddPageOverlayFile)
-	 {
-		 oddPageOverlayFilename = oddPageOverlayFile;
-	 }
+	/**
+	 * Sets the odd page overlay file.
+	 * 
+	 * @param oddPageOverlayFile the odd page overlay file
+	 */
+	public void setOddPageOverlayFile(String oddPageOverlayFile)
+	{
+		oddPageOverlayFilename = oddPageOverlayFile;
+	}
 
-	 /**
-	  * Sets the even page overlay file.
-	  * 
-	  * @param evenPageOverlayFile the even page overlay file
-	  */
-	 public void setEvenPageOverlayFile(String evenPageOverlayFile)
-	 {
-		 evenPageOverlayFilename = evenPageOverlayFile;
-	 }
+	/**
+	 * Sets the even page overlay file.
+	 * 
+	 * @param evenPageOverlayFile the even page overlay file
+	 */
+	public void setEvenPageOverlayFile(String evenPageOverlayFile)
+	{
+		evenPageOverlayFilename = evenPageOverlayFile;
+	}
 
 }
