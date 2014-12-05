@@ -1,10 +1,12 @@
 package org.apache.pdfbox.contentstream.operator;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.contentstream.PDFStreamEngine;
 import org.apache.pdfbox.cos.COSBase;
-
-import java.util.List;
-import java.io.IOException;
 
 /**
  * Processes a PDF operator.
@@ -13,6 +15,11 @@ import java.io.IOException;
  */
 public abstract class OperatorProcessor
 {
+	/**
+	 * Log instance.
+	 */
+	private static final Log LOG = LogFactory.getLog(OperatorProcessor.class);
+	
     /** The processing context. */
     protected PDFStreamEngine context;
 
@@ -53,4 +60,15 @@ public abstract class OperatorProcessor
      * Returns the name of this operator, e.g. "BI".
      */
     public abstract String getName();
+    
+    protected boolean checkArgumentSize(List<COSBase> arguments, int expectedSize)
+    {
+    	if (arguments.size() < expectedSize)
+    	{
+    		LOG.warn("'" + getName() + "' operator must have " + expectedSize
+    				+ " parameters, but has " + arguments.size());
+    		return false;
+    	}
+    	return true;
+    }
 }

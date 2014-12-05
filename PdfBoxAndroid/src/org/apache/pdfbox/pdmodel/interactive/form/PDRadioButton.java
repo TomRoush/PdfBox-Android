@@ -47,6 +47,12 @@ public final class PDRadioButton extends PDButton
     {
         return getDictionary().getFlag(COSName.FF, FLAG_RADIOS_IN_UNISON);
     }
+    
+    @Override
+    public COSName getDefaultValue()
+    {
+    	return getDictionary().getCOSName(COSName.DV);
+    }
 
     @Override
     public COSName getValue()
@@ -54,14 +60,13 @@ public final class PDRadioButton extends PDButton
         return getDictionary().getCOSName(COSName.V);
     }
 
-    @Override
-    public void setValue(Object value)
+    public void setValue(COSName value)
     {
         if (value == null)
         {
             getDictionary().removeItem(COSName.V);
         }
-        else if (value instanceof COSName)
+        else
         {
             getDictionary().setItem(COSName.V, (COSName) value);
             List<COSObjectable> kids = getKids();
@@ -80,10 +85,6 @@ public final class PDRadioButton extends PDButton
                     }
                 }
             }
-        }
-        else
-        {
-            throw new RuntimeException("The value of a redio button has to be a name object.");
         }
     }
 

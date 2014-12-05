@@ -127,11 +127,11 @@ public class NonSequentialPDFParser extends PDFParser
 	 * The security handler.
 	 */
 	protected SecurityHandler securityHandler = null;
-	
+
 	private AccessPermission accessPermission;
 
-	private final String keyStoreFilename = null;
-	private final String alias = null;
+	private InputStream keyStoreInputStream = null;
+	private String keyAlias = null;
 	private String password = "";
 	private int readTrailBytes = DEFAULT_TRAIL_BYTECOUNT; // how many trailing
 	// bytes to read for
@@ -239,13 +239,49 @@ public class NonSequentialPDFParser extends PDFParser
 	public NonSequentialPDFParser(File file, String decryptionPassword, boolean useScratchFiles)
 			throws IOException
 	{
+		this(file, decryptionPassword, null, null, useScratchFiles);
+	}
+
+	/**
+	 * Constructs parser for given file using given buffer for temporary storage.
+	 * 
+	 * @param file the pdf to be parsed.
+	 * @param decryptionPassword password to be used for decryption.
+	 * @param keyStore key store to be used for decryption when using public key security 
+	 * @param alias alias to be used for decryption when using public key security
+	 * 
+	 * @throws IOException If something went wrong.
+	 */
+	public NonSequentialPDFParser(File file, String decryptionPassword, InputStream keyStore, String alias)
+			throws IOException
+	{
+		this(file, decryptionPassword, keyStore, alias, false);
+	}
+
+	/**
+	 * Constructs parser for given file using given buffer for temporary storage.
+	 * 
+	 * @param file the pdf to be parsed.
+	 * @param decryptionPassword password to be used for decryption.
+	 * @param keyStore key store to be used for decryption when using public key security 
+	 * @param alias alias to be used for decryption when using public key security
+	 * @param useScratchFiles use a buffer for temporary storage.
+	 * 
+	 * @throws IOException If something went wrong.
+	 */
+	public NonSequentialPDFParser(File file, String decryptionPassword, InputStream keyStore, 
+			String alias, boolean useScratchFiles) throws IOException
+	{
 		super(EMPTY_INPUT_STREAM, false);
 		pdfFile = file;
 		raStream = new RandomAccessBufferedFileInputStream(pdfFile);
-		init(file, decryptionPassword, useScratchFiles);
+		password = decryptionPassword;
+		keyStoreInputStream = keyStore;
+		keyAlias = alias;
+		init(file, useScratchFiles);
 	}
 
-	private void init(File file, String decryptionPassword, boolean useScratchFiles) throws IOException
+	private void init(File file, boolean useScratchFiles) throws IOException
 	{
 		String eofLookupRangeStr = System.getProperty(SYSPROP_EOFLOOKUPRANGE);
 		if (eofLookupRangeStr != null)
@@ -262,7 +298,6 @@ public class NonSequentialPDFParser extends PDFParser
 		}
 		setDocument(new COSDocument(false, useScratchFiles));
 		pdfSource = new PushBackInputStream(raStream, 4096);
-		password = decryptionPassword;
 	}
 
 	/**
@@ -314,10 +349,46 @@ public class NonSequentialPDFParser extends PDFParser
 	public NonSequentialPDFParser(InputStream input, String decryptionPassword, boolean useScratchFiles)
 			throws IOException
 	{
+		this(input, decryptionPassword, null, null, useScratchFiles);
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param input input stream representing the pdf.
+	 * @param decryptionPassword password to be used for decryption.
+	 * @param keyStore key store to be used for decryption when using public key security 
+	 * @param alias alias to be used for decryption when using public key security
+	 *
+	 * @throws IOException If something went wrong.
+	 */
+	public NonSequentialPDFParser(InputStream input, String decryptionPassword, InputStream keyStore, String alias)
+			throws IOException
+	{
+		this(input, decryptionPassword, keyStore, alias, false);
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param input input stream representing the pdf.
+	 * @param decryptionPassword password to be used for decryption.
+	 * @param keyStore key store to be used for decryption when using public key security 
+	 * @param alias alias to be used for decryption when using public key security
+	 * @param useScratchFiles use a buffer for temporary storage.
+	 *
+	 * @throws IOException If something went wrong.
+	 */
+	public NonSequentialPDFParser(InputStream input, String decryptionPassword, InputStream keyStore,
+			String alias, boolean useScratchFiles) throws IOException
+	{
 		super(EMPTY_INPUT_STREAM, false);
 		pdfFile = createTmpFile(input);
 		raStream = new RandomAccessBufferedFileInputStream(pdfFile);
-		init(pdfFile, decryptionPassword, useScratchFiles);
+		password = decryptionPassword;
+		keyStoreInputStream = keyStore;
+		keyAlias = alias;
+		init(pdfFile, useScratchFiles);
 	}
 
 	/**
@@ -345,7 +416,7 @@ public class NonSequentialPDFParser extends PDFParser
 			IOUtils.closeQuietly(fos);
 		}
 	}
-	
+
 	@Override
 	public PDDocument getPDDocument() throws IOException
 	{
@@ -465,7 +536,7 @@ public class NonSequentialPDFParser extends PDFParser
 
 		initialParseDone = true;
 	}
-	
+
 	/**
 	 * Resolves all not already parsed objects of a dictionary recursively.
 	 * 
@@ -509,12 +580,12 @@ public class NonSequentialPDFParser extends PDFParser
 				PDEncryption encryption = new PDEncryption(document.getEncryptionDictionary());
 
 				DecryptionMaterial decryptionMaterial;
-				if (keyStoreFilename != null)
+				if (keyStoreInputStream != null)
 				{
 					KeyStore ks = KeyStore.getInstance("PKCS12");
-					ks.load(new FileInputStream(keyStoreFilename), password.toCharArray());
+					ks.load(keyStoreInputStream, password.toCharArray());
 
-					decryptionMaterial = new PublicKeyDecryptionMaterial(ks, alias, password);
+					decryptionMaterial = new PublicKeyDecryptionMaterial(ks, keyAlias, password);
 				}
 				else
 				{
@@ -949,6 +1020,10 @@ public class NonSequentialPDFParser extends PDFParser
 			try
 			{
 				closeFileStream();
+				if (keyStoreInputStream != null)
+				{
+					keyStoreInputStream.close();
+				}
 			}
 			catch (IOException ioe)
 			{
@@ -1456,41 +1531,7 @@ public class NonSequentialPDFParser extends PDFParser
 				}
 				else if (securityHandler != null)
 				{
-					// decrypt
-					if (pb instanceof COSString)
-					{
-						decrypt((COSString) pb, objNr, objGenNr);
-					}
-					else if (pb instanceof COSDictionary)
-					{
-						COSDictionary dict = (COSDictionary) pb;
-						// skip dictionary containing the signature
-						if (!COSName.SIG.equals(dict.getCOSName(COSName.TYPE)))
-						{
-							for (Entry<COSName, COSBase> entry : dict.entrySet())
-							{
-								if (entry.getValue() instanceof COSString)
-								{
-									decrypt((COSString) entry.getValue(), objNr, objGenNr);
-								}
-								else if (entry.getValue() instanceof COSArray)
-								{
-									securityHandler.decryptArray((COSArray) entry.getValue(), objNr, objGenNr);
-								}
-							}                          
-						}
-					}
-					else if (pb instanceof COSArray)
-					{
-						final COSArray array = (COSArray) pb;
-						for (int aIdx = 0, len = array.size(); aIdx < len; aIdx++)
-						{
-							if (array.get(aIdx) instanceof COSString)
-							{
-								decrypt((COSString) array.get(aIdx), objNr, objGenNr);
-							}
-						}
-					}
+					decrypt(pb, objNr, objGenNr);
 				}
 
 				pdfObject.setObject(pb);
@@ -1551,7 +1592,37 @@ public class NonSequentialPDFParser extends PDFParser
 		return pdfObject.getObject();
 	}
 
-	// ------------------------------------------------------------------------
+	// ------------------------------------------------------------------------'
+	/**
+     * 
+     * @param dict the dictionary to be decrypted
+     * @param the object number
+     * @param objGenNr the object generation number
+     * @throws IOException ff something went wrong
+     */
+    protected final void decryptDictionary(COSDictionary dict, long objNr, long objGenNr) throws IOException
+    {
+        // skip dictionary containing the signature
+        if (!COSName.SIG.equals(dict.getItem(COSName.TYPE)))
+        {
+            for (Entry<COSName, COSBase> entry : dict.entrySet())
+            {
+                if (entry.getValue() instanceof COSString)
+                {
+                    decryptString((COSString) entry.getValue(), objNr, objGenNr);
+                }
+                else if (entry.getValue() instanceof COSArray)
+                {
+                    securityHandler.decryptArray((COSArray) entry.getValue(), objNr, objGenNr);
+                }
+                else if (entry.getValue() instanceof COSDictionary)
+                {
+                    decryptDictionary((COSDictionary) entry.getValue(), objNr, objGenNr);
+                }
+            }
+        }
+    }
+    
 	/**
 	 * Decrypts given COSString.
 	 * 
@@ -1560,10 +1631,38 @@ public class NonSequentialPDFParser extends PDFParser
 	 * @param objGenNr the object generation number
 	 * @throws IOException ff something went wrong
 	 */
-	protected final void decrypt(COSString str, long objNr, long objGenNr) throws IOException
+	protected final void decryptString(COSString str, long objNr, long objGenNr) throws IOException
 	{
 		securityHandler.decryptString(str, objNr, objGenNr);
 	}
+	
+	/**
+     * Decrypts given object.
+     * 
+     * @param pb the object to be decrypted
+     * @param objNr the object number
+     * @param objGenNr the object generation number
+     * @throws IOException ff something went wrong
+     */
+    protected final void decrypt(COSBase pb, int objNr, int objGenNr) throws IOException
+    {
+        if (pb instanceof COSString)
+        {
+            decryptString((COSString) pb, objNr, objGenNr);
+        }
+        else if (pb instanceof COSDictionary)
+        {
+            decryptDictionary((COSDictionary) pb, objNr, objGenNr);
+        }
+        else if (pb instanceof COSArray)
+        {
+            final COSArray array = (COSArray) pb;
+            for (int aIdx = 0, len = array.size(); aIdx < len; aIdx++)
+            {
+            	decrypt(array.get(aIdx), objNr, objGenNr);
+            }
+        }
+    }
 
 	// ------------------------------------------------------------------------
 	private boolean inGetLength = false;
@@ -1702,12 +1801,19 @@ public class NonSequentialPDFParser extends PDFParser
 			COSNumber streamLengthObj = getLength(dic.getItem(COSName.LENGTH));
 			if (streamLengthObj == null)
 			{
-				throw new IOException("Missing length for stream.");
+				if(isLenient)
+				{
+					LOG.warn("The stream doesn't provide any stream length, using fallback readUntilEnd");
+				}
+				else
+				{
+					throw new IOException("Missing length for stream.");
+				}
 			}
 
 			boolean useReadUntilEnd = false;
 			// ---- get output stream to copy data to
-			if (validateStreamLength(streamLengthObj.longValue()))
+			if (streamLengthObj != null && validateStreamLength(streamLengthObj.longValue()))
 			{
 				out = stream.createFilteredStream(streamLengthObj);
 				long remainBytes = streamLengthObj.longValue();
@@ -1813,30 +1919,36 @@ public class NonSequentialPDFParser extends PDFParser
 		{
 			return startXRefOffset;
 		}
-		setPdfSource(startXRefOffset);
+		setPdfSource(startXRefOffset-1);
+		// save th previous character
+		int previous = pdfSource.read();
 		if (pdfSource.peek() == X && checkBytesAtOffset(XREF_TABLE))
 		{
 			return startXRefOffset;
 		}
-		int nextValue = pdfSource.peek();
-		// maybe there isn't a xref table but a xref stream
-		// is the next character a digit?
-		if (nextValue > 47 && nextValue < 57)
+		// the previous character has to be a whitespace
+		if (isWhitespace(previous))
 		{
-			try
+			int nextValue = pdfSource.peek();
+			// maybe there isn't a xref table but a xref stream
+			// is the next character a digit?
+			if (nextValue > 47 && nextValue < 58)
 			{
-				// Maybe it's a XRef stream
-				readObjectNumber();
-				readGenerationNumber();
-				readPattern(OBJ_MARKER);
-				setPdfSource(startXRefOffset);
-				return startXRefOffset;
-			}
-			catch (IOException exception)
-			{
-				// there wasn't an object of a xref stream
-				// try to repair the offset
-				pdfSource.seek(startXRefOffset);
+				try
+				{
+					// Maybe it's a XRef stream
+					readObjectNumber();
+					readGenerationNumber();
+					readPattern(OBJ_MARKER);
+					setPdfSource(startXRefOffset);
+					return startXRefOffset;
+				}
+				catch (IOException exception)
+				{
+					// there wasn't an object of a xref stream
+					// try to repair the offset
+					pdfSource.seek(startXRefOffset);
+				}
 			}
 		}
 		// try to find a fixed offset
@@ -1922,7 +2034,7 @@ public class NonSequentialPDFParser extends PDFParser
 				Long objectOffset = xrefOffset.get(objectKey);
 				// a negative offset number represents a object number itself
 				// see type 2 entry in xref stream
-				if (objectOffset != null && objectOffset > 0)
+				if (objectOffset != null && objectOffset >= 0)
 				{
 					long objectNr = objectKey.getNumber();
 					long objectGen = objectKey.getGeneration();

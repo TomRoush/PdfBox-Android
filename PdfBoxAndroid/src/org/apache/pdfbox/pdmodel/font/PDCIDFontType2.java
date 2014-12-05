@@ -120,8 +120,8 @@ public class PDCIDFontType2 extends PDCIDFont
 			else
 			{
 				// fallback
-				LOG.warn("Using fallback font for " + getBaseFont());
 				ttfFont = ExternalFonts.getTrueTypeFallbackFont(getFontDescriptor());
+				LOG.warn("Using fallback font '" + ttfFont + "' for '" + getBaseFont() + "'");
 			}
 		}
 		ttf = ttfFont;

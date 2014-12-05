@@ -60,7 +60,6 @@ public final class PDTextField extends PDVariableText
      * @param value the value
      * 
      */
-    @Override
     public void setValue(Object value)
     {
         if (value != null)

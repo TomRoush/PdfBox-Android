@@ -63,11 +63,6 @@ import org.spongycastle.jce.provider.BouncyCastleProvider;
  */
 public final class PublicKeySecurityHandler extends SecurityHandler
 {
-	/**
-	 * Log instance.
-	 */
-	private static final Log LOG = LogFactory.getLog(PublicKeySecurityHandler.class);
-
 	/** The filter name. */
 	public static final String FILTER = "Adobe.PubSec";
 
@@ -75,24 +70,12 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 
 	private PublicKeyProtectionPolicy policy = null;
 
-	private boolean verbose = false;
-
 	/**
 	 * Constructor.
 	 */
 	public PublicKeySecurityHandler()
 	{
 	}
-
-	/**
-	 * Enable or disable verbose mode. Default is disabled.
-	 *
-	 * @param verbose true if enabled, false if disabled.
-	 */
-	public void setVerbose(boolean verbose)
-	{
-		this.verbose = verbose;
-	} 
 
 	/**
 	 * Constructor used for encryption.
@@ -117,11 +100,8 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 	public void decryptDocument(PDDocument doc, DecryptionMaterial decryptionMaterial) throws IOException
 	{
 		this.document = doc;
-
 		PDEncryption dictionary = doc.getEncryption();
-
 		prepareForDecryption( dictionary, doc.getDocument().getDocumentID(), decryptionMaterial );
-
 		proceedDecryption();
 	}
 
@@ -203,7 +183,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 						break;
 					}
 					j++;
-					if ((verbose || LOG.isDebugEnabled()) && certificate != null)
+					if (certificate != null)
 					{
 						extraInfo += "\n" + j + ": ";
 						if (rid instanceof KeyTransRecipientId)
@@ -453,7 +433,8 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 		DERSet set = new DERSet(new RecipientInfo(recipientInfo));
 
 		AlgorithmIdentifier algorithmId = new AlgorithmIdentifier(new ASN1ObjectIdentifier(algorithm), object);
-		EncryptedContentInfo encryptedInfo = new EncryptedContentInfo(PKCSObjectIdentifiers.data, algorithmId, new DEROctetString(bytes));
+		EncryptedContentInfo encryptedInfo = 
+				new EncryptedContentInfo(PKCSObjectIdentifiers.data, algorithmId, new DEROctetString(bytes));
 		EnvelopedData enveloped = new EnvelopedData(null, set, encryptedInfo, (ASN1Set) null);
 
 		ContentInfo contentInfo = new ContentInfo(PKCSObjectIdentifiers.envelopedData, enveloped);

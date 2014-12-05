@@ -51,13 +51,27 @@ public class Overlay
 	private Position position = Position.BACKGROUND;
 
 	private String inputFileName = null;
+	private PDDocument inputPDFDocument = null;
+	
 	private String outputFilename = null;
+	
 	private String defaultOverlayFilename = null;
+	private PDDocument defaultOverlay = null;
+	
 	private String firstPageOverlayFilename = null;
+	private PDDocument firstPageOverlay = null;
+	
 	private String lastPageOverlayFilename = null;
+	private PDDocument lastPageOverlay = null;
+	
 	private String allPagesOverlayFilename = null;
+	private PDDocument allPagesOverlay = null;
+	
 	private String oddPageOverlayFilename = null;
+	private PDDocument oddPageOverlay = null;
+	
 	private String evenPageOverlayFilename = null;
+	private PDDocument evenPageOverlay = null;
 
 	private int numberOfOverlayPages = 0;
 	private boolean useAllOverlayPages = false;
@@ -72,63 +86,24 @@ public class Overlay
 	public void overlay(Map<Integer, String> specificPageOverlayFile)
 			throws IOException
 	{
-		PDDocument sourcePDFDocument = null;
-		PDDocument defaultOverlay = null;
-		PDDocument firstPageOverlay = null;
-		PDDocument lastPageOverlay = null;
-		PDDocument allPagesOverlay = null;
-		PDDocument oddPageOverlay = null;
-		PDDocument evenPageOverlay = null;
 		try
 		{
-			sourcePDFDocument = loadPDF(inputFileName);
-			if (defaultOverlayFilename != null)
-			{
-				defaultOverlay = loadPDF(defaultOverlayFilename);
-				defaultOverlayPage = getLayoutPage(defaultOverlay);
-			}
-			if (firstPageOverlayFilename != null)
-			{
-				firstPageOverlay = loadPDF(firstPageOverlayFilename);
-				firstPageOverlayPage = getLayoutPage(firstPageOverlay);
-			}
-			if (lastPageOverlayFilename != null)
-			{
-				lastPageOverlay = loadPDF(lastPageOverlayFilename);
-				lastPageOverlayPage = getLayoutPage(lastPageOverlay);
-			}
-			if (oddPageOverlayFilename != null)
-			{
-				oddPageOverlay = loadPDF(oddPageOverlayFilename);
-				oddPageOverlayPage = getLayoutPage(oddPageOverlay);
-			}
-			if (evenPageOverlayFilename != null)
-			{
-				evenPageOverlay = loadPDF(evenPageOverlayFilename);
-				evenPageOverlayPage = getLayoutPage(evenPageOverlay);
-			}
-			if (allPagesOverlayFilename != null)
-			{
-				allPagesOverlay = loadPDF(allPagesOverlayFilename);
-				specificPageOverlayPage = getLayoutPages(allPagesOverlay);
-				useAllOverlayPages = true;
-				numberOfOverlayPages = specificPageOverlayPage.size();
-			}
+			loadPDFs();
 			for (Map.Entry<Integer, String> e : specificPageOverlayFile.entrySet())
 			{
 				PDDocument doc = loadPDF(e.getValue());
 				specificPageOverlay.put(e.getKey(), doc);
 				specificPageOverlayPage.put(e.getKey(), getLayoutPage(doc));
 			}
-			processPages(sourcePDFDocument);
+			processPages(inputPDFDocument);
 
-			sourcePDFDocument.save(outputFilename);
+			inputPDFDocument.save(outputFilename);
 		}
 		finally
 		{
-			if (sourcePDFDocument != null)
+			if (inputPDFDocument != null)
 			{
-				sourcePDFDocument.close();
+				inputPDFDocument.close();
 			}
 			if (defaultOverlay != null)
 			{
@@ -162,6 +137,71 @@ public class Overlay
 			specificPageOverlayPage.clear();
 		}
 	}
+	
+	private void loadPDFs() throws IOException
+    {
+        // input PDF
+        if (inputFileName != null)
+        {
+            inputPDFDocument = loadPDF(inputFileName);
+        }
+        // default overlay PDF
+        if (defaultOverlayFilename != null)
+        {
+            defaultOverlay = loadPDF(defaultOverlayFilename);
+        }
+        if (defaultOverlay != null)
+        {
+            defaultOverlayPage = getLayoutPage(defaultOverlay);
+        }
+        // first page overlay PDF
+        if (firstPageOverlayFilename != null)
+        {
+            firstPageOverlay = loadPDF(firstPageOverlayFilename);
+        }
+        if (firstPageOverlay != null)
+        {
+            firstPageOverlayPage = getLayoutPage(firstPageOverlay);
+        }
+        // last page overlay PDF
+        if (lastPageOverlayFilename != null)
+        {
+            lastPageOverlay = loadPDF(lastPageOverlayFilename);
+        }
+        if (lastPageOverlay != null)
+        {
+            lastPageOverlayPage = getLayoutPage(lastPageOverlay);
+        }
+        // odd pages overlay PDF
+        if (oddPageOverlayFilename != null)
+        {
+            oddPageOverlay = loadPDF(oddPageOverlayFilename);
+        }
+        if (oddPageOverlay != null)
+        {
+            oddPageOverlayPage = getLayoutPage(oddPageOverlay);
+        }
+        // even pages overlay PDF
+        if (evenPageOverlayFilename != null)
+        {
+            evenPageOverlay = loadPDF(evenPageOverlayFilename);
+        }
+        if (evenPageOverlay != null)
+        {
+            evenPageOverlayPage = getLayoutPage(evenPageOverlay);
+        }
+        // all pages overlay PDF
+        if (allPagesOverlayFilename != null)
+        {
+            allPagesOverlay = loadPDF(allPagesOverlayFilename);
+        }
+        if (allPagesOverlay != null)
+        {
+            specificPageOverlayPage = getLayoutPages(allPagesOverlay);
+            useAllOverlayPages = true;
+            numberOfOverlayPages = specificPageOverlayPage.size();
+        }
+    }
 
 	private PDDocument loadPDF(String pdfName) throws IOException
 	{
@@ -212,7 +252,8 @@ public class Overlay
 			{
 				resources = new PDResources();
 			}
-			layoutPages.put(i,new LayoutPage(page.getMediaBox(), createContentStream(contents), resources.getCOSObject()));
+			layoutPages.put(i,new LayoutPage(page.getMediaBox(), createContentStream(contents),
+					resources.getCOSObject()));
 		}
 		return layoutPages;
 	}
@@ -419,6 +460,16 @@ public class Overlay
 	{
 		inputFileName = inputFile;
 	}
+	
+	/**
+     * Sets the PDF to be overlayed.
+     * 
+     * @param inputPDF the PDF to be overlayed
+     */
+    public void setInputPDF(PDDocument inputPDF)
+    {
+        inputPDFDocument = inputPDF;
+    }
 
 	/**
 	 * Returns the input file.
@@ -459,6 +510,16 @@ public class Overlay
 	{
 		defaultOverlayFilename = defaultOverlayFile;
 	}
+	
+	/**
+     * Sets the default overlay PDF.
+     * 
+     * @param defaultOverlayPDF the default overlay PDF
+     */
+    public void setDefaultOverlayPDF(PDDocument defaultOverlayPDF)
+    {
+        defaultOverlay = defaultOverlayPDF;
+    }
 
 	/**
 	 * Returns the default overlay file.
@@ -479,6 +540,16 @@ public class Overlay
 	{
 		firstPageOverlayFilename = firstPageOverlayFile;
 	}
+	
+	/**
+     * Sets the first page overlay PDF.
+     * 
+     * @param firstPageOverlayPDF the first page overlay PDF
+     */
+    public void setFirstPageOverlayPDF(PDDocument firstPageOverlayPDF)
+    {
+        firstPageOverlay = firstPageOverlayPDF;
+    }
 
 	/**
 	 * Sets the last page overlay file.
@@ -489,6 +560,16 @@ public class Overlay
 	{
 		lastPageOverlayFilename = lastPageOverlayFile;
 	}
+	
+	/**
+     * Sets the last page overlay PDF.
+     * 
+     * @param lastPageOverlayPDF the last page overlay PDF
+     */
+    public void setLastPageOverlayPDF(PDDocument lastPageOverlayPDF)
+    {
+        lastPageOverlay = lastPageOverlayPDF;
+    }
 
 	/**
 	 * Sets the all pages overlay file.
@@ -499,6 +580,16 @@ public class Overlay
 	{
 		allPagesOverlayFilename = allPagesOverlayFile;
 	}
+	
+	/**
+     * Sets the all pages overlay PDF.
+     * 
+     * @param allPagesOverlayPDF the all pages overlay PDF
+     */
+    public void setAllPagesOverlayPDF(PDDocument allPagesOverlayPDF)
+    {
+        allPagesOverlay = allPagesOverlayPDF;
+    }
 
 	/**
 	 * Sets the odd page overlay file.
@@ -509,6 +600,16 @@ public class Overlay
 	{
 		oddPageOverlayFilename = oddPageOverlayFile;
 	}
+	
+	/**
+     * Sets the odd page overlay PDF.
+     * 
+     * @param oddPageOverlayPDF the odd page overlay PDF
+     */
+    public void setOddPageOverlayPDF(PDDocument oddPageOverlayPDF)
+    {
+        oddPageOverlay = oddPageOverlayPDF;
+    }
 
 	/**
 	 * Sets the even page overlay file.
@@ -520,4 +621,13 @@ public class Overlay
 		evenPageOverlayFilename = evenPageOverlayFile;
 	}
 
+	/**
+     * Sets the even page overlay PDF.
+     * 
+     * @param evenPageOverlayPDF the even page overlay PDF
+     */
+    public void setEvenPageOverlayPDF(PDDocument evenPageOverlayPDF)
+    {
+        evenPageOverlay = evenPageOverlayPDF;
+    }
 }
