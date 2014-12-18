@@ -17,14 +17,14 @@
 
 package org.apache.fontbox.type1;
 
-import org.apache.fontbox.encoding.CustomEncoding;
-import org.apache.fontbox.encoding.StandardEncoding;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.fontbox.encoding.CustomEncoding;
+import org.apache.fontbox.encoding.StandardEncoding;
 
 /**
  * Parses an Adobe Type 1 (.pfb) font. It is used exclusively by Type1Font.
@@ -67,13 +67,13 @@ final class Type1Parser
     }
 
     /**
-     * Parses the ASCII porition of a Type 1 font.
+     * Parses the ASCII portion of a Type 1 font.
      */
     private void parseASCII(byte[] bytes) throws IOException
     {
         // %!FontType1-1.0
         // %!PS-AdobeFont-1.0
-        if (bytes[0] != '%' && bytes[1] != '!')
+        if (bytes.length < 2 || (bytes[0] != '%' && bytes[1] != '!'))
         {
             throw new IOException("Invalid start of ASCII segment");
         }

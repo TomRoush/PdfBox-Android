@@ -503,7 +503,7 @@ public class PDFStreamEngine
 		if (rectangle != null)
 		{
 			//            PDRectangle clip = rectangle.transform(getGraphicsState().getCurrentTransformationMatrix());
-			//            getGraphicsState().intersectClippingPath(new Area(clip.toGeneralPath()));
+			//            getGraphicsState().intersectClippingPath(new Area(clip.toGeneralPath()));TODO
 		}
 	}
 

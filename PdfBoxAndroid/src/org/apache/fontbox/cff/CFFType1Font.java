@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.fontbox.ttf.Type1Equivalent;
 import org.apache.fontbox.type1.Type1CharStringReader;
 
+import android.graphics.Path;
+
 /**
  * A Type 1-equivalent font program represented in a CFF file. Thread safe.
  *
@@ -60,10 +62,10 @@ public class CFFType1Font extends CFFFont implements Type1Equivalent
         return fontName;
     }
 
-//    public GeneralPath getPath(String name) throws IOException
-//    {
-//        return getType1CharString(name).getPath();
-//    }TODO
+    public Path getPath(String name) throws IOException
+    {
+        return getType1CharString(name).getPath();
+    }
 
     @Override
     public float getWidth(String name) throws IOException

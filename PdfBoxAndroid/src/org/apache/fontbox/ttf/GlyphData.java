@@ -20,6 +20,8 @@ import java.io.IOException;
 
 import org.apache.fontbox.util.BoundingBox;
 
+import android.graphics.Path;
+
 /**
  * A glyph data record in the glyf table.
  * 
@@ -108,10 +110,10 @@ public class GlyphData
      * Returns the path of the glyph.
      * @return the path
      */
-//    public GeneralPath getPath()
-//    {
-//        return new GlyphRenderer(glyphDescription).getPath();
-//    }TODO
+    public Path getPath()
+    {
+        return new GlyphRenderer(glyphDescription).getPath();
+    }
 
     /**
      * Returns the xMax value.

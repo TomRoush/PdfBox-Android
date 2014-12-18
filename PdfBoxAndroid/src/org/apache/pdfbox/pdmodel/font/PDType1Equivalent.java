@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import org.apache.fontbox.ttf.Type1Equivalent;
 
+import android.graphics.Path;
+
 /**
  * A Type 1-equivalent font in a PDF, i.e. a font which can access glyphs by their PostScript name.
  * May be a PFB, CFF, or TTF.
@@ -30,7 +32,7 @@ public interface PDType1Equivalent extends PDFontLike
      * @param name PostScript glyph name
      * @throws java.io.IOException if the font could not be read
      */
-//    public GeneralPath getPath(String name) throws IOException;TODO
+    public Path getPath(String name) throws IOException;
 
     /**
      * Returns the embedded or system font for rendering. This font is a Type 1-equivalent, but

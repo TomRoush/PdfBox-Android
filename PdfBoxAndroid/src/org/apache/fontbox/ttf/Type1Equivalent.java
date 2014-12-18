@@ -21,6 +21,8 @@ import java.io.IOException;
 import org.apache.fontbox.encoding.Encoding;
 import org.apache.fontbox.util.BoundingBox;
 
+import android.graphics.Path;
+
 /**
  * A Type 1-equivalent font, i.e. a font which can access glyphs by their PostScript name.
  * This is currently a minimal interface and could be expanded if needed.
@@ -40,7 +42,7 @@ public interface Type1Equivalent
      * @return glyph path
      * @throws IOException if the path could not be read
      */
-//    public GeneralPath getPath(String name) throws IOException;TODO
+    public Path getPath(String name) throws IOException;
 
     /**
      * Returns the advance width for the character with the given name.

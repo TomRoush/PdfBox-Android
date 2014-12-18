@@ -21,6 +21,8 @@ import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
 import org.apache.pdfbox.pdmodel.font.encoding.Type1Encoding;
 import org.apache.pdfbox.util.Matrix;
 
+import android.graphics.Path;
+
 /**
  * Type 1-equivalent CFF font.
  *
@@ -117,19 +119,19 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 		return dict.getNameAsString(COSName.BASE_FONT);
 	}
 
-	//    @Override
-	//    public GeneralPath getPath(String name) throws IOException
-	//    {
-	// Acrobat only draws .notdef for embedded or "Standard 14" fonts, see PDFBOX-2372
-	// if (isEmbedded() && name.equals(".notdef") && !isEmbedded() && !isStandard14())
-	//    {
-	//        return new GeneralPath();
-	//    }
-	//    else
-	//    {
-	//        return type1Equivalent.getPath(name);
-	//    }
-	//    }TODO
+	@Override
+	public Path getPath(String name) throws IOException
+	{
+		// Acrobat only draws .notdef for embedded or "Standard 14" fonts, see PDFBOX-2372
+		if (isEmbedded() && name.equals(".notdef") && !isEmbedded() && !isStandard14())
+		{
+			return new Path();
+		}
+		else
+		{
+			return type1Equivalent.getPath(name);
+		}
+	}
 
 	@Override
 	public String getName()

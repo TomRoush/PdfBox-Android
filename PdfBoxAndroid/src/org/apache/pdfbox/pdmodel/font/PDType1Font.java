@@ -24,6 +24,8 @@ import org.apache.pdfbox.pdmodel.font.encoding.Type1Encoding;
 import org.apache.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
 import org.apache.pdfbox.util.Matrix;
 
+import android.graphics.Path;
+
 /**
  * A PostScript Type 1 Font.
  *
@@ -78,7 +80,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 	private PDType1Font(String baseFont)
 	{
 		super(baseFont);
-		
+
 		dict.setItem(COSName.SUBTYPE, COSName.TYPE1);
 		dict.setName(COSName.BASE_FONT, baseFont);
 		encoding = new WinAnsiEncoding();
@@ -379,19 +381,19 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 		return ".notdef";
 	}
 
-	//    @Override
-	//    public GeneralPath getPath(String name) throws IOException
-	//    {
-	// Acrobat only draws .notdef for embedded or "Standard 14" fonts, see PDFBOX-2372
-	// if (isEmbedded() && name.equals(".notdef") && !isEmbedded() && !isStandard14())
-	//    {
-	//        return new GeneralPath();
-	//    }
-	//    else
-	//    {
-	//        return type1Equivalent.getPath(name);
-	//    }
-	//    }TODO
+	@Override
+	public Path getPath(String name) throws IOException
+	{
+//		Acrobat only draws .notdef for embedded or "Standard 14" fonts, see PDFBOX-2372
+		if (isEmbedded() && name.equals(".notdef") && !isEmbedded() && !isStandard14())
+		{
+			return new Path();
+		}
+		else
+		{
+			return type1Equivalent.getPath(name);
+		}
+	}
 
 	@Override
 	public Matrix getFontMatrix()

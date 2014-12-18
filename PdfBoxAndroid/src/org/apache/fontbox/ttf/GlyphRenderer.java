@@ -19,6 +19,8 @@ package org.apache.fontbox.ttf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import android.graphics.Path;
+
 /**
  * This class provides a glyph to GeneralPath conversion for true type fonts.
  * Based on code from Apache Batik a subproject of Apache XMLGraphics.
@@ -39,11 +41,11 @@ class GlyphRenderer
      * Returns the path of the glyph.
      * @return the path
      */
-//    public GeneralPath getPath()
-//    {
-//        Point[] points = describe(glyphDescription);
-//        return calculatePath(points);
-//    }TODO
+    public Path getPath()
+    {
+        Point[] points = describe(glyphDescription);
+        return calculatePath(points);
+    }
 
     /**
      * Set the points of a glyph from the GlyphDescription.
@@ -72,177 +74,177 @@ class GlyphRenderer
      *
      * @return the calculated GeneralPath
      */
-//    private GeneralPath calculatePath(Point[] points)
-//    {
-//        GeneralPath path = new GeneralPath();
-//        int numberOfPoints = points.length;
-//        int i = 0;
-//        boolean endOfContour = true;
-//        Point startingPoint = null;
-//        Point offCurveStartPoint = null;
-//        while (i < numberOfPoints)
-//        {
-//            Point point = points[i % numberOfPoints];
-//            Point nextPoint1 = points[(i + 1) % numberOfPoints];
-//            Point nextPoint2 = points[(i + 2) % numberOfPoints];
-//            // new contour
-//            if (endOfContour)
-//            {
-//                // skip endOfContour points
-//                if (point.endOfContour)
-//                {
-//                    i++;
-//                    continue;
-//                }
-//                // move to the starting point
-//                moveTo(path, point);
-//                endOfContour = false;
-//                startingPoint = point;
-//
-//                offCurveStartPoint = null;
-//                if (!point.onCurve && !nextPoint1.onCurve)
-//                {
-//                    // off curve start
-//                    offCurveStartPoint = point;
-//                    startingPoint = midValue(point, nextPoint1);
-//                    moveTo(path, startingPoint);
-//                }
-//            }
-//
-//            if (point.onCurve)
-//            {
-//                offCurveStartPoint = null;
-//            }
-//            // lineTo
-//            if (point.onCurve && nextPoint1.onCurve)
-//            {
-//                lineTo(path, nextPoint1);
-//                i++;
-//                if (point.endOfContour || nextPoint1.endOfContour)
-//                {
-//                    endOfContour = true;
-//                    closePath(path);
-//                }
-//                continue;
-//            }
-//            // quadratic bezier
-//            if (point.onCurve && !nextPoint1.onCurve && nextPoint2.onCurve)
-//            {
-//                if (nextPoint1.endOfContour)
-//                {
-//                    // use the starting point as end point
-//                    quadTo(path, nextPoint1, startingPoint);
-//                }
-//                else
-//                {
-//                    quadTo(path, nextPoint1, nextPoint2);
-//                }
-//                if (nextPoint1.endOfContour || nextPoint2.endOfContour)
-//                {
-//                    endOfContour = true;
-//                    closePath(path);
-//                }
-//                i += 2;
-//                continue;
-//            }
-//
-//            // TH segment for curves that start with an off-curve point
-//            if (offCurveStartPoint != null && !nextPoint1.onCurve && !nextPoint2.onCurve)
-//            {
-//                // interpolate endPoint
-//                quadTo(path, nextPoint1, midValue(nextPoint1, nextPoint2));
-//                if (point.endOfContour || nextPoint1.endOfContour || nextPoint2.endOfContour)
-//                {
-//                    quadTo(path, nextPoint2, midValue(nextPoint2, offCurveStartPoint));
-//                    quadTo(path, offCurveStartPoint, startingPoint);
-//                    endOfContour = true;
-//                    i += 2;
-//                    continue;
-//                }
-//                ++i;
-//                continue;
-//            }
-//
-//            if (point.onCurve && !nextPoint1.onCurve && !nextPoint2.onCurve)
-//            {
-//                // interpolate endPoint
-//                quadTo(path, nextPoint1, midValue(nextPoint1, nextPoint2));
-//                if (point.endOfContour || nextPoint1.endOfContour || nextPoint2.endOfContour)
-//                {
-//                    quadTo(path, nextPoint2, startingPoint);
-//                    endOfContour = true;
-//                    closePath(path);
-//                }
-//                i += 2;
-//                continue;
-//            }
-//
-//            // TH the control point is never interpolated
-//            if (!point.onCurve && !nextPoint1.onCurve)
-//            {
-//                quadTo(path, point, midValue(point, nextPoint1));
-//                if (point.endOfContour || nextPoint1.endOfContour)
-//                {
-//                    endOfContour = true;
-//                    quadTo(path, nextPoint1, startingPoint);
-//                }
-//                i++;
-//                continue;
-//            }
-//
-//            if (!point.onCurve && nextPoint1.onCurve)
-//            {
-//                quadTo(path, point, nextPoint1);
-//                if (point.endOfContour || nextPoint1.endOfContour)
-//                {
-//                    endOfContour = true;
-//                    closePath(path);
-//                }
-//                i++;
-//                continue;
-//            }
-//            LOG.error("Unknown glyph command!!");
-//            break;
-//        }
-//        return path;
-//    }TODO
+    private Path calculatePath(Point[] points)
+    {
+        Path path = new Path();
+        int numberOfPoints = points.length;
+        int i = 0;
+        boolean endOfContour = true;
+        Point startingPoint = null;
+        Point offCurveStartPoint = null;
+        while (i < numberOfPoints)
+        {
+            Point point = points[i % numberOfPoints];
+            Point nextPoint1 = points[(i + 1) % numberOfPoints];
+            Point nextPoint2 = points[(i + 2) % numberOfPoints];
+            // new contour
+            if (endOfContour)
+            {
+                // skip endOfContour points
+                if (point.endOfContour)
+                {
+                    i++;
+                    continue;
+                }
+                // move to the starting point
+                moveTo(path, point);
+                endOfContour = false;
+                startingPoint = point;
 
-//    private void closePath(GeneralPath path)
-//    {
-//        path.closePath();
-//        if (LOG.isDebugEnabled())
-//        {
-//            LOG.trace("closePath");
-//        }
-//    }TODO
+                offCurveStartPoint = null;
+                if (!point.onCurve && !nextPoint1.onCurve)
+                {
+                    // off curve start
+                    offCurveStartPoint = point;
+                    startingPoint = midValue(point, nextPoint1);
+                    moveTo(path, startingPoint);
+                }
+            }
 
-//    private void moveTo(GeneralPath path, Point point)
-//    {
-//        path.moveTo(point.x, point.y);
-//        if (LOG.isDebugEnabled())
-//        {
-//            LOG.trace("moveTo: " + String.format("%d,%d", point.x, point.y));
-//        }
-//    }TODO
+            if (point.onCurve)
+            {
+                offCurveStartPoint = null;
+            }
+            // lineTo
+            if (point.onCurve && nextPoint1.onCurve)
+            {
+                lineTo(path, nextPoint1);
+                i++;
+                if (point.endOfContour || nextPoint1.endOfContour)
+                {
+                    endOfContour = true;
+                    closePath(path);
+                }
+                continue;
+            }
+            // quadratic bezier
+            if (point.onCurve && !nextPoint1.onCurve && nextPoint2.onCurve)
+            {
+                if (nextPoint1.endOfContour)
+                {
+                    // use the starting point as end point
+                    quadTo(path, nextPoint1, startingPoint);
+                }
+                else
+                {
+                    quadTo(path, nextPoint1, nextPoint2);
+                }
+                if (nextPoint1.endOfContour || nextPoint2.endOfContour)
+                {
+                    endOfContour = true;
+                    closePath(path);
+                }
+                i += 2;
+                continue;
+            }
 
-//    private void lineTo(GeneralPath path, Point point)
-//    {
-//        path.lineTo(point.x, point.y);
-//        if (LOG.isDebugEnabled())
-//        {
-//            LOG.trace("lineTo: " + String.format("%d,%d", point.x, point.y));
-//        }
-//    }TODO
+            // TH segment for curves that start with an off-curve point
+            if (offCurveStartPoint != null && !nextPoint1.onCurve && !nextPoint2.onCurve)
+            {
+                // interpolate endPoint
+                quadTo(path, nextPoint1, midValue(nextPoint1, nextPoint2));
+                if (point.endOfContour || nextPoint1.endOfContour || nextPoint2.endOfContour)
+                {
+                    quadTo(path, nextPoint2, midValue(nextPoint2, offCurveStartPoint));
+                    quadTo(path, offCurveStartPoint, startingPoint);
+                    endOfContour = true;
+                    i += 2;
+                    continue;
+                }
+                ++i;
+                continue;
+            }
 
-//    private void quadTo(GeneralPath path, Point ctrlPoint, Point point)
-//    {
-//        path.quadTo(ctrlPoint.x, ctrlPoint.y, point.x, point.y);
-//        if (LOG.isDebugEnabled())
-//        {
-//            LOG.trace("quadTo: " + String.format("%d,%d %d,%d", ctrlPoint.x, ctrlPoint.y,
-//                    point.x, point.y));
-//        }
-//    }TODO
+            if (point.onCurve && !nextPoint1.onCurve && !nextPoint2.onCurve)
+            {
+                // interpolate endPoint
+                quadTo(path, nextPoint1, midValue(nextPoint1, nextPoint2));
+                if (point.endOfContour || nextPoint1.endOfContour || nextPoint2.endOfContour)
+                {
+                    quadTo(path, nextPoint2, startingPoint);
+                    endOfContour = true;
+                    closePath(path);
+                }
+                i += 2;
+                continue;
+            }
+
+            // TH the control point is never interpolated
+            if (!point.onCurve && !nextPoint1.onCurve)
+            {
+                quadTo(path, point, midValue(point, nextPoint1));
+                if (point.endOfContour || nextPoint1.endOfContour)
+                {
+                    endOfContour = true;
+                    quadTo(path, nextPoint1, startingPoint);
+                }
+                i++;
+                continue;
+            }
+
+            if (!point.onCurve && nextPoint1.onCurve)
+            {
+                quadTo(path, point, nextPoint1);
+                if (point.endOfContour || nextPoint1.endOfContour)
+                {
+                    endOfContour = true;
+                    closePath(path);
+                }
+                i++;
+                continue;
+            }
+            LOG.error("Unknown glyph command!!");
+            break;
+        }
+        return path;
+    }
+
+    private void closePath(Path path)
+    {
+        path.close();
+        if (LOG.isDebugEnabled())
+        {
+            LOG.trace("closePath");
+        }
+    }
+
+    private void moveTo(Path path, Point point)
+    {
+        path.moveTo(point.x, point.y);
+        if (LOG.isDebugEnabled())
+        {
+            LOG.trace("moveTo: " + String.format("%d,%d", point.x, point.y));
+        }
+    }
+
+    private void lineTo(Path path, Point point)
+    {
+        path.lineTo(point.x, point.y);
+        if (LOG.isDebugEnabled())
+        {
+            LOG.trace("lineTo: " + String.format("%d,%d", point.x, point.y));
+        }
+    }
+
+    private void quadTo(Path path, Point ctrlPoint, Point point)
+    {
+        path.quadTo(ctrlPoint.x, ctrlPoint.y, point.x, point.y);
+        if (LOG.isDebugEnabled())
+        {
+            LOG.trace("quadTo: " + String.format("%d,%d %d,%d", ctrlPoint.x, ctrlPoint.y,
+                    point.x, point.y));
+        }
+    }
 
     private int midValue(int a, int b)
     {

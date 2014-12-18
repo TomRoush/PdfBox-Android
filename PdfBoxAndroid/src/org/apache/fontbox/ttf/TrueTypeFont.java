@@ -25,6 +25,8 @@ import java.util.Map;
 import org.apache.fontbox.encoding.Encoding;
 import org.apache.fontbox.util.BoundingBox;
 
+import android.graphics.Path;
+
 /**
  * A TrueType font file.
  * 
@@ -412,37 +414,38 @@ public class TrueTypeFont implements Type1Equivalent
         return gid;
     }
 
-//    @Override
-//    public GeneralPath getPath(String name) throws IOException
-//    {
-//        readPostScriptNames();
-//
-//        int gid = nameToGID(name);
-//        if (gid < 0 || gid >= getMaximumProfile().getNumGlyphs())
-//        {
-//            gid = 0;
-//        }
-//
-//        // some glyphs have no outlines (e.g. space, table, newline)
-//        GlyphData glyph = getGlyph().getGlyph(gid);
-//        if (glyph == null)
-//        {
-//            return new GeneralPath();
-//        }
-//        else
-//        {
-//            GeneralPath path = glyph.getPath();
-//
-//            // scale to 1000upem, per PostScript convention
-//            float scale = 1000f / getUnitsPerEm();
-//            AffineTransform atScale = AffineTransform.getScaleInstance(scale, scale);
-//            path.transform(atScale);
-//
-//            return path;
-//        }
-//    }TODO
+    @Override
+    public Path getPath(String name) throws IOException
+    {
+        readPostScriptNames();
 
-//    @OverrideTODO
+        int gid = nameToGID(name);
+        if (gid < 0 || gid >= getMaximumProfile().getNumGlyphs())
+        {
+            gid = 0;
+        }
+
+        // some glyphs have no outlines (e.g. space, table, newline)
+        GlyphData glyph = getGlyph().getGlyph(gid);
+        if (glyph == null)
+        {
+            return new Path();
+        }
+        else
+        {
+            Path path = glyph.getPath();
+
+            // scale to 1000upem, per PostScript convention
+            float scale = 1000f / getUnitsPerEm();
+            android.graphics.Matrix atScale = new android.graphics.Matrix();
+            atScale.setScale(scale, scale);
+            path.transform(atScale);
+
+            return path;
+        }
+    }
+
+//    @Override TODO
     public float getWidth(String name) throws IOException
     {
         readPostScriptNames();

@@ -33,6 +33,8 @@ import org.apache.fontbox.pfb.PfbParser;
 import org.apache.fontbox.ttf.Type1Equivalent;
 import org.apache.fontbox.util.BoundingBox;
 
+import android.graphics.Path;
+
 /**
  * Represents an Adobe Type 1 (.pfb) font. Thread safe.
  *
@@ -146,11 +148,11 @@ public final class Type1Font implements Type1CharStringReader, Type1Equivalent
         return fontName;
     }
 
-//    @Override
-//    public GeneralPath getPath(String name) throws IOException
-//    {
-//        return getType1CharString(name).getPath();
-//    }TODO
+    @Override
+    public Path getPath(String name) throws IOException
+    {
+        return getType1CharString(name).getPath();
+    }
 
     @Override
     public float getWidth(String name) throws IOException

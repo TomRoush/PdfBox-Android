@@ -1,6 +1,7 @@
 package org.apache.pdfbox.pdmodel.font;
 
 import org.apache.pdfbox.cos.COSArray;
+import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSStream;
@@ -721,10 +722,10 @@ public final class PDFontDescriptor implements COSObjectable
     public PDStream getFontFile()
     {
         PDStream retval = null;
-        COSStream stream = (COSStream)dic.getDictionaryObject( COSName.FONT_FILE );
-        if( stream != null )
+        COSBase obj = dic.getDictionaryObject(COSName.FONT_FILE);
+        if(obj instanceof COSStream)
         {
-            retval = new PDStream( stream );
+            retval = new PDStream( (COSStream)obj );
         }
         return retval;
     }
@@ -747,10 +748,10 @@ public final class PDFontDescriptor implements COSObjectable
     public PDStream getFontFile2()
     {
         PDStream retval = null;
-        COSStream stream = (COSStream)dic.getDictionaryObject( COSName.FONT_FILE2 );
-        if( stream != null )
+        COSBase obj = dic.getDictionaryObject(COSName.FONT_FILE2);
+        if(obj instanceof COSStream)
         {
-            retval = new PDStream( stream );
+            retval = new PDStream((COSStream)obj);
         }
         return retval;
     }
@@ -773,10 +774,10 @@ public final class PDFontDescriptor implements COSObjectable
     public PDStream getFontFile3()
     {
         PDStream retval = null;
-        COSStream stream = (COSStream)dic.getDictionaryObject( COSName.FONT_FILE3 );
-        if( stream != null )
+        COSBase obj = dic.getDictionaryObject(COSName.FONT_FILE3);
+        if(obj instanceof COSStream)
         {
-            retval = new PDStream( stream );
+            retval = new PDStream((COSStream)obj);
         }
         return retval;
     }
