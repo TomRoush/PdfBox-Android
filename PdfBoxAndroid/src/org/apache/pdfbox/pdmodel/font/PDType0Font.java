@@ -1,5 +1,7 @@
 package org.apache.pdfbox.pdmodel.font;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -11,6 +13,7 @@ import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.font.encoding.GlyphList;
 import org.apache.pdfbox.pdmodel.font.encoding.StandardEncoding;
 import org.apache.pdfbox.util.Matrix;
@@ -30,7 +33,33 @@ public class PDType0Font extends PDFont
 	private boolean isCMapPredefined;
 
 	/**
-	 * Constructor.
+	 * Loads a TTF to be embedded into a document.
+	 *
+	 * @param doc The PDF document that will hold the embedded font.
+	 * @param file A TrueType font.
+	 * @return A Type0 font with a CIDFontType2 descendant.
+	 * @throws IOException If there is an error reading the font file.
+	 */
+	public static PDType0Font load(PDDocument doc, File file) throws IOException
+	{
+		return new PDType0Font(doc, new FileInputStream(file));
+	}
+
+	/**
+	 * Loads a TTF to be embedded into a document.
+	 *
+	 * @param doc The PDF document that will hold the embedded font.
+	 * @param input A TrueType font.
+	 * @return A Type0 font with a CIDFontType2 descendant.
+	 * @throws IOException If there is an error reading the font stream.
+	 */
+	public static PDType0Font load(PDDocument doc, InputStream input) throws IOException
+	{
+		return new PDType0Font(doc, input);
+	}
+
+	/**
+	 * Constructor for reading a Type0 font from a PDF file.
 	 * 
 	 * @param fontDictionary The font dictionary according to the PDF specification.
 	 */
@@ -54,6 +83,18 @@ public class PDType0Font extends PDFont
 		{
 			LOG.warn("Nonsymbolic Type 0 font: " + getName());
 		}
+	}
+
+	/**
+	 * Private. Creates a new TrueType font for embedding.
+	 */
+	private PDType0Font(PDDocument document, InputStream ttfStream) throws IOException
+	{
+		PDCIDFontType2Embedder embedder =
+				new PDCIDFontType2Embedder(document, dict, ttfStream, this);
+		descendantFont = embedder.getCIDFont();
+		readEncoding();
+		fetchCMapUCS2();
 	}
 
 	/**
@@ -160,6 +201,14 @@ public class PDType0Font extends PDFont
 		return cMap;
 	}
 
+	/**
+	 * Returns the font's UCS2 CMap, only present this font uses a predefined CMap.
+	 */
+	public CMap getCMapUCS2()
+	{
+		return cMapUCS2;
+	}
+
 	@Override
 	public PDFontDescriptor getFontDescriptor()
 	{
@@ -185,6 +234,12 @@ public class PDType0Font extends PDFont
 	//    }TODO
 
 	@Override
+	protected byte[] encode(int unicode) throws IOException
+	{
+		return descendantFont.encode(unicode);
+	}
+
+	@Override
 	public float getAverageFontWidth()
 	{
 		return descendantFont.getAverageFontWidth();
@@ -197,18 +252,18 @@ public class PDType0Font extends PDFont
 		return descendantFont.getPositionVector(code).scale(-1 / 1000f);
 	}
 
-	//    @Override
-	//    public Vector getDisplacement(int code) throws IOException
-	//    {
-	//        if (isVertical())
-	//        {
-	//            return new Vector(0, descendantFont.getVerticalDisplacementVectorY(code) / 1000f);
-	//        }
-	//        else
-	//        {
-	//            return super.getDisplacement(code);
-	//        }
-	//    }
+	@Override
+	public Vector getDisplacement(int code) throws IOException
+	{
+		if (isVertical())
+		{
+			return new Vector(0, descendantFont.getVerticalDisplacementVectorY(code) / 1000f);
+		}
+		else
+		{
+			return super.getDisplacement(code);
+		}
+	}
 
 	@Override
 	public float getWidth(int code) throws IOException

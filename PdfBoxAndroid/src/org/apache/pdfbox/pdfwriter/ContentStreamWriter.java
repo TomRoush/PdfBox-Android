@@ -68,7 +68,7 @@ public class ContentStreamWriter
     {
         if( o instanceof COSString )
         {
-            ((COSString)o).writePDF( output );
+        	COSWriter.writeString((COSString)o, output);
         }
         else if( o instanceof COSFloat )
         {

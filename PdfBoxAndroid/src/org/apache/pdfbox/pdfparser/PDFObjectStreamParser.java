@@ -1,7 +1,6 @@
 package org.apache.pdfbox.pdfparser;
 
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,34 +33,15 @@ public class PDFObjectStreamParser extends BaseParser
     /**
      * Constructor.
      *
-     * @since Apache PDFBox 1.3.0
      * @param strm The stream to parse.
      * @param doc The document for the current parsing.
-     * @param forceParsing flag to skip malformed or otherwise unparseable
-     *                     input where possible
      * @throws IOException If there is an error initializing the stream.
      */
-    public PDFObjectStreamParser(
-            COSStream strm, COSDocument doc, boolean forceParsing)
-            throws IOException 
+    public PDFObjectStreamParser(COSStream strm, COSDocument doc) throws IOException
     {
-        super(strm.getUnfilteredStream(), forceParsing);
+        super(strm.getUnfilteredStream());
         setDocument(doc);
         stream = strm;
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param strm The stream to parse.
-     * @param doc The document for the current parsing.
-     *
-     * @throws IOException If there is an error initializing the stream.
-     */
-    public PDFObjectStreamParser(COSStream strm, COSDocument doc)
-            throws IOException 
-    {
-        this(strm, doc, FORCE_PARSING);
     }
 
     /**

@@ -28,14 +28,18 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.pdfbox.contentstream.operator.MissingOperandException;
 import org.apache.pdfbox.contentstream.operator.Operator;
 import org.apache.pdfbox.contentstream.operator.OperatorProcessor;
+import org.apache.pdfbox.contentstream.operator.state.EmptyGraphicsStackException;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.cos.COSString;
+import org.apache.pdfbox.filter.MissingImageReaderException;
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
+import org.apache.pdfbox.pdmodel.MissingResourceException;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -43,8 +47,8 @@ import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDFontFactory;
 import org.apache.pdfbox.pdmodel.font.PDType3CharProc;
 import org.apache.pdfbox.pdmodel.font.PDType3Font;
+import org.apache.pdfbox.pdmodel.graphics.PDLineDashPattern;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import org.apache.pdfbox.pdmodel.graphics.pattern.PDTilingPattern;
 import org.apache.pdfbox.pdmodel.graphics.state.PDGraphicsState;
 import org.apache.pdfbox.pdmodel.graphics.state.PDTextState;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
@@ -52,7 +56,9 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.pdfbox.util.Vector;
 
+import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.RectF;
 
 /**
  * Processes a PDF content stream and executes certain operations.
@@ -68,42 +74,19 @@ public class PDFStreamEngine
 
 	private Matrix textMatrix;
 	private Matrix textLineMatrix;
-	protected Matrix subStreamMatrix = new Matrix();
 
 	private final Stack<PDGraphicsState> graphicsStack = new Stack<PDGraphicsState>();
 
 	private PDResources resources;
 	private PDPage currentPage;
 	private boolean isProcessingPage;
-
-	// skip malformed or otherwise unparseable input where possible
-	private boolean forceParsing;
+	private Matrix initialMatrix;
 
 	/**
 	 * Creates a new PDFStreamEngine.
 	 */
 	public PDFStreamEngine()
 	{
-	}
-
-	/**
-	 * Indicates if force parsing is activated.
-	 * 
-	 * @return true if force parsing is active
-	 */
-	public boolean isForceParsing()
-	{
-		return forceParsing;
-	}
-
-	/**
-	 * Enable/Disable force parsing.
-	 * 
-	 * @param forceParsingValue true activates force parsing
-	 */
-	public void setForceParsing(boolean forceParsingValue)
-	{
-		forceParsing = forceParsingValue;
 	}
 
 	/**
@@ -146,6 +129,7 @@ public class PDFStreamEngine
 		textMatrix = null;
 		textLineMatrix = null;
 		resources = null;
+		initialMatrix = page.getMatrix();
 	}
 
 	/**
@@ -202,12 +186,23 @@ public class PDFStreamEngine
 		}
 		processStream(contentStream);
 	}
+	
+	/**
+	 * Processes a soft mask transparency group stream.
+	 */
+	protected void processSoftMask(PDFormXObject group) throws IOException
+	{
+		// clear the current soft mask (this mask) to avoid recursion
+		saveGraphicsState();
+		getGraphicsState().setSoftMask(null);
+		processTransparencyGroup(group);
+		restoreGraphicsState();
+	}
 
 	/**
 	 * Processes a transparency group stream.
 	 */
-	protected void processTransparencyGroup(PDFormXObject group)
-			throws IOException
+	protected void processTransparencyGroup(PDFormXObject group) throws IOException
 	{
 		if (currentPage == null)
 		{
@@ -290,16 +285,17 @@ public class PDFStreamEngine
 		// zero-sized rectangles are not valid
 		if (rect.getWidth() > 0 && rect.getHeight() > 0)
 		{
-			// transformed appearance box
-			PDRectangle transformedBox = bbox.transform(matrix);
+			// transformed appearance box fixme: may be an arbitrary shape
+			RectF transformedBox = new RectF();
+			bbox.transform(matrix).computeBounds(transformedBox, true);
 
 			// compute a matrix which scales and translates the transformed appearance box to align
 			// with the edges of the annotation's rectangle
 			Matrix a = Matrix.getTranslatingInstance(rect.getLowerLeftX(), rect.getLowerLeftY());
-			a.concatenate(Matrix.getScaleInstance(rect.getWidth() / transformedBox.getWidth(),
-					rect.getHeight() / transformedBox.getHeight()));
-			a.concatenate(Matrix.getTranslatingInstance(-transformedBox.getLowerLeftX(),
-					-transformedBox.getLowerLeftY()));
+			a.concatenate(Matrix.getScaleInstance((float)(rect.getWidth() / transformedBox.width()),
+					(float)(rect.getHeight() / transformedBox.height())));
+			a.concatenate(Matrix.getTranslatingInstance((float) -transformedBox.left,
+					(float) -transformedBox.top));
 
 			// Matrix shall be concatenated with A to form a matrix AA that maps from the appearance’s
 			// coordinate system to the annotation’s rectangle in default user space
@@ -320,26 +316,65 @@ public class PDFStreamEngine
 
 
 	/**
-	 * Processes the given tiling pattern.
+	 * Process the given tiling pattern.
 	 *
-	 * @param tilingPattern tiling patten
+	 * @param tilingPattern the tiling pattern
+	 * @param color color to use, if this is an uncoloured pattern, otherwise null.
+	 * @param colorSpace color space to use, if this is an uncoloured pattern, otherwise null.
 	 */
-	protected final void processTilingPattern(PDTilingPattern tilingPattern) throws IOException
-	{
-		PDResources parent = pushResources(tilingPattern);
-		saveGraphicsState();
+//	protected final void processTilingPattern(PDTilingPattern tilingPattern, PDColor color,
+//			PDColorSpace colorSpace) throws IOException
+//	{
+//		processTilingPattern(tilingPattern, color, colorSpace, tilingPattern.getMatrix());
+//	}
 
-		// note: we don't transform the CTM using the stream's matrix, as TilingPaint handles this
-
-		// clip to bounding box
-		PDRectangle bbox = tilingPattern.getBBox();
-		clipToRect(bbox);
-
-		processStreamOperators(tilingPattern);
-
-		restoreGraphicsState();
-		popResources(parent);
-	}
+	/**
+	 * Process the given tiling pattern. Allows the pattern matrix to be overridden for custom
+	 * rendering.
+	 *
+	 * @param tilingPattern the tiling pattern
+	 * @param color color to use, if this is an uncoloured pattern, otherwise null.
+	 * @param colorSpace color space to use, if this is an uncoloured pattern, otherwise null.
+	 * @param patternMatrix the pattern matrix, may be overridden for custom rendering.
+	 */
+//	protected final void processTilingPattern(PDTilingPattern tilingPattern, PDColor color,
+//			PDColorSpace colorSpace, Matrix patternMatrix)
+//					throws IOException
+//	{
+//		PDResources parent = pushResources(tilingPattern);
+//
+//		Matrix parentMatrix = initialMatrix;
+//		initialMatrix = Matrix.concatenate(initialMatrix, patternMatrix);
+//
+//		// set up a clean state (new clipping path, line path, etc.)
+//		RectF bbox = new RectF();
+//		tilingPattern.getBBox().transform(patternMatrix).computeBounds(bbox, true);
+//		PDRectangle rect = new PDRectangle((float)bbox.getX(), (float)bbox.getY(),
+//				(float)bbox.getWidth(), (float)bbox.getHeight());
+//		graphicsStack.push(new PDGraphicsState(rect));
+//
+//		// non-colored patterns have to be given a color
+//		if (colorSpace != null)
+//		{
+//			color = new PDColor(color.getComponents(), colorSpace);
+//			getGraphicsState().setNonStrokingColorSpace(colorSpace);
+//			getGraphicsState().setNonStrokingColor(color);
+//			getGraphicsState().setStrokingColorSpace(colorSpace);
+//			getGraphicsState().setStrokingColor(color);
+//		}
+//
+//		// transform the CTM using the stream's matrix
+//		getGraphicsState().getCurrentTransformationMatrix().concatenate(patternMatrix);
+//
+//		// clip to bounding box
+//		clipToRect(tilingPattern.getBBox());
+//
+//		processStreamOperators(tilingPattern);
+//
+//		initialMatrix = parentMatrix;
+//		restoreGraphicsState();
+//		popResources(parent);
+//	}
 
 	/**
 	 * Shows the given annotation.
@@ -394,35 +429,22 @@ public class PDFStreamEngine
 	 */
 	private void processStream(PDContentStream contentStream) throws IOException
 	{
-		processStream(contentStream, null);
-	}
-
-	/**
-	 * Process a content stream.
-	 *
-	 * @param contentStream the content stream
-	 * @param patternBBox fixme: temporary workaround for tiling patterns
-	 * @throws IOException if there is an exception while processing the stream
-	 */
-	private void processStream(PDContentStream contentStream, PDRectangle patternBBox)
-			throws IOException
-	{
 		PDResources parent = pushResources(contentStream);
 		saveGraphicsState();
+
+		Matrix parentMatrix = initialMatrix;
+		initialMatrix = Matrix.concatenate(initialMatrix, contentStream.getMatrix());
 
 		// transform the CTM using the stream's matrix
 		getGraphicsState().getCurrentTransformationMatrix().concatenate(contentStream.getMatrix());
 
 		// clip to bounding box
 		PDRectangle bbox = contentStream.getBBox();
-		if (patternBBox != null)
-		{
-			bbox = patternBBox;
-		}
 		clipToRect(bbox);
 
 		processStreamOperators(contentStream);
 
+		initialMatrix = parentMatrix;
 		restoreGraphicsState();
 		popResources(parent);
 	}
@@ -433,7 +455,7 @@ public class PDFStreamEngine
 	private void processStreamOperators(PDContentStream contentStream) throws IOException
 	{
 		List<COSBase> arguments = new ArrayList<COSBase>();
-		PDFStreamParser parser = new PDFStreamParser(contentStream.getContentStream(), forceParsing);
+		PDFStreamParser parser = new PDFStreamParser(contentStream.getContentStream());
 		try
 		{
 			Iterator<Object> iter = parser.getTokenIterator();
@@ -473,6 +495,11 @@ public class PDFStreamEngine
 		{
 			resources = streamResources;
 		}
+		else if (resources != null)
+		{
+			// inherit directly from parent stream, this is not in the PDF spec, but the file from
+			// PDFBOX-1359 does this and works in Acrobat
+		}
 		else
 		{
 			resources = currentPage.getResources();
@@ -502,8 +529,8 @@ public class PDFStreamEngine
 	{
 		if (rectangle != null)
 		{
-			//            PDRectangle clip = rectangle.transform(getGraphicsState().getCurrentTransformationMatrix());
-			//            getGraphicsState().intersectClippingPath(new Area(clip.toGeneralPath()));TODO
+			Path clip = rectangle.transform(getGraphicsState().getCurrentTransformationMatrix());
+//			getGraphicsState().intersectClippingPath(clip);
 		}
 	}
 
@@ -767,21 +794,28 @@ public class PDFStreamEngine
 	 * This is used to handle an operation.
 	 * 
 	 * @param operator The operation to perform.
-	 * @param arguments The list of arguments.
+	 * @param operands The list of arguments.
 	 * @throws IOException If there is an error processing the operation.
 	 */
-	protected void processOperator(Operator operator, List<COSBase> arguments) throws IOException
+	protected void processOperator(Operator operator, List<COSBase> operands) throws IOException
 	{
 		String name = operator.getName();
 		OperatorProcessor processor = operators.get(name);
 		if (processor != null)
 		{
 			processor.setContext(this);
-			processor.process(operator, arguments);
+			try
+			{
+				processor.process(operator, operands);
+			}
+			catch (IOException e)
+			{
+				operatorException(operator, operands, e);
+			}
 		}
 		else
 		{
-			unsupportedOperator(operator, arguments);
+			unsupportedOperator(operator, operands);
 		}
 	}
 
@@ -789,11 +823,42 @@ public class PDFStreamEngine
 	 * Called when an unsupported operator is encountered.
 	 *
 	 * @param operator The unknown operator.
-	 * @param arguments The list of arguments.
+	 * @param operands The list of arguments.
 	 */
-	protected void unsupportedOperator(Operator operator, List<COSBase> arguments) throws IOException
+	protected void unsupportedOperator(Operator operator, List<COSBase> operands) throws IOException
 	{
 		// overridden in subclasses
+	}
+
+	/**
+	 * Called when an exception is thrown by an operator.
+	 *
+	 * @param operator The unknown operator.
+	 * @param operands The list of operands.
+	 */
+	protected void operatorException(Operator operator, List<COSBase> operands, IOException e)
+			throws IOException
+	{
+		if (e instanceof MissingOperandException ||
+				e instanceof MissingResourceException ||
+				e instanceof MissingImageReaderException)
+		{
+			LOG.error(e.getMessage());
+		}
+		else if (e instanceof EmptyGraphicsStackException)
+		{
+			LOG.warn(e.getMessage());
+		}
+		else if (operator.getName().equals("Do"))
+		{
+			// todo: this too forgiving, but PDFBox has always worked this way for DrawObject
+			// some careful refactoring is needed
+			LOG.warn(e.getMessage());
+		}
+		else
+		{
+			throw e;
+		}
 	}
 
 	/**
@@ -861,11 +926,18 @@ public class PDFStreamEngine
 	}
 
 	/**
-	 * Returns the subStreamMatrix.
+	 * @param array dash array
+	 * @param phase dash phase
 	 */
-	protected Matrix getSubStreamMatrix()
+	public void setLineDashPattern(COSArray array, int phase)
 	{
-		return subStreamMatrix;
+		if (phase < 0)
+		{
+			LOG.warn("Dash phase has negative value " + phase + ", set to 0");
+			phase = 0;
+		}
+		PDLineDashPattern lineDash = new PDLineDashPattern(array, phase);
+		getGraphicsState().setLineDashPattern(lineDash);
 	}
 
 	/**
@@ -882,6 +954,11 @@ public class PDFStreamEngine
 	public PDPage getCurrentPage()
 	{
 		return currentPage;
+	}
+	
+	public Matrix getInitialMatrix()
+	{
+		return initialMatrix;
 	}
 
 	/**

@@ -12,84 +12,106 @@ import org.apache.pdfbox.cos.COSString;
  */
 public final class PDTextField extends PDVariableText
 {
-    /**
-     * @see PDFieldTreeNode#PDFieldTreeNode(PDAcroForm)
-     *
-     * @param theAcroForm The acroform.
-     */
-    public PDTextField(PDAcroForm theAcroForm)
-    {
-        super( theAcroForm );
-    }
+	/**
+	 * @see PDFieldTreeNode#PDFieldTreeNode(PDAcroForm)
+	 *
+	 * @param theAcroForm The acroform.
+	 */
+	public PDTextField(PDAcroForm theAcroForm)
+	{
+		super( theAcroForm );
+	}
 
-    /**
-     * Constructor.
-     * 
-     * @param theAcroForm The form that this field is part of.
-     * @param field the PDF object to represent as a field.
-     * @param parentNode the parent node of the node to be created
-     */
-    public PDTextField(PDAcroForm theAcroForm, COSDictionary field, PDFieldTreeNode parentNode)
-    {
-        super( theAcroForm, field, parentNode);
-    }
-    
-    /**
-     * Returns the maximum number of characters of the text field.
-     * 
-     * @return the maximum number of characters, returns -1 if the value isn't present
-     */
-    public int getMaxLen()
-    {
-        return getDictionary().getInt(COSName.MAX_LEN);
-    }
+	/**
+	 * Constructor.
+	 * 
+	 * @param theAcroForm The form that this field is part of.
+	 * @param field the PDF object to represent as a field.
+	 * @param parentNode the parent node of the node to be created
+	 */
+	public PDTextField(PDAcroForm theAcroForm, COSDictionary field, PDFieldTreeNode parentNode)
+	{
+		super( theAcroForm, field, parentNode);
+	}
 
-    /**
-     * Sets the maximum number of characters of the text field.
-     * 
-     * @param maxLen the maximum number of characters
-     */
-    public void setMaxLen(int maxLen)
-    {
-        getDictionary().setInt(COSName.MAX_LEN, maxLen);
-    }
+	/**
+	 * Returns the maximum number of characters of the text field.
+	 * 
+	 * @return the maximum number of characters, returns -1 if the value isn't present
+	 */
+	public int getMaxLen()
+	{
+		return getDictionary().getInt(COSName.MAX_LEN);
+	}
 
-    /**
-     * setValue sets the entry "V" to the given value.
-     * 
-     * @param value the value
-     * 
-     */
-    public void setValue(Object value)
-    {
-        if (value != null)
-        {
-            if (value instanceof String)
-            {
-                String stringValue = (String)value;
-                COSString fieldValue = new COSString(stringValue);
-                getDictionary().setItem( COSName.V, fieldValue );
-            }
-            // TODO stream instead of string
-        }  
-        else
-        {
-            getDictionary().removeItem(COSName.V);
-        }
-        updateFieldAppearances();
-    }
+	/**
+	 * Sets the maximum number of characters of the text field.
+	 * 
+	 * @param maxLen the maximum number of characters
+	 */
+	public void setMaxLen(int maxLen)
+	{
+		getDictionary().setInt(COSName.MAX_LEN, maxLen);
+	}
 
-    /**
-     * getValue gets the value of the "V" entry.
-     * 
-     * @return The value of this entry.
-     * 
-     */
-    @Override
-    public Object getValue()
-    {
-        return getDictionary().getItem(COSName.V );
-    }
+	/**
+	 * setValue sets the default value for the field.
+	 *
+	 * @param value the default value
+	 *
+	 */
+	public void setDefaultValue(String value)
+	{
+		if (value != null)
+		{
+			if (value instanceof String)
+			{
+				String stringValue = (String)value;
+				COSString fieldValue = new COSString(stringValue);
+				setInheritableAttribute(getDictionary(), COSName.DV, fieldValue);
+			}
+			// TODO stream instead of string
+		}
+		else
+		{
+			removeInheritableAttribute(getDictionary(),COSName.DV);
+		}
+	}
 
+	/**
+	 * setValue sets the entry "V" to the given value.
+	 * 
+	 * @param value the value
+	 * 
+	 */
+	public void setValue(Object value)
+	{
+		if (value != null)
+		{
+			if (value instanceof String)
+			{
+				String stringValue = (String)value;
+				COSString fieldValue = new COSString(stringValue);
+				setInheritableAttribute(getDictionary(), COSName.V, fieldValue);
+			}
+			// TODO stream instead of string
+		}  
+		else
+		{
+			removeInheritableAttribute(getDictionary(),COSName.DV);
+		}
+		updateFieldAppearances();
+	}
 
+	/**
+	 * getValue gets the value of the "V" entry.
+	 * 
+	 * @return The value of this entry.
+	 * 
+	 */
+	@Override
+	public Object getValue()
+	{
+		return getInheritableAttribute(getDictionary(), COSName.V);
+	}
 }

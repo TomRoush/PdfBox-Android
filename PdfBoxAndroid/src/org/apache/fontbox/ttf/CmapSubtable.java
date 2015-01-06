@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -315,7 +316,9 @@ public class CmapSubtable
 	 */
 	protected void processSubtype14(TTFDataStream data, int numGlyphs) throws IOException
 	{
-		throw new IOException("CMap subtype 14 not yet implemented");
+		// Unicode Variation Sequences (UVS)
+		// see http://blogs.adobe.com/CCJKType/2013/05/opentype-cmap-table-ramblings.html
+		LOG.warn("Format 14 cmap table is not supported and will be ignored");
 	}
 
 	/**
@@ -541,16 +544,16 @@ public class CmapSubtable
 	}
 
 	/**
-	 * Returns the character code for the given GID.
+	 * Returns the character code for the given GID, or null if there is none.
 	 *
 	 * @param gid glyph id
 	 * @return character code
 	 */
-	public int getCharacterCode(int gid)
+	public Integer getCharacterCode(int gid)
 	{
 		if (gid < 0 || gid >= glyphIdToCharacterCode.length)
 		{
-			return 0;
+			return null;
 		}
 		return glyphIdToCharacterCode[gid];
 	}

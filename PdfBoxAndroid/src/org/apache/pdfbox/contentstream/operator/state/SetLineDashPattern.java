@@ -18,23 +18,12 @@ import org.apache.pdfbox.pdmodel.graphics.PDLineDashPattern;
  */
 public class SetLineDashPattern extends OperatorProcessor
 {
-    /**
-     * log instance
-     */
-    private static final Log LOG = LogFactory.getLog(SetLineDashPattern.class);
-
     @Override
     public void process(Operator operator, List<COSBase> arguments)
     {
         COSArray dashArray = (COSArray) arguments.get(0);
         int dashPhase = ((COSNumber) arguments.get(1)).intValue();
-        if (dashPhase < 0)
-        {
-            LOG.warn("dash phaseStart has negative value " + dashPhase + ", set to 0");
-            dashPhase = 0;
-        }
-        PDLineDashPattern lineDash = new PDLineDashPattern(dashArray, dashPhase);
-        context.getGraphicsState().setLineDashPattern(lineDash);
+        context.setLineDashPattern(dashArray, dashPhase);
     }
 
     @Override

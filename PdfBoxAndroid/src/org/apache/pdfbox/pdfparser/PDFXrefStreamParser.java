@@ -1,7 +1,6 @@
 package org.apache.pdfbox.pdfparser;
 
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -28,21 +27,16 @@ public class PDFXrefStreamParser extends BaseParser
     /**
      * Constructor.
      *
-     * @since 1.3.0
      * @param strm The stream to parse.
      * @param doc The document for the current parsing.
-     * @param forceParsing flag to skip malformed or otherwise unparseable
-     *                     input where possible
      * @param resolver resolver to read the xref/trailer information
      *
      * @throws IOException If there is an error initializing the stream.
      */
-    public PDFXrefStreamParser(
-            COSStream strm, COSDocument doc, boolean forceParsing,
-            XrefTrailerResolver resolver )
-            throws IOException
+    public PDFXrefStreamParser(COSStream strm, COSDocument doc, XrefTrailerResolver resolver )
+    	throws IOException
     {
-        super(strm.getUnfilteredStream(), forceParsing);
+        super(strm.getUnfilteredStream());
         setDocument(doc);
         stream = strm;
         this.xrefTrailerResolver = resolver;

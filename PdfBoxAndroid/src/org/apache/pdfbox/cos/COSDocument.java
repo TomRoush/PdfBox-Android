@@ -78,32 +78,14 @@ public class COSDocument extends COSBase implements Closeable
 	private final boolean useScratchFile;
 
 	/**
-	 * Flag to skip malformed or otherwise unparseable input where possible.
-	 */
-	private final boolean forceParsing;
-
-	/**
 	 * Constructor.
 	 *
-	 * @param forceParsingValue flag to skip malformed or otherwise unparseable
-	 *                     document content where possible
-	 */
-	public COSDocument(boolean forceParsingValue) 
-	{
-		this(null, forceParsingValue, false);
-	}
-
-	/**
-	 * Constructor.
-	 *
-	 * @param forceParsingValue flag to skip malformed or otherwise unparseable
-	 *                     document content where possible
 	 * @param useScratchFiles enables the usage of a scratch file if set to true
 	 *                     
 	 */
-	public COSDocument(boolean forceParsingValue, boolean useScratchFiles) 
+	public COSDocument(boolean useScratchFiles) 
 	{
-		this(null, forceParsingValue, useScratchFiles);
+		this(null, useScratchFiles);
 	}
 
 	/**
@@ -113,14 +95,11 @@ public class COSDocument extends COSBase implements Closeable
 	 *
 	 * @param scratchDir directory for the temporary file,
 	 *                   or <code>null</code> to use the system default
-	 * @param forceParsingValue flag to skip malformed or otherwise unparseable
-	 *                     document content where possible
 	 * @param useScratchFiles enables the usage of a scratch file if set to true
 	 * 
 	 */
-	public COSDocument(File scratchDir, boolean forceParsingValue, boolean useScratchFiles) 
+	public COSDocument(File scratchDir, boolean useScratchFiles) 
 	{
-		forceParsing = forceParsingValue;
 		scratchDirectory = scratchDir;
 		useScratchFile = useScratchFiles;
 	}
@@ -130,7 +109,7 @@ public class COSDocument extends COSBase implements Closeable
 	 */
 	public COSDocument()
 	{
-		this(false, false);
+		this(false);
 	}
 
 	/**
@@ -606,7 +585,7 @@ public class COSDocument extends COSBase implements Closeable
 		{
 			COSStream stream = (COSStream)objStream.getObject();
 			PDFObjectStreamParser parser =
-					new PDFObjectStreamParser(stream, this, forceParsing);
+					new PDFObjectStreamParser(stream, this);
 			parser.parse();
 			for( COSObject next : parser.getObjects() )
 			{

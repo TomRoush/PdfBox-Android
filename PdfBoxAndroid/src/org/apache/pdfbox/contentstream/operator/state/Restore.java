@@ -1,5 +1,6 @@
 package org.apache.pdfbox.contentstream.operator.state;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -18,7 +19,7 @@ public class Restore extends OperatorProcessor
     private static final Log LOG = LogFactory.getLog(Restore.class);
 
     @Override
-    public void process(Operator operator, List<COSBase> arguments)
+    public void process(Operator operator, List<COSBase> arguments) throws IOException
     {
         if (context.getGraphicsStackSize() > 1)
         {
@@ -27,7 +28,7 @@ public class Restore extends OperatorProcessor
         else
         {
             // this shouldn't happen but it does, see PDFBOX-161
-            LOG.error("GRestore: no graphics state left to be restored.");
+        	throw new EmptyGraphicsStackException();
         }
     }
 

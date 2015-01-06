@@ -61,16 +61,6 @@ public class PDFRenderer
         int heightPx = Math.round(heightPt * scale);
         int rotationAngle = page.getRotation();
 
-        // normalize the rotation angle
-        if (rotationAngle < 0)
-        {
-            rotationAngle += 360;
-        }
-        else if (rotationAngle >= 360)
-        {
-            rotationAngle -= 360;
-        }
-
         // swap width and height
         Bitmap image;
         if (rotationAngle == 90 || rotationAngle == 270)
@@ -110,10 +100,11 @@ public class PDFRenderer
 
         PDRectangle cropBox = page.getCropBox();
         int rotationAngle = page.getRotation();
+
         if (rotationAngle != 0)
         {
-            float translateX = 0;
-            float translateY = 0;
+        	float translateX = 0;
+        	float translateY = 0;
             switch (rotationAngle)
             {
                 case 90:

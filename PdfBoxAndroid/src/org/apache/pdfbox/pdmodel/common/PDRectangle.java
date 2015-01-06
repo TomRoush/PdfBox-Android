@@ -7,6 +7,7 @@ import org.apache.pdfbox.cos.COSFloat;
 import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.util.Matrix;
 
+import android.graphics.Path;
 import android.graphics.PointF;
 
 /**
@@ -279,17 +280,25 @@ public class PDRectangle implements COSObjectable
 	/**
 	 * Returns a copy of this rectangle which has been transformed using the given matrix.
 	 */
-	public PDRectangle transform(Matrix matrix)
+	public Path transform(Matrix matrix)
 	{
-		PointF lowerLeft = matrix.transformPoint(getLowerLeftX(), getLowerLeftY());
-		PointF upperRight = matrix.transformPoint(getUpperRightX(), getUpperRightY());
+		float x1 = getLowerLeftX();
+		float y1 = getLowerLeftY();
+		float x2 = getUpperRightX();
+		float y2 = getUpperRightY();
 
-		PDRectangle rect = new PDRectangle();
-		rect.setLowerLeftX(lowerLeft.x);
-		rect.setLowerLeftY(lowerLeft.y);
-		rect.setUpperRightX(upperRight.x);
-		rect.setUpperRightY(upperRight.y);
-		return rect;
+		PointF p0 = matrix.transformPoint(x1, y1);
+		PointF p1 = matrix.transformPoint(x2, y1);
+		PointF p2 = matrix.transformPoint(x2, y2);
+		PointF p3 = matrix.transformPoint(x1, y2);
+
+		Path path = new Path();
+		path.moveTo((float) p0.x, (float) p0.y);
+		path.lineTo((float) p1.x, (float) p1.y);
+		path.lineTo((float) p2.x, (float) p2.y);
+		path.lineTo((float) p3.x, (float) p3.y);
+		path.close();
+		return path;
 	}
 
 	/**
@@ -306,20 +315,20 @@ public class PDRectangle implements COSObjectable
 	 * Returns a general path equivalent to this rectangle. This method avoids the problems
 	 * caused by Rectangle2D not working well with -ve rectangles.
 	 */
-//	public GeneralPath toGeneralPath()
-//	{
-//		float x1 = getLowerLeftX();
-//		float y1 = getLowerLeftY();
-//		float x2 = getUpperRightX();
-//		float y2 = getUpperRightY();
-//		GeneralPath path = new GeneralPath();
-//		path.moveTo(x1, y1);
-//		path.lineTo(x2, y1);
-//		path.lineTo(x2, y2);
-//		path.lineTo(x1, y2);
-//		path.closePath();
-//		return path;
-//	}TODO
+	//	public GeneralPath toGeneralPath()
+	//	{
+	//		float x1 = getLowerLeftX();
+	//		float y1 = getLowerLeftY();
+	//		float x2 = getUpperRightX();
+	//		float y2 = getUpperRightY();
+	//		GeneralPath path = new GeneralPath();
+	//		path.moveTo(x1, y1);
+	//		path.lineTo(x2, y1);
+	//		path.lineTo(x2, y2);
+	//		path.lineTo(x1, y2);
+	//		path.closePath();
+	//		return path;
+	//	}TODO
 
 	/**
 	 * This will return a string representation of this rectangle.

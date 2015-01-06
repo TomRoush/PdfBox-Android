@@ -46,7 +46,7 @@ import android.hardware.Camera.Area;
  * 
  * @author Ben Litchfield
  */
-public class PageDrawer extends PDFGraphicsStreamEngine
+public final class PageDrawer extends PDFGraphicsStreamEngine
 {
 	private static final Log LOG = LogFactory.getLog(PageDrawer.class);
 	
@@ -202,8 +202,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //                    return new Color(0,0,0,0);
 //                }
 //                return shading.toPaint(Matrix.concatenate(getInitialMatrix(),
-//                                                          shadingPattern.getMatrix()));
-//
+//					shadingPattern.getMatrix()));
 //            }
 //        }
 //    }
@@ -819,7 +818,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            Matrix transform = Matrix.concatenate(ctm, form.getMatrix());
 
             // transform the bbox
-//            GeneralPath transformedBox = form.getBBox().transform(transform);
+//            Path transformedBox = form.getBBox().transform(transform);
 
             // clip the bbox to prevent giant bboxes from consuming all memory
 //            Area clip = (Area)getGraphicsState().getCurrentClippingPath().clone();

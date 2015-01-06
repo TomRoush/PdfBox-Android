@@ -151,7 +151,7 @@ public class LayerUtility
 		PDRectangle viewBox = (cropBox != null ? cropBox : mediaBox);
 
 		//Handle the /Rotation entry on the page dict
-		int rotation = getNormalizedRotation(page);
+		int rotation = page.getRotation();
 
 		//Transform to FOP's user space
 		//at.scale(1 / viewBox.getWidth(), 1 / viewBox.getHeight());
@@ -271,29 +271,4 @@ public class LayerUtility
 					cloner.cloneForNewDocument(entry.getValue()));
 		}
 	}
-
-	private static int getNormalizedRotation(PDPage page)
-	{
-		//Handle the /Rotation entry on the page dict
-		int rotation = page.getRotation();
-		while (rotation >= 360)
-		{
-			rotation -= 360;
-		}
-		if (rotation < 0)
-		{
-			rotation = 0;
-		}
-		switch (rotation)
-		{
-		case 90:
-		case 180:
-		case 270:
-			return rotation;
-		default:
-			return 0;
-		}
-	}
-
-
 }

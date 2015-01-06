@@ -231,6 +231,24 @@ public class PDTrueTypeFont extends PDSimpleFont
 	}
 
 	@Override
+	protected byte[] encode(int unicode) throws IOException
+	{
+		if (!getEncoding().contains(getGlyphList().codePointToName(unicode)))
+		{
+			throw new IllegalArgumentException("This font type only supports 8-bit code points");
+		}
+
+		int gid = codeToGID(unicode);
+		if (gid == 0)
+		{
+			throw new IllegalArgumentException(
+					String.format("U+%04X is not available in this font's Encoding", unicode));
+		}
+
+		return new byte[] { (byte)unicode };
+	}
+
+	@Override
 	public boolean isEmbedded()
 	{
 		return isEmbedded;

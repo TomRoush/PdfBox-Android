@@ -280,7 +280,7 @@ public class ConformingPDFParser extends BaseParser {
     protected COSBase processCosObject(String string) throws IOException {
         if(string != null && string.endsWith(">")) {
             // string of hex codes
-            return COSString.createFromHexString(string.replaceAll("^<", "").replaceAll(">$", ""));
+            return COSString.parseHex(string.replaceAll("^<", "").replaceAll(">$", ""));
         }
         return null;
     }
@@ -305,12 +305,12 @@ public class ConformingPDFParser extends BaseParser {
             lastSection = lastSection.replaceAll("]$", "");
             while(!lastSection.startsWith("[")) {
                 if(lastSection.matches("^\\s*<.*>\\s*$")) // it's a hex string
-                    array.add(COSString.createFromHexString(lastSection.replaceAll("^\\s*<", "").replaceAll(">\\s*$", "")));
+                    array.add(COSString.parseHex(lastSection.replaceAll("^\\s*<", "").replaceAll(">\\s*$", "")));
                 lastSection = readBackwardUntilWhitespace();
             }
             lastSection = lastSection.replaceAll("^\\[", "");
             if(lastSection.matches("^\\s*<.*>\\s*$")) // it's a hex string
-                array.add(COSString.createFromHexString(lastSection.replaceAll("^\\s*<", "").replaceAll(">\\s*$", "")));
+                array.add(COSString.parseHex(lastSection.replaceAll("^\\s*<", "").replaceAll(">\\s*$", "")));
             obj = array;
         } else if(lastSection != null && lastSection.endsWith(">")) {
             // string of hex codes
@@ -499,7 +499,7 @@ public class ConformingPDFParser extends BaseParser {
                 sb.append((char)singleByte);
                 singleByte = readByte();
             }
-            return new COSString(sb.toString());
+            return new COSString(sb.toString()); // fixme: should be calling COSString(byte[])
         } else {
             throw new RuntimeException("Not yet implemented: " + string
                     + " loation=" + this.currentOffset);

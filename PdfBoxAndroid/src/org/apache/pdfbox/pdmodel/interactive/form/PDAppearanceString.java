@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
+import org.apache.pdfbox.pdfwriter.COSWriter;
 import org.apache.pdfbox.pdfwriter.ContentStreamWriter;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
@@ -42,7 +44,6 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
  */
 public final class PDAppearanceString
 {
-
 	private static final Log LOG = LogFactory.getLog(PDAppearanceString.class);
 
 	private final PDVariableText parent;
@@ -299,7 +300,7 @@ public final class PDAppearanceString
 	}
 
 	private void insertGeneratedAppearance(PDAnnotationWidget fieldWidget, OutputStream output,
-			PDFont pdFont, List<Object> tokens, PDAppearanceStream appearanceStream) throws IOException
+			PDFont font, List<Object> tokens, PDAppearanceStream appearanceStream) throws IOException
 	{
 		PrintWriter printWriter = new PrintWriter(output, true);
 		float fontSize = 0.0f;
@@ -315,7 +316,7 @@ public final class PDAppearanceString
 			PDFStreamParser daParser = new PDFStreamParser(new ByteArrayInputStream(daString.getBytes("ISO-8859-1")));
 			daParser.parse();
 			List<Object> daTokens = daParser.getTokens();
-			fontSize = calculateFontSize(pdFont, boundingBox, tokens, daTokens);
+			fontSize = calculateFontSize(font, boundingBox, tokens, daTokens);
 			int fontIndex = daTokens.indexOf(Operator.getOperator("Tf"));
 			if(fontIndex != -1)
 			{
@@ -332,7 +333,7 @@ public final class PDAppearanceString
 		// Need to revisit this for forms being generated with other software.
 		float paddingLeft = Math.max(2, Math.round(4 * borderEdge.getLowerLeftX()));
 		float paddingRight = Math.max(2, Math.round(4 * (boundingBox.getUpperRightX() - borderEdge.getUpperRightX())));
-		float verticalOffset = getVerticalOffset(boundingBox, pdFont, fontSize, tokens);
+		float verticalOffset = getVerticalOffset(boundingBox, font, fontSize, tokens);
 
 		// Acrobat shifts the value so it aligns to the bottom if 
 		// the font's caps are larger than the height of the borderEdge
@@ -342,13 +343,13 @@ public final class PDAppearanceString
 		float fontHeight = boundingBox.getHeight() - verticalOffset * 2;
 
 		if (fontHeight + 2 * borderEdge.getLowerLeftX() > borderEdge.getHeight()) {
-			verticalOffset = pdFont.getBoundingBox().getHeight()/1000 * fontSize - borderEdge.getHeight();
+			verticalOffset = font.getBoundingBox().getHeight()/1000 * fontSize - borderEdge.getHeight();
 		}
 
 		float leftOffset = 0f;
 
 		// Acrobat aligns left regardless of the quadding if the text is wider than the remaining width
-		float stringWidth = (pdFont.getStringWidth( value )/1000)*fontSize;
+		float stringWidth = (font.getStringWidth( value )/1000)*fontSize;
 		int q = getQ();
 		if (q == PDTextField.QUADDING_LEFT || stringWidth > borderEdge.getWidth() - paddingLeft - paddingRight)
 		{
@@ -369,20 +370,25 @@ public final class PDAppearanceString
 
 		printWriter.println(leftOffset + " " + verticalOffset + " Td");
 
-		// add the value as hex string to deal with non ISO-8859-1 data values
+		// show the text
 		if (!isMultiLineValue(value) || stringWidth > borderEdge.getWidth() - paddingLeft -
 				paddingRight)
 		{
-			printWriter.println("<" + new COSString(value).getHexString() + "> Tj");
+			printWriter.print("<");
+			printWriter.flush();
+			COSWriter.writeString(value.getBytes(Charset.forName("ISO-8859-1")), output); // todo: use font's encoding
+			printWriter.println("> Tj");
 		}
 		else
 		{
-			String[] lines = value.split("\n");
-			for (int i = 0; i < lines.length; i++)
+			String[] paragraphs = value.split("\n");
+			for (int i = 0; i < paragraphs.length; i++)
 			{
-				boolean lastLine = i == (lines.length - 1);
-				String endingTag = lastLine ? "> Tj\n" : "> Tj 0 -13 Td";
-				printWriter.print("<" + new COSString(lines[i]).getHexString() + endingTag);
+				boolean lastLine = i == paragraphs.length - 1;
+				printWriter.print("<");
+				printWriter.flush();
+				COSWriter.writeString(value.getBytes(Charset.forName("ISO-8859-1")), output); // todo: use font's encoding
+				printWriter.println(lastLine ? "> Tj\n" : "> Tj 0 -13 Td");
 			}
 		}        
 		printWriter.println("ET");

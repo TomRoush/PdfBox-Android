@@ -93,13 +93,7 @@ public class PDNamedDestination extends PDDestination
      */
     public void setNamedDestination( String dest ) throws IOException
     {
-        if( namedDestination instanceof COSString )
-        {
-            COSString string = ((COSString)namedDestination);
-            string.reset();
-            string.append( dest.getBytes("ISO-8859-1") );
-        }
-        else if( dest == null )
+        if( dest == null )
         {
             namedDestination = null;
         }
