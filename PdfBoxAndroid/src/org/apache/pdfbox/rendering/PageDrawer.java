@@ -39,7 +39,6 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.hardware.Camera.Area;
 
 /**
  * Paints a page in a PDF document to a Graphics context.

@@ -18,8 +18,6 @@ package org.apache.fontbox.ttf;
 
 import java.io.IOException;
 
-import org.apache.fontbox.encoding.Encoding;
-
 /**
  * A table in a true type font.
  * 

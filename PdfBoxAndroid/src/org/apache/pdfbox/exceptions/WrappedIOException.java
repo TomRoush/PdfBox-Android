@@ -1,8 +1,6 @@
 package org.apache.pdfbox.exceptions;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * An simple class that allows a sub exception to be stored.

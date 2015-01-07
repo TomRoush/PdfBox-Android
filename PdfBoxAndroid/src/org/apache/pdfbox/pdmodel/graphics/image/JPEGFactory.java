@@ -3,16 +3,13 @@ package org.apache.pdfbox.pdmodel.graphics.image;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
 
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.filter.MissingImageReaderException;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.ImageReader;
 
 /**
  * Factory for creating a PDImageXObject containing a JPEG compressed image.

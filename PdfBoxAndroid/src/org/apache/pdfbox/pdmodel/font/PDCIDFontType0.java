@@ -19,8 +19,6 @@ import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.util.Matrix;
 
-import android.graphics.PointF;
-
 /**
  * Type 0 CIDFont (CFF).
  * 
