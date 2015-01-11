@@ -1025,15 +1025,15 @@ public class PDPageContentStream implements Closeable
      * @param height The height of the rectangle.
      * @throws IOException If there is an error while drawing on the screen.
      */
-//    public void fillRect(float x, float y, float width, float height) throws IOException
-//    {
-//        if (inTextMode)
-//        {
-//            throw new IOException("Error: fillRect is not allowed within a text block.");
-//        }
-//        addRect(x, y, width, height);
-//        fill(PathIterator.WIND_NON_ZERO);
-//    }TODO
+    public void fillRect(float x, float y, float width, float height) throws IOException
+    {
+        if (inTextMode)
+        {
+            throw new IOException("Error: fillRect is not allowed within a text block.");
+        }
+        addRect(x, y, width, height);
+        fill(Path.FillType.WINDING);
+    }
 
     /**
      * Append a cubic Bézier curve to the current path. The curve extends from the current
@@ -1252,15 +1252,15 @@ public class PDPageContentStream implements Closeable
      * @param y y coordinate of each points
      * @throws IOException If there is an error while drawing on the screen.
      */
-//    public void fillPolygon(float[] x, float[] y) throws IOException
-//    {
-//        if (inTextMode)
-//        {
-//            throw new IOException("Error: fillPolygon is not allowed within a text block.");
-//        }
-//        addPolygon(x, y);
-//        fill(PathIterator.WIND_NON_ZERO);
-//    }TODO
+    public void fillPolygon(float[] x, float[] y) throws IOException
+    {
+        if (inTextMode)
+        {
+            throw new IOException("Error: fillPolygon is not allowed within a text block.");
+        }
+        addPolygon(x, y);
+        fill(Path.FillType.WINDING);
+    }
 
     /**
      * Stroke the path.
@@ -1297,26 +1297,26 @@ public class PDPageContentStream implements Closeable
      * 
      * @throws IOException If there is an error while filling the path.
      */
-//    public void fill(int windingRule) throws IOException
-//    {
-//        if (inTextMode)
-//        {
-//            throw new IOException("Error: fill is not allowed within a text block.");
-//        }
-//        if (windingRule == PathIterator.WIND_NON_ZERO)
-//        {
-//            appendRawCommands(FILL_NON_ZERO);
-//        }
-//        else if (windingRule == PathIterator.WIND_EVEN_ODD)
-//        {
-//            appendRawCommands(FILL_EVEN_ODD);
-//        }
-//        else
-//        {
-//            throw new IOException("Error: unknown value for winding rule");
-//        }
-//
-//    }TODO
+    public void fill(Path.FillType windingRule) throws IOException
+    {
+        if (inTextMode)
+        {
+            throw new IOException("Error: fill is not allowed within a text block.");
+        }
+        if (windingRule == Path.FillType.WINDING)
+        {
+            appendRawCommands(FILL_NON_ZERO);
+        }
+        else if (windingRule == Path.FillType.EVEN_ODD)
+        {
+            appendRawCommands(FILL_EVEN_ODD);
+        }
+        else
+        {
+            throw new IOException("Error: unknown value for winding rule");
+        }
+
+    }
 
     /**
      * Close subpath.
@@ -1339,27 +1339,27 @@ public class PDPageContentStream implements Closeable
      *  
      * @throws IOException If there is an error while clipping the path.
      */
-//    public void clipPath(int windingRule) throws IOException
-//    {
-//        if (inTextMode)
-//        {
-//            throw new IOException("Error: clipPath is not allowed within a text block.");
-//        }
-//        if (windingRule == PathIterator.WIND_NON_ZERO)
-//        {
-//            appendRawCommands(CLIP_PATH_NON_ZERO);
-//            appendRawCommands(NOP);
-//        }
-//        else if (windingRule == PathIterator.WIND_EVEN_ODD)
-//        {
-//            appendRawCommands(CLIP_PATH_EVEN_ODD);
-//            appendRawCommands(NOP);
-//        }
-//        else
-//        {
-//            throw new IOException("Error: unknown value for winding rule");
-//        }
-//    }TODO
+    public void clipPath(Path.FillType windingRule) throws IOException
+    {
+        if (inTextMode)
+        {
+            throw new IOException("Error: clipPath is not allowed within a text block.");
+        }
+        if (windingRule == Path.FillType.WINDING)
+        {
+            appendRawCommands(CLIP_PATH_NON_ZERO);
+            appendRawCommands(NOP);
+        }
+        else if (windingRule == Path.FillType.EVEN_ODD)
+        {
+            appendRawCommands(CLIP_PATH_EVEN_ODD);
+            appendRawCommands(NOP);
+        }
+        else
+        {
+            throw new IOException("Error: unknown value for winding rule");
+        }
+    }
 
     /**
      * Set linewidth to the given value.
