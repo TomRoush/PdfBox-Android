@@ -78,76 +78,105 @@ public abstract class PDFieldTreeNode implements COSObjectable
 	}
 
 	/**
+	 * Returns the node in the field tree from which a specific attribute might be inherited.
+	 *
+	 * @param field the field from which to look for the attribute
+	 * @param key the key to look for
+	 * @return PDFieldTreeNode the node from which the attribute will be inherited or null
+	 */
+	public PDFieldTreeNode getInheritableAttributesNode(PDFieldTreeNode field, COSName key)
+	{
+		if (field.getDictionary().containsKey(key))
+		{
+			return field;
+		}
+		else
+		{
+			PDFieldTreeNode parentField = field.getParent();
+			if (parentField != null)
+			{
+				getInheritableAttributesNode(parentField, key);
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Returns the given attribute, inheriting from parent nodes if necessary.
 	 *
-	 * @param fieldDictionary field object
 	 * @param key the key to look up
 	 * @return COS value for the given key
 	 */
-	public COSBase getInheritableAttribute(COSDictionary fieldDictionary, COSName key)
+	protected COSBase getInheritableAttribute(COSName key)
 	{
-		COSBase value = fieldDictionary.getCOSName(key);
-		if (value != null)
+		PDFieldTreeNode attributesNode = getInheritableAttributesNode(this,key);
+		
+		if (attributesNode != null)
 		{
-			return value;
-		}
-
-		COSDictionary parentDictionary = (COSDictionary) fieldDictionary.getDictionaryObject(COSName.PARENT);
-		if (parentDictionary != null)
-		{
-			return getInheritableAttribute(parentDictionary, key);
+			return attributesNode.getDictionary().getDictionaryObject(key);
 		}
 
 		return null;
 	}
 
-
 	/**
 	 * Sets the given attribute, inheriting from parent nodes if necessary.
 	 *
-	 * @param fieldDictionary field object
 	 * @param key the key to look up
 	 * @param value the new attributes value
 	 */
-	public void setInheritableAttribute(COSDictionary fieldDictionary, COSName key, COSBase value)
+	protected void setInheritableAttribute(COSName key, COSBase value)
 	{
-		if (fieldDictionary.getItem(key) != null)
+		PDFieldTreeNode attributesNode = getInheritableAttributesNode(this,key);
+		if (attributesNode != null)
 		{
-			fieldDictionary.setItem(key, value);
-		}
-		else
-		{
-			COSDictionary parentDictionary = (COSDictionary) fieldDictionary.getDictionaryObject(COSName.PARENT);
-			if (parentDictionary != null)
-			{
-				setInheritableAttribute(parentDictionary, key, value);
-			}
+			attributesNode.getDictionary().setItem(key, value);
 		}
 	}
 
 	/**
 	 * Removes the given attribute, inheriting from parent nodes if necessary.
 	 *
-	 * @param fieldDictionary field object
 	 * @param key the key to look up
 	 */
-	public void removeInheritableAttribute(COSDictionary fieldDictionary, COSName key)
+	protected void removeInheritableAttribute(COSName key)
 	{
-		if (fieldDictionary.getItem(key) != null)
+		PDFieldTreeNode attributesNode = getInheritableAttributesNode(this,key);
+		if (attributesNode != null)
 		{
-			fieldDictionary.removeItem(key);
-		}
-		else
-		{
-			COSDictionary parentDictionary = (COSDictionary) fieldDictionary.getDictionaryObject(COSName.PARENT);
-			if (parentDictionary != null)
-			{
-				removeInheritableAttribute(parentDictionary, key);
-			}
+			attributesNode.getDictionary().removeItem(key);
 		}
 	}
 
-
+	/**
+	 * Get a text as text stream.
+	 *
+	 * Some dictionary entries allow either a text or a text stream.
+	 *
+	 * @param cosBaseEntry the potential text or text stream
+	 * @return the text stream
+	 * @throws IOException if the field dictionary entry is not a text type
+	 */
+	protected PDTextStream getAsTextStream(COSBase cosBaseEntry) throws IOException
+	{
+		if (cosBaseEntry == null)
+		{
+			return null;
+		}
+		else
+		{
+			PDTextStream textStream = PDTextStream.createTextStream(cosBaseEntry);
+			// This will happen if the entry was not a COSString or COSStream
+			if (textStream == null)
+			{
+				throw new IOException("Invalid field value. Unexpected type " + cosBaseEntry.getClass().getName());
+			}
+			else
+			{
+				return textStream;
+			}
+		}
+	}
 
 	/**
 	 * Get the FT entry of the field. This is a read only field and is set depending on the actual type. The field type
@@ -176,6 +205,24 @@ public abstract class PDFieldTreeNode implements COSObjectable
 	 * 
 	 */
 	public abstract Object getDefaultValue() throws IOException;
+	
+	/**
+	 * Set the value of the "DV" entry. The "DV" entry is an inheritable attribute.
+	 *
+	 * The different field types do require specific object types for their value
+	 * e.g. for RadioButtons the DV entry needs to be a name object. This needs to be handled by the
+	 * individual classes.
+	 *
+	 * Trying to set the default value for a {@link PDPushButton} field will lead to an
+	 * {@link IllegalArgumentException} as PDPushButton fields do not support setting the
+	 * entry although, common to all field types, the DV entry shall not be set.
+	 *
+	 * As a result it might be necessary to check the type of the value before
+	 * reusing it.
+	 *
+	 * @param defaultValue The new default field value.
+	 */
+	public abstract void setDefaultValue(String defaultValue);
 
 	/**
 	 * Get the value of the "V" entry. The "V" entry is an inheritable attribute.
@@ -198,6 +245,24 @@ public abstract class PDFieldTreeNode implements COSObjectable
 	 * 
 	 */
 	public abstract Object getValue() throws IOException;
+	
+	/**
+	 * Set the value of the "V" entry. The "V" entry is an inheritable attribute.
+	 *
+	 * The different field types do require specific object types for their value
+	 * e.g. for RadioButtons the V entry needs to be a name object. This needs to be handled by the
+	 * individual classes.
+	 *
+	 * Trying to set the value for a {@link PDPushButton} field will lead to an
+	 * {@link IllegalArgumentException} as PDPushButton fields do not support setting the
+	 * entry although, common to all field types, the DV entry shall not be set.
+	 *
+	 * As a result it might be necessary to check the type of the value before
+	 * reusing it.
+	 *
+	 * @param fieldValue The new field value.
+	 */
+	public abstract void setValue(String fieldValue);
 
 	/**
 	 * sets the field to be read-only.
@@ -519,10 +584,10 @@ public abstract class PDFieldTreeNode implements COSObjectable
 				{
 					continue;
 				}
-				COSDictionary parent = (COSDictionary) kidDictionary.getDictionaryObject(
+				COSDictionary parentDictionary = (COSDictionary) kidDictionary.getDictionaryObject(
 						COSName.PARENT, COSName.P);
 				if (kidDictionary.getDictionaryObject(COSName.FT) != null
-						|| (parent != null && parent.getDictionaryObject(COSName.FT) != null))
+						|| (parentDictionary != null && parentDictionary.getDictionaryObject(COSName.FT) != null))
 				{
 					PDFieldTreeNode field = PDFieldTreeNode.createField(acroForm, kidDictionary, this);
 					if (field != null)

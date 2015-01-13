@@ -85,6 +85,7 @@ public class PDNamedTextStream implements DualCOSObjectable
      *
      * @return The cos object that matches this Java object.
      */
+    @Override
     public COSBase getFirstCOSObject()
     {
         return streamName;
@@ -95,6 +96,7 @@ public class PDNamedTextStream implements DualCOSObjectable
      *
      * @return The cos object that matches this Java object.
      */
+    @Override
     public COSBase getSecondCOSObject()
     {
         COSBase retval = null;

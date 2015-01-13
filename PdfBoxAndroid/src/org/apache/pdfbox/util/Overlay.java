@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,6 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -45,7 +45,7 @@ public class Overlay
 	private LayoutPage oddPageOverlayPage;
 	private LayoutPage evenPageOverlayPage;
 
-	private Map<Integer, PDDocument> specificPageOverlay = new HashMap<Integer, PDDocument>();
+	private final Map<Integer, PDDocument> specificPageOverlay = new HashMap<Integer, PDDocument>();
 	private Map<Integer, LayoutPage> specificPageOverlayPage = new HashMap<Integer, LayoutPage>();
 
 	private Position position = Position.BACKGROUND;
@@ -80,7 +80,6 @@ public class Overlay
 	 * This will add overlays to a documents.
 	 * 
 	 * @param specificPageOverlayFile map of overlay files for specific pages
-	 * @param useNonSeqParser indicates whether the nonsequential parser is used
 	 * @throws IOException if something went wrong
 	 */
 	public void overlay(Map<Integer, String> specificPageOverlayFile)
@@ -240,7 +239,6 @@ public class Overlay
 
 	private HashMap<Integer,LayoutPage> getLayoutPages(PDDocument doc) throws IOException
 	{
-		PDDocumentCatalog catalog = doc.getDocumentCatalog();
 		int numberOfPages = doc.getNumberOfPages();
 		HashMap<Integer,LayoutPage> layoutPages = new HashMap<Integer, Overlay.LayoutPage>(numberOfPages);
 		for (int i=0;i<numberOfPages;i++)
@@ -318,19 +316,7 @@ public class Overlay
 			case FOREGROUND:
 				// save state
 				contentArray.add(createStream("q\n"));
-				// original content
-				if (contents instanceof COSStream)
-				{
-					contentArray.add(contents);
-				}
-				else if (contents instanceof COSArray)
-				{
-					contentArray.addAll((COSArray) contents);
-				}
-				else
-				{
-					throw new IOException("Unknown content type:" + contents.getClass().getName());
-				}
+				addOriginalContent(contents, contentArray);
 				// restore state
 				contentArray.add(createStream("Q\n"));
 				// overlay content
@@ -339,25 +325,29 @@ public class Overlay
 			case BACKGROUND:
 				// overlay content
 				overlayPage(contentArray, page, pageCount + 1, document.getNumberOfPages());
-				// original content
-				if (contents instanceof COSStream)
-				{
-					contentArray.add(contents);
-				}
-				else if (contents instanceof COSArray)
-				{
-					contentArray.addAll((COSArray) contents);
-				}
-				else
-				{
-					throw new IOException("Unknown content type:" + contents.getClass().getName());
-				}
+				addOriginalContent(contents, contentArray);
 				break;
 			default:
 				throw new IOException("Unknown type of position:" + position);
 			}
 			pageDictionary.setItem(COSName.CONTENTS, contentArray);
 			pageCount++;
+		}
+	}
+	
+	private void addOriginalContent(COSBase contents, COSArray contentArray) throws IOException
+	{
+		if (contents instanceof COSStream)
+		{
+			contentArray.add(contents);
+		}
+		else if (contents instanceof COSArray)
+		{
+			contentArray.addAll((COSArray) contents);
+		}
+		else
+		{
+			throw new IOException("Unknown content type:" + contents.getClass().getName());
 		}
 	}
 
@@ -424,11 +414,34 @@ public class Overlay
 	{
 		// create a new content stream that executes the XObject content
 		PDRectangle pageMediaBox = page.getMediaBox();
-		float scale = 1;
 		float hShift = (pageMediaBox.getWidth() - layoutPage.overlayMediaBox.getWidth()) / 2.0f;
 		float vShift = (pageMediaBox.getHeight() - layoutPage.overlayMediaBox.getHeight()) / 2.0f;
-		return createStream("q\nq " + scale + " 0 0 " + scale + " " + hShift + " " + vShift
-				+ " cm /" + xObjectId.getName() + " Do Q\nQ\n");
+		StringBuilder overlayStream = new StringBuilder();
+		overlayStream.append("q\nq 1 0 0 1 ");
+		overlayStream.append(float2String(hShift));
+		overlayStream.append(" ");
+		overlayStream.append(float2String(vShift) );
+		overlayStream.append(" cm /");
+		overlayStream.append(xObjectId.getName());
+		overlayStream.append(" Do Q\nQ\n");
+		return createStream(overlayStream.toString());
+	}
+
+	private String float2String(float floatValue)
+	{
+		// use a BigDecimal as intermediate state to avoid
+		// a floating point string representation of the float value
+		BigDecimal value = new BigDecimal(String.valueOf(floatValue));
+		String stringValue = value.toPlainString();
+		// remove fraction digit "0" only
+		if (stringValue.indexOf('.') > -1 && !stringValue.endsWith(".0"))
+		{
+			while (stringValue.endsWith("0") && !stringValue.endsWith(".0"))
+			{
+				stringValue = stringValue.substring(0,stringValue.length()-1);
+			}
+		}
+		return stringValue;
 	}
 
 	private COSStream createStream(String content) throws IOException

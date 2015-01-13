@@ -2,7 +2,6 @@ package org.apache.pdfbox.pdfparser;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,10 +57,6 @@ public class VisualSignatureParser extends BaseParser
                 } 
                 catch(IOException e) 
                 {
-                    /*
-                     * Warning is sent to the PDFBox.log and to the Console that
-                     * we skipped over an object
-                     */
                     LOG.warn("Parsing Error, Skipping Object", e);
                     skipToNextObj();
                 }
@@ -80,39 +75,51 @@ public class VisualSignatureParser extends BaseParser
             }
         }
     }
-
-    private void skipToNextObj() throws IOException 
-    {
-        byte[] b = new byte[16];
-        Pattern p = Pattern.compile("\\d+\\s+\\d+\\s+obj.*", Pattern.DOTALL);
-        /* Read a buffer of data each time to see if it starts with a
-         * known keyword. This is not the most efficient design, but we should
-         * rarely be needing this function. We could update this to use the
-         * circular buffer, like in readUntilEndStream().
-         */
-        while(!pdfSource.isEOF()) 
-        {
-            int l = pdfSource.read(b);
-            if(l < 1) 
-            {
-                break;
-            }
-            String s = new String(b, "US-ASCII");
-            if(s.startsWith("trailer")
-                    || s.startsWith("xref")
-                    || s.startsWith("startxref")
-                    || s.startsWith("stream")
-                    || p.matcher(s).matches()) 
-            {
-                pdfSource.unread(b);
-                break;
-            } 
-            else 
-            {
-                pdfSource.unread(b, 1, l - 1);
-            }
-        }
-    }
+    
+    /**
+	 * This will read bytes until the end of line marker occurs.
+	 *
+	 * @param theString The next expected string in the stream.
+	 *
+	 * @return The characters between the current position and the end of the line.
+	 *
+	 * @throws IOException If there is an error reading from the stream or theString does not match what was read.
+	 */
+	protected String readExpectedStringUntilEOL( String theString ) throws IOException
+	{
+		int c = pdfSource.read();
+		while( isWhitespace(c) && c != -1)
+		{
+			c = pdfSource.read();
+		}
+		StringBuilder buffer = new StringBuilder( theString.length() );
+		int charsRead = 0;
+		while( !isEOL(c) && c != -1 && charsRead < theString.length() )
+		{
+			char next = (char)c;
+			buffer.append( next );
+			if( theString.charAt( charsRead ) == next )
+			{
+				charsRead++;
+			}
+			else
+			{
+				pdfSource.unread(buffer.toString().getBytes("ISO-8859-1"));
+				throw new IOException( "Error: Expected to read '" + theString +
+						"' instead started reading '" +buffer.toString() + "'" );
+			}
+			c = pdfSource.read();
+		}
+		while( isEOL(c) && c != -1 )
+		{
+			c = pdfSource.read();
+		}
+		if (c != -1)
+		{
+			pdfSource.unread(c);
+		}
+		return buffer.toString();
+	}
 
     private boolean parseObject() throws IOException 
     {
@@ -150,8 +157,8 @@ public class VisualSignatureParser extends BaseParser
             {
                 skipToNextObj();
                 //verify that EOF exists
-                String eof = readExpectedString("%%EOF");
-                if(eof.indexOf("%%EOF") == -1 && !pdfSource.isEOF()) 
+                String eof = readExpectedStringUntilEOL("%%EOF");
+                if (!eof.contains("%%EOF") && !pdfSource.isEOF())
                 {
                     throw new IOException("expected='%%EOF' actual='" + eof + "' next=" + readString()
                             + " next=" + readString());
@@ -161,62 +168,20 @@ public class VisualSignatureParser extends BaseParser
         } 
         else 
         {
-            //we are going to parse an normal object
-            long number = -1;
-            int genNum = -1;
-            String objectKey = null;
-            boolean missingObjectNumber = false;
-            try 
-            {
-                char peeked = (char) pdfSource.peek();
-                if(peeked == '<') 
-                {
-                    missingObjectNumber = true;
-                } 
-                else 
-                {
-                    number = readObjectNumber();
-                }
-            } 
-            catch(IOException e) 
-            {
-                //ok for some reason "GNU Ghostscript 5.10" puts two endobj
-                //statements after an object, of course this is nonsense
-                //but because we want to support as many PDFs as possible
-                //we will simply try again
-                number = readObjectNumber();
-            }
-            if(!missingObjectNumber)
-            {
-                skipSpaces();
-                genNum = readGenerationNumber();
-
-                objectKey = readString(3);
-                //System.out.println( "parseObject() num=" + number +
-                //" genNumber=" + genNum + " key='" + objectKey + "'" );
-                if(!objectKey.equals("obj")) 
-                {
-                    throw new IOException("expected='obj' actual='" + objectKey + "' " + pdfSource);
-                }
-            } 
-            else 
-            {
-                number = -1;
-                genNum = -1;
-            }
+            //we are going to parse a normal object
+        	COSObjectKey key = parseObjectKey(false);
 
             skipSpaces();
             COSBase pb = parseDirObject();
             String endObjectKey = readString();
 
-            if(endObjectKey.equals("stream")) 
+            if (endObjectKey.equals("stream"))
             {
                 pdfSource.unread(endObjectKey.getBytes());
                 pdfSource.unread(' ');
                 if(pb instanceof COSDictionary) 
                 {
                     pb = parseCOSStream((COSDictionary) pb);
-
                 } 
                 else 
                 {
@@ -226,8 +191,6 @@ public class VisualSignatureParser extends BaseParser
                 }
                 endObjectKey = readString();
             }
-
-            COSObjectKey key = new COSObjectKey(number, genNum);
             COSObject pdfObject = document.getObjectFromPool(key);
             pb.setNeedToBeUpdate(true);
             pdfObject.setObject(pb);
@@ -253,15 +216,15 @@ public class VisualSignatureParser extends BaseParser
                         Float.parseFloat(endObjectKey);
                         pdfSource.unread(COSWriter.SPACE);
                         pdfSource.unread(endObjectKey.getBytes());
-                    } 
-                    catch(NumberFormatException e) 
+                    }
+                    catch (NumberFormatException e) 
                     {
                         //we will try again incase there was some garbage which
                         //some writers will leave behind.
                         String secondEndObjectKey = readString();
-                        if(!secondEndObjectKey.equals("endobj")) 
+                        if (!secondEndObjectKey.equals("endobj"))
                         {
-                            if(isClosing()) 
+                            if (isClosing())
                             {
                                 //found a case with 17506.pdf object 41 that was like this
                                 //41 0 obj [/Pattern /DeviceGray] ] endobj
@@ -274,7 +237,7 @@ public class VisualSignatureParser extends BaseParser
                             if(!thirdPossibleEndObj.equals("endobj")) 
                             {
                                 throw new IOException("expected='endobj' firstReadAttempt='" + endObjectKey + "' "
-                                        + "secondReadAttempt='" + secondEndObjectKey + "' " + pdfSource);
+                                        + "secondReadAttempt='" + secondEndObjectKey + "' " + pdfSource, e);
                             }
                         }
                     }

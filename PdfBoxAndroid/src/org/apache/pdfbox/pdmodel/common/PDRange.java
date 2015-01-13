@@ -57,6 +57,7 @@ public class PDRange implements COSObjectable
      *
      * @return The cos object that matches this Java object.
      */
+    @Override
     public COSBase getCOSObject()
     {
         return rangeArray;

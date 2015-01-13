@@ -37,6 +37,7 @@ public class PDDictionaryWrapper implements COSObjectable
     /**
      * {@inheritDoc}
      */
+    @Override
     public COSBase getCOSObject()
     {
         return this.dictionary;

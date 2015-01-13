@@ -27,6 +27,7 @@ public abstract class PDSimpleFont extends PDFont
 
 	protected Encoding encoding;
 	protected GlyphList glyphList;
+	private Boolean isSymbolic;
 	private final Set<Integer> noUnicode = new HashSet<Integer>(); // for logging
 
 	/**
@@ -92,14 +93,16 @@ public abstract class PDSimpleFont extends PDFont
 			{
 				COSDictionary encodingDict = (COSDictionary)encoding;
 				Encoding builtIn = null;
-				if (!encodingDict.containsKey(COSName.BASE_ENCODING) && isSymbolic())
+				Boolean symbolic = getSymbolicFlag();
+				boolean isFlaggedAsSymbolic = symbolic != null && symbolic;
+				if (!encodingDict.containsKey(COSName.BASE_ENCODING) && isFlaggedAsSymbolic)
 				{
 					builtIn = readEncodingFromFont();
 				}
-				Boolean symbolic = getSymbolicFlag();
+				
 				if (symbolic == null)
 				{
-					symbolic = builtIn != null;
+					symbolic = false;
 				}
 
 				if (builtIn == null && !encodingDict.containsKey(COSName.BASE_ENCODING) && symbolic)
@@ -167,7 +170,32 @@ public abstract class PDSimpleFont extends PDFont
 		return glyphList;
 	}
 
-	@Override
+	/**
+	 * Returns true the font is a symbolic (that is, it does not use the Adobe Standard Roman
+	 * character set).
+	 */
+	public final boolean isSymbolic()
+	{
+		if (isSymbolic == null)
+		{
+			Boolean result = isFontSymbolic();
+			if (result != null)
+			{
+				isSymbolic = result;
+			}
+			else
+			{
+				// unless we can prove that the font is symbolic, we assume that it is not
+				isSymbolic = true;
+			}
+		}
+		return isSymbolic;
+	}
+
+	/**
+	 * Internal implementation of isSymbolic, allowing for the fact that the result may be
+	 * indeterminate.
+	 */
 	protected Boolean isFontSymbolic()
 	{
 		Boolean result = getSymbolicFlag();
@@ -223,6 +251,20 @@ public abstract class PDSimpleFont extends PDFont
 				return null;
 			}
 		}
+	}
+
+	/**
+	 * Returns the value of the symbolic flag, allowing for the fact that the result may be
+	 * indeterminate.
+	 */
+	protected final Boolean getSymbolicFlag()
+	{
+		if (getFontDescriptor() != null)
+		{
+			// fixme: isSymbolic() defaults to false if the flag is missing so we can't trust this
+			return getFontDescriptor().isSymbolic();
+		}
+		return null;
 	}
 
 	@Override
@@ -329,5 +371,12 @@ public abstract class PDSimpleFont extends PDFont
 			}
 		}
 		return super.isStandard14();
+	}
+
+	@Override
+	public void subset(Set<Integer> codePoints) throws IOException
+	{
+		// only TTF subsetting via PDType0Font is currently supported
+		throw new UnsupportedOperationException();
 	}
 }

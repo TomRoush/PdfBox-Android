@@ -17,14 +17,14 @@
 
 package org.apache.fontbox.type1;
 
+import org.apache.fontbox.encoding.CustomEncoding;
+import org.apache.fontbox.encoding.StandardEncoding;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.fontbox.encoding.CustomEncoding;
-import org.apache.fontbox.encoding.StandardEncoding;
 
 /**
  * Parses an Adobe Type 1 (.pfb) font. It is used exclusively by Type1Font.
@@ -71,6 +71,11 @@ final class Type1Parser
      */
     private void parseASCII(byte[] bytes) throws IOException
     {
+        if (bytes.length == 0)
+        {
+            throw new IllegalArgumentException("byte[] is empty");
+        }
+
         // %!FontType1-1.0
         // %!PS-AdobeFont-1.0
         if (bytes.length < 2 || (bytes[0] != '%' && bytes[1] != '!'))
@@ -120,89 +125,11 @@ final class Type1Parser
             }
             else if (key.equals("Encoding"))
             {
-                if (lexer.peekToken().getKind() == Token.NAME)
-                {
-                    String name = lexer.nextToken().getText();
-
-                    if (name.equals("StandardEncoding"))
-                    {
-                        font.encoding = StandardEncoding.INSTANCE;
-                    }
-                    else
-                    {
-                        throw new IOException("Unknown encoding: " + name);
-                    }
-                    readMaybe(Token.NAME, "readonly");
-                    read(Token.NAME, "def");
-                }
-                else
-                {
-                    read(Token.INTEGER).intValue();
-                    readMaybe(Token.NAME, "array");
-
-                    // 0 1 255 {1 index exch /.notdef put } for
-                    // we have to check "readonly" and "def" too 
-                    // as some fonts don't provide any dup-values, see PDFBOX-2134 
-                    while (!(lexer.peekToken().getKind() == Token.NAME &&
-                            (lexer.peekToken().getText().equals("dup") ||
-                             lexer.peekToken().getText().equals("readonly") ||
-                             lexer.peekToken().getText().equals("def"))))
-                    {
-                        lexer.nextToken();
-                    }
-
-                    Map<Integer, String> codeToName = new HashMap<Integer, String>();
-                    while (lexer.peekToken().getKind() == Token.NAME &&
-                           lexer.peekToken().getText().equals("dup"))
-                    {
-                        read(Token.NAME, "dup");
-                        int code = read(Token.INTEGER).intValue();
-                        String name = read(Token.LITERAL).getText();
-                        read(Token.NAME, "put");
-                        codeToName.put(code, name);
-                    }
-                    font.encoding = new CustomEncoding(codeToName);
-                    readMaybe(Token.NAME, "readonly");
-                    read(Token.NAME, "def");
-                }
+                readEncoding();
             }
             else
             {
-                // simple value
-                List<Token> value = readDictValue();
-
-                if (key.equals("FontName"))
-                {
-                    font.fontName = value.get(0).getText();
-                }
-                else if (key.equals("PaintType"))
-                {
-                    font.paintType = value.get(0).intValue();
-                }
-                else if (key.equals("FontType"))
-                {
-                    font.fontType = value.get(0).intValue();
-                }
-                else if (key.equals("FontMatrix"))
-                {
-                    font.fontMatrix = arrayToNumbers(value);
-                }
-                else if (key.equals("FontBBox"))
-                {
-                    font.fontBBox = arrayToNumbers(value);
-                }
-                else if (key.equals("UniqueID"))
-                {
-                    font.uniqueID = value.get(0).intValue();
-                }
-                else if (key.equals("StrokeWidth"))
-                {
-                    font.strokeWidth = value.get(0).floatValue();
-                }
-                else if (key.equals("FID"))
-                {
-                    font.fontID = value.get(0).getText();
-                }
+                readSimpleValue(key);
             }
         }
 
@@ -211,6 +138,93 @@ final class Type1Parser
 
         read(Token.NAME, "currentfile");
         read(Token.NAME, "eexec");
+    }
+
+    private void readSimpleValue(String key) throws IOException
+    {
+        List<Token> value = readDictValue();
+        
+        if (key.equals("FontName"))
+        {
+            font.fontName = value.get(0).getText();
+        }
+        else if (key.equals("PaintType"))
+        {
+            font.paintType = value.get(0).intValue();
+        }
+        else if (key.equals("FontType"))
+        {
+            font.fontType = value.get(0).intValue();
+        }
+        else if (key.equals("FontMatrix"))
+        {
+            font.fontMatrix = arrayToNumbers(value);
+        }
+        else if (key.equals("FontBBox"))
+        {
+            font.fontBBox = arrayToNumbers(value);
+        }
+        else if (key.equals("UniqueID"))
+        {
+            font.uniqueID = value.get(0).intValue();
+        }
+        else if (key.equals("StrokeWidth"))
+        {
+            font.strokeWidth = value.get(0).floatValue();
+        }
+        else if (key.equals("FID"))
+        {
+            font.fontID = value.get(0).getText();
+        }
+    }
+
+    private void readEncoding() throws IOException
+    {
+        if (lexer.peekToken().getKind() == Token.NAME)
+        {
+            String name = lexer.nextToken().getText();
+            
+            if (name.equals("StandardEncoding"))
+            {
+                font.encoding = StandardEncoding.INSTANCE;
+            }
+            else
+            {
+                throw new IOException("Unknown encoding: " + name);
+            }
+            readMaybe(Token.NAME, "readonly");
+            read(Token.NAME, "def");
+        }
+        else
+        {
+            read(Token.INTEGER).intValue();
+            readMaybe(Token.NAME, "array");
+            
+            // 0 1 255 {1 index exch /.notdef put } for
+            // we have to check "readonly" and "def" too
+            // as some fonts don't provide any dup-values, see PDFBOX-2134
+            while (!(lexer.peekToken().getKind() == Token.NAME &&
+                    (lexer.peekToken().getText().equals("dup") ||
+                    lexer.peekToken().getText().equals("readonly") ||
+                    lexer.peekToken().getText().equals("def"))))
+            {
+                lexer.nextToken();
+            }
+            
+            Map<Integer, String> codeToName = new HashMap<Integer, String>();
+            while (lexer.peekToken().getKind() == Token.NAME &&
+                    lexer.peekToken().getText().equals("dup"))
+            {
+                read(Token.NAME, "dup");
+                int code = read(Token.INTEGER).intValue();
+                String name = read(Token.LITERAL).getText();
+                read(Token.NAME, "put");
+                codeToName.put(code, name);
+            }
+            font.encoding = new CustomEncoding(codeToName);
+            readMaybe(Token.NAME, "readonly");
+            read(Token.NAME, "def");
+        }
     }
 
     /**

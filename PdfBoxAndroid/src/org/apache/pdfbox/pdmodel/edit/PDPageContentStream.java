@@ -5,8 +5,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
@@ -19,10 +23,14 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.COSStreamArray;
 import org.apache.pdfbox.pdmodel.common.PDStream;
+import org.apache.pdfbox.pdmodel.font.PDCIDFontType2;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.util.Charsets;
+
+import android.graphics.Path;
 
 /**
  * This class is a convenience for creating page content streams. You MUST call close() when you
@@ -100,6 +108,8 @@ public class PDPageContentStream implements Closeable
 	private PDResources resources;
 	private boolean inTextMode = false;
 	private final Stack<PDFont> fontStack = new Stack<PDFont>();
+	private final List<PDFont> fontsToSubset = new ArrayList<PDFont>();
+	private final Map<PDFont, Set<Integer>> subsetCodePoints = new HashMap<PDFont, Set<Integer>>();
 
 	//    private PDColorSpace currentStrokingColorSpace = PDDeviceGray.INSTANCE; TODO
 	//    private PDColorSpace currentNonStrokingColorSpace = PDDeviceGray.INSTANCE; TODO
@@ -281,6 +291,19 @@ public class PDPageContentStream implements Closeable
      */
     public void setFont(PDFont font, float fontSize) throws IOException
     {
+    	setFont(font, fontSize, true);
+    }
+
+    /**
+     * Set the font to draw text with.
+     *
+     * @param font The font to use.
+     * @param fontSize The font size to draw the text.
+     * @param embedSubset True to subset this font when embedding it. Affects all uses of this font.
+     * @throws IOException If there is an error writing the font information.
+     */
+    public void setFont(PDFont font, float fontSize, boolean embedSubset) throws IOException
+    {
     	if (fontStack.isEmpty())
     	{
     		fontStack.add(font);
@@ -290,11 +313,21 @@ public class PDPageContentStream implements Closeable
     		fontStack.setElementAt(font, fontStack.size() - 1);
     	}
 
+    	if (embedSubset)
+    	{
+    		fontsToSubset.add(font);
+    		subsetCodePoints.put(font, new HashSet<Integer>());
+    	}
+    	else
+    	{
+    		fontsToSubset.remove(font);
+    	}
+
     	appendCOSName(resources.add(font));
     	appendRawCommands(SPACE);
     	appendRawCommands(fontSize);
     	appendRawCommands(SPACE);
-        appendRawCommands(SET_FONT);
+    	appendRawCommands(SET_FONT);
     }
 
     /**
@@ -308,7 +341,7 @@ public class PDPageContentStream implements Closeable
      */
     public void drawImage(PDImageXObject image, float x, float y) throws IOException
     {
-        drawXObject(image, x, y, image.getWidth(), image.getHeight());
+    	drawXObject(image, x, y, image.getWidth(), image.getHeight());
     }
 
     /**
@@ -612,13 +645,27 @@ public class PDPageContentStream implements Closeable
         {
         	throw new IllegalStateException("Must call beginText() before drawString()");
         }
-        
+
         if(fontStack.isEmpty())
         {
         	throw new IllegalStateException("Must call setFont() before drawString()");
         }
-        
+
         PDFont font = fontStack.peek();
+
+        // Unicode code points to keep when subsetting
+        Set<Integer> codePoints = subsetCodePoints.get(font);
+        if (codePoints != null)
+        {
+        	for (int offset = 0; offset < text.length(); )
+        	{
+        		int codePoint = text.codePointAt(offset);
+        		codePoints.add(codePoint);
+        		offset += Character.charCount(codePoint);
+        	}
+
+        }
+
         COSWriter.writeString(font.encode(text), output);
         appendRawCommands(SPACE);
         appendRawCommands(SHOW_TEXT);
@@ -1598,7 +1645,18 @@ public class PDPageContentStream implements Closeable
      */
     public void close() throws IOException
     {
-        output.close();
+    	for (PDFont font : fontsToSubset)
+    	{
+    		// currently we only support subsetting Type0/CIDFontType2 fonts
+    		if (font instanceof PDType0Font)
+    		{
+    			if (((PDType0Font)font).getDescendantFont() instanceof PDCIDFontType2)
+    			{
+    				font.subset(subsetCodePoints.get(font));
+    			}
+    		}
+    	}
+    	output.close();
 //        currentNonStrokingColorSpace = null;
 //        currentStrokingColorSpace = null;TODO
         resources = null;

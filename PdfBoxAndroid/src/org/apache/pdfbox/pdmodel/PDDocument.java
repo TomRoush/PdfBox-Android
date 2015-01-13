@@ -231,14 +231,12 @@ public class PDDocument implements Closeable
 		boolean checkFields = false;
 		for (PDFieldTreeNode field : acroFormFields)
 		{
-			if (field instanceof PDSignatureField)
+			if (field instanceof PDSignatureField
+					&& ((PDSignatureField) field).getCOSObject().equals(signatureField.getCOSObject()))
 			{
-				if (((PDSignatureField) field).getCOSObject().equals(signatureField.getCOSObject()))
-				{
-					checkFields = true;
-					signatureField.getCOSObject().setNeedToBeUpdate(true);
-					break;
-				}
+				checkFields = true;
+				signatureField.getCOSObject().setNeedToBeUpdate(true);
+				break;
 			}
 		}
 		if (!checkFields)
@@ -286,7 +284,7 @@ public class PDDocument implements Closeable
 				}
 
 				COSBase base = cosObject.getObject();
-				if (base != null && base instanceof COSDictionary)
+				if (base instanceof COSDictionary)
 				{
 					COSBase ft = ((COSDictionary) base).getItem(COSName.FT);
 					COSBase type = ((COSDictionary) base).getItem(COSName.TYPE);
@@ -335,12 +333,6 @@ public class PDDocument implements Closeable
 		}
 
 		// Get the annotations of the page and append the signature-annotation to it
-		if (annotations == null)
-		{
-			annotations = new COSArrayList();
-			page.setAnnotations(annotations);
-		}
-
 		// take care that page and acroforms do not share the same array (if so, we don't need to add it twice)
 		if (!(annotations instanceof COSArrayList &&
 				acroFormFields instanceof COSArrayList &&
@@ -396,14 +388,12 @@ public class PDDocument implements Closeable
 			boolean checkFields = false;
 			for (PDFieldTreeNode fieldNode : field)
 			{
-				if (fieldNode instanceof PDSignatureField)
+				if (fieldNode instanceof PDSignatureField
+						&& fieldNode.getCOSObject().equals(sigField.getCOSObject()))
 				{
-					if (fieldNode.getCOSObject().equals(sigField.getCOSObject()))
-					{
-						checkFields = true;
-						sigField.getCOSObject().setNeedToBeUpdate(true);
-						break;
-					}
+					checkFields = true;
+					sigField.getCOSObject().setNeedToBeUpdate(true);
+					break;
 				}
 			}
 
@@ -470,6 +460,7 @@ public class PDDocument implements Closeable
 			if (src != null)
 			{
 				PDStream dest = new PDStream(document.createCOSStream());
+				dest.addCompression();
 				importedPage.setContents(dest);
 				os = dest.createOutputStream();
 
@@ -495,7 +486,6 @@ public class PDDocument implements Closeable
 			}
 		}
 		return importedPage;
-
 	}
 
 	/**

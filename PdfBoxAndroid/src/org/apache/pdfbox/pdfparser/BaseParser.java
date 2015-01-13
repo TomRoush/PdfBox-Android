@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -63,8 +64,8 @@ public abstract class BaseParser
 	private static final int B = 'b';
 	private static final int J = 'j';
 
-	private final int    strmBufLen = 2048;
-	private final byte[] strmBuf    = new byte[ strmBufLen ];
+	private static final int STRMBUFLEN = 2048;
+	private final byte[] strmBuf = new byte[ STRMBUFLEN ];
 
 	/**
 	 * This is a byte array that will be used for comparisons.
@@ -216,11 +217,7 @@ public abstract class BaseParser
 			long genOffset = pdfSource.getOffset();
 			COSBase generationNumber = parseDirObject();
 			skipSpaces();
-			char r = (char)pdfSource.read();
-			if( r != 'R' )
-			{
-				throw new IOException("expected='R' actual='" + r + "' at offset " + pdfSource.getOffset());
-			}
+			readExpectedChar('R');
 			if (!(number instanceof COSInteger))
 			{
 				throw new IOException("expected number, actual=" + number + " at offset " + numOffset);
@@ -249,23 +246,15 @@ public abstract class BaseParser
 	 */
 	protected COSDictionary parseCOSDictionary() throws IOException
 	{
-		char c = (char)pdfSource.read();
-		if( c != '<')
-		{
-			throw new IOException( "expected='<' actual='" + c + "' at offset " + pdfSource.getOffset());
-		}
-		c = (char)pdfSource.read();
-		if( c != '<')
-		{
-			throw new IOException( "expected='<' actual='" + c + "' at offset " + pdfSource.getOffset());
-		}
+		readExpectedChar('<');
+		readExpectedChar('<');
 		skipSpaces();
 		COSDictionary obj = new COSDictionary();
 		boolean done = false;
 		while( !done )
 		{
 			skipSpaces();
-			c = (char)pdfSource.peek();
+			char c = (char)pdfSource.peek();
 			if( c == '>')
 			{
 				done = true;
@@ -341,16 +330,8 @@ public abstract class BaseParser
 					}
 				}
 		}
-		char ch = (char)pdfSource.read();
-		if( ch != '>' )
-		{
-			throw new IOException( "expected='>' actual='" + ch + "' at offset " + pdfSource.getOffset());
-		}
-		ch = (char)pdfSource.read();
-		if( ch != '>' )
-		{
-			throw new IOException( "expected='>' actual='" + ch + "' at offset " + pdfSource.getOffset());
-		}
+		readExpectedChar('>');
+		readExpectedChar('>');
 		return obj;
 	}
 
@@ -369,13 +350,7 @@ public abstract class BaseParser
 		OutputStream out = null;
 		try
 		{
-			String streamString = readString();
-			//long streamLength;
-
-			if (!streamString.equals(STREAM_STRING))
-			{
-				throw new IOException("expected='stream' actual='" + streamString + "' at offset " + pdfSource.getOffset());
-			}
+			readExpectedString(STREAM_STRING);
 
 			//PDF Ref 3.2.7 A stream must be followed by either
 			//a CRLF or LF but nothing else.
@@ -452,7 +427,7 @@ public abstract class BaseParser
 				int left = length;
 				while ( left > 0 )
 				{
-					final int chunk = Math.min( left, strmBufLen );
+					final int chunk = Math.min( left, STRMBUFLEN );
 					final int readCount = pdfSource.read( strmBuf, 0, chunk );
 					if ( readCount == -1 )
 					{
@@ -560,11 +535,7 @@ public abstract class BaseParser
 					 * "endstream"
 					 */
 					readUntilEndStream( new EndstreamOutputStream(out) );
-					endStream = readString();
-					if( !endStream.equals( ENDSTREAM_STRING ) )
-					{
-						throw new IOException("expected='endstream' actual='" + endStream + "' at offset " + pdfSource.getOffset());
-					}
+					readExpectedString(ENDSTREAM_STRING);
 				}
 			}
 		}
@@ -602,7 +573,7 @@ public abstract class BaseParser
 		final int quickTestOffset = 5;  // last character position of shortest keyword ('endobj')
 
 		// read next chunk into buffer; already matched chars are added to beginning of buffer
-		while ( ( bufSize = pdfSource.read( strmBuf, charMatchCount, strmBufLen - charMatchCount ) ) > 0 ) 
+		while ( ( bufSize = pdfSource.read( strmBuf, charMatchCount, STRMBUFLEN - charMatchCount ) ) > 0 ) 
 		{
 			bufSize += charMatchCount;
 
@@ -775,7 +746,6 @@ public abstract class BaseParser
 	protected COSString parseCOSString() throws IOException
 	{
 		char nextChar = (char)pdfSource.read();
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		char openBrace;
 		char closeBrace;
 		if( nextChar == '(' )
@@ -792,6 +762,8 @@ public abstract class BaseParser
 			throw new IOException( "parseCOSString string should start with '(' or '<' and not '" +
 					nextChar + "' " + pdfSource );
 		}
+		
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		//This is the number of braces read
 		//
@@ -903,7 +875,7 @@ public abstract class BaseParser
 					}
 					catch( NumberFormatException e )
 					{
-						throw new IOException( "Error: Expected octal character, actual='" + octal + "'" );
+						throw new IOException( "Error: Expected octal character, actual='" + octal + "'", e );
 					}
 					out.write(character);
 					break;
@@ -985,7 +957,8 @@ public abstract class BaseParser
 				do 
 				{
 					c = pdfSource.read();
-				} while ( c != '>' && c >= 0 );
+				}
+				while ( c != '>' && c >= 0 );
 
 				// might have reached EOF while looking for the closing bracket
 				// this can happen for malformed PDFs only. Make sure that there is
@@ -1011,11 +984,7 @@ public abstract class BaseParser
 	 */
 	protected COSArray parseCOSArray() throws IOException
 	{
-		char ch = (char)pdfSource.read();
-		if( ch != '[')
-		{
-			throw new IOException( "expected='[' actual='" + ch + "' at offset " + pdfSource.getOffset());
-		}
+		readExpectedChar('[');
 		COSArray po = new COSArray();
 		COSBase pbo;
 		skipSpaces();
@@ -1080,8 +1049,7 @@ public abstract class BaseParser
 	protected boolean isEndOfName(char ch)
 	{
 		return (ch == ' ' || ch == 13 || ch == 10 || ch == 9 || ch == '>' || ch == '<'
-				|| ch == '[' || ch =='/' || ch ==']' || ch ==')' || ch =='(' ||
-				ch == -1 //EOF
+				|| ch == '[' || ch =='/' || ch ==']' || ch ==')' || ch =='('
 				);
 	}
 
@@ -1094,14 +1062,10 @@ public abstract class BaseParser
 	 */
 	protected COSName parseCOSName() throws IOException
 	{
-		int c = pdfSource.read();
-		if( (char)c != '/')
-		{
-			throw new IOException("expected='/' actual='" + (char)c + "'-" + c + " at offset " + pdfSource.getOffset());
-		}
+		readExpectedChar('/');
 		// costruisce il nome
 		StringBuilder buffer = new StringBuilder();
-		c = pdfSource.read();
+		int c = pdfSource.read();
 		while( c != -1 )
 		{
 			char ch = (char)c;
@@ -1126,7 +1090,7 @@ public abstract class BaseParser
 					}
 					catch (NumberFormatException e)
 					{
-						throw new IOException("Error: expected hex number, actual='" + hex + "'");
+						throw new IOException("Error: expected hex number, actual='" + hex + "'", e);
 					}
 					c = pdfSource.read();
 				}
@@ -1242,11 +1206,7 @@ public abstract class BaseParser
 			break;
 		case 'n':   // null
 		{
-			String nullString = readString();
-			if( !nullString.equals( NULL) )
-			{
-				throw new IOException("Expected='null' actual='" + nullString + "' at offset " + pdfSource.getOffset());
-			}
+			readExpectedString(NULL);
 			retval = COSNull.NULL;
 			break;
 		}
@@ -1346,7 +1306,7 @@ public abstract class BaseParser
 		skipSpaces();
 		StringBuilder buffer = new StringBuilder();
 		int c = pdfSource.read();
-		while( !isEndOfName((char)c) && !isClosing(c) && c != -1 )
+		while( !isEndOfName((char)c) && c != -1 )
 		{
 			buffer.append( (char)c );
 			c = pdfSource.read();
@@ -1359,48 +1319,35 @@ public abstract class BaseParser
 	}
 
 	/**
-	 * This will read bytes until the end of line marker occurs.
+	 * Read one String and throw an exception if it is not the expected value.
 	 *
-	 * @param theString The next expected string in the stream.
-	 *
-	 * @return The characters between the current position and the end of the line.
-	 *
-	 * @throws IOException If there is an error reading from the stream or theString does not match what was read.
+	 * @param es the String value that is expected.
+	 * @throws IOException if the String char is not the expected value or if an
+	 * I/O error occurs.
 	 */
-	protected String readExpectedString( String theString ) throws IOException
+	protected void readExpectedString(String es) throws IOException
 	{
-		int c = pdfSource.read();
-		while( isWhitespace(c) && c != -1)
+		String s = readString();
+		if (!s.equals(es))
 		{
-			c = pdfSource.read();
+			throw new IOException("expected='" + es + "' actual='" + s + "' at offset " + pdfSource.getOffset());
 		}
-		StringBuilder buffer = new StringBuilder( theString.length() );
-		int charsRead = 0;
-		while( !isEOL(c) && c != -1 && charsRead < theString.length() )
+	}
+
+	/**
+	 * Read one char and throw an exception if it is not the expected value.
+	 *
+	 * @param ec the char value that is expected.
+	 * @throws IOException if the read char is not the expected value or if an
+	 * I/O error occurs.
+	 */
+	protected void readExpectedChar(char ec) throws IOException
+	{
+		char c = (char) pdfSource.read();
+		if (c != ec)
 		{
-			char next = (char)c;
-			buffer.append( next );
-			if( theString.charAt( charsRead ) == next )
-			{
-				charsRead++;
-			}
-			else
-			{
-				pdfSource.unread(buffer.toString().getBytes("ISO-8859-1"));
-				throw new IOException( "Error: Expected to read '" + theString +
-						"' instead started reading '" +buffer.toString() + "'" );
-			}
-			c = pdfSource.read();
+			throw new IOException("expected='" + ec + "' actual='" + c + "' at offset " + pdfSource.getOffset());
 		}
-		while( isEOL(c) && c != -1 )
-		{
-			c = pdfSource.read();
-		}
-		if (c != -1)
-		{
-			pdfSource.unread(c);
-		}
-		return buffer.toString();
 	}
 
 	/**
@@ -1572,15 +1519,16 @@ public abstract class BaseParser
 	}
 
 	/**
-	 * This will read a long from the Stream and throw an {@link IllegalArgumentException} if the long value
-	 * has more than 10 digits (i.e. : bigger than {@link #OBJECT_NUMBER_THRESHOLD})
+	 * This will read a long from the Stream and throw an {@link IOException} if
+	 * the long value is negative or has more than 10 digits (i.e. : bigger than
+	 * {@link #OBJECT_NUMBER_THRESHOLD})
 	 * @return the object number being read.
 	 * @throws IOException if an I/O error occurs
 	 */
 	protected long readObjectNumber() throws IOException
 	{
 		long retval = readLong();
-		if(retval < 0 || retval >= OBJECT_NUMBER_THRESHOLD)
+		if (retval < 0 || retval >= OBJECT_NUMBER_THRESHOLD)
 		{
 			throw new IOException("Object Number '" + retval + "' has more than 10 digits or is negative");
 		}
@@ -1624,7 +1572,7 @@ public abstract class BaseParser
 		catch( NumberFormatException e )
 		{
 			pdfSource.unread(intBuffer.toString().getBytes("ISO-8859-1"));
-			throw new IOException( "Error: Expected an integer type at offset "+pdfSource.getOffset());
+			throw new IOException( "Error: Expected an integer type at offset "+pdfSource.getOffset(), e);
 		}
 		return retval;
 	}
@@ -1652,7 +1600,7 @@ public abstract class BaseParser
 		{
 			pdfSource.unread(longBuffer.toString().getBytes("ISO-8859-1"));
 			throw new IOException( "Error: Expected a long type at offset "
-					+ pdfSource.getOffset() + ", instead got '" + longBuffer + "'");
+					+ pdfSource.getOffset() + ", instead got '" + longBuffer + "'", e);
 		}
 		return retval;
 	}
@@ -1673,6 +1621,7 @@ public abstract class BaseParser
 				lastByte != 13 &&
 				lastByte != 60 && //see sourceforge bug 1714707
 				lastByte != '[' && // PDFBOX-1845
+				lastByte != '(' && // PDFBOX-2579
 				lastByte != 0 && //See sourceforge bug 853328
 				lastByte != -1 )
 		{
@@ -1683,6 +1632,46 @@ public abstract class BaseParser
 			pdfSource.unread( lastByte );
 		}
 		return buffer;
+	}
+	
+	/**
+	 * Skip to the start of the next object. This is used to recover from a
+	 * corrupt object. This should handle all cases that parseObject supports.
+	 * This assumes that the next object will start on its own line.
+	 *
+	 * @throws IOException
+	 */
+	protected void skipToNextObj() throws IOException
+	{
+		byte[] b = new byte[16];
+		Pattern p = Pattern.compile("\\d+\\s+\\d+\\s+obj.*", Pattern.DOTALL);
+		/* Read a buffer of data each time to see if it starts with a
+		 * known keyword. This is not the most efficient design, but we should
+		 * rarely be needing this function. We could update this to use the
+		 * circular buffer, like in readUntilEndStream().
+		 */
+		while (!pdfSource.isEOF())
+		{
+			int l = pdfSource.read(b);
+			if (l < 1)
+			{
+				break;
+			}
+			String s = new String(b, "US-ASCII");
+			if (s.startsWith("trailer")
+					|| s.startsWith("xref")
+					|| s.startsWith("startxref")
+					|| s.startsWith("stream")
+					|| p.matcher(s).matches())
+			{
+				pdfSource.unread(b);
+				break;
+			}
+			else
+			{
+				pdfSource.unread(b, 1, l - 1);
+			}
+		}
 	}
 
 	/**
@@ -1696,5 +1685,58 @@ public abstract class BaseParser
 			IOUtils.closeQuietly(pdfSource);
 			pdfSource = null;
 		}
+	}
+	
+	/**
+	 * Parse object key (number and generation).
+	 *
+	 * @param continueOnError true to continue on error, false if not.
+	 * @return a new object key.
+	 * @throws IOException if something goes wrong.
+	 */
+	protected COSObjectKey parseObjectKey(boolean continueOnError) throws IOException
+	{
+		//we are going to parse a normal object
+		long number = -1;
+		int genNum;
+		boolean missingObjectNumber = false;
+		try
+		{
+			char peeked = (char) pdfSource.peek();
+			if (peeked == '<')
+			{
+				missingObjectNumber = true;
+			}
+			else
+			{
+				number = readObjectNumber();
+			}
+		}
+		catch (IOException e)
+		{
+			//ok for some reason "GNU Ghostscript 5.10" puts two endobj
+			//statements after an object, of course this is nonsense
+			//but because we want to support as many PDFs as possible
+			//we will simply try again
+			number = readObjectNumber();
+		}
+		if (!missingObjectNumber)
+		{
+			skipSpaces();
+			genNum = readGenerationNumber();
+			String objectKey = readString(3);
+			if (!objectKey.equals("obj") && continueOnError && objectKey.equals("o"))
+			{
+				throw new IOException("expected='obj' actual='" + objectKey + "' " + pdfSource);
+			}
+			//assume that "o" was meant to be "obj" (this is a workaround for
+			// PDFBOX-773 attached PDF Andersens_Fairy_Tales.pdf).
+		}
+		else
+		{
+			number = -1;
+			genNum = -1;
+		}
+		return new COSObjectKey(number, genNum);
 	}
 }

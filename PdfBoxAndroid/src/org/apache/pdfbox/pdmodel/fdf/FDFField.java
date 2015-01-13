@@ -230,11 +230,7 @@ public class FDFField implements COSObjectable
 		{
 			retval = PDTextStream.createTextStream( value );
 		}
-		else if( value == null )
-		{
-			//Ok, value is null so do nothing
-		}
-		else
+		else if( value != null )
 		{
 			throw new IOException( "Error:Unknown type for field import" + value );
 		}
@@ -264,11 +260,7 @@ public class FDFField implements COSObjectable
 		{
 			cos = ((COSObjectable)value).getCOSObject();
 		}
-		else if( value == null )
-		{
-			//do nothing and let cos remain null as well.
-		}
-		else
+		else if( value != null )
 		{
 			throw new IOException( "Error:Unknown type for field import" + value );
 		}

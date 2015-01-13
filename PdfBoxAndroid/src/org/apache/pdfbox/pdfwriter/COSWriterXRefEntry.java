@@ -1,8 +1,7 @@
 package org.apache.pdfbox.pdfwriter;
 
-import org.apache.pdfbox.persistence.util.COSObjectKey;
-
 import org.apache.pdfbox.cos.COSBase;
+import org.apache.pdfbox.persistence.util.COSObjectKey;
 
 /**
  * this is en entry in the xref section of the physical pdf document
@@ -23,18 +22,16 @@ public class COSWriterXRefEntry implements Comparable<COSWriterXRefEntry>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int compareTo(COSWriterXRefEntry obj)
     {
-        if (obj instanceof COSWriterXRefEntry)
-        {
-            return (int)(getKey().getNumber() - obj.getKey().getNumber());
-        }
-        else
-        {
-            return -1;
-        }
+    	if (obj != null)
+    	{
+    		return (int)(getKey().getNumber() - obj.getKey().getNumber());
+    	}
+    	return -1;
     }
-    
+
     /**
      * This will return a null entry: 0000000000 65535 f
      * 

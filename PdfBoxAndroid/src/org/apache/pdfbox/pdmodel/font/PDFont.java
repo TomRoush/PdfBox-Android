@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,7 +43,6 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 	private List<Integer> widths;
 	private float avgFontWidth;
 	private float fontWidthOfSpace = -1f;
-	private Boolean isSymbolic;
 
 	/**
 	 * Constructor for embedding.
@@ -293,6 +293,7 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 	 * @return The width is in 1000 unit of text space, ie 333 or 777
 	 */
 	// todo: this method is highly suspicious, the average glyph width is not usually a good metric
+	@Override
 	public float getAverageFontWidth()
 	{
 		float average;
@@ -400,51 +401,6 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 		return dict.getNameAsString(COSName.SUBTYPE);
 	}
 
-	/**
-	 * Returns true the font is a symbolic (that is, it does not use the Adobe Standard Roman
-	 * character set).
-	 */
-	public final boolean isSymbolic()
-	{
-		if (isSymbolic == null)
-		{
-			Boolean result = isFontSymbolic();
-			if (result != null)
-			{
-				isSymbolic = result;
-			}
-			else
-			{
-				// unless we can prove that the font is symbolic, we assume that it is not
-				isSymbolic = true;
-			}
-		}
-		return isSymbolic;
-	}
-
-	/**
-	 * Internal implementation of isSymbolic, allowing for the fact that the result may be
-	 * indeterminate.
-	 */
-	protected Boolean isFontSymbolic()
-	{
-		return getSymbolicFlag();
-	}
-
-	/**
-	 * Returns the value of the symbolic flag,  allowing for the fact that the result may be
-	 * indeterminate.
-	 */
-	protected final Boolean getSymbolicFlag()
-	{
-		if (getFontDescriptor() != null)
-		{
-			// fixme: isSymbolic() defaults to false if the flag is missing so we can't trust this
-			return getFontDescriptor().isSymbolic();
-		}
-		return null;
-	}
-
 	@Override
 	public abstract String getName();
 
@@ -529,11 +485,7 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 	public boolean isStandard14()
 	{
 		// this logic is based on Acrobat's behaviour, see see PDFBOX-2372
-		// symbolic fonts are never standard: they don't use the Adobe Standard Roman character set
-		if (isSymbolic())
-		{
-			return false;
-		}
+		
 		// embedded fonts never get special treatment
 		if (isEmbedded())
 		{
@@ -542,6 +494,14 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 		// if the name matches, this is a Standard 14 font
 		return Standard14Fonts.containsName(getName());
 	}
+
+	/**
+	 * Replaces this font with a subset containing only the given Unicode characters.
+	 *
+	 * @param codePoints Unicode code points to keep
+	 * @throws IOException if the subset could not be written
+	 */
+	public abstract void subset(Set<Integer> codePoints) throws IOException;
 
 	@Override
 	public abstract boolean isDamaged();

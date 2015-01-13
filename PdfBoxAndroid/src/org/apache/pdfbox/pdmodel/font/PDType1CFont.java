@@ -15,7 +15,6 @@ import org.apache.fontbox.util.BoundingBox;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.io.IOUtils;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
 import org.apache.pdfbox.pdmodel.font.encoding.Type1Encoding;
@@ -35,7 +34,6 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 
 	private final Map<String, Float> glyphHeights = new HashMap<String, Float>();
 	private Float avgWidth = null;
-	private final PDRectangle fontBBox = null;
 	private Matrix fontMatrix;
 	private final android.graphics.Matrix fontMatrixTransform;
 
@@ -62,6 +60,11 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 			if (ff3Stream != null)
 			{
 				bytes = IOUtils.toByteArray(ff3Stream.createInputStream());
+				if (bytes.length == 0)
+				{
+					LOG.error("Invalid data for embedded Type1C font " + getName());
+					bytes = null;
+				}
 			}
 		}
 
@@ -69,9 +72,12 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 		CFFType1Font cffEmbedded = null;
 		try
 		{
-			// note: this could be an OpenType file, fortunately CFFParser can handle that
-			CFFParser cffParser = new CFFParser();
-			cffEmbedded = (CFFType1Font)cffParser.parse(bytes).get(0);
+			if (bytes != null)
+			{
+				// note: this could be an OpenType file, fortunately CFFParser can handle that
+				CFFParser cffParser = new CFFParser();
+				cffEmbedded = (CFFType1Font)cffParser.parse(bytes).get(0);
+			}
 		}
 		catch (IOException e)
 		{
@@ -168,16 +174,16 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 	{
 		if (fontMatrix == null)
 		{
-			List<Number> numbers = cffFont.getFontMatrix();
-			if (numbers != null && numbers.size() == 6)
+			if (cffFont != null)
 			{
-				fontMatrix = new Matrix(numbers.get(0).floatValue(), numbers.get(1).floatValue(),
-						numbers.get(2).floatValue(), numbers.get(3).floatValue(),
-						numbers.get(4).floatValue(), numbers.get(5).floatValue());
-			}
-			else
-			{
-				return super.getFontMatrix();
+				List<Number> numbers = cffFont.getFontMatrix();
+				if (numbers != null && numbers.size() == 6)
+				{
+					fontMatrix = new Matrix(numbers.get(0).floatValue(), numbers.get(1).floatValue(),
+							numbers.get(2).floatValue(), numbers.get(3).floatValue(),
+							numbers.get(4).floatValue(), numbers.get(5).floatValue());
+					return fontMatrix;
+				}
 			}
 		}
 		return fontMatrix;

@@ -1,5 +1,12 @@
 package org.apache.pdfbox.pdmodel.interactive.form;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -10,17 +17,10 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import org.apache.pdfbox.pdmodel.fdf.FDFCatalog;
 import org.apache.pdfbox.pdmodel.fdf.FDFDictionary;
 import org.apache.pdfbox.pdmodel.fdf.FDFDocument;
-import org.apache.pdfbox.pdmodel.fdf.FDFCatalog;
 import org.apache.pdfbox.pdmodel.fdf.FDFField;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * An interactive form, also known as an AcroForm.
@@ -34,7 +34,6 @@ public final class PDAcroForm implements COSObjectable
     
     private COSDictionary acroForm;
     private PDDocument document;
-    private COSString defaultAppearance;
 
     private Map<String,PDFieldTreeNode> fieldCache;
 
@@ -303,15 +302,7 @@ public final class PDAcroForm implements COSObjectable
      */
     public COSString getDefaultAppearance()
     {
-        if (defaultAppearance == null)
-        {
-            COSBase daValue =  getDictionary().getItem(COSName.DA);
-            if (daValue != null)
-            {
-                defaultAppearance = (COSString)daValue;
-            }
-        }
-        return defaultAppearance;
+    	return (COSString) getDictionary().getItem(COSName.DA);
     }
 
     /**
@@ -323,12 +314,10 @@ public final class PDAcroForm implements COSObjectable
     {
         if (daValue != null)
         {
-            defaultAppearance = new COSString(daValue);
-            getDictionary().setItem(COSName.DA, defaultAppearance);
+        	getDictionary().setString(COSName.DA, daValue);
         }
         else
         {
-            defaultAppearance = null;
             getDictionary().removeItem(COSName.DA);
         }
     }

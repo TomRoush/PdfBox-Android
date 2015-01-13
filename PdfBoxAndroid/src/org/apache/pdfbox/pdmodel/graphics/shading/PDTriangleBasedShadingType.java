@@ -6,7 +6,8 @@ import org.apache.pdfbox.pdmodel.common.PDRange;
 import org.apache.pdfbox.cos.COSDictionary;
 
 /**
- * Common resources for shading types 4,5,6 and 7
+ * Intermediate class extended by the shading types 4,5,6 and 7 that contains the common methods
+ * used by those classes
  */
 abstract class PDTriangleBasedShadingType extends PDShading
 {

@@ -480,7 +480,8 @@ public class PDFTextStripper extends PDFTextStreamEngine
 							dir == Character.DIRECTIONALITY_LEFT_TO_RIGHT_OVERRIDE)
 					{
 						ltrCount++;
-					} else if (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT ||
+					}
+					else if (dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT ||
 							dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC ||
 							dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_EMBEDDING ||
 							dir == Character.DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE)
@@ -541,7 +542,8 @@ public class PDFTextStripper extends PDFTextStreamEngine
 					positionY = position.getYDirAdj();
 					positionWidth = position.getWidthDirAdj();
 					positionHeight = position.getHeightDir();
-				} else
+				}
+				else
 				{
 					positionX = position.getX();
 					positionY = position.getY();
@@ -559,12 +561,14 @@ public class PDFTextStripper extends PDFTextStreamEngine
 				if (wordSpacing == 0 || wordSpacing == Float.NaN)
 				{
 					deltaSpace = Float.MAX_VALUE;
-				} else
+				}
+				else
 				{
 					if (lastWordSpacing < 0)
 					{
 						deltaSpace = wordSpacing * getSpacingTolerance();
-					} else
+					}
+					else
 					{
 						deltaSpace = (wordSpacing + lastWordSpacing) / 2f * getSpacingTolerance();
 					}
@@ -578,7 +582,8 @@ public class PDFTextStripper extends PDFTextStreamEngine
 				if (previousAveCharWidth < 0)
 				{
 					averageCharWidth = positionWidth / wordCharCount;
-				} else
+				}
+				else
 				{
 					averageCharWidth = (previousAveCharWidth + positionWidth / wordCharCount) / 2f;
 				}
@@ -592,7 +597,8 @@ public class PDFTextStripper extends PDFTextStreamEngine
 					if (deltaCharWidth > deltaSpace)
 					{
 						expectedStartOfNextWordX = endOfLastTextX + deltaSpace;
-					} else
+					}
+					else
 					{
 						expectedStartOfNextWordX = endOfLastTextX + deltaCharWidth;
 					}
@@ -622,7 +628,6 @@ public class PDFTextStripper extends PDFTextStreamEngine
 						lastLineStartPosition =
 								handleLineSeparation(current, lastPosition, lastLineStartPosition,
 										maxHeightForLine);
-						endOfLastTextX = END_OF_LAST_TEXT_X_RESET_VALUE;
 						expectedStartOfNextWordX = EXPECTED_START_OF_NEXT_WORD_X_RESET_VALUE;
 						maxYForLine = MAX_Y_FOR_LINE_RESET_VALUE;
 						maxHeightForLine = MAX_HEIGHT_FOR_LINE_RESET_VALUE;
@@ -1400,7 +1405,7 @@ public class PDFTextStripper extends PDFTextStreamEngine
 	 * @return start position of the last line
 	 * @throws IOException if something went wrong
 	 */
-	protected PositionWrapper handleLineSeparation(PositionWrapper current,
+	private PositionWrapper handleLineSeparation(PositionWrapper current,
 			PositionWrapper lastPosition, PositionWrapper lastLineStartPosition,
 			float maxHeightForLine) throws IOException
 	{
@@ -1412,13 +1417,13 @@ public class PDFTextStripper extends PDFTextStreamEngine
 			if (lastPosition.isArticleStart()) 
 			{
 				writeParagraphStart();
-			} 
+			}
 			else 
 			{
 				writeLineSeparator();
 				writeParagraphSeparator();
 			}
-		} 
+		}
 		else 
 		{
 			writeLineSeparator();
@@ -1450,7 +1455,7 @@ public class PDFTextStripper extends PDFTextStreamEngine
 	 * @param lastLineStartPosition the last text position that followed a line separator, or null.
 	 * @param maxHeightForLine max height for text positions since lasLineStartPosition.
 	 */
-	protected void isParagraphSeparation(PositionWrapper position,  
+	private void isParagraphSeparation(PositionWrapper position,  
 			PositionWrapper lastPosition, PositionWrapper lastLineStartPosition,
 			float maxHeightForLine)
 	{
@@ -1463,14 +1468,18 @@ public class PDFTextStripper extends PDFTextStreamEngine
 		{
 			float yGap = Math.abs(position.getTextPosition().getYDirAdj() -
 					lastPosition.getTextPosition().getYDirAdj());
+			float newYVal = multiplyFloat(getDropThreshold(), maxHeightForLine);
 			// do we need to flip this for rtl?
 			float xGap = position.getTextPosition().getXDirAdj() -
 					lastLineStartPosition.getTextPosition().getXDirAdj();
-			if (yGap > getDropThreshold()*maxHeightForLine)
+			float newXVal = multiplyFloat(getIndentThreshold(), position.getTextPosition().getWidthOfSpace());
+			float positionWidth = multiplyFloat(0.25f, position.getTextPosition().getWidth());
+			
+			if (yGap > newYVal)
 			{
 				result = true;
 			}
-			else if (xGap > getIndentThreshold()*position.getTextPosition().getWidthOfSpace())
+			else if (xGap > newXVal)
 			{
 				// text is indented, but try to screen for hanging indent
 				if (!lastLineStartPosition.isParagraphStart())
@@ -1490,7 +1499,7 @@ public class PDFTextStripper extends PDFTextStreamEngine
 					result = true;
 				}
 			}
-			else if (Math.abs(xGap) < 0.25 * position.getTextPosition().getWidth())
+			else if (Math.abs(xGap) < positionWidth)
 			{
 				// current horizontal position is within 1/4 a char of the last
 				// linestart. We'll treat them as lined up.
@@ -1518,6 +1527,13 @@ public class PDFTextStripper extends PDFTextStreamEngine
 		{
 			position.setParagraphStart();
 		}
+	}
+
+	private float multiplyFloat(float value1, float value2)
+	{
+		// multiply 2 floats and truncate the resulting value to 3 decimal places
+		// to avoid wrong results when comparing with another float
+		return Math.round(value1 * value2 * 1000) / 1000f;
 	}
 
 	/**
@@ -1589,7 +1605,7 @@ public class PDFTextStripper extends PDFTextStreamEngine
 	 * @param pw position
 	 * @return the matching pattern
 	 */
-	protected Pattern matchListItemPattern(PositionWrapper pw) 
+	private Pattern matchListItemPattern(PositionWrapper pw) 
 	{
 		TextPosition tp = pw.getTextPosition();
 		String txt = tp.getUnicode();

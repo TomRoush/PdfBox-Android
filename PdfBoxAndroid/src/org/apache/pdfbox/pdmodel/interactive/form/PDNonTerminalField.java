@@ -7,6 +7,13 @@ import org.apache.pdfbox.cos.COSName;
 /**
  * A non terminal field in an interactive form.
  *
+ * A non terminal field is a node in the fields tree node whose descendants
+ * are fields.
+ *
+ * The attributes such as FT (field type) or V (field value) do not logically
+ * belong to the non terminal field but are inheritable attributes
+ * for descendant terminal fields.
+ * 
  * @author Andreas Lehmk�hler
  */
 public class PDNonTerminalField extends PDFieldTreeNode
@@ -59,30 +66,42 @@ public class PDNonTerminalField extends PDFieldTreeNode
         return getDictionary().getNameAsString(COSName.FT);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getValue()
     {
-        // Nonterminal fields don't support the "V" entry.
-        return null;
+    	// There is no need to look up the parent hierarchy within a non terminal field
+    	return getDictionary().getNameAsString(COSName.V);
     }
     
-    public void setValue(Object value)
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void setValue(String fieldValue)
     {
-        // Nonterminal fields don't support the "V" entry.
-        throw new RuntimeException( "Nonterminal fields don't support the \"V\" entry." );
+    	// There is no need to look up the parent hierarchy within a non terminal field
+    	getDictionary().setString(COSName.V, fieldValue);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object getDefaultValue()
     {
-        // Nonterminal fields don't support the "DV" entry.
-        return null;
+    	// There is no need to look up the parent hierarchy within a non terminal field
+    	return getDictionary().getNameAsString(COSName.V);
     }
     
-    public void setDefaultValue(Object value)
+    /**
+     * {@inheritDoc}
+     */
+    public void setDefaultValue(String defaultValue)
     {
-        // Nonterminal fields don't support the "DV" entry.
-        throw new RuntimeException( "Nonterminal fields don't support the \"DV\" entry." );
+    	// There is no need to look up the parent hierarchy within a non terminal field
+    	getDictionary().setString(COSName.V, defaultValue);
     }
-    
 }

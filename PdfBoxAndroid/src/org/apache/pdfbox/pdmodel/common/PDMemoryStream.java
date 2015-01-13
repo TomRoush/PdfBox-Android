@@ -21,10 +21,10 @@ import org.apache.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
  */
 public class PDMemoryStream extends PDStream
 {
-    private byte[] data;
+    private final byte[] data;
 
     /**
-     * This will create a new PDStream object.
+     * This will create a new PDMemoryStream object.
      *
      * @param buffer The data for this in memory stream.
      */
@@ -39,6 +39,7 @@ public class PDMemoryStream extends PDStream
      * If there are not compression filters on the current stream then this
      * will add a compression filter, flate compression for example.
      */
+    @Override
     public void addCompression()
     {
         //no compression to add
@@ -51,6 +52,7 @@ public class PDMemoryStream extends PDStream
      *
      * @return The cos object that matches this Java object.
      */
+    @Override
     public COSBase getCOSObject()
     {
         throw new UnsupportedOperationException( "not supported for memory stream" );
@@ -63,6 +65,7 @@ public class PDMemoryStream extends PDStream
      *
      * @throws IOException If an IO error occurs during writing.
      */
+    @Override
     public OutputStream createOutputStream() throws IOException
     {
         throw new UnsupportedOperationException( "not supported for memory stream" );
@@ -75,6 +78,7 @@ public class PDMemoryStream extends PDStream
      *
      * @throws IOException If an IO error occurs during reading.
      */
+    @Override
     public InputStream createInputStream() throws IOException
     {
         return new ByteArrayInputStream( data );
@@ -88,6 +92,7 @@ public class PDMemoryStream extends PDStream
      * @return A stream with decoded data.
      * @throws IOException If there is an error processing the stream.
      */
+    @Override
     public InputStream getPartiallyFilteredStream( List stopFilters ) throws IOException
     {
         return createInputStream();
@@ -98,6 +103,7 @@ public class PDMemoryStream extends PDStream
      *
      * @return The cos object that matches this Java object.
      */
+    @Override
     public COSStream getStream()
     {
         throw new UnsupportedOperationException( "not supported for memory stream" );
@@ -109,6 +115,7 @@ public class PDMemoryStream extends PDStream
      *
      * @return The length of the filtered stream.
      */
+    @Override
     public int getLength()
     {
         return data.length;
@@ -119,6 +126,7 @@ public class PDMemoryStream extends PDStream
      * null if there are none.
      * @return A list of all encoding filters to apply to this stream.
      */
+    @Override
     public List getFilters()
     {
         return null;
@@ -129,6 +137,7 @@ public class PDMemoryStream extends PDStream
      *
      * @param filters The filters that are part of this stream.
      */
+    @Override
     public void setFilters( List filters )
     {
         throw new UnsupportedOperationException( "not supported for memory stream" );
@@ -163,6 +172,7 @@ public class PDMemoryStream extends PDStream
      *
      * @return The file specification.
      */
+    @Override
     public PDFileSpecification getFile()
     {
         return null;
@@ -172,6 +182,7 @@ public class PDMemoryStream extends PDStream
      * Set the file specification.
      * @param f The file specification.
      */
+    @Override
     public void setFile( PDFileSpecification f )
     {
         //do nothing.
@@ -182,6 +193,7 @@ public class PDMemoryStream extends PDStream
      * null if there are none.
      * @return A list of all encoding filters to apply to this stream.
      */
+    @Override
     public List getFileFilters()
     {
         return null;
@@ -192,6 +204,7 @@ public class PDMemoryStream extends PDStream
      *
      * @param filters The filters that are part of this stream.
      */
+    @Override
     public void setFileFilters( List filters )
     {
         //do nothing.
@@ -205,6 +218,7 @@ public class PDMemoryStream extends PDStream
      *
      * @throws IOException if there is an error retrieving the parameters.
      */
+    @Override
     public List getFileDecodeParams() throws IOException
     {
         return null;
@@ -215,6 +229,7 @@ public class PDMemoryStream extends PDStream
      *
      * @param decodeParams The list of decode params.
      */
+    @Override
     public void setFileDecodeParams( List decodeParams )
     {
         //do nothing
@@ -226,6 +241,7 @@ public class PDMemoryStream extends PDStream
      * @return The byte array of the filteredStream
      * @throws IOException When getFilteredStream did not work
      */
+    @Override
     public byte[] getByteArray() throws IOException
     {
         return data;
@@ -237,6 +253,7 @@ public class PDMemoryStream extends PDStream
      *
      * @return The metadata for this object.
      */
+    @Override
     public PDMetadata getMetadata()
     {
         return null;
@@ -247,6 +264,7 @@ public class PDMemoryStream extends PDStream
      *
      * @param meta The meta data for this object.
      */
+    @Override
     public void setMetadata( PDMetadata meta )
     {
         //do nothing

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,8 +15,6 @@ import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.font.encoding.GlyphList;
-import org.apache.pdfbox.pdmodel.font.encoding.StandardEncoding;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.pdfbox.util.Vector;
 
@@ -31,6 +30,7 @@ public class PDType0Font extends PDFont
 	private final PDCIDFont descendantFont;
 	private CMap cMap, cMapUCS2;
 	private boolean isCMapPredefined;
+	private PDCIDFontType2Embedder embedder;
 
 	/**
 	 * Loads a TTF to be embedded into a document.
@@ -77,12 +77,6 @@ public class PDType0Font extends PDFont
 		readEncoding();
 		fetchCMapUCS2();
 		descendantFont = PDFontFactory.createDescendantFont(descendantFontDictionary, this);
-
-		// warn if there may be text extraction issues
-		if (!isSymbolic())
-		{
-			LOG.warn("Nonsymbolic Type 0 font: " + getName());
-		}
 	}
 
 	/**
@@ -90,50 +84,51 @@ public class PDType0Font extends PDFont
 	 */
 	private PDType0Font(PDDocument document, InputStream ttfStream) throws IOException
 	{
-		PDCIDFontType2Embedder embedder =
-				new PDCIDFontType2Embedder(document, dict, ttfStream, this);
+		embedder = new PDCIDFontType2Embedder(document, dict, ttfStream, this);
 		descendantFont = embedder.getCIDFont();
 		readEncoding();
 		fetchCMapUCS2();
+	}
+
+	@Override
+	public void subset(Set<Integer> codePoints) throws IOException
+	{
+		embedder.subset(codePoints);
 	}
 
 	/**
 	 * Reads the font's Encoding entry, which should be a CMap name/stream.
 	 */
 	private void readEncoding() throws IOException
-	{
-		COSBase encoding = dict.getDictionaryObject(COSName.ENCODING);
-		if (encoding != null)
-		{
-			if (encoding instanceof COSName)
-			{
-				// predefined CMap
-				COSName encodingName = (COSName)encoding;
-				cMap = CMapManager.getPredefinedCMap(encodingName.getName());
-				if (cMap != null)
-				{
-					isCMapPredefined = true;
-					return;
-				}
-				else
-				{
-					throw new IOException("Missing required CMap");
-				}
-			}
-			else
-			{
-				cMap = readCMap(encoding);
-				if (cMap == null)
-				{
-					throw new IOException("Missing required CMap");
-				}
-				else if (!cMap.hasCIDMappings())
-				{
-					LOG.warn("Invalid Encoding CMap in font " + getName());
-				}
-			}
-		}
-	}
+    {
+        COSBase encoding = dict.getDictionaryObject(COSName.ENCODING);
+        if (encoding instanceof COSName)
+        {
+            // predefined CMap
+            COSName encodingName = (COSName) encoding;
+            cMap = CMapManager.getPredefinedCMap(encodingName.getName());
+            if (cMap != null)
+            {
+                isCMapPredefined = true;
+            }
+            else
+            {
+                throw new IOException("Missing required CMap");
+            }
+        }
+        else if (encoding != null)
+        {
+            cMap = readCMap(encoding);
+            if (cMap == null)
+            {
+                throw new IOException("Missing required CMap");
+            }
+            else if (!cMap.hasCIDMappings())
+            {
+                LOG.warn("Invalid Encoding CMap in font " + getName());
+            }
+        }
+    }
 
 	/**
 	 * Fetches the corresponding UCS2 CMap if the font's CMap is predefined.
@@ -154,7 +149,7 @@ public class PDType0Font extends PDFont
 
 			// get the encoding CMap
 			COSBase encoding = dict.getDictionaryObject(COSName.ENCODING);
-			if (encoding != null && encoding instanceof COSName)
+			if (encoding instanceof COSName)
 			{
 				cMapName = ((COSName)encoding).getName();
 			}
@@ -293,14 +288,7 @@ public class PDType0Font extends PDFont
 			return unicode;
 		}
 
-		if (!isSymbolic())
-		{
-			// this nonsymbolic behaviour isn't well documented, test with PDFBOX-1422,
-			// also see PDCIDFontType2#cidToGID()
-			String name = StandardEncoding.INSTANCE.getName(code);
-			return GlyphList.getAdobeGlyphList().toUnicode(name);
-		}
-		else if (isCMapPredefined && cMapUCS2 != null)
+		if (isCMapPredefined && cMapUCS2 != null)
 		{
 			// if the font is composite and uses a predefined cmap (excluding Identity-H/V) then
 			// or if its decendant font uses Adobe-GB1/CNS1/Japan1/Korea1

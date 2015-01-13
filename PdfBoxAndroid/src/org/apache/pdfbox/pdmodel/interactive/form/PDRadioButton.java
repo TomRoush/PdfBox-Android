@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 
 /**
@@ -53,7 +54,7 @@ public final class PDRadioButton extends PDButton
     @Override
     public COSName getDefaultValue() throws IOException
     {
-    	COSBase attribute = getInheritableAttribute(getDictionary(), COSName.DV);
+    	COSBase attribute = getInheritableAttribute(COSName.DV);
     	if (attribute instanceof COSName)
     	{
     		return (COSName) attribute;
@@ -74,28 +75,28 @@ public final class PDRadioButton extends PDButton
      * The default value is used to represent the initial state of the
      * checkbox or to revert when resetting the form.
      * 
-     * @param defaultValue the COSName object to set the field value.
+     * @param defaultValue the String to set the field value.
      */
-    public void setDefaultValue(COSName defaultValue)
+    public void setDefaultValue(String defaultValue)
     {
     	if (defaultValue == null)
     	{
-    		removeInheritableAttribute(getDictionary(),COSName.DV);
+    		removeInheritableAttribute(COSName.DV);
     	}
     	else
     	{
-    		setInheritableAttribute(getDictionary(), COSName.DV, defaultValue);
+    		setInheritableAttribute(COSName.DV, new COSString(defaultValue));
     	}
     }
 
     @Override
-    public COSName getValue() throws IOException
+    public String getValue() throws IOException
     {
-    	COSBase attribute = getInheritableAttribute(getDictionary(), COSName.V);
+    	COSBase attribute = getInheritableAttribute(COSName.V);
     	
     	if (attribute instanceof COSName)
     	{
-    		return (COSName) attribute;
+    		return ((COSName) attribute).getName();
     	}
     	else
     	{
@@ -111,24 +112,25 @@ public final class PDRadioButton extends PDButton
      * 
      * The default value is Off.
      * 
-     * @param value the COSName object to set the field value.
+     * @param fieldValue the COSName object to set the field value.
      */
-    public void setValue(COSName value)
+    @Override
+    public void setValue(String fieldValue)
     {
-        if (value == null)
+        if (fieldValue == null)
         {
-        	removeInheritableAttribute(getDictionary(),COSName.V);
+        	removeInheritableAttribute(COSName.V);
         }
         else
         {
-        	setInheritableAttribute(getDictionary(),COSName.V, value);
+        	setInheritableAttribute(COSName.V, COSName.getPDFName(fieldValue));
             List<COSObjectable> kids = getKids();
             for (COSObjectable kid : kids)
             {
                 if (kid instanceof PDCheckbox)
                 {
                     PDCheckbox btn = (PDCheckbox) kid;
-                    if (btn.getOnValue().equals(value))
+                    if (btn.getOnValue().equals(fieldValue))
                     {
                         btn.check();
                     }
@@ -140,5 +142,4 @@ public final class PDRadioButton extends PDButton
             }
         }
     }
-
 }

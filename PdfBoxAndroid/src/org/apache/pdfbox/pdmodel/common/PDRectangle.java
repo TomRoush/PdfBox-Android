@@ -293,10 +293,10 @@ public class PDRectangle implements COSObjectable
 		PointF p3 = matrix.transformPoint(x1, y2);
 
 		Path path = new Path();
-		path.moveTo((float) p0.x, (float) p0.y);
-		path.lineTo((float) p1.x, (float) p1.y);
-		path.lineTo((float) p2.x, (float) p2.y);
-		path.lineTo((float) p3.x, (float) p3.y);
+		path.moveTo(p0.x, p0.y);
+		path.lineTo(p1.x, p1.y);
+		path.lineTo(p2.x, p2.y);
+		path.lineTo(p3.x, p3.y);
 		path.close();
 		return path;
 	}
@@ -306,6 +306,7 @@ public class PDRectangle implements COSObjectable
 	 *
 	 * @return The cos object that matches this Java object.
 	 */
+	@Override
 	public COSBase getCOSObject()
 	{
 		return rectArray;
@@ -335,6 +336,7 @@ public class PDRectangle implements COSObjectable
 	 *
 	 * @return This object as a string.
 	 */
+	@Override
 	public String toString()
 	{
 		return "[" + getLowerLeftX() + "," + getLowerLeftY() + "," +

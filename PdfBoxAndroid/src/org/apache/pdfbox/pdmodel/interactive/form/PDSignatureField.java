@@ -1,16 +1,16 @@
 package org.apache.pdfbox.pdmodel.interactive.form;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSeedValue;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * A signature field is a form field that contains a digital signature.
@@ -115,16 +115,23 @@ public class PDSignatureField extends PDField
      * 
      * @param value is the PDSignatureField
      */
-    public void setValue(Object value)
+    public void setValue(PDSignature value)
     {
         if (value == null)
         {
             getDictionary().removeItem(COSName.V);
         }
-        else if (value instanceof PDSignature)
+        else
         {
             getDictionary().setItem(COSName.V, (PDSignature)value);
         }
+    }
+    
+    @Override
+    public void setValue(String fieldValue)
+    {
+    	// Signature fields don't support the strings for value
+    	throw new IllegalArgumentException( "Signature fields don't support a string for the value entry." );
     }
     
     /**
@@ -183,10 +190,10 @@ public class PDSignatureField extends PDField
         return null;
     }
 
-    public void setDefaultValue(Object value)
+    @Override
+    public void setDefaultValue(String value)
     {
         // Signature fields don't support the "DV" entry.
-        throw new RuntimeException( "Signature fields don't support the \"DV\" entry." );
+        throw new IllegalArgumentException( "Signature fields don't support the \"DV\" entry." );
     }
-
 }

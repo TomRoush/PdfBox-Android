@@ -201,6 +201,7 @@ public final class Type1Font implements Type1CharStringReader, Type1Equivalent
      * Returns the Encoding, if present.
      * @return the encoding or null
      */
+    @Override
     public Encoding getEncoding()
     {
         return encoding;
@@ -241,6 +242,7 @@ public final class Type1Font implements Type1CharStringReader, Type1Equivalent
      * 
      * @return the font bounding box
      */
+    @Override
     public BoundingBox getFontBBox()
     {
         return new BoundingBox(fontBBox);
@@ -503,6 +505,7 @@ public final class Type1Font implements Type1CharStringReader, Type1Equivalent
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return getClass().getName() + "[fontName=" + fontName + ", fullName=" + fullName

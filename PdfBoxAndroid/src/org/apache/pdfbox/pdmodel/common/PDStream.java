@@ -110,7 +110,7 @@ public class PDStream implements COSObjectable
                 output = stream.createUnfilteredStream();
             }
             byte[] buffer = new byte[1024];
-            int amountRead = -1;
+            int amountRead;
             while ((amountRead = str.read(buffer)) != -1)
             {
                 output.write(buffer, 0, amountRead);
@@ -184,6 +184,7 @@ public class PDStream implements COSObjectable
      * 
      * @return The cos object that matches this Java object.
      */
+    @Override
     public COSBase getCOSObject()
     {
         return stream;
@@ -490,7 +491,7 @@ public class PDStream implements COSObjectable
         try
         {
             is = createInputStream();
-            int amountRead = -1;
+            int amountRead;
             while ((amountRead = is.read(buf)) != -1)
             {
                 output.write(buf, 0, amountRead);

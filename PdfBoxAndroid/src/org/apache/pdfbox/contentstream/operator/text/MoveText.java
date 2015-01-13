@@ -18,13 +18,11 @@ public class MoveText extends OperatorProcessor
     @Override
     public void process(Operator operator, List<COSBase> arguments)
     {
-        COSNumber x = (COSNumber)arguments.get( 0 );
-        COSNumber y = (COSNumber)arguments.get( 1 );
-        Matrix td = new Matrix();
-        td.setValue( 2, 0, x.floatValue() );
-        td.setValue( 2, 1, y.floatValue() );
-        context.setTextLineMatrix( td.multiply( context.getTextLineMatrix() ) );
-        context.setTextMatrix( context.getTextLineMatrix().clone() );
+    	COSNumber x = (COSNumber)arguments.get( 0 );
+    	COSNumber y = (COSNumber)arguments.get( 1 );
+    	Matrix matrix = new Matrix(1, 0, 0, 1, x.floatValue(), y.floatValue());
+    	context.getTextLineMatrix().concatenate(matrix);
+    	context.setTextMatrix(context.getTextLineMatrix().clone());
     }
 
     @Override

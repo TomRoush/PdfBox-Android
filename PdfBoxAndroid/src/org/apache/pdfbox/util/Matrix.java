@@ -15,9 +15,9 @@ public final class Matrix implements Cloneable
 {
 	static final float[] DEFAULT_SINGLE =
 		{
-		1,0,0,  //  a  b  0
-		0,1,0,  //  c  d  0
-		0,0,1   //  tx ty 1
+		1,0,0,  //  a  b  0		sx hy 0 note: hx and hy are reversed vs. the PDF spec as we use
+		0,1,0,  //  c  d  0		hx sy 0 AffineTransform's definition x and y shear
+		0,0,1   //  tx ty 1		tx ty 1
 		};
 
 	private float[] single;
@@ -28,11 +28,11 @@ public final class Matrix implements Cloneable
 	public Matrix()
 	{
 		single = new float[DEFAULT_SINGLE.length];
-		reset();
+		System.arraycopy(DEFAULT_SINGLE, 0, single, 0, DEFAULT_SINGLE.length);
 	}
 
 	/**
-	 * Constructor.
+	 * Creates a matrix from a 6-element COS array.
 	 */
 	public Matrix(COSArray array)
 	{
@@ -46,7 +46,7 @@ public final class Matrix implements Cloneable
 	}
 
 	/**
-	 * Constructor.
+	 * Creates a matrix with the given 6 elements.
 	 */
 	public Matrix(float a, float b, float c, float d, float e, float f)
 	{
@@ -59,11 +59,30 @@ public final class Matrix implements Cloneable
 		single[7] = f;
 		single[8] = 1;
 	}
+	
+	/**
+	 * Creates a matrix with the same elements as the given AffineTransform.
+	 */
+	public Matrix(android.graphics.Matrix at)
+	{
+		float[] values = new float[9];
+		at.getValues(values);
+		single[0] = (float)values[android.graphics.Matrix.MSCALE_X];
+		single[1] = (float)values[android.graphics.Matrix.MSKEW_Y];
+		single[3] = (float)values[android.graphics.Matrix.MSKEW_X];
+		single[4] = (float)values[android.graphics.Matrix.MSCALE_Y];
+		single[6] = (float)values[android.graphics.Matrix.MTRANS_X];
+		single[7] = (float)values[android.graphics.Matrix.MTRANS_Y];
+		//TODO do we need to fill in  0/1s?
+	}
 
 	/**
 	 * This method resets the numbers in this Matrix to the original values, which are
 	 * the values that a newly constructed Matrix would have.
+	 * 
+	 * @deprecated This method will be removed.
 	 */
+	@Deprecated
 	public void reset()
 	{
 		System.arraycopy(DEFAULT_SINGLE, 0, single, 0, DEFAULT_SINGLE.length);
@@ -83,13 +102,14 @@ public final class Matrix implements Cloneable
 		//            single[6], single[7] );
 		retval.setValues(single);
 		return retval;
+		// TODO wrong, and will be wrong in other areas
 	}
 
 	/**
 	 * Set the values of the matrix from the AffineTransform.
 	 *
 	 * @param af The transform to get the values from.
-	 * @deprecated This method is due to be removed, please contact us if you make use of it.
+	 * @deprecated Use the {@link #Matrix(AffineTransform)} constructor instead.
 	 */
 	@Deprecated
 	public void setFromAffineTransform( android.graphics.Matrix af )
@@ -442,13 +462,11 @@ public final class Matrix implements Cloneable
 	}
 
 	/**
-	 * Get the xscaling factor of this matrix. This is a deprecated method which actually
-	 * returns the x-scaling factor multiplied by the x-shear.
-	 * @return The x-scale.\
-	 * @deprecated Use {@link #getScaleX} instead
+	 * Returns the x-scaling factor of this matrix. This is calculated from the scale and shear.
+	 * 
+	 * @return The x-scaling factor.
 	 */
-	@Deprecated
-	public float getXScale()
+	public float getScalingFactorX()
 	{
 		float xScale = single[0];
 
@@ -478,13 +496,11 @@ public final class Matrix implements Cloneable
 	}
 
 	/**
-	 * Get the y scaling factor of this matrix. This is a deprecated method which actually
-	 * returns the y-scaling factor multiplied by the y-shear.
-	 * @return The y-scale factor.
-	 * @deprecated Use {@link #getScaleY} instead
+	 * Returns the y-scaling factor of this matrix. This is calculated from the scale and shear.
+	 * 
+	 * @return The y-scaling factor.
 	 */
-	@Deprecated
-	public float getYScale()
+	public float getScalingFactorY()
 	{
 		float yScale = single[4];
 		if( !(single[1]==0.0f && single[3]==0.0f) )
@@ -496,7 +512,7 @@ public final class Matrix implements Cloneable
 	}
 
 	/**
-	 *  * Returns the x-scaling factor of this matrix.
+	 *  * Returns the x-scaling element of this matrix.
 	 */
 	public float getScaleX()
 	{
@@ -504,7 +520,7 @@ public final class Matrix implements Cloneable
 	}
 
 	/**
-	 * Returns the y-shear factor of this matrix.
+	 * Returns the y-shear element of this matrix.
 	 */
 	public float getShearY()
 	{
@@ -512,7 +528,7 @@ public final class Matrix implements Cloneable
 	}
 
 	/**
-	 * Returns the x-shear factor of this matrix.
+	 * Returns the x-shear element of this matrix.
 	 */
 	public float getShearX()
 	{
@@ -520,7 +536,7 @@ public final class Matrix implements Cloneable
 	}
 
 	/**
-	 * Returns the y-scaling factor of this matrix.
+	 * Returns the y-scaling element of this matrix.
 	 */
 	public float getScaleY()
 	{
@@ -528,7 +544,7 @@ public final class Matrix implements Cloneable
 	}
 
 	/**
-	 * Returns the x-translation of this matrix.
+	 * Returns the x-translation element of this matrix.
 	 */
 	public float getTranslateX()
 	{
@@ -536,7 +552,7 @@ public final class Matrix implements Cloneable
 	}
 
 	/**
-	 * Returns the y-translation of this matrix.
+	 * Returns the y-translation element of this matrix.
 	 */
 	public float getTranslateY()
 	{

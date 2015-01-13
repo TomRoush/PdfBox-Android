@@ -1,8 +1,12 @@
 package org.apache.pdfbox.pdmodel.interactive.form;
 
+import java.io.IOException;
+
+import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
+import org.apache.pdfbox.pdmodel.common.PDTextStream;
 
 /**
  * A text field is a box or space for text fill-in data typically entered from a keyboard.
@@ -12,6 +16,17 @@ import org.apache.pdfbox.cos.COSString;
  */
 public final class PDTextField extends PDVariableText
 {
+	/**
+	 * Ff flags.
+	 */
+	private static final int FLAG_MULTILINE = 1 << 12;
+	private static final int FLAG_PASSWORD = 1 << 13;
+	private static final int FLAG_FILE_SELECT = 1 << 20;
+	private static final int FLAG_DO_NOT_SPELL_CHECK = 1 << 22;
+	private static final int FLAG_DO_NOT_SCROLL = 1 << 23;
+	private static final int FLAG_COMB = 1 << 24;
+	private static final int FLAG_RICH_TEXT = 1 << 25;
+
 	/**
 	 * @see PDFieldTreeNode#PDFieldTreeNode(PDAcroForm)
 	 *
@@ -35,6 +50,132 @@ public final class PDTextField extends PDVariableText
 	}
 
 	/**
+	 * @return true if the field is multiline
+	 */
+	public boolean isMultiline()
+	{
+		return getDictionary().getFlag( COSName.FF, FLAG_MULTILINE );
+	}
+
+	/**
+	 * Set the multiline bit.
+	 *
+	 * @param multiline The value for the multiline.
+	 */
+	public void setMultiline( boolean multiline )
+	{
+		getDictionary().setFlag( COSName.FF, FLAG_MULTILINE, multiline );
+	}
+
+	/**
+	 * @return true if the field is a password field.
+	 */
+	public boolean isPassword()
+	{
+		return getDictionary().getFlag( COSName.FF, FLAG_PASSWORD );
+	}
+
+	/**
+	 * Set the password bit.
+	 *
+	 * @param password The value for the password.
+	 */
+	public void setPassword( boolean password )
+	{
+		getDictionary().setFlag( COSName.FF, FLAG_PASSWORD, password );
+	}
+
+	/**
+	 * @return true if the field is a file select field.
+	 */
+	public boolean isFileSelect()
+	{
+		return getDictionary().getFlag( COSName.FF, FLAG_FILE_SELECT );
+	}
+
+	/**
+	 * Set the file select bit.
+	 *
+	 * @param fileSelect The value for the fileSelect.
+	 */
+	public void setFileSelect( boolean fileSelect )
+	{
+		getDictionary().setFlag( COSName.FF, FLAG_FILE_SELECT, fileSelect );
+	}
+
+	/**
+	 * @return true if the field is not suppose to spell check.
+	 */
+	public boolean doNotSpellCheck()
+	{
+		return getDictionary().getFlag( COSName.FF, FLAG_DO_NOT_SPELL_CHECK );
+	}
+
+	/**
+	 * Set the doNotSpellCheck bit.
+	 *
+	 * @param doNotSpellCheck The value for the doNotSpellCheck.
+	 */
+	public void setDoNotSpellCheck( boolean doNotSpellCheck )
+	{
+		getDictionary().setFlag( COSName.FF, FLAG_DO_NOT_SPELL_CHECK, doNotSpellCheck );
+	}
+
+	/**
+	 * @return true if the field is not suppose to scroll.
+	 */
+	public boolean doNotScroll()
+	{
+		return getDictionary().getFlag( COSName.FF, FLAG_DO_NOT_SCROLL );
+	}
+
+	/**
+	 * Set the doNotScroll bit.
+	 *
+	 * @param doNotScroll The value for the doNotScroll.
+	 */
+	public void setDoNotScroll( boolean doNotScroll )
+	{
+		getDictionary().setFlag( COSName.FF, FLAG_DO_NOT_SCROLL, doNotScroll );
+	}
+
+	/**
+	 * @return true if the field is not suppose to comb the text display.
+	 */
+	public boolean isComb()
+	{
+		return getDictionary().getFlag( COSName.FF, FLAG_COMB );
+	}
+
+	/**
+	 * Set the comb bit.
+	 *
+	 * @param comb The value for the comb.
+	 */
+	public void setComb( boolean comb )
+	{
+		getDictionary().setFlag( COSName.FF, FLAG_COMB, comb );
+	}
+
+	/**
+	 * @return true if the field is a rich text field.
+	 */
+	public boolean isRichText()
+	{
+		return getDictionary().getFlag( COSName.FF, FLAG_RICH_TEXT );
+	}
+
+	/**
+	 * Set the richText bit.
+	 *
+	 * @param richText The value for the richText.
+	 */
+	public void setRichText( boolean richText )
+	{
+		getDictionary().setFlag( COSName.FF, FLAG_RICH_TEXT, richText );
+	}
+
+	/**
 	 * Returns the maximum number of characters of the text field.
 	 * 
 	 * @return the maximum number of characters, returns -1 if the value isn't present
@@ -55,63 +196,85 @@ public final class PDTextField extends PDVariableText
 	}
 
 	/**
-	 * setValue sets the default value for the field.
+	 * Sets the default value for the field.
+	 * 
+	 * The value is stored in the field dictionaries "DV" entry.
 	 *
 	 * @param value the default value
-	 *
 	 */
 	public void setDefaultValue(String value)
 	{
 		if (value != null)
 		{
-			if (value instanceof String)
-			{
-				String stringValue = (String)value;
-				COSString fieldValue = new COSString(stringValue);
-				setInheritableAttribute(getDictionary(), COSName.DV, fieldValue);
-			}
+			COSString fieldValue = new COSString(value);
+			setInheritableAttribute(COSName.DV, fieldValue);
 			// TODO stream instead of string
 		}
 		else
 		{
-			removeInheritableAttribute(getDictionary(),COSName.DV);
+			removeInheritableAttribute(COSName.DV);
 		}
 	}
 
 	/**
-	 * setValue sets the entry "V" to the given value.
+	 * Get the fields default value.
+	 *
+	 * The value is stored in the field dictionaries "DV" entry.
+	 *
+	 * @return The value of this entry.
+	 */
+	@Override
+	public String getDefaultValue()
+	{
+		COSBase fieldValue = getInheritableAttribute(COSName.DV);
+		if (fieldValue instanceof COSString)
+		{
+			return ((COSString) fieldValue).getString();
+		}
+		// TODO handle PDTextStream, IOException in case of wrong type
+		return null;
+	} 
+
+	/**
+	 * Set the fields value.
+	 * 
+	 * The value is stored in the field dictionaries "V" entry.
 	 * 
 	 * @param value the value
-	 * 
 	 */
-	public void setValue(Object value)
+	public void setValue(String value)
 	{
 		if (value != null)
 		{
-			if (value instanceof String)
-			{
-				String stringValue = (String)value;
-				COSString fieldValue = new COSString(stringValue);
-				setInheritableAttribute(getDictionary(), COSName.V, fieldValue);
-			}
+			COSString fieldValue = new COSString(value);
+			setInheritableAttribute(COSName.V, fieldValue);
 			// TODO stream instead of string
 		}  
 		else
 		{
-			removeInheritableAttribute(getDictionary(),COSName.DV);
+			removeInheritableAttribute(COSName.DV);
 		}
+		// TODO move appearance generation out of fields PD model
 		updateFieldAppearances();
 	}
 
 	/**
-	 * getValue gets the value of the "V" entry.
+	 * Get the fields value.
+	 * 
+	 * The value is stored in the field dictionaries "V" entry.
 	 * 
 	 * @return The value of this entry.
-	 * 
+	 * @throws IOException if the field dictionary entry is not a text type
 	 */
 	@Override
-	public Object getValue()
+	public String getValue() throws IOException
 	{
-		return getInheritableAttribute(getDictionary(), COSName.V);
+		PDTextStream textStream = getAsTextStream(getInheritableAttribute(COSName.V));
+		
+		if (textStream != null)
+		{
+			return textStream.getAsString();
+		}
+		return null;
 	}
 }

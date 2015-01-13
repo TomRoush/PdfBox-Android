@@ -2,14 +2,17 @@ package org.apache.pdfbox.pdmodel.graphics.pattern;
 
 import java.io.IOException;
 
+import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSFloat;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import org.apache.pdfbox.util.Matrix;
 
 /**
  * A Pattern dictionary from a page's resources.
- * @author Andreas Lehmk�hler
+ * @author Andreas Lehmkühler
  */
 public abstract class PDAbstractPattern implements COSObjectable
 {
@@ -43,7 +46,7 @@ public abstract class PDAbstractPattern implements COSObjectable
         return pattern;
     }
 
-    private COSDictionary patternDictionary;
+    private final COSDictionary patternDictionary;
 
     /**
      * Creates a new Pattern dictionary.
@@ -76,6 +79,7 @@ public abstract class PDAbstractPattern implements COSObjectable
      * Convert this standard java object to a COS object.
      * @return The cos object that matches this Java object.
      */
+    @Override
     public COSBase getCOSObject()
     {
         return patternDictionary;
@@ -149,4 +153,37 @@ public abstract class PDAbstractPattern implements COSObjectable
      * @return The pattern type
      */
     public abstract int getPatternType();
+    
+    /**
+     * Returns the pattern matrix, or the identity matrix is none is available.
+     */
+    public Matrix getMatrix()
+    {
+    	COSArray array = (COSArray)getCOSDictionary().getDictionaryObject(COSName.MATRIX);
+    	if (array != null)
+    	{
+    		return new Matrix(array);
+    	}
+    	else
+    	{
+    		// default value is the identity matrix
+    		return new Matrix();
+    	}
+    }
+
+    /**
+     * Sets the optional Matrix entry for the Pattern.
+     * @param transform the transformation matrix
+     */
+    public void setMatrix(android.graphics.Matrix transform)
+    {
+        COSArray matrix = new COSArray();
+        float[] values = new float[9];
+        transform.getValues(values);
+        for (float v : values)
+        {
+            matrix.add(new COSFloat(v));
+        }
+        getCOSDictionary().setItem(COSName.MATRIX, matrix);
+    }
 }

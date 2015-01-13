@@ -406,6 +406,7 @@ public class COSArray extends COSBase implements Iterable<COSBase>
      *
      * @return an iterator over the array elements
      */
+    @Override
     public Iterator<COSBase> iterator()
     {
         return objects.iterator();

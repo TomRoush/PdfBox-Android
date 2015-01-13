@@ -18,23 +18,14 @@ import org.apache.pdfbox.util.Charsets;
  */
 final class ToUnicodeWriter
 {
-    private final String registry, ordering;
-    private final int supplement;
     private final Map<Integer, String> cidToUnicode = new TreeMap<Integer, String>();
     private int wMode;
 
     /**
      * Creates a new ToUnicode CMap writer.
-     *
-     * @param registry character collection registry
-     * @param ordering character ordering
-     * @param supplement character supplement
      */
-    public ToUnicodeWriter(String registry, String ordering, int supplement)
+    public ToUnicodeWriter()
     {
-        this.registry = registry;
-        this.ordering = ordering;
-        this.supplement = supplement;
         this.wMode = 0;
     }
 
@@ -56,7 +47,7 @@ final class ToUnicodeWriter
      */
     public void add(int cid, String text)
     {
-        if ( cid < 0 || cid > 0xFFFF)
+        if (cid < 0 || cid > 0xFFFF)
         {
             throw new IllegalArgumentException("CID is not valid");
         }
@@ -67,14 +58,6 @@ final class ToUnicodeWriter
         }
 
         cidToUnicode.put(cid, text);
-    }
-
-    /**
-     * Returns the name of the CMap.
-     */
-    public String getName()
-    {
-        return registry + "-" + ordering + "-UCS";
     }
 
     /**
@@ -92,12 +75,12 @@ final class ToUnicodeWriter
 
         writeLine(writer, "begincmap");
         writeLine(writer, "/CIDSystemInfo");
-        writeLine(writer, "<< /Registry (" + registry + ")");
-        writeLine(writer, "   /Ordering (" + ordering + ")");
-        writeLine(writer, "   /Supplement " + supplement);
+        writeLine(writer, "<< /Registry ()");
+        writeLine(writer, "/Ordering ()");
+        writeLine(writer, "/Supplement ");
         writeLine(writer, ">> def\n");
 
-        writeLine(writer, "/CMapName /" + getName() + " def");
+        writeLine(writer, "/CMapName /Adobe-Identity-UCS" + " def");
         writeLine(writer, "/CMapType 2 def\n"); // 2 = ToUnicode
 
         if (wMode != 0)
@@ -117,24 +100,28 @@ final class ToUnicodeWriter
 
         int srcPrev = -1;
         String dstPrev = null;
+        
+        int srcCode1 = -1;
 
         for (Map.Entry<Integer, String> entry : cidToUnicode.entrySet())
         {
-            int cid = entry.getKey();
-            String text = entry.getValue();
+        	int cid = entry.getKey();
+        	String text = entry.getValue();
 
-            if (cid == srcPrev + 1 &&
-                dstPrev.codePointCount(0, dstPrev.length()) == 1 &&
-                text.codePointAt(0) == dstPrev.codePointAt(0) + 1)
-            {
-                // extend range
-                srcTo.set(srcTo.size() - 1, cid);
-            }
-            else
-            {
-                // begin range
-                srcFrom.add(cid);
-                srcTo.add(cid);
+        	if (cid == srcPrev + 1 && // CID must be last CID + 1
+        			dstPrev.codePointCount(0, dstPrev.length()) == 1 && // no UTF-16 surrogates
+        			text.codePointAt(0) == dstPrev.codePointAt(0) + 1 && // dstString must be prev + 1
+        			dstPrev.codePointAt(0) + 1 <= 255 - (cid - srcCode1)) // increment last byte only
+        	{
+        		// extend range
+        		srcTo.set(srcTo.size() - 1, cid);
+        	}
+        	else
+        	{
+        		// begin range
+        		srcCode1 = cid;
+        		srcFrom.add(cid);
+        		srcTo.add(cid);
                 dstString.add(text);
             }
             srcPrev = cid;
@@ -167,7 +154,7 @@ final class ToUnicodeWriter
 
         // footer
         writeLine(writer, "endcmap");
-        writeLine(writer, "CMapName currentdict /CMap");
+        writeLine(writer, "CMapName currentdict /CMap defineresource pop");
         writeLine(writer, "end");
         writeLine(writer, "end");
 

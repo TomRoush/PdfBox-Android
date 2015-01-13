@@ -32,7 +32,7 @@ public class ConformingPDFParser extends BaseParser {
     List<XrefEntry> xrefEntries;
     private long currentOffset;
     private ConformingPDDocument doc = null;
-    private boolean throwNonConformingException = true;
+    private final boolean throwNonConformingException = true;
     private boolean recursivlyRead = true;
 
     /**
@@ -102,9 +102,9 @@ public class ConformingPDFParser extends BaseParser {
     
     private boolean parseXrefTable() throws IOException {
         String currentLine = readLine();
-        if(throwNonConformingException) {
-            if(!"xref".equals(currentLine))
-                throw new AssertionError("xref table not found.\nExpected: xref\nFound: "+currentLine);
+        if (throwNonConformingException && !"xref".equals(currentLine))
+        {
+                throw new AssertionError("xref table not found.\nExpected: xref\nFound: " + currentLine);
         }
 
         int objectNumber = readInt();
@@ -117,27 +117,26 @@ public class ConformingPDFParser extends BaseParser {
     }
 
     protected long parseTrailerInformation() throws IOException, NumberFormatException {
-        long xrefLocation = -1;
         consumeWhitespaceBackwards();
         String currentLine = readLineBackwards();
-        if(throwNonConformingException) {
-            if(!"%%EOF".equals(currentLine))
-                throw new AssertionError("Invalid EOF marker.\nExpected: %%EOF\nFound: "+currentLine);
+        if (throwNonConformingException && !"%%EOF".equals(currentLine))
+        {
+                throw new AssertionError("Invalid EOF marker.\nExpected: %%EOF\nFound: " + currentLine);
         }
 
-        xrefLocation = readLongBackwards();
+        long xrefLocation = readLongBackwards();
         currentLine = readLineBackwards();
-        if(throwNonConformingException) {
-            if(!"startxref".equals(currentLine))
-                throw new AssertionError("Invalid trailer.\nExpected: startxref\nFound: "+currentLine);
+        if (throwNonConformingException && !"startxref".equals(currentLine))
+        {
+                throw new AssertionError("Invalid trailer.\nExpected: startxref\nFound: " + currentLine);
         }
 
         document.setTrailer(readDictionaryBackwards());
         consumeWhitespaceBackwards();
         currentLine = readLineBackwards();
-        if(throwNonConformingException) {
-            if(!"trailer".equals(currentLine))
-                throw new AssertionError("Invalid trailer.\nExpected: trailer\nFound: "+currentLine);
+        if (throwNonConformingException && !"trailer".equals(currentLine))
+        {
+                throw new AssertionError("Invalid trailer.\nExpected: trailer\nFound: " + currentLine);
         }
 
         return xrefLocation;
@@ -298,7 +297,7 @@ public class ConformingPDFParser extends BaseParser {
         } else if(">>".equals(lastSection)) {
             // dictionary
             throw new RuntimeException("Not yet implemented");
-        } else if(lastSection != null && lastSection.endsWith("]")) {
+        } else if(lastSection.endsWith("]")) {
             // array
             COSArray array = new COSArray();
             lastSection = lastSection.replaceAll("]$", "");
@@ -311,7 +310,7 @@ public class ConformingPDFParser extends BaseParser {
             if(lastSection.matches("^\\s*<.*>\\s*$")) // it's a hex string
                 array.add(COSString.parseHex(lastSection.replaceAll("^\\s*<", "").replaceAll(">\\s*$", "")));
             obj = array;
-        } else if(lastSection != null && lastSection.endsWith(">")) {
+        } else if(lastSection.endsWith(">")) {
             // string of hex codes
             obj = processCosObject(lastSection);
         } else {
@@ -320,7 +319,7 @@ public class ConformingPDFParser extends BaseParser {
                 Long.parseLong(lastSection);
                 obj = COSNumber.get(lastSection);
             } catch(NumberFormatException e) {
-                throw new RuntimeException("Not yet implemented");
+                throw new RuntimeException("Not yet implemented", e);
             }
         }
 
@@ -515,11 +514,13 @@ public class ConformingPDFParser extends BaseParser {
         consumeWhitespace();
         StringBuilder buffer = new StringBuilder();
         int c = pdfSource.read();
-        while(!isEndOfName((char)c) && !isClosing(c) && c != -1) {
+        while(!isEndOfName((char)c) && c != -1)
+        {
             buffer.append( (char)c );
             c = pdfSource.read();
         }
-        if (c != -1) {
+        if (c != -1)
+        {
             pdfSource.unread(c);
         }
         return buffer.toString();
@@ -531,13 +532,13 @@ public class ConformingPDFParser extends BaseParser {
         // consume the last two '>' chars which signify the end of the dictionary
         consumeWhitespaceBackwards();
         byte singleByte = readByteBackwards();
-        if(throwNonConformingException) {
-            if(singleByte != '>')
+        if (throwNonConformingException && singleByte != '>')
+        {
                 throw new AssertionError("");
         }
         singleByte = readByteBackwards();
-        if(throwNonConformingException) {
-            if(singleByte != '>')
+        if (throwNonConformingException && singleByte != '>')
+        {
                 throw new AssertionError("");
         }
         
@@ -640,7 +641,7 @@ public class ConformingPDFParser extends BaseParser {
 
     protected String readWord() throws IOException {
         StringBuilder sb = new StringBuilder();
-        boolean stop = true;
+        boolean stop;
         do {
             byte singleByte = readByte();
             stop = this.isWhitespace(singleByte);

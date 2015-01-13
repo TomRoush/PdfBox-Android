@@ -3,17 +3,14 @@ package org.apache.pdfbox.pdmodel.graphics.pattern;
 import org.apache.pdfbox.contentstream.PDContentStream;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSFloat;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.util.Matrix;
 
 /**
  * A tiling pattern dictionary.
- * @author Andreas Lehmk�hler
+ * @author Andreas Lehmkühler
  */
 public class PDTilingPattern extends PDAbstractPattern implements PDContentStream
 {
@@ -128,7 +125,9 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
 	 */
 	public float getXStep()
 	{
-		return getCOSDictionary().getFloat( COSName.X_STEP, 0 );
+		// ignores invalid values, see PDFBOX-1094-065514-XStep32767.pdf
+		float xStep = getCOSDictionary().getFloat( COSName.X_STEP, 0 );
+		return xStep == Short.MAX_VALUE ? 0 : xStep;
 	}
 
 	/**
@@ -146,7 +145,9 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
 	 */
 	public float getYStep()
 	{
-		return getCOSDictionary().getFloat( COSName.Y_STEP, 0 );
+		// ignores invalid values, see PDFBOX-1094-065514-XStep32767.pdf
+		float yStep = getCOSDictionary().getFloat( COSName.Y_STEP, 0 );
+		return yStep == Short.MAX_VALUE ? 0 : yStep;
 	}
 
 	@Override
@@ -159,6 +160,7 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
 	 * This will return null if no resources are available at this level.
 	 * @return The resources for this pattern.
 	 */
+	@Override
 	public PDResources getResources()
 	{
 		PDResources retval = null;
@@ -220,69 +222,5 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
 		{
 			getCOSDictionary().setItem( COSName.BBOX, bbox.getCOSArray() );
 		}
-	}
-
-	/**
-	 * This will get the optional Matrix of a Pattern. It maps the form space to user space.
-	 * @return the form matrix
-	 */
-	@Override
-	public Matrix getMatrix()
-	{
-		Matrix matrix = null;
-		COSArray array = (COSArray)getCOSDictionary().getDictionaryObject(COSName.MATRIX);
-		if (array != null)
-		{
-			//TODO: does this map to the right values?
-			matrix = new Matrix();
-			matrix.setValue(0, 0, ((COSNumber) array.get(0)).floatValue());
-			matrix.setValue(0, 1, ((COSNumber) array.get(1)).floatValue());
-			matrix.setValue(1, 0, ((COSNumber) array.get(2)).floatValue());
-			matrix.setValue(1, 1, ((COSNumber) array.get(3)).floatValue());
-			matrix.setValue(2, 0, ((COSNumber) array.get(4)).floatValue());
-			matrix.setValue(2, 1, ((COSNumber) array.get(5)).floatValue());
-
-			// repair mechanism for invalid matrices, this is based on pure guesswork based on the
-			// PoolCompPDFA.pdf from PDFBOX-1265 which renders fine in Acrobat despite having a
-			// scaling factor of zero.
-			if (matrix.getScaleX() == 0)
-			{
-				matrix.setValue(0, 0, ((COSNumber) array.get(1)).floatValue()); // scale x -> skew x
-				matrix.setValue(1, 0, 0); // skew x -> 0
-			}
-			if (matrix.getScaleY() == 0)
-			{
-				matrix.setValue(1, 1, ((COSNumber) array.get(2)).floatValue()); // scale y -> skew y
-				matrix.setValue(0, 1, 0); // skew y -> 0
-			}
-			if (matrix.getScaleX() == 0)
-			{
-				matrix.setValue(0, 0, 1);
-			}
-			if (matrix.getScaleY() == 0)
-			{
-				matrix.setValue(1, 1, 1);
-			}
-		} else {
-			// default value is the identity matrix
-			matrix = new Matrix();
-		}
-		return matrix;
-	}
-
-	/**
-	 * Sets the optional Matrix entry for the Pattern.
-	 * @param transform the transformation matrix
-	 */
-	public void setMatrix(android.graphics.Matrix transform)
-	{
-		COSArray matrix = new COSArray();
-		float[] values = new float[9];
-		transform.getValues(values);
-		for (float v : values)
-		{
-			matrix.add(new COSFloat((float)v));
-		}
-		getCOSDictionary().setItem(COSName.MATRIX, matrix);
 	}
 }

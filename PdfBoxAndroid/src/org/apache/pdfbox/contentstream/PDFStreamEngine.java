@@ -168,23 +168,12 @@ public class PDFStreamEngine
 	 */
 	public void showForm(PDFormXObject form) throws IOException
 	{
-		processChildStream(form);
-	}
-
-	/**
-	 * Process a child stream of the current page. For use with #processPage(PDPage).
-	 *
-	 * @param contentStream the child content stream
-	 * @throws IOException if there is an exception while processing the stream
-	 */
-	public void processChildStream(PDContentStream contentStream) throws IOException
-	{
 		if (currentPage == null)
 		{
 			throw new IllegalStateException("No current page, call " +
 					"#processChildStream(PDContentStream, PDPage) instead");
 		}
-		processStream(contentStream);
+		processStream(form);
 	}
 	
 	/**
@@ -431,12 +420,13 @@ public class PDFStreamEngine
 	{
 		PDResources parent = pushResources(contentStream);
 		saveGraphicsState();
-
 		Matrix parentMatrix = initialMatrix;
-		initialMatrix = Matrix.concatenate(initialMatrix, contentStream.getMatrix());
 
 		// transform the CTM using the stream's matrix
 		getGraphicsState().getCurrentTransformationMatrix().concatenate(contentStream.getMatrix());
+		
+		// the stream's initial matrix includes the parent CTM, e.g. this allows a scaled form
+		initialMatrix = getGraphicsState().getCurrentTransformationMatrix().clone();
 
 		// clip to bounding box
 		PDRectangle bbox = contentStream.getBBox();
@@ -956,21 +946,20 @@ public class PDFStreamEngine
 		return currentPage;
 	}
 	
+	/**
+	 * Gets the stream's initial matrix.
+	 */
 	public Matrix getInitialMatrix()
 	{
 		return initialMatrix;
 	}
 
 	/**
-	 * use the current transformation matrix to transformPoint a single point.
-	 *
-	 * @param x x-coordinate of the point to be transformPoint
-	 * @param y y-coordinate of the point to be transformPoint
-	 * @return the transformed coordinates as Point2D.Double
+	 * Transforms a point using the CTM.
 	 */
-	public PointF transformedPoint(double x, double y)
+	public PointF transformedPoint(float x, float y)
 	{
-		float[] position = { (float)x, (float)y };
+		float[] position = { x, y };
 		getGraphicsState().getCurrentTransformationMatrix().createAffineTransform().mapPoints(position);
 		return new PointF(position[0], position[1]);
 	}
@@ -979,8 +968,8 @@ public class PDFStreamEngine
 	protected float transformWidth(float width)
 	{
 		Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
-		float x = ctm.getValue(0, 0) + ctm.getValue(1, 0);
-		float y = ctm.getValue(0, 1) + ctm.getValue(1, 1);
+		float x = ctm.getScaleX() + ctm.getShearX();
+		float y = ctm.getScaleY() + ctm.getShearY();
 		return width * (float)Math.sqrt((x * x + y * y) * 0.5);
 	}
 }

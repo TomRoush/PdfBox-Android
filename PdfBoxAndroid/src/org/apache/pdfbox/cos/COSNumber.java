@@ -79,13 +79,20 @@ public abstract class COSNumber extends COSBase
         } 
         else if (number.indexOf('.') == -1 && (number.toLowerCase().indexOf('e') == -1)) 
         {
-            try
-            {
-                return COSInteger.get( Long.parseLong( number ) );
-            }
-            catch( NumberFormatException e )
-            {
-                throw new IOException( "Value is not an integer: " + number );
+        	try
+        	{
+        		if (number.charAt(0) == '+')
+        		{
+        			return COSInteger.get(Long.parseLong(number.substring(1)));
+        		}
+        		else
+        		{
+        			return COSInteger.get(Long.parseLong(number));
+        		}
+        	}
+        	catch( NumberFormatException e )
+        	{
+        		throw new IOException( "Value is not an integer: " + number, e );
             }
         } 
         else 

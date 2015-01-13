@@ -6,6 +6,12 @@ import java.util.List;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionGoTo;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
 
 /**
  * Split a document into several other documents.
@@ -23,7 +29,7 @@ public class Splitter
     private int endPage = Integer.MAX_VALUE;
     private List<PDDocument> destinationDocuments;
 
-    private int pageNumber = 0;
+    private int currentPageNumber = 0;
 
     /**
      * This will take a document and split into several other documents.
@@ -44,8 +50,8 @@ public class Splitter
 
     /**
      * This will tell the splitting algorithm where to split the pages.  The default
-     * is 1, so every page will become a new document.  If it was to then each document would
-     * contain 2 pages.  So it the source document had 5 pages it would split into
+     * is 1, so every page will become a new document.  If it was two then each document would
+     * contain 2 pages.  If the source document had 5 pages it would split into
      * 3 new documents, 2 documents containing 2 pages and 1 document containing one
      * page.
      *
@@ -98,63 +104,64 @@ public class Splitter
         for (int i = 0; i < sourceDocument.getNumberOfPages(); i++)
         {
             PDPage page = sourceDocument.getPage(i);
-            if (pageNumber + 1 >= startPage && pageNumber + 1 <= endPage)
+            if (currentPageNumber + 1 >= startPage && currentPageNumber + 1 <= endPage)
             {
                 processPage(page);
-                pageNumber++;
+                currentPageNumber++;
             }
             else
             {
-                if (pageNumber > endPage)
+                if (currentPageNumber > endPage)
                 {
                     break;
                 }
                 else
                 {
-                    pageNumber++;
+                    currentPageNumber++;
                 }
             }
         }
     }
 
     /**
-     * Interface method, you can control where a document gets split by implementing
-     * this method.  By default a split occurs at every page.  If you wanted to split
-     * based on some complex logic then you could override this method.  For example.
-     * <code>
-     * protected void createNewDocumentIfNecessary()
-     * {
-     *     if(isPrime(pageNumber))
-     *     {
-     *         super.createNewDocumentIfNecessary();
-     *     }
-     * }
-     * </code>
+     * Helper method for creating new documents at the appropriate pages.
      *
      * @throws IOException If there is an error creating the new document.
      */
     private void createNewDocumentIfNecessary() throws IOException
     {
-        if (splitAtPage(pageNumber) || currentDestinationDocument == null)
+        if (splitAtPage(currentPageNumber) || currentDestinationDocument == null)
         {
-            currentDestinationDocument = createNewDocument();
-            destinationDocuments.add(currentDestinationDocument);
+        	currentDestinationDocument = createNewDocument();
+        	destinationDocuments.add(currentDestinationDocument);
         }
     }
 
     /**
      * Check if it is necessary to create a new document.
+     * By default a split occurs at every page. If you wanted to split
+     * based on some complex logic then you could override this method. For example.
+     * <code>
+     * protected void splitAtPage()
+     * {
+     * 		// will split at pages with prime numbers only
+     * 		return isPrime(pageNumber);
+     * }
+     * </code>
+     * 
+     * @param pageNumber the page number to be checked as splitting page
      *
      * @return true If a new document should be created.
      */
     protected boolean splitAtPage(int pageNumber)
     {
-        return pageNumber % splitLength == 0;
+    	return pageNumber % splitLength == 0;
     }
 
     /**
      * Create a new document to write the split contents to.
      *
+     * @return the newly created PDDocument. 
      * @throws IOException If there is an problem creating the new document.
      */
     protected PDDocument createNewDocument() throws IOException
@@ -176,16 +183,52 @@ public class Splitter
     protected void processPage(PDPage page) throws IOException
     {
         createNewDocumentIfNecessary();
+        
         PDPage imported = getDestinationDocument().importPage(page);
         imported.setCropBox(page.getCropBox());
         imported.setMediaBox(page.getMediaBox());
         // only the resources of the page will be copied
         imported.setResources(page.getResources());
         imported.setRotation(page.getRotation());
+        // remove page links to avoid copying not needed resources 
+        processAnnotations(imported);
+    }
+    
+    private void processAnnotations(PDPage imported) throws IOException
+    {
+    	List<PDAnnotation> annotations = imported.getAnnotations();
+    	for (PDAnnotation annotation : annotations)
+    	{
+    		if (annotation instanceof PDAnnotationLink)
+    		{
+    			PDAnnotationLink link = (PDAnnotationLink)annotation;
+    			PDDestination destination = link.getDestination();
+    			if (destination == null && link.getAction() != null)
+    			{
+    				PDAction action = link.getAction();
+    				if (action instanceof PDActionGoTo)
+    				{
+    					destination = ((PDActionGoTo)action).getDestination();
+    				}
+    			}
+    			if (destination instanceof PDPageDestination)
+    			{
+    				// TODO preserve links to pages within the splitted result
+    				((PDPageDestination) destination).setPage(null);
+    			}
+    		}
+    		else
+    		{
+    			// TODO preserve links to pages within the splitted result
+    			annotation.setPage(null);
+    		}
+    	}
     }
 
     /**
      * The source PDF document.
+     * 
+     * @return the pdf to be splitted
      */
     protected final PDDocument getSourceDocument()
     {
@@ -194,6 +237,8 @@ public class Splitter
 
     /**
      * The source PDF document.
+     * 
+     * @return current destination pdf
      */
     protected final PDDocument getDestinationDocument()
     {

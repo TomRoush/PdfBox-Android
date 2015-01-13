@@ -31,13 +31,14 @@ public class COSObjectKey implements Comparable<COSObjectKey>
      */
     public COSObjectKey(long num, long gen)
     {
-        setNumber(num);
-        setGeneration(gen);
+        number = num;
+        generation = gen;
     }
 
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(Object obj)
     {
         return (obj instanceof COSObjectKey) &&
@@ -67,6 +68,7 @@ public class COSObjectKey implements Comparable<COSObjectKey>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int hashCode()
     {
         return (int)(number + generation);
@@ -93,12 +95,14 @@ public class COSObjectKey implements Comparable<COSObjectKey>
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "" + getNumber() + " " + getGeneration() + " R";
     }
 
     /** {@inheritDoc} */
+    @Override
     public int compareTo(COSObjectKey other)
     {
         if (getNumber() < other.getNumber())
@@ -125,5 +129,4 @@ public class COSObjectKey implements Comparable<COSObjectKey>
             }
         }
     }
-
 }

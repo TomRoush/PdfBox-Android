@@ -7,7 +7,6 @@ import org.apache.pdfbox.cos.COSDictionary;
  */
 public class PDShadingType6 extends PDShadingType4
 {
-
     /**
      * Constructor using the given shading dictionary.
      *

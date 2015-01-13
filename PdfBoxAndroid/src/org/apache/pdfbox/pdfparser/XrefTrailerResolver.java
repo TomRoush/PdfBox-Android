@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -56,6 +56,7 @@ public class XrefTrailerResolver
          */
         private XrefTrailerObj()
         {
+        	xrefType = XRefType.TABLE;
         }
         
         /**
@@ -233,7 +234,9 @@ public class XrefTrailerResolver
         }
         else
         {
-            // found starting Xref object
+        	// copy xref type
+        	resolvedXrefTrailer.xrefType = curObj.xrefType;
+        	// found starting Xref object
             // add this and follow chain defined by 'Prev' keys
             xrefSeqBytePos.add( startxrefBytePosValue );
             while ( curObj.trailer != null )

@@ -26,9 +26,9 @@ public class CurveTo extends GraphicsOperatorProcessor
         COSNumber x3 = (COSNumber)operands.get(4);
         COSNumber y3 = (COSNumber)operands.get(5);
 
-        PointF point1 = context.transformedPoint(x1.doubleValue(), y1.doubleValue());
-        PointF point2 = context.transformedPoint(x2.doubleValue(), y2.doubleValue());
-        PointF point3 = context.transformedPoint(x3.doubleValue(), y3.doubleValue());
+        PointF point1 = context.transformedPoint(x1.floatValue(), y1.floatValue());
+        PointF point2 = context.transformedPoint(x2.floatValue(), y2.floatValue());
+        PointF point3 = context.transformedPoint(x3.floatValue(), y3.floatValue());
 
         context.curveTo( point1.x, point1.y,
                          point2.x, point2.y,

@@ -1,11 +1,9 @@
 package org.apache.pdfbox.pdmodel.interactive.form;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
@@ -94,30 +92,5 @@ public abstract class PDButton extends PDField
     	{
     		getDictionary().setItem(COSName.OPT, COSArrayList.converterToCOSArray( options ) );
     	}
-    }
-    
-    @Override
-    public COSBase getDefaultValue() throws IOException
-    {
-        // Button fields don't support the "DV" entry.
-        return null;
-    }
-
-    /**
-     * Set the fields default value.
-     * 
-     * The field value holds a name object which is corresponding to the 
-     * appearance state representing the corresponding appearance 
-     * from the appearance directory.
-     * 
-     * The default value is used to represent the initial state of the
-     * checkbox or to revert when resetting the form.
-     * 
-     * @param defaultValue the COSName object to set the field value.
-     */
-    public void setDefaultValue(COSName defaultValue)
-    {
-        // Button fields don't support the "DV" entry.
-        throw new RuntimeException( "Button fields don't support the \"DV\" entry." );
     }
 }

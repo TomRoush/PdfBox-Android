@@ -14,9 +14,6 @@ import org.apache.pdfbox.cos.COSName;
  */
 public final class PDCheckbox extends PDButton
 {
-
-    private COSName value;
-
     /**
      * Constructor.
      * 
@@ -27,45 +24,39 @@ public final class PDCheckbox extends PDButton
     public PDCheckbox( PDAcroForm theAcroForm, COSDictionary field, PDFieldTreeNode parentNode)
     {
         super( theAcroForm, field, parentNode);
-        COSDictionary ap = (COSDictionary) field.getDictionaryObject(COSName.AP);
-        if( ap != null )
-        {
-            COSBase n = ap.getDictionaryObject(COSName.N);
-
-            if( n instanceof COSDictionary )
-            {
-                for( COSName name : ((COSDictionary)n).keySet() )
-                {
-                    if( !name.equals( COSName.OFF ))
-                    {
-                        value = name;
-                    }
-                }
-
-            }
-        }
-        else
-        {
-            value = (COSName)getDictionary().getDictionaryObject( COSName.V);
-        }
     }
 
     /**
      * This will tell if this radio button is currently checked or not.
      *
      * @return true If the radio button is checked.
+     * @throws IOException
      */
-    public boolean isChecked()
+    public boolean isChecked() throws IOException
     {
-        boolean retval = false;
-        String onValue = getOnValue();
-        COSName radioValue = (COSName)getDictionary().getDictionaryObject( COSName.AS );
-        if( radioValue != null && value != null && radioValue.getName().equals( onValue ) )
-        {
-            retval = true;
-        }
+    	boolean retval = false;
+    	String onValue = getOnValue();
+    	String fieldValue = null;
+    	try
+    	{
+    		fieldValue = getValue();
+    	}
+    	catch (IOException e)
+    	{
+    		// getting there means that the field value
+    		// doesn't have a supported type.
+    		// Ignoring as that will also mean that the field is not checked.
+    		// Setting the value explicitly as Code Analysis (Sonar) doesn't like
+    		// empty catch blocks.
+    		fieldValue = null;
+    	}
+    	COSName radioValue = (COSName)getDictionary().getDictionaryObject( COSName.AS );
+    	if( radioValue != null && fieldValue != null && radioValue.getName().equals( onValue ) )
+    	{
+    		retval = true;
+    	}
 
-        return retval;
+    	return retval;
     }
 
     /**
@@ -73,7 +64,9 @@ public final class PDCheckbox extends PDButton
      */
     public void check()
     {
-        getDictionary().setItem(COSName.AS, value);
+    	String onValue = getOnValue();
+    	setValue(onValue);
+    	getDictionary().setItem(COSName.AS, COSName.getPDFName(onValue));
     }
 
     /**
@@ -120,13 +113,13 @@ public final class PDCheckbox extends PDButton
     }
     
     @Override
-    public COSName getDefaultValue() throws IOException
+    public String getDefaultValue() throws IOException
     {
-    	COSBase attribute = getInheritableAttribute(getDictionary(), COSName.V);
+    	COSBase attribute = getInheritableAttribute(COSName.V);
     	
     	if (attribute instanceof COSName)
     	{
-    		return (COSName) attribute;
+    		return ((COSName) attribute).getName();
     	}
     	else
     	{
@@ -146,7 +139,8 @@ public final class PDCheckbox extends PDButton
      * 
      * @param defaultValue the COSName object to set the field value.
      */
-    public void setDefaultValue(COSName defaultValue)
+    @Override
+    public void setDefaultValue(String defaultValue)
     {
     	if (defaultValue == null)
     	{
@@ -154,14 +148,23 @@ public final class PDCheckbox extends PDButton
     	}
     	else
     	{
-    		getDictionary().setItem(COSName.DV, defaultValue);
+    		getDictionary().setItem(COSName.DV, COSName.getPDFName(defaultValue));
     	}
     }
 
     @Override
-    public COSName getValue()
+    public String getValue() throws IOException
     {
-        return getDictionary().getCOSName( COSName.V );
+    	COSBase attribute = getInheritableAttribute(COSName.V);
+
+    	if (attribute instanceof COSName)
+    	{
+    		return ((COSName) attribute).getName();
+    	}
+    	else
+    	{
+    		throw new IOException("Expected a COSName entry but got " + attribute.getClass().getName());
+    	}
     }
 
     /**
@@ -173,9 +176,9 @@ public final class PDCheckbox extends PDButton
      * 
      * The default value is Off.
      * 
-     * @param value the COSName object to set the field value.
+     * @param value the new field value value.
      */
-    public void setValue(COSName value)
+    public void setValue(String value)
     {
         if (value == null)
         {
@@ -184,8 +187,9 @@ public final class PDCheckbox extends PDButton
         }
         else
         {
-        	getDictionary().setItem(COSName.V, value);
-        	getDictionary().setItem( COSName.AS, value);
+        	COSName nameValue = COSName.getPDFName(value);
+        	getDictionary().setItem(COSName.V, nameValue);
+        	getDictionary().setItem( COSName.AS, nameValue);
         }
     }
     

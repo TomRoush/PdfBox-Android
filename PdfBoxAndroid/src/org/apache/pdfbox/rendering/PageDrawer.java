@@ -352,14 +352,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         else if (font instanceof PDType1CFont)
         {
             PDType1CFont type1CFont = (PDType1CFont)font;
-            if (type1CFont.getCFFType1Font() != null)
-            {
-                glyph2D = new Type1Glyph2D(type1CFont);
-            }
-            else
-            {
-                glyph2D = new Type1Glyph2D(type1CFont); // fallback to T1-equivalent
-            }
+            glyph2D = new Type1Glyph2D(type1CFont);
         }
         else if (font instanceof PDType0Font)
         {
@@ -681,8 +674,8 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
             {
             	float[] values = new float[9];
             	at.getValues(values);
-                boolean isScaledUp = Math.round(pdImage.getWidth()) < Math.round(values[Matrix.MSCALE_X]) ||
-                                     Math.round(pdImage.getHeight()) < Math.round(values[Matrix.MSCALE_X]);
+                boolean isScaledUp = pdImage.getWidth() < Math.round(values[Matrix.MSCALE_X]) ||
+                                     pdImage.getHeight() < Math.round(values[Matrix.MSCALE_X]);
 
                 // if the image is scaled down, we use smooth interpolation, eg PDFBOX-2364
                 // only when scaled up do we use nearest neighbour, eg PDFBOX-2302 / mori-cvpr01.pdf
@@ -738,7 +731,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     public void shadingFill(COSName shadingName) throws IOException
     {
         PDShading shading = getResources().getShading(shadingName);
-//        Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
+        org.apache.pdfbox.util.Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
 //        Paint paint = shading.toPaint(ctm);
 
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());

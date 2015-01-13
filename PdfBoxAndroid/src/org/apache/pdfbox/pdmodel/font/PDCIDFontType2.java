@@ -21,8 +21,6 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.pdmodel.font.encoding.GlyphList;
-import org.apache.pdfbox.pdmodel.font.encoding.StandardEncoding;
 import org.apache.pdfbox.util.Matrix;
 
 /**
@@ -235,35 +233,10 @@ public class PDCIDFontType2 extends PDCIDFont
 					return cid2gid[cid];
 				}
 			}
-			else if (!parent.isSymbolic())
-			{
-				// this nonsymbolic behaviour isn't well documented, test with PDFBOX-1422
-
-				// if the font descriptor's Nonsymbolic flag is set, the conforming reader shall
-				// create a table that maps from character codes to glyph names
-				String name = null;
-
-				// If the Encoding entry is one of the names MacRomanEncoding, WinAnsiEncoding,
-				// or a dictionary, then the table is initialized as normal
-				// todo: Encoding is not allowed though, right? So this never happens?
-				/*if (getFontEncoding() != null)
-                {
-                    name = getFontEncoding().getName(cid);
-                }*/
-
-				// Any undefined entries in the table shall be filled using StandardEncoding
-				if (name == null)
-				{
-					name = StandardEncoding.INSTANCE.getName(code);
-				}
-
-				// map to a Unicode value using the Adobe Glyph List
-				unicode = GlyphList.getAdobeGlyphList().toUnicode(name);
-			}
 			else
 			{
-				int cid = codeToCID(code);
-				unicode = parent.toUnicode(cid); // code = CID for TTF
+				// test with PDFBOX-1422 and PDFBOX-2560
+				unicode = parent.toUnicode(code);
 			}
 
 			if (unicode == null)
@@ -334,7 +307,7 @@ public class PDCIDFontType2 extends PDCIDFont
 		if (cmap == null)
 		{
 			cmap = cmapTable.getSubtable(CmapTable.PLATFORM_WINDOWS,
-					CmapTable.ENCODING_WIN_UNICODE);
+					CmapTable.ENCODING_WIN_UNICODE_BMP);
 		}
 		if (cmap == null)
 		{

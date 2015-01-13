@@ -32,7 +32,7 @@ public class PostScriptTable extends TTFTable
     private long isFixedPitch;
     private long minMemType42;
     private long maxMemType42;
-    private long mimMemType1;
+    private long minMemType1;
     private long maxMemType1;
     private String[] glyphNames = null;
 
@@ -57,7 +57,7 @@ public class PostScriptTable extends TTFTable
         isFixedPitch = data.readUnsignedInt();
         minMemType42 = data.readUnsignedInt();
         maxMemType42 = data.readUnsignedInt();
-        mimMemType1 = data.readUnsignedInt();
+        minMemType1 = data.readUnsignedInt();
         maxMemType1 = data.readUnsignedInt();
 
         if (formatType == 1.0f)
@@ -223,9 +223,9 @@ public class PostScriptTable extends TTFTable
     /**
      * @return Returns the mimMemType1.
      */
-    public long getMimMemType1()
+    public long getMinMemType1()
     {
-        return mimMemType1;
+        return minMemType1;
     }
 
     /**
@@ -233,7 +233,7 @@ public class PostScriptTable extends TTFTable
      */
     public void setMimMemType1(long mimMemType1Value)
     {
-        this.mimMemType1 = mimMemType1Value;
+        this.minMemType1 = mimMemType1Value;
     }
 
     /**
@@ -305,7 +305,7 @@ public class PostScriptTable extends TTFTable
      */
     public String getName(int gid)
     {
-        if (gid < 0 || gid > glyphNames.length)
+        if (gid < 0 || glyphNames == null || gid > glyphNames.length)
         {
             return null;
         }

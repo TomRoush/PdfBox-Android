@@ -147,7 +147,7 @@ public class PDFTextStreamEngine extends PDFStreamEngine
 
 		// (modified) width and height calculations
 		float dxDisplay = nextX - textRenderingMatrix.getTranslateX();
-		float dyDisplay = height * textRenderingMatrix.getScaleY();
+		float dyDisplay = height * textRenderingMatrix.getScalingFactorY();
 
 		//
 		// start of the original method
@@ -168,7 +168,7 @@ public class PDFTextStreamEngine extends PDFStreamEngine
 		{
 			// This will typically be 1000 but in the case of a type3 font
 			// this might be a different number
-			glyphSpaceToTextSpaceFactor = 1f / font.getFontMatrix().getValue(0, 0);
+			glyphSpaceToTextSpaceFactor = 1f / font.getFontMatrix().getScaleX();
 		}
 
 		float spaceWidthText = 0;
@@ -195,7 +195,7 @@ public class PDFTextStreamEngine extends PDFStreamEngine
 
 		// the space width has to be transformed into display units
 		float spaceWidthDisplay = spaceWidthText * fontSizeText * horizontalScalingText *
-				textRenderingMatrix.getXScale()  * ctm.getXScale();
+				textRenderingMatrix.getScalingFactorX()  * ctm.getScalingFactorX();
 		
 		// use our additional glyph list for Unicode mapping
 		unicode = font.toUnicode(code, glyphList);
@@ -222,7 +222,7 @@ public class PDFTextStreamEngine extends PDFStreamEngine
 				pageSize.getHeight(), textRenderingMatrix, nextX, nextY,
 				dyDisplay, dxDisplay,
 				spaceWidthDisplay, unicode, new int[] { code } , font, fontSize,
-				(int)(fontSize * textRenderingMatrix.getXScale())));
+				(int)(fontSize * textRenderingMatrix.getScalingFactorX())));
 	}
 
 	/**

@@ -78,6 +78,7 @@ public class COSStreamArray extends COSStream
      *
      * @return The dictionary object with the key or null if one does not exist.
      */
+    @Override
     public COSBase getItem( COSName key )
     {
         return firstStream.getItem( key );
@@ -91,6 +92,7 @@ public class COSStreamArray extends COSStream
      *
      * @return The dictionary object with the key or null if one does not exist.
      */
+    @Override
     public COSBase getDictionaryObject( COSName key )
     {
         return firstStream.getDictionaryObject( key );
@@ -99,6 +101,7 @@ public class COSStreamArray extends COSStream
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return "COSStream{}";
@@ -111,6 +114,7 @@ public class COSStreamArray extends COSStream
      *
      * @throws IOException If there is an error parsing the stream.
      */
+    @Override
     public List<Object> getStreamTokens() throws IOException
     {
         List<Object> retval = null;
@@ -144,6 +148,7 @@ public class COSStreamArray extends COSStream
      *
      * @throws IOException when encoding/decoding causes an exception
      */
+    @Override
     public InputStream getFilteredStream() throws IOException
     {
         throw new IOException( "Error: Not allowed to get filtered stream from array of streams." );
@@ -156,6 +161,7 @@ public class COSStreamArray extends COSStream
      *
      * @throws IOException when encoding/decoding causes an exception
      */
+    @Override
     public InputStream getUnfilteredStream() throws IOException
     {
         Vector<InputStream> inputStreams = new Vector<InputStream>();
@@ -182,6 +188,7 @@ public class COSStreamArray extends COSStream
      * @return any object, depending on the visitor implementation, or null
      * @throws IOException if the output could not be written
      */
+    @Override
     public Object accept(ICOSVisitor visitor) throws IOException
     {
         return streams.accept( visitor );
@@ -197,6 +204,7 @@ public class COSStreamArray extends COSStream
      *
      * @return the COSBase object representing the filters
      */
+    @Override
     public COSBase getFilters()
     {
         return firstStream.getFilters();
@@ -211,6 +219,7 @@ public class COSStreamArray extends COSStream
      *
      * @throws IOException If there is an error creating the stream.
      */
+    @Override
     public OutputStream createFilteredStream() throws IOException
     {
         return firstStream.createFilteredStream();
@@ -227,6 +236,7 @@ public class COSStreamArray extends COSStream
      *
      * @throws IOException If there is an error creating the stream.
      */
+    @Override
     public OutputStream createFilteredStream( COSBase expectedLength ) throws IOException
     {
         return firstStream.createFilteredStream( expectedLength );
@@ -239,6 +249,7 @@ public class COSStreamArray extends COSStream
      *
      * @throws IOException If there is an error clearing the old filters.
      */
+    @Override
     public void setFilters(COSBase filters) throws IOException
     {
         //should this be allowed?  Should this
@@ -253,6 +264,7 @@ public class COSStreamArray extends COSStream
      *
      * @throws IOException If there is an error creating the stream.
      */
+    @Override
     public OutputStream createUnfilteredStream() throws IOException
     {
         return firstStream.createUnfilteredStream();

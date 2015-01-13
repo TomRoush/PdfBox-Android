@@ -2,6 +2,7 @@ package org.apache.pdfbox.text;
 
 import java.text.Normalizer;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.util.Matrix;
@@ -13,13 +14,13 @@ import org.apache.pdfbox.util.Matrix;
  */
 public final class TextPosition
 {
-	private static final HashMap<Integer, String> DIACRITICS = createDiacritics();
+	private static final Map<Integer, String> DIACRITICS = createDiacritics();
 	// Adds non-decomposing diacritics to the hash with their related combining character.
 	// These are values that the unicode spec claims are equivalent but are not mapped in the form
 	// NFKC normalization method. Determined by going through the Combining Diacritical Marks
 	// section of the Unicode spec and identifying which characters are not mapped to by the
 	// normalization.
-	private static HashMap<Integer, String> createDiacritics()
+	private static Map<Integer, String> createDiacritics()
 	{
 		HashMap<Integer, String> map = new HashMap<Integer, String>();
 		map.put(0x0060, "\u0300");
@@ -172,10 +173,10 @@ public final class TextPosition
 	 */
 	public float getDir()
 	{
-		float a = textMatrix.getValue(0,0);
-		float b = textMatrix.getValue(0,1);
-		float c = textMatrix.getValue(1,0);
-		float d = textMatrix.getValue(1,1);
+		float a = textMatrix.getScaleY();
+		float b = textMatrix.getShearY();
+		float c = textMatrix.getScaleX();
+		float d = textMatrix.getShearX();
 
 		// 12 0   left to right
 		// 0 12
@@ -215,19 +216,19 @@ public final class TextPosition
 	{
 		if (rotation == 0)
 		{
-			return textMatrix.getValue(2,0);
+			return textMatrix.getTranslateX();
 		}
 		else if (rotation == 90)
 		{
-			return textMatrix.getValue(2,1);
+			return textMatrix.getTranslateY();
 		}
 		else if (rotation == 180)
 		{
-			return pageWidth - textMatrix.getValue(2,0);
+			return pageWidth - textMatrix.getTranslateX();
 		}
 		else if (rotation == 270)
 		{
-			return pageHeight - textMatrix.getValue(2,1);
+			return pageHeight - textMatrix.getTranslateX();
 		}
 		return 0;
 	}
@@ -266,19 +267,19 @@ public final class TextPosition
 	{
 		if (rotation == 0)
 		{
-			return textMatrix.getValue(2,1);
+			return textMatrix.getTranslateY();
 		}
 		else if (rotation == 90)
 		{
-			return pageWidth - textMatrix.getValue(2,0);
+			return pageWidth - textMatrix.getTranslateX();
 		}
 		else if (rotation == 180)
 		{
-			return pageHeight - textMatrix.getValue(2,1);
+			return pageHeight - textMatrix.getTranslateY();
 		}
 		else if (rotation == 270)
 		{
-			return textMatrix.getValue(2,0);
+			return textMatrix.getTranslateX();
 		}
 		return 0;
 	}
@@ -420,7 +421,7 @@ public final class TextPosition
 	 */
 	public float getXScale()
 	{
-		return textMatrix.getXScale();
+		return textMatrix.getScalingFactorX();
 	}
 
 	/**
@@ -428,7 +429,7 @@ public final class TextPosition
 	 */
 	public float getYScale()
 	{
-		return textMatrix.getYScale();
+		return textMatrix.getScalingFactorY();
 	}
 
 	/**
@@ -641,6 +642,7 @@ public final class TextPosition
 	 *
 	 * @return A human readable form of this object.
 	 */
+	@Override
 	public String toString()
 	{
 		return getUnicode();

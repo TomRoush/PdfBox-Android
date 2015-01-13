@@ -43,6 +43,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int size()
     {
         return map.size();
@@ -51,6 +52,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isEmpty()
     {
         return size() == 0;
@@ -59,6 +61,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean containsKey(Object key)
     {
         return map.keySet().contains( key );
@@ -67,6 +70,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean containsValue(Object value)
     {
         return actuals.containsValue( value );
@@ -75,6 +79,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public V get(Object key)
     {
         return actuals.get( key );
@@ -83,6 +88,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public V put(K key, V value)
     {
         COSObjectable object = (COSObjectable)value;
@@ -94,6 +100,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public V remove(Object key)
     {
         map.removeItem( COSName.getPDFName( (String)key ) );
@@ -103,6 +110,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void putAll(Map<? extends K, ? extends V> t)
     {
         throw new RuntimeException( "Not yet implemented" );
@@ -111,6 +119,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public void clear()
     {
         map.clear();
@@ -120,6 +129,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Set<K> keySet()
     {
         return actuals.keySet();
@@ -128,6 +138,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Collection<V> values()
     {
         return actuals.values();
@@ -136,6 +147,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public Set<Map.Entry<K, V>> entrySet()
     {
         return Collections.unmodifiableSet(actuals.entrySet());
@@ -144,6 +156,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean equals(Object o)
     {
         boolean retval = false;
@@ -158,6 +171,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public String toString()
     {
         return actuals.toString();
@@ -166,6 +180,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     /**
      * {@inheritDoc}
      */
+    @Override
     public int hashCode()
     {
         return map.hashCode();

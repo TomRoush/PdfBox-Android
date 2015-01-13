@@ -82,6 +82,7 @@ public class PDPageLabelRange implements COSObjectable
         return root;
     }
 
+    @Override
     public COSBase getCOSObject()
     {
         return root;

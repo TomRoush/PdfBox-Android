@@ -145,7 +145,7 @@ public class LayerUtility
 		transferDict(page.getCOSObject(), form.getCOSStream(), PAGE_TO_FORM_FILTER, true);
 
 		Matrix matrix = form.getMatrix();
-		android.graphics.Matrix at = matrix != null ? matrix.createAffineTransform() : new android.graphics.Matrix();
+		android.graphics.Matrix at = matrix.createAffineTransform();
 		PDRectangle mediaBox = page.getMediaBox();
 		PDRectangle cropBox = page.getCropBox();
 		PDRectangle viewBox = (cropBox != null ? cropBox : mediaBox);

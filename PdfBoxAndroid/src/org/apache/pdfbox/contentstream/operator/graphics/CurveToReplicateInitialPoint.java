@@ -26,12 +26,12 @@ public class CurveToReplicateInitialPoint extends GraphicsOperatorProcessor
 
         PointF currentPoint = context.getCurrentPoint();
 
-        PointF point2 = context.transformedPoint(x2.doubleValue(), y2.doubleValue());
-        PointF point3 = context.transformedPoint(x3.doubleValue(), y3.doubleValue());
+        PointF point2 = context.transformedPoint(x2.floatValue(), y2.floatValue());
+        PointF point3 = context.transformedPoint(x3.floatValue(), y3.floatValue());
 
-        context.curveTo((float) currentPoint.x, (float) currentPoint.y,
-                        (float) point2.x, (float) point2.y,
-                        (float) point3.x, (float) point3.y);
+        context.curveTo(currentPoint.x, currentPoint.y,
+                        point2.x, point2.y,
+                        point3.x, point3.y);
     }
 
     @Override

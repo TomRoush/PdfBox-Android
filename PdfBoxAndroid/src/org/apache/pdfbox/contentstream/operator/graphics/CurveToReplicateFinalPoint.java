@@ -24,12 +24,12 @@ public final class CurveToReplicateFinalPoint extends GraphicsOperatorProcessor
         COSNumber x3 = (COSNumber)operands.get(2);
         COSNumber y3 = (COSNumber)operands.get(3);
 
-        PointF point1 = context.transformedPoint(x1.doubleValue(), y1.doubleValue());
-        PointF point3 = context.transformedPoint(x3.doubleValue(), y3.doubleValue());
+        PointF point1 = context.transformedPoint(x1.floatValue(), y1.floatValue());
+        PointF point3 = context.transformedPoint(x3.floatValue(), y3.floatValue());
 
-        context.curveTo((float) point1.x, (float) point1.y,
-                        (float) point3.x, (float) point3.y,
-                        (float) point3.x, (float) point3.y);
+        context.curveTo(point1.x, point1.y,
+                        point3.x, point3.y,
+                        point3.x, point3.y);
     }
 
     @Override

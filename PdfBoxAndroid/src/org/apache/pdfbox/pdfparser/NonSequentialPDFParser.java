@@ -63,7 +63,7 @@ import org.apache.pdfbox.persistence.util.COSObjectKey;
 public class NonSequentialPDFParser extends PDFParser
 {
 	private static final byte[] XREF_TABLE = new byte[] { 'x', 'r', 'e', 'f' };
-	private static final byte[] XREF_STREAM = new byte[] { '/','X', 'R', 'e', 'f' };
+	private static final byte[] XREF_STREAM = new byte[] { '/', 'X', 'R', 'e', 'f' };
 	private static final long MINIMUM_SEARCH_OFFSET = 6;
 
 	private static final int X = 'x';
@@ -119,9 +119,9 @@ public class NonSequentialPDFParser extends PDFParser
 	/**
 	 * Contains all found objects of a brute force search.
 	 */
-	private HashMap<String, Long> bfSearchObjectOffsets = null;
-	private HashMap<COSObjectKey, Long> bfSearchCOSObjectKeyOffsets = null;
-	private Vector<Long> bfSearchXRefOffsets = null;
+	private Map<String, Long> bfSearchObjectOffsets = null;
+	private Map<COSObjectKey, Long> bfSearchCOSObjectKeyOffsets = null;
+	private List<Long> bfSearchXRefOffsets = null;
 
 	/**
 	 * The security handler.
@@ -278,10 +278,10 @@ public class NonSequentialPDFParser extends PDFParser
 		password = decryptionPassword;
 		keyStoreInputStream = keyStore;
 		keyAlias = alias;
-		init(file, useScratchFiles);
+		init(useScratchFiles);
 	}
 
-	private void init(File file, boolean useScratchFiles) throws IOException
+	private void init(boolean useScratchFiles) throws IOException
 	{
 		String eofLookupRangeStr = System.getProperty(SYSPROP_EOFLOOKUPRANGE);
 		if (eofLookupRangeStr != null)
@@ -388,7 +388,7 @@ public class NonSequentialPDFParser extends PDFParser
 		password = decryptionPassword;
 		keyStoreInputStream = keyStore;
 		keyAlias = alias;
-		init(pdfFile, useScratchFiles);
+		init(useScratchFiles);
 	}
 
 	/**
@@ -520,14 +520,11 @@ public class NonSequentialPDFParser extends PDFParser
 		else if (!parseMinimalCatalog)
 		{
 			COSObject catalogObj = document.getCatalog();
-			if (catalogObj != null)
+			if (catalogObj != null && catalogObj.getObject() instanceof COSDictionary)
 			{
-				if (catalogObj.getObject() instanceof COSDictionary)
-				{
-					parseDictObjects((COSDictionary) catalogObj.getObject(), (COSName[]) null);
-					allPagesParsed = true;
-					document.setDecrypted();
-				}
+				parseDictObjects((COSDictionary) catalogObj.getObject(), (COSName[]) null);
+				allPagesParsed = true;
+				document.setDecrypted();
 			}
 		}
 
@@ -606,7 +603,7 @@ public class NonSequentialPDFParser extends PDFParser
 					throw (IOException) e;
 				}
 				throw new IOException("Error (" + e.getClass().getSimpleName()
-						+ ") while creating security handler for decryption",e);
+						+ ") while creating security handler for decryption", e);
 			}
 		}
 	}
@@ -620,7 +617,7 @@ public class NonSequentialPDFParser extends PDFParser
 	 */
 	private COSDictionary parseXref(long startXRefOffset) throws IOException
 	{
-		setPdfSource(startXRefOffset);
+		pdfSource.seek(startXRefOffset);
 		parseStartXref();
 
 		long startXrefOffset = document.getStartXref();
@@ -637,7 +634,7 @@ public class NonSequentialPDFParser extends PDFParser
 		while (prev > -1)
 		{
 			// seek to xref table
-			setPdfSource(prev);
+			pdfSource.seek(prev);
 
 			// skip white spaces
 			skipSpaces();
@@ -677,7 +674,7 @@ public class NonSequentialPDFParser extends PDFParser
 						streamOffset = (int)fixedOffset;
 						trailer.setInt(COSName.XREF_STM, streamOffset);
 					}
-					setPdfSource(streamOffset);
+					pdfSource.seek(streamOffset);
 					skipSpaces();
 					parseXrefObjStream(prev, false); 
 				}
@@ -740,53 +737,6 @@ public class NonSequentialPDFParser extends PDFParser
 	}
 
 	// ------------------------------------------------------------------------
-	/** Get current offset in file at which next byte would be read. */
-	private long getPdfSourceOffset()
-	{
-		return pdfSource.getOffset();
-	}
-
-	/**
-	 * Sets {@link #pdfSource} to start next parsing at given file offset.
-	 * 
-	 * @param fileOffset file offset
-	 * @throws IOException If something went wrong.
-	 */
-	protected final void setPdfSource(long fileOffset) throws IOException
-	{
-
-		pdfSource.seek(fileOffset);
-
-		// alternative using 'old fashioned' input stream
-		// if ( pdfSource != null )
-		// pdfSource.close();
-		//
-		// pdfSource = new PushBackInputStream(
-		// new BufferedInputStream(
-		// new FileInputStream( file ), 16384), 4096);
-		// pdfSource.skip( _fileOffset );
-	}
-
-	/**
-	 * Enable handling of alternative pdfSource implementation.
-	 * 
-	 * @throws IOException If something went wrong.
-	 */
-	protected final void releasePdfSourceInputStream() throws IOException
-	{
-		// if ( pdfSource != null )
-		// pdfSource.close();
-	}
-
-	private void closeFileStream() throws IOException
-	{
-		if (pdfSource != null)
-		{
-			pdfSource.close();
-		}
-	}
-
-	// ------------------------------------------------------------------------
 	/**
 	 * Looks for and parses startxref. We first look for last '%%EOF' marker (within last
 	 * {@link #DEFAULT_TRAIL_BYTECOUNT} bytes (or range set via {@link #setEOFLookupRange(int)}) and go back to find
@@ -830,16 +780,7 @@ public class NonSequentialPDFParser extends PDFParser
 		}
 		finally
 		{
-			if (fIn != null)
-			{
-				try
-				{
-					fIn.close();
-				}
-				catch (IOException ioe)
-				{
-				}
-			}
+			IOUtils.closeQuietly(fIn);
 		}
 
 		// ---- find last '%%EOF'
@@ -908,6 +849,7 @@ public class NonSequentialPDFParser extends PDFParser
 					return bufOff;
 				}
 				// matched current char, advance to preceding one
+				patOff = lastPatternChOff;
 				lookupCh = pattern[patOff];
 			}
 			else if (patOff < lastPatternChOff)
@@ -1017,21 +959,12 @@ public class NonSequentialPDFParser extends PDFParser
 		}
 		finally
 		{
-			try
-			{
-				closeFileStream();
-				if (keyStoreInputStream != null)
-				{
-					keyStoreInputStream.close();
-				}
-			}
-			catch (IOException ioe)
-			{
-			}
+			IOUtils.closeQuietly(pdfSource);
+			IOUtils.closeQuietly(keyStoreInputStream);
 
 			deleteTempFile();
 
-			if (exceptionOccurred && (document != null))
+			if (exceptionOccurred && document != null)
 			{
 				try
 				{
@@ -1196,14 +1129,12 @@ public class NonSequentialPDFParser extends PDFParser
 
 			COSDictionary dic = (COSDictionary) base;
 			int count = dic.getInt(COSName.COUNT);
-			if (count >= 0)
+
+			// skip this branch if requested page comes later
+			if (count >= 0 && (curPageCount + count) <= num)
 			{
-				// skip this branch if requested page comes later
-				if ((curPageCount + count) <= num)
-				{
-					curPageCount += count;
-					continue;
-				}
+				curPageCount += count;
+				continue;
 			}
 
 			COSArray kids = (COSArray) dic.getDictionaryObject(COSName.KIDS);
@@ -1232,7 +1163,8 @@ public class NonSequentialPDFParser extends PDFParser
 	}
 
 	/**
-	 * Creates a unique object id using object number and object generation number. (requires object number &lt; 2^31))
+	 * Creates a unique object id using object number and object generation
+	 * number. (requires object number &lt; 2^31))
 	 */
 	private long getObjectId(final COSObject obj)
 	{
@@ -1240,29 +1172,21 @@ public class NonSequentialPDFParser extends PDFParser
 	}
 
 	/**
-	 * Adds all from newObjects to toBeParsedList if it is not an COSObject or we didn't add this COSObject already
-	 * (checked via addedObjects).
+	 * Adds all from newObjects to toBeParsedList if it is not an COSObject or
+	 * we didn't add this COSObject already (checked via addedObjects).
 	 */
 	private void addNewToList(final Queue<COSBase> toBeParsedList,
 			final Collection<COSBase> newObjects, final Set<Long> addedObjects)
 	{
 		for (COSBase newObject : newObjects)
 		{
-			if (newObject instanceof COSObject)
-			{
-				final long objId = getObjectId((COSObject) newObject);
-				if (!addedObjects.add(objId))
-				{
-					continue;
-				}
-			}
-			toBeParsedList.add(newObject);
+			addNewToList(toBeParsedList, newObject, addedObjects);
 		}
 	}
 
 	/**
-	 * Adds newObject to toBeParsedList if it is not an COSObject or we didn't add this COSObject already (checked via
-	 * addedObjects).
+	 * Adds newObject to toBeParsedList if it is not an COSObject or we didn't
+	 * add this COSObject already (checked via addedObjects).
 	 */
 	private void addNewToList(final Queue<COSBase> toBeParsedList, final COSBase newObject,
 			final Set<Long> addedObjects)
@@ -1297,19 +1221,7 @@ public class NonSequentialPDFParser extends PDFParser
 		final Set<Long> parsedObjects = new HashSet<Long>();
 		final Set<Long> addedObjects = new HashSet<Long>();
 
-		// ---- add objects not to be parsed to list of already parsed objects
-		if (excludeObjects != null)
-		{
-			for (COSName objName : excludeObjects)
-			{
-				COSBase baseObj = dict.getItem(objName);
-				if (baseObj instanceof COSObject)
-				{
-					parsedObjects.add(getObjectId((COSObject) baseObj));
-				}
-			}
-		}
-
+		addExcludedToList(excludeObjects, dict, parsedObjects);
 		addNewToList(toBeParsedList, dict.getValues(), addedObjects);
 
 		// ---- go through objects to be parsed
@@ -1320,14 +1232,9 @@ public class NonSequentialPDFParser extends PDFParser
 			COSBase baseObj;
 			while ((baseObj = toBeParsedList.poll()) != null)
 			{
-				if (baseObj instanceof COSStream)
+				if (baseObj instanceof COSDictionary)
 				{
-					addNewToList(toBeParsedList, ((COSStream) baseObj).getValues(), addedObjects);
-				}
-				else if (baseObj instanceof COSDictionary)
-				{
-					addNewToList(toBeParsedList, ((COSDictionary) baseObj).getValues(),
-							addedObjects);
+					addNewToList(toBeParsedList, ((COSDictionary) baseObj).getValues(), addedObjects);
 				}
 				else if (baseObj instanceof COSArray)
 				{
@@ -1374,8 +1281,8 @@ public class NonSequentialPDFParser extends PDFParser
 								List<COSObject> stmObjects = objToBeParsed.get(fileOffset);
 								if (stmObjects == null)
 								{
-									objToBeParsed.put(fileOffset,
-											stmObjects = new ArrayList<COSObject>());
+									stmObjects = new ArrayList<COSObject>();
+									objToBeParsed.put(fileOffset, stmObjects);
 								}
 								stmObjects.add(obj);
 							}
@@ -1405,6 +1312,22 @@ public class NonSequentialPDFParser extends PDFParser
 				addNewToList(toBeParsedList, parsedObj, addedObjects);
 
 				parsedObjects.add(getObjectId(obj));
+			}
+		}
+	}
+
+	// add objects not to be parsed to list of already parsed objects
+	private void addExcludedToList(COSName[] excludeObjects, COSDictionary dict, final Set<Long> parsedObjects)
+	{
+		if (excludeObjects != null)
+		{
+			for (COSName objName : excludeObjects)
+			{
+				COSBase baseObj = dict.getItem(objName);
+				if (baseObj instanceof COSObject)
+				{
+					parsedObjects.add(getObjectId((COSObject) baseObj));
+				}
 			}
 		}
 	}
@@ -1471,7 +1394,7 @@ public class NonSequentialPDFParser extends PDFParser
 			{
 				// offset of indirect object in file
 				// ---- go to object start
-				setPdfSource(offsetOrObjstmObNr);
+				pdfSource.seek(offsetOrObjstmObNr);
 
 				// ---- we must have an indirect object
 				final long readObjNr = readObjectNumber();
@@ -1516,16 +1439,13 @@ public class NonSequentialPDFParser extends PDFParser
 					endObjectKey = readLine();
 
 					// we have case with a second 'endstream' before endobj
-					if (!endObjectKey.startsWith("endobj"))
+					if (!endObjectKey.startsWith("endobj") && endObjectKey.startsWith("endstream"))
 					{
-						if (endObjectKey.startsWith("endstream"))
+						endObjectKey = endObjectKey.substring(9).trim();
+						if (endObjectKey.length() == 0)
 						{
-							endObjectKey = endObjectKey.substring(9).trim();
-							if (endObjectKey.length() == 0)
-							{
-								// no other characters in extra endstream line
-								endObjectKey = readLine(); // read next line
-							}
+							// no other characters in extra endstream line
+							endObjectKey = readLine(); // read next line
 						}
 					}
 				}
@@ -1551,9 +1471,6 @@ public class NonSequentialPDFParser extends PDFParser
 								+ " does not end with 'endobj' but with '" + endObjectKey + "'");
 					}
 				}
-
-				releasePdfSourceInputStream();
-
 			}
 			else
 			{
@@ -1701,13 +1618,12 @@ public class NonSequentialPDFParser extends PDFParser
 					// not read so far
 
 					// keep current stream position
-					final long curFileOffset = getPdfSourceOffset();
-					releasePdfSourceInputStream();
+					final long curFileOffset = pdfSource.getOffset();
 
 					parseObjectDynamically(lengthObj, true);
 
 					// reset current stream position
-					setPdfSource(curFileOffset);
+					pdfSource.seek(curFileOffset);
 
 					if (lengthObj.getObject() == null)
 					{
@@ -1919,7 +1835,7 @@ public class NonSequentialPDFParser extends PDFParser
 		{
 			return startXRefOffset;
 		}
-		setPdfSource(startXRefOffset-1);
+		pdfSource.seek(startXRefOffset-1);
 		// save th previous character
 		int previous = pdfSource.read();
 		if (pdfSource.peek() == X && checkBytesAtOffset(XREF_TABLE))
@@ -1940,7 +1856,7 @@ public class NonSequentialPDFParser extends PDFParser
 					readObjectNumber();
 					readGenerationNumber();
 					readPattern(OBJ_MARKER);
-					setPdfSource(startXRefOffset);
+					pdfSource.seek(startXRefOffset);
 					return startXRefOffset;
 				}
 				catch (IOException exception)
@@ -2069,10 +1985,9 @@ public class NonSequentialPDFParser extends PDFParser
 	 */
 	private boolean checkObjectId(String objectString, long offset) throws IOException
 	{
-		boolean objectFound = false;
 		long originOffset = pdfSource.getOffset();
 		pdfSource.seek(offset);
-		objectFound = checkBytesAtOffset(objectString.getBytes("ISO-8859-1"));
+		boolean objectFound = checkBytesAtOffset(objectString.getBytes("ISO-8859-1"));
 		pdfSource.seek(originOffset);
 		return objectFound;
 	}
@@ -2155,12 +2070,12 @@ public class NonSequentialPDFParser extends PDFParser
 								byte[] objIDBytes = pdfSource.readFully(length);
 								String objIdString = new String(objIDBytes, 0,
 										objIDBytes.length, "ISO-8859-1");
-								Long objectID = null;
+								Long objectID;
 								try
 								{
 									objectID = Long.valueOf(objIdString);
 								}
-								catch (NumberFormatException excpetion)
+								catch (NumberFormatException exception)
 								{
 									objectID = null;
 								}
@@ -2175,7 +2090,8 @@ public class NonSequentialPDFParser extends PDFParser
 					}
 				}
 				currentOffset++;
-			} while (!pdfSource.isEOF());
+			}
+			while (!pdfSource.isEOF());
 			// reestablish origin position
 			pdfSource.seek(originOffset);
 		}
@@ -2257,11 +2173,10 @@ public class NonSequentialPDFParser extends PDFParser
 					// search backwards for the beginning of the stream
 					long newOffset = -1;
 					long xrefOffset = pdfSource.getOffset();
-					long currentOffset = xrefOffset;
 					boolean objFound = false;
 					for (int i = 1; i < 30 && !objFound; i++)
 					{
-						currentOffset = xrefOffset - (i * 10);
+						long currentOffset = xrefOffset - (i * 10);
 						if (currentOffset > 0)
 						{
 							pdfSource.seek(currentOffset);
