@@ -832,35 +832,32 @@ public class NonSequentialPDFParser extends PDFParser
 	 * @return start offset of pattern within buffer or <code>-1</code> if pattern could not be found
 	 */
 	protected int lastIndexOf(final char[] pattern, final byte[] buf, final int endOff)
-	{
-		final int lastPatternChOff = pattern.length - 1;
-
-		int bufOff = endOff;
-		int patOff = lastPatternChOff;
-		char lookupCh = pattern[patOff];
-
-		while (--bufOff >= 0)
-		{
-			if (buf[bufOff] == lookupCh)
-			{
-				if (--patOff < 0)
-				{
-					// whole pattern matched
-					return bufOff;
-				}
-				// matched current char, advance to preceding one
-				patOff = lastPatternChOff;
-				lookupCh = pattern[patOff];
-			}
-			else if (patOff < lastPatternChOff)
-			{
-				// no char match but already matched some chars; reset
-				lookupCh = pattern[patOff = lastPatternChOff];
-			}
-		}
-
-		return -1;
-	}
+    {
+    	final int lastPatternChOff = pattern.length - 1;
+    	int bufOff = endOff;
+    	int patOff = lastPatternChOff;
+    	char lookupCh = pattern[patOff];
+    	while (--bufOff >= 0)
+    	{
+    		if (buf[bufOff] == lookupCh)
+    		{
+    			if (--patOff < 0)
+    			{
+    				// whole pattern matched
+    				return bufOff;
+    			}
+    			// matched current char, advance to preceding one
+    			lookupCh = pattern[patOff];
+    		}
+    		else if (patOff < lastPatternChOff)
+    		{
+    			// no char match but already matched some chars; reset
+    			patOff = lastPatternChOff;
+    			lookupCh = pattern[patOff];
+    		}
+    	}
+    	return -1;
+    }
 
 	// ------------------------------------------------------------------------
 	/**
