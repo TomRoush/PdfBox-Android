@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.io.IOUtils;
 
 /**
  * Decompresses data encoded using a DCT (discrete cosine transform)
@@ -39,12 +40,14 @@ final class DCTFilter extends Filter
                                          COSDictionary parameters, int index) throws IOException
     {
     	// Already ready, just read it back out
-    	byte[] buffer = new byte[1024];
-        int bytesRead;
-        while ((bytesRead = encoded.read(buffer)) != -1)
-        {
-            decoded.write(buffer, 0, bytesRead);
-        }
+//    	byte[] buffer = new byte[1024];
+//        int bytesRead;
+//        while ((bytesRead = encoded.read(buffer)) != -1)
+//        {
+//            decoded.write(buffer, 0, bytesRead);
+//        }
+        
+        IOUtils.copy(encoded, decoded);
         
         return new DecodeResult(parameters);
     }
