@@ -231,7 +231,8 @@ public class MacRomanEncoding extends Encoding
         add(0172, "z");
         add(060, "zero");
         // adding an additional mapping as defined in Appendix D of the pdf spec
-        add(0312, "space");
+//        Currently not functioning properly, hopefully not needed
+//        add(0312, "space");
     }
     
     /**
