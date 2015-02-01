@@ -1,11 +1,11 @@
 package org.apache.pdfbox.pdmodel.font;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -271,19 +271,21 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 	 * Returns the width of the given Unicode string.
 	 *
 	 * @param text The text to get the width of.
-	 * @return The width of the string in 1000 units of text space, ie 333 567...
+	 * @return The width of the string in 1/1000 units of text space
 	 * @throws IOException If there is an error getting the width information.
 	 */
 	public float getStringWidth(String text) throws IOException
 	{
+		byte[] bytes = encode(text);
+		ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+		
 		float width = 0;
-		int offset = 0, length = text.length();
-		while (offset < length)
+		while (in.available() > 0)
 		{
-			int codePoint = text.codePointAt(offset);
-			offset += Character.charCount(codePoint);
-			width += getWidth(codePoint); // todo: *no* getWidth expects a PDF char code, not a Unicode code point
+			int code = readCode(in);
+			width += getWidth(code);
 		}
+		
 		return width;
 	}
 
@@ -494,14 +496,25 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 		// if the name matches, this is a Standard 14 font
 		return Standard14Fonts.containsName(getName());
 	}
+	
+	/**
+	 * Adds the given Unicode point to the subset.
+	 *
+	 * @param codePoint Unicode code point
+	 */
+	public abstract void addToSubset(int codePoint);
 
 	/**
 	 * Replaces this font with a subset containing only the given Unicode characters.
 	 *
-	 * @param codePoints Unicode code points to keep
 	 * @throws IOException if the subset could not be written
 	 */
-	public abstract void subset(Set<Integer> codePoints) throws IOException;
+	public abstract void subset() throws IOException;
+	
+	/**
+	 * Returns true if this font will be subset when embedded.
+	 */
+	public abstract boolean willBeSubset();
 
 	@Override
 	public abstract boolean isDamaged();

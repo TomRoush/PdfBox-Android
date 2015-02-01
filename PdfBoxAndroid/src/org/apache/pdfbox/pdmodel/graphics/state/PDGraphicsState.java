@@ -15,8 +15,8 @@ public class PDGraphicsState implements Cloneable
     private boolean isClippingPathDirty;
 //    private Area clippingPath;TODO
     private Matrix currentTransformationMatrix = new Matrix();
-//    private PDColor strokingColor = PDColor.DEVICE_GRAY_BLACK;TODO
-//    private PDColor nonStrokingColor = PDColor.DEVICE_GRAY_BLACK;TODO
+//    private PDColor strokingColor = PDDeviceGray.INSTANCE.getInitialColor();TODO
+//    private PDColor nonStrokingColor = PDDeviceGray.INSTANCE.getInitialColor();TODO
 //    private PDColorSpace strokingColorSpace = PDDeviceGray.INSTANCE;TODO
 //    private PDColorSpace nonStrokingColorSpace = PDDeviceGray.INSTANCE;TODO
     private PDTextState textState = new PDTextState();
@@ -398,7 +398,7 @@ public class PDGraphicsState implements Cloneable
     /**
      * This will get the rendering intent.
      *
-     * @see org.apache.pdfbox.pdmodel.graphics.state.PDExternalGraphicsState
+     * @see org.apache.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState
      *
      * @return The rendering intent
      */

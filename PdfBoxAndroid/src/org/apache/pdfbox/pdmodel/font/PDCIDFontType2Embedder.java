@@ -40,9 +40,9 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
      * @throws IOException if the TTF could not be read
      */
     PDCIDFontType2Embedder(PDDocument document, COSDictionary dict, InputStream ttfStream,
-                           PDType0Font parent) throws IOException
+                           boolean embedSubset, PDType0Font parent) throws IOException
     {
-        super(document, dict, ttfStream);
+        super(document, dict, ttfStream, embedSubset);
         this.document = document;
         this.dict = dict;
         this.parent = parent;
@@ -89,11 +89,12 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
             cidToGid.put(oldGID, newGID);
         }
 
-        // buildSubset the relevant part of the font
+        // rebuild the relevant part of the font
         buildFontFile2(ttfSubset);
         addNameTag(tag);
         buildWidths(cidToGid);
         buildCIDToGIDMap(cidToGid);
+        buildCIDSet(cidToGid);
         buildToUnicodeCMap(gidToCid);
     }
 
@@ -226,7 +227,26 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
     }
 
     /**
-     * Builds withs with a custom CIDToGIDMap (for embedding font subset).
+     * Builds the CIDSet entry, required by PDF/A. This lists all CIDs in the font.
+     */
+    private void buildCIDSet(Map<Integer, Integer> cidToGid) throws IOException
+    {
+    	byte[] bytes = new byte[(Collections.max(cidToGid.keySet()) + 7) / 8];
+    	for (int cid : cidToGid.keySet())
+    	{
+    		int mask = 1 << 7 - cid % 8;
+    		bytes[cid / 8] |= mask;
+    	}
+
+    	InputStream input = new ByteArrayInputStream(bytes);
+    	PDStream stream = new PDStream(document, input);
+    	stream.addCompression();
+
+    	fontDescriptor.setCIDSet(stream);
+    }
+
+ /**
+ * Builds wieths with a custom CIDToGIDMap (for embedding font subset).
      */
     private void buildWidths(Map<Integer, Integer> cidToGid) throws IOException
     {

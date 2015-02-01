@@ -60,12 +60,14 @@ public class PDCIDFontType0 extends PDCIDFont
 			}
 		}
 
-		if (bytes != null)
-		{
-			// embedded
+		boolean fontIsDamaged = false;
+		CFFFont cffFont = null;
+		if (bytes != null && bytes.length > 0 && (bytes[0] & 0xff) == '%') {
+			// todo: PDFBOX-2642 contains a Type1 PFB font in a CIDFont, but we can't handle it yet
+			LOG.error("Unsupported: Type1 font instead of CFF in " + fd.getFontName());
+			fontIsDamaged = true;
+		} else if (bytes != null) {
 			CFFParser cffParser = new CFFParser();
-			boolean fontIsDamaged = false;
-			CFFFont cffFont = null;
 			try
 			{
 				cffFont = cffParser.parse(bytes).get(0);
@@ -75,7 +77,11 @@ public class PDCIDFontType0 extends PDCIDFont
 				LOG.error("Can't read the embedded CFF font " + fd.getFontName(), e);
 				fontIsDamaged = true;
 			}
+		}
 
+		if (cffFont != null)
+		{
+			// embedded
 			if (cffFont instanceof CFFCIDFont)
 			{
 				cidFont = (CFFCIDFont)cffFont;
@@ -87,7 +93,7 @@ public class PDCIDFontType0 extends PDCIDFont
 				t1Font = (CFFType1Font)cffFont;
 			}
 			isEmbedded = true;
-			isDamaged = fontIsDamaged;
+			isDamaged = false;
 		}
 		else
 		{
@@ -122,7 +128,10 @@ public class PDCIDFontType0 extends PDCIDFont
 				{
 					// this error often indicates that the user needs to install the Adobe Reader
 					// Asian and Extended Language Pack
-					LOG.error("Missing CID-keyed font " + getBaseFont());
+					if (!fontIsDamaged)
+					{
+						LOG.error("Missing CID-keyed font " + getBaseFont());
+					}
 				}
 				else
 				{
@@ -130,7 +139,7 @@ public class PDCIDFontType0 extends PDCIDFont
 				}
 			}
 			isEmbedded = false;
-			isDamaged = false;
+			isDamaged = fontIsDamaged;
 		}
 		fontMatrixTransform = getFontMatrix().createAffineTransform();
 		fontMatrixTransform.setScale(1000, 1000);

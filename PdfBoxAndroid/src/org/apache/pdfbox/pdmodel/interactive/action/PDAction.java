@@ -54,6 +54,7 @@ public abstract class PDAction implements PDDestinationOrAction
      *
      * @return The cos object that matches this Java object.
      */
+    @Override
     public COSBase getCOSObject()
     {
         return action;
@@ -77,7 +78,7 @@ public abstract class PDAction implements PDDestinationOrAction
      */
     public String getType()
     {
-       return action.getNameAsString( "Type" );
+       return action.getNameAsString( COSName.TYPE );
     }
 
     /**
@@ -86,9 +87,9 @@ public abstract class PDAction implements PDDestinationOrAction
      *
      * @param type The new Type for the PDF object.
      */
-    public void setType( String type )
+    public final void setType( String type )
     {
-       action.setName( "Type", type );
+       action.setName(COSName.TYPE, type );
     }
 
     /**
@@ -123,11 +124,11 @@ public abstract class PDAction implements PDDestinationOrAction
     public List getNext()
     {
         List retval = null;
-        COSBase next = action.getDictionaryObject( "Next" );
+        COSBase next = action.getDictionaryObject(COSName.NEXT);
         if( next instanceof COSDictionary )
         {
             PDAction pdAction = PDActionFactory.createAction( (COSDictionary) next );
-            retval = new COSArrayList(pdAction, next, action, COSName.getPDFName( "Next" ));
+            retval = new COSArrayList(pdAction, next, action, COSName.NEXT);
         }
         else if( next instanceof COSArray )
         {
@@ -152,6 +153,6 @@ public abstract class PDAction implements PDDestinationOrAction
      */
     public void setNext( List next )
     {
-        action.setItem( "Next", COSArrayList.converterToCOSArray( next ) );
+        action.setItem(COSName.NEXT, COSArrayList.converterToCOSArray( next ) );
     }
 }

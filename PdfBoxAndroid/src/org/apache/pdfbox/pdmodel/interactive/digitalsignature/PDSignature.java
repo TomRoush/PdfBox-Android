@@ -22,7 +22,7 @@ import org.apache.pdfbox.pdmodel.common.COSObjectable;
  */
 public class PDSignature implements COSObjectable
 {
-    private COSDictionary dictionary;
+    private final COSDictionary dictionary;
 
     /**
      * A signature filter value.
@@ -88,6 +88,7 @@ public class PDSignature implements COSObjectable
      *
      * @return The cos object that matches this Java object.
      */
+    @Override
     public COSBase getCOSObject()
     {
         return getDictionary();

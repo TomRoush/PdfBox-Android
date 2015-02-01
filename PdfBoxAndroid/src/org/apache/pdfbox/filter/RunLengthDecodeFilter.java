@@ -16,7 +16,7 @@ import org.apache.pdfbox.cos.COSDictionary;
  */
 final class RunLengthDecodeFilter extends Filter
 {
-    private static final Log log = LogFactory.getLog(RunLengthDecodeFilter.class);
+    private static final Log LOG = LogFactory.getLog(RunLengthDecodeFilter.class);
     private static final int RUN_LENGTH_EOD = 128;
 
     @Override
@@ -54,6 +54,6 @@ final class RunLengthDecodeFilter extends Filter
     protected final void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
             throws IOException
     {
-        log.warn("RunLengthDecodeFilter.encode is not implemented yet, skipping this stream.");
+        LOG.warn("RunLengthDecodeFilter.encode is not implemented yet, skipping this stream.");
     }
 }

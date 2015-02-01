@@ -1,5 +1,5 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+f * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
@@ -383,15 +383,15 @@ public class CFFParser
         if (charsetEntry != null)
         {
         	int charsetId = charsetEntry.getNumber(0).intValue();
-        	if (isCIDFont && charsetId == 0)
+        	if (!isCIDFont && charsetId == 0)
         	{
         		charset = CFFISOAdobeCharset.getInstance();
         	}
-        	else if (isCIDFont && charsetId == 1)
+        	else if (!isCIDFont && charsetId == 1)
         	{
         		charset = CFFExpertCharset.getInstance();
         	}
-        	else if (isCIDFont && charsetId == 2)
+        	else if (!isCIDFont && charsetId == 2)
         	{
         		charset = CFFExpertSubsetCharset.getInstance();
         	}
@@ -428,7 +428,24 @@ public class CFFParser
         // format-specific dictionaries
         if (isCIDFont)
         {
-            parseCIDFontDicts(topDict, (CFFCIDFont) font, charStringsIndex);
+        	parseCIDFontDicts(topDict, (CFFCIDFont) font, charStringsIndex);
+        	// some malformed fonts have FontMatrix in their Font DICT, see PDFBOX-2495
+        	if (topDict.getEntry("FontMatrix") == null)
+        	{
+        		List<Map<String, Object>> fontDicts = ((CFFCIDFont) font).getFontDicts();
+        		if (fontDicts.size() > 0 && fontDicts.get(0).containsKey("FontMatrix"))
+        		{
+        			List<Number> matrix = (List<Number>)fontDicts.get(0).get("FontMatrix");
+        			font.addValueToTopDict("FontMatrix", matrix);
+        		}
+        		else
+        		{
+        			// default
+        			font.addValueToTopDict("FontMatrix", getArray(topDict, "FontMatrix",
+        					Arrays.<Number>asList(0.001, (double) 0, (double) 0, 0.001,
+        							(double) 0, (double) 0)));
+        		}
+        	}
         }
         else
         {
@@ -820,7 +837,7 @@ public class CFFParser
     /**
      *  Format 3 FDSelect data.
      */
-    private static class Format3FDSelect extends FDSelect
+    private static final class Format3FDSelect extends FDSelect
     {
         private int format;
         private int nbRanges;
@@ -878,7 +895,7 @@ public class CFFParser
     /**
      * Structure of a Range3 element.
      */
-    private static class Range3
+    private static final class Range3
     {
         private int first;
         private int fd;

@@ -14,6 +14,16 @@ import org.apache.pdfbox.cos.COSName;
  */
 public final class PDCheckbox extends PDButton
 {
+	/**
+	 * @see PDFieldTreeNode#PDFieldTreeNode(PDAcroForm)
+	 *
+	 * @param theAcroForm The acroform.
+	 */
+	public PDCheckbox(PDAcroForm theAcroForm)
+	{
+		super( theAcroForm );
+	}
+	
     /**
      * Constructor.
      * 
@@ -34,7 +44,6 @@ public final class PDCheckbox extends PDButton
      */
     public boolean isChecked() throws IOException
     {
-    	boolean retval = false;
     	String onValue = getOnValue();
     	String fieldValue = null;
     	try
@@ -48,19 +57,19 @@ public final class PDCheckbox extends PDButton
     		// Ignoring as that will also mean that the field is not checked.
     		// Setting the value explicitly as Code Analysis (Sonar) doesn't like
     		// empty catch blocks.
-    		fieldValue = null;
+    		return false;
     	}
     	COSName radioValue = (COSName)getDictionary().getDictionaryObject( COSName.AS );
     	if( radioValue != null && fieldValue != null && radioValue.getName().equals( onValue ) )
     	{
-    		retval = true;
+    		return true;
     	}
 
-    	return retval;
+    	return false;
     }
 
     /**
-     * Checks the radiobutton.
+     * Checks the check box.
      */
     public void check()
     {
@@ -70,31 +79,30 @@ public final class PDCheckbox extends PDButton
     }
 
     /**
-     * Unchecks the radiobutton.
+     * Unchecks the check box.
      */
     public void unCheck()
     {
-        getDictionary().setItem(COSName.AS, COSName.OFF);
+        getDictionary().setItem(COSName.AS, PDButton.OFF);
     }
 
     /**
-     * This will get the value of the radio button.
+     * This will get the value assigned to the OFF state.
      *
-     * @return The value of the radio button.
+     * @return The value of the check box.
      */
     public String getOffValue()
     {
-        return COSName.OFF.getName();
+        return PDButton.OFF.getName();
     }
 
     /**
-     * This will get the value of the radio button.
+     * This will get the value assigned to the ON state.
      *
-     * @return The value of the radio button.
+     * @return The value of the check box.
      */
     public String getOnValue()
     {
-        String retval = null;
         COSDictionary ap = (COSDictionary) getDictionary().getDictionaryObject(COSName.AP);
         COSBase n = ap.getDictionaryObject(COSName.N);
 
@@ -103,53 +111,13 @@ public final class PDCheckbox extends PDButton
         {
             for( COSName key :((COSDictionary)n).keySet() )
             {
-                if( !key.equals( COSName.OFF) )
+                if( !key.equals( PDButton.OFF) )
                 {
-                    retval = key.getName();
+                    return key.getName();
                 }
             }
         }
-        return retval;
-    }
-    
-    @Override
-    public String getDefaultValue() throws IOException
-    {
-    	COSBase attribute = getInheritableAttribute(COSName.V);
-    	
-    	if (attribute instanceof COSName)
-    	{
-    		return ((COSName) attribute).getName();
-    	}
-    	else
-    	{
-    		throw new IOException("Expected a COSName entry but got " + attribute.getClass().getName());
-    	}
-    }
-    
-    /**
-     * Set the fields default value.
-     * 
-     * The field value holds a name object which is corresponding to the 
-     * appearance state representing the corresponding appearance 
-     * from the appearance directory.
-     * 
-     * The default value is used to represent the initial state of the
-     * checkbox or to revert when resetting the form.
-     * 
-     * @param defaultValue the COSName object to set the field value.
-     */
-    @Override
-    public void setDefaultValue(String defaultValue)
-    {
-    	if (defaultValue == null)
-    	{
-    		getDictionary().removeItem(COSName.DV);
-    	}
-    	else
-    	{
-    		getDictionary().setItem(COSName.DV, COSName.getPDFName(defaultValue));
-    	}
+        return "";
     }
 
     @Override
@@ -157,7 +125,11 @@ public final class PDCheckbox extends PDButton
     {
     	COSBase attribute = getInheritableAttribute(COSName.V);
 
-    	if (attribute instanceof COSName)
+    	if (attribute == null)
+    	{
+    		return "";
+    	}
+    	else if (attribute instanceof COSName)
     	{
     		return ((COSName) attribute).getName();
     	}
@@ -183,7 +155,7 @@ public final class PDCheckbox extends PDButton
         if (value == null)
         {
             getDictionary().removeItem(COSName.V);
-            getDictionary().setItem( COSName.AS, COSName.OFF );
+            getDictionary().setItem( COSName.AS, PDButton.OFF );
         }
         else
         {

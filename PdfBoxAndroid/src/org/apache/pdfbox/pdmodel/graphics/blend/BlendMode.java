@@ -10,7 +10,7 @@ import org.apache.pdfbox.cos.COSName;
 /**
  * Blend mode.
  *
- * @author K�hn & Weyh Software, GmbH
+ * @author Kühn & Weyh Software, GmbH
  */
 public abstract class BlendMode
 {

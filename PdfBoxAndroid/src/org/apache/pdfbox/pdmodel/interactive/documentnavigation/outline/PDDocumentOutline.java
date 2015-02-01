@@ -1,6 +1,7 @@
 package org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline;
 
 import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSName;
 
 /**
  * This represents an outline in a pdf document.
@@ -17,7 +18,7 @@ public class PDDocumentOutline extends PDOutlineNode
     public PDDocumentOutline()
     {
         super();
-        node.setName( "Type", "Outlines" );
+        node.setName( COSName.TYPE, "Outlines" );
     }
 
     /**

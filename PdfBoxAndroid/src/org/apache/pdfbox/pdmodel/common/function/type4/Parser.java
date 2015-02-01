@@ -6,7 +6,7 @@ package org.apache.pdfbox.pdmodel.common.function.type4;
  *
  * @version $Revision$
  */
-public class Parser
+public final class Parser
 {
 
     /** Used to indicate the parsers current state. */
@@ -97,7 +97,7 @@ public class Parser
     /**
      * Tokenizer for Type 4 functions.
      */
-    private static class Tokenizer
+    private static final class Tokenizer
     {
 
         private static final char NUL = '\u0000'; //NUL

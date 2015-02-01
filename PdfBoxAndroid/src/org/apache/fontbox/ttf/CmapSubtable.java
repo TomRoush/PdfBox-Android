@@ -232,29 +232,30 @@ public class CmapSubtable
 			long endCode = data.readUnsignedInt();
 			long startGlyph = data.readUnsignedInt();
 
-			if (firstCode < 0 || firstCode > 0x0010FFFF || (firstCode >= 0x0000D800 && firstCode <= 0x0000DFFF))
+			if (firstCode < 0 || firstCode > 0x0010FFFF ||
+					(firstCode >= 0x0000D800 && firstCode <= 0x0000DFFF))
 			{
-				throw new IOException("Invalid Characters codes");
+				throw new IOException("Invalid characters codes");
 			}
 
-			if ((endCode > 0 && endCode < firstCode) || endCode > 0x0010FFFF
-					|| (endCode >= 0x0000D800 && endCode <= 0x0000DFFF))
+			if ((endCode > 0 && endCode < firstCode) ||
+					endCode > 0x0010FFFF ||
+					(endCode >= 0x0000D800 && endCode <= 0x0000DFFF))
 			{
-				throw new IOException("Invalid Characters codes");
+				throw new IOException("Invalid characters codes");
 			}
 
-			for (long j = 0; j <= (endCode - firstCode); ++j)
+			for (long j = 0; j <= endCode - firstCode; ++j)
 			{
-
-				if ((firstCode + j) > Integer.MAX_VALUE)
+				long glyphIndex = startGlyph + j;
+				if (glyphIndex >= numGlyphs)
 				{
 					throw new IOException("Character Code greater than Integer.MAX_VALUE");
 				}
 
-				long glyphIndex = (startGlyph + j);
-				if (glyphIndex > numGlyphs || glyphIndex > Integer.MAX_VALUE)
+				if (firstCode + j > 0x10FFFF)
 				{
-					throw new IOException("CMap contains an invalid glyph index");
+					LOG.warn("Format 12 cmap contains character beyond UCS-4");
 				}
 				glyphIdToCharacterCode[(int) glyphIndex] = (int) (firstCode + j);
 				characterCodeToGlyphId.put((int) (firstCode + j), (int) glyphIndex);
@@ -280,7 +281,8 @@ public class CmapSubtable
 
 			if (glyphId > numGlyphs)
 			{
-				throw new IOException("CMap contains an invalid glyph index");
+				LOG.warn("Format 13 cmap contains an invalid glyph index");
+				break;
 			}
 
 			if (firstCode < 0 || firstCode > 0x0010FFFF || (firstCode >= 0x0000D800 && firstCode <= 0x0000DFFF))
@@ -294,13 +296,19 @@ public class CmapSubtable
 				throw new IOException("Invalid Characters codes");
 			}
 
-			for (long j = 0; j <= (endCode - firstCode); ++j)
+			for (long j = 0; j <= endCode - firstCode; ++j)
 			{
 
-				if ((firstCode + j) > Integer.MAX_VALUE)
+				if (firstCode + j > Integer.MAX_VALUE)
 				{
 					throw new IOException("Character Code greater than Integer.MAX_VALUE");
 				}
+				
+				if (firstCode + j > 0x10FFFF)
+				{
+					LOG.warn("Format 13 cmap contains character beyond UCS-4");
+				}
+				
 				glyphIdToCharacterCode[(int) glyphId] = (int) (firstCode + j);
 				characterCodeToGlyphId.put((int) (firstCode + j), (int) glyphId);
 			}

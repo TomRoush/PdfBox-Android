@@ -401,20 +401,113 @@ public class TrueTypeFont implements Type1Equivalent
 			}
 		}
 	}
+	
+	/**
+	 * Returns the best Unicode from the font (the most general). The PDF spec says that "The means
+	 * by which this is accomplished are implementation-dependent."
+	 * 
+	 * @throws IOException if the font could not be read
+	 */
+	public CmapSubtable getUnicodeCmap() throws IOException
+	{
+		return getUnicodeCmap(true);
+	}
+
+	/**
+	 * Returns the best Unicode from the font (the most general). The PDF spec says that "The means
+	 * by which this is accomplished are implementation-dependent."
+	 *
+	 * @param isStrict False if we allow falling back to any cmap, even if it's not Unicode.
+	 * @throws IOException if the font could not be read, or there is no Unicode cmap
+	 */
+	public CmapSubtable getUnicodeCmap(boolean isStrict) throws IOException
+	{
+		CmapTable cmapTable = getCmap();
+		if (cmapTable == null)
+		{
+			return null;
+		}
+
+		CmapSubtable cmap = cmapTable.getSubtable(CmapTable.PLATFORM_UNICODE,
+				CmapTable.ENCODING_UNICODE_2_0_FULL);
+		if (cmap == null)
+		{
+			cmap = cmapTable.getSubtable(CmapTable.PLATFORM_UNICODE,
+					CmapTable.ENCODING_UNICODE_2_0_BMP);
+		}
+		if (cmap == null)
+		{
+			cmap = cmapTable.getSubtable(CmapTable.PLATFORM_WINDOWS,
+					CmapTable.ENCODING_WIN_UNICODE_BMP);
+		}
+		if (cmap == null)
+		{
+			// Microsoft's "Recommendations for OpenType Fonts" says that "Symbol" encoding
+			// actually means "Unicode, non-standard character set"
+			cmap = cmapTable.getSubtable(CmapTable.PLATFORM_WINDOWS,
+					CmapTable.ENCODING_WIN_SYMBOL);
+		}
+		if (cmap == null)
+		{
+			if (isStrict)
+			{
+				throw new IOException("The TrueType font does not contain a Unicode cmap");
+			}
+			else
+			{
+				// fallback to the first cmap (may not be Unicode, so may produce poor results)
+				cmap = cmapTable.getCmaps()[0];
+			}
+		}
+		return cmap;
+	}
 
 	/**
 	 * Returns the GID for the given PostScript name, if the "post" table is present.
 	 */
 	public int nameToGID(String name) throws IOException
 	{
-		readPostScriptNames();
-
+		// look up in 'post' table
 		Integer gid = postScriptNames.get(name);
-		if (gid == null || gid < 0 || gid >= getMaximumProfile().getNumGlyphs())
+		// look up in 'cmap'
+		int uni = parseUniName(name);
+		if (uni > -1)
 		{
-			return 0;
+			CmapSubtable cmap = getUnicodeCmap(false);
+			return cmap.getGlyphId(uni);
 		}
-		return gid;
+
+		return 0;
+	}
+	
+	/**
+	 * Parses a Unicode PostScript name in the format uniXXXX.
+	 */
+	private int parseUniName(String name) throws IOException
+	{
+		if (name.startsWith("uni") && name.length() == 7)
+		{
+			int nameLength = name.length();
+			StringBuilder uniStr = new StringBuilder();
+			try
+			{
+				for (int chPos = 3; chPos + 4 <= nameLength; chPos += 4)
+				{
+					int codePoint = Integer.parseInt(name.substring(chPos, chPos + 4), 16);
+					if (codePoint <= 0xD7FF && codePoint >= 0xE000)
+					{
+						uniStr.append((char) codePoint);
+					}
+				}
+				String unicode = uniStr.toString();
+				return unicode.codePointAt(0);
+			}
+			catch (NumberFormatException e)
+			{
+				return -1;
+			}
+		}
+		return -1;
 	}
 
 	@Override
@@ -451,8 +544,6 @@ public class TrueTypeFont implements Type1Equivalent
 	//    @Override TODO
 	public float getWidth(String name) throws IOException
 	{
-		readPostScriptNames();
-
 		Integer gid = nameToGID(name);
 
 		int width = getAdvanceWidth(gid);
@@ -467,10 +558,7 @@ public class TrueTypeFont implements Type1Equivalent
 	@Override
 	public boolean hasGlyph(String name) throws IOException
 	{
-		readPostScriptNames();
-
-		Integer gid = postScriptNames.get(name);
-		return !(gid == null || gid < 0 || gid >= getMaximumProfile().getNumGlyphs());
+		return nameToGID(name) != 0;
 	}
 
 	@Override

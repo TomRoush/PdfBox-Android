@@ -26,6 +26,7 @@ import org.apache.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
 import org.apache.pdfbox.util.Matrix;
 
 import android.graphics.Path;
+import android.graphics.RectF;
 
 /**
  * A PostScript Type 1 Font.
@@ -50,6 +51,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 		ALT_NAMES.put("ij", "i_j");
 		ALT_NAMES.put("ellipsis", "elipsis"); // misspelled in ArialMT
 	}
+	private static final int PFB_START_MARKER = 0x80;
 
 	// todo: replace with enum? or getters?
 	public static final PDType1Font TIMES_ROMAN = new PDType1Font("Times-Roman");
@@ -72,7 +74,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 	private final boolean isEmbedded;
 	private final boolean isDamaged;
 	private Matrix fontMatrix;
-	
+
 	private Map<String, Integer> invertedEncoding; // for writing
 
 	/**
@@ -122,6 +124,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 	public PDType1Font(COSDictionary fontDictionary) throws IOException
 	{
 		super(fontDictionary);
+
 		PDFontDescriptor fd = getFontDescriptor();
 		Type1Font t1 = null;
 		boolean fontIsDamaged = false;
@@ -148,14 +151,22 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 					byte[] bytes = fontFile.getByteArray();
 					length1 = repairLength1(bytes, length1);
 
-					// the PFB embedded as two segments back-to-back
-					byte[] segment1 = Arrays.copyOfRange(bytes, 0, length1);
-					byte[] segment2 = Arrays.copyOfRange(bytes, length1, length1 + length2);
-
-					// empty streams are simply ignored
-					if (length1 > 0 && length2 > 0)
+					if (bytes.length > 0 && (bytes[0] & 0xff) == PFB_START_MARKER)
 					{
-						t1 = Type1Font.createWithSegments(segment1, segment2);
+						// some bad files embed the entire PFB, see PDFBOX-2607
+						t1 = Type1Font.createWithPFB(bytes);
+					}
+					else
+					{
+						// the PFB embedded as two segments back-to-back
+						byte[] segment1 = Arrays.copyOfRange(bytes, 0, length1);
+						byte[] segment2 = Arrays.copyOfRange(bytes, length1, length1 + length2);
+						
+						// empty streams are simply ignored
+						if (length1 > 0 && length2 > 0)
+						{
+							t1 = Type1Font.createWithSegments(segment1, segment2);
+						}
 					}
 				}
 				catch (DamagedFontException e)
@@ -199,7 +210,6 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 				LOG.warn("Using fallback font " + type1Equivalent.getName() + " for " + getBaseFont());
 			}
 		}
-
 		readEncoding();
 	}
 
@@ -232,11 +242,13 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 			}
 			offset--;
 		}
+
 		if (length1 - offset != 0 && offset > 0)
 		{
 			LOG.warn("Ignored invalid Length1 for Type 1 font " + getName());
 			return offset;
 		}
+
 		return length1;
 	}
 
@@ -249,19 +261,21 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 	}
 
 	//    @Override
-	//    public float getHeight(int code) throws IOException
-	//    {
-	//        String name = codeToName(code);
-	//        if (afm != null)
-	//        {
-	//            String afmName = getEncoding().getName(code);
-	//            return afm.getCharacterHeight(afmName); // todo: isn't this the y-advance, not the height?
-	//        }
-	//        else
-	//        {
-	//            return (float)type1Equivalent.getPath(name).getBounds().getHeight();
-	//        }
-	//    }
+	public float getHeight(int code) throws IOException
+	{
+		String name = codeToName(code);
+		if (getStandard14AFM() != null)
+		{
+			String afmName = getEncoding().getName(code);
+			return getStandard14AFM().getCharacterHeight(afmName); // todo: isn't this the y-advance, not the height?
+		}
+		else
+		{
+			RectF bounds = new RectF();
+			type1Equivalent.getPath(name).computeBounds(bounds, true);
+			return (float)bounds.height();
+		}
+	}
 
 	@Override
 	protected byte[] encode(int unicode) throws IOException
@@ -312,8 +326,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 		String name = codeToName(code);
 		if (getStandard14AFM() != null)
 		{
-			String afmName = getEncoding().getName(code);
-			return getStandard14AFM().getCharacterWidth(afmName);
+			return getStandard14Width(code);
 		}
 		else
 		{
@@ -407,26 +420,23 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 		{
 			// try alternative name
 			String altName = ALT_NAMES.get(name);
-			if (altName != null && !name.equals(".notdef") && type1Equivalent.hasGlyph(altName))
-			{
-				return altName;
-			}
-			else
-			{
-				// try unicode name
-				String unicodes = getGlyphList().toUnicode(name);
-				if (unicodes != null)
-				{
-					if (unicodes.length() == 1)
+					if (altName != null && !name.equals(".notdef") && type1Equivalent.hasGlyph(altName))
 					{
-						String uniName = String.format("uni%04X", unicodes.codePointAt(0));
-						if (type1Equivalent.hasGlyph(uniName))
+						return altName;
+					}
+					else
+					{
+						// try unicode name
+						String unicodes = getGlyphList().toUnicode(name);
+						if (unicodes != null && unicodes.length() == 1)
 						{
-							return uniName;
+							String uniName = String.format("uni%04X", unicodes.codePointAt(0));
+							if (type1Equivalent.hasGlyph(uniName))
+							{
+								return uniName;
+							}
 						}
 					}
-				}
-			}
 		}
 		return ".notdef";
 	}

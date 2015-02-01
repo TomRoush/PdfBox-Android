@@ -40,6 +40,7 @@ public class PDAnnotationAdditionalActions implements COSObjectable
      *
      * @return The cos object that matches this Java object.
      */
+    @Override
     public COSBase getCOSObject()
     {
         return actions;

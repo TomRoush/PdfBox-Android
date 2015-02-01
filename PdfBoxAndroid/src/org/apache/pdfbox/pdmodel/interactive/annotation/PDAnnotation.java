@@ -12,7 +12,6 @@ import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.graphics.color.PDGamma;
 
 /**
  * A PDF annotation.
@@ -136,9 +135,9 @@ public abstract class PDAnnotation implements COSObjectable
 			else
 			{
 				// TODO not yet implemented:
-					// Movie, Screen, PrinterMark, TrapNet, Watermark, 3D, Redact
-					annot = new PDAnnotationUnknown(annotDic);
-			LOG.debug("Unknown or unsupported annotation subtype " + subtype);
+				// Movie, Screen, PrinterMark, TrapNet, Watermark, 3D, Redact
+				annot = new PDAnnotationUnknown(annotDic);
+				LOG.debug("Unknown or unsupported annotation subtype " + subtype);
 			}
 		}
 		else
@@ -550,7 +549,7 @@ public abstract class PDAnnotation implements COSObjectable
 	}
 
 	/**
-	 * This will set the the date and time the annotation was modified.
+	 * This will set the date and time the annotation was modified.
 	 * 
 	 * @param m the date and time the annotation was created.
 	 */
@@ -602,7 +601,7 @@ public abstract class PDAnnotation implements COSObjectable
 	}
 
 	/**
-	 * This will set the colour used in drawing various elements. As of PDF 1.6 these are : Background of icon when
+	 * This will set the color used in drawing various elements. As of PDF 1.6 these are : Background of icon when
 	 * closed Title bar of popup window Border of a link annotation
 	 * 
 	 * Colour is in DeviceRGB colourspace
@@ -610,32 +609,49 @@ public abstract class PDAnnotation implements COSObjectable
 	 * @param c colour in the DeviceRGB colourspace
 	 * 
 	 */
-	public void setColour(PDGamma c)
-	{
-		getDictionary().setItem(COSName.C, c);
-	}
+//	public void setColor(PDColor c)
+//	{
+//		getDictionary().setItem(COSName.C, c.toCOSArray());
+//	}TODO
 
 	/**
-	 * This will retrieve the colour used in drawing various elements. As of PDF 1.6 these are : Background of icon when
-	 * closed Title bar of popup window Border of a link annotation
-	 * 
-	 * Colour is in DeviceRGB colourspace
-	 * 
-	 * @return PDGamma object representing the colour
-	 * 
+	 * This will retrieve the color used in drawing various elements. As of PDF
+	 * 1.6 these are :
+	 * <ul>
+	 * <li>Background of icon when closed</li>
+	 * <li>Title bar of popup window</li>
+	 * <li>Border of a link annotation</li></ul>
+	 * @return Color object representing the colour
 	 */
-	public PDGamma getColour()
-	{
-		COSBase obj = getDictionary().getDictionaryObject(COSName.C);
-		if (obj instanceof COSArray)
-		{
-			return new PDGamma((COSArray) obj);
-		}
-		else
-		{
-			return null;
-		}
-	}
+//	public PDColor getColor()
+//	{
+//		return getColor(COSName.C);
+//	}TODO
+
+//	protected PDColor getColor(COSName itemName)
+//	{
+//		COSBase c = this.getDictionary().getItem(itemName);
+//		if (c instanceof COSArray)
+//		{
+//			PDColorSpace colorSpace = null;
+//			switch (((COSArray) c).size())
+//			{
+//			case 1:
+//				colorSpace = PDDeviceGray.INSTANCE;
+//				break;
+//			case 3:
+//				colorSpace = PDDeviceRGB.INSTANCE;
+//				break;
+//			case 4:
+//				colorSpace = PDDeviceCMYK.INSTANCE;
+//				break;
+//			default:
+//				break;
+//			}
+//			return new PDColor((COSArray) c, colorSpace);
+//		}
+//		return null;
+//	}TODO
 
 	/**
 	 * This will retrieve the subtype of the annotation.

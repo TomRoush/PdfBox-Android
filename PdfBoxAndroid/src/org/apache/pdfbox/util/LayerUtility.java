@@ -15,10 +15,10 @@ import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
@@ -223,31 +223,14 @@ public class LayerUtility
 		PDOptionalContentGroup layer = new PDOptionalContentGroup(layerName);
 		ocprops.addGroup(layer);
 
-		PDResources resources = targetPage.getResources();
-		/*PDPropertyList props = resources.getProperties();
-        if (props == null)
-        {
-            props = new PDPropertyList();
-            resources.setProperties(props);
-        }*/
-
-		//Find first free resource name with the pattern "MC<index>"
-		int index = 0;
-		PDOptionalContentGroup ocg;
-		COSName resourceName;
-		do
-		{
-			resourceName = COSName.getPDFName("MC" + index);
-			index++;
-		} while (resources.getProperties(resourceName) != null);
-		//Put mapping for our new layer/OCG
-		resources.put(resourceName, layer);
-
 		PDPageContentStream contentStream = new PDPageContentStream(
 				targetDoc, targetPage, true, !DEBUG);
-		contentStream.beginMarkedContentSequence(COSName.OC, resourceName);
-		contentStream.drawXObject(form, transform);
-		contentStream.endMarkedContentSequence();
+		contentStream.beginMarkedContent(COSName.OC, layer);
+		contentStream.saveGraphicsState();
+		contentStream.transform(new Matrix(transform));
+		contentStream.drawForm(form);
+		contentStream.restoreGraphicsState();
+		contentStream.endMarkedContent();
 		contentStream.close();
 
 		return layer;

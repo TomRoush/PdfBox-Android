@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,20 +42,23 @@ abstract class TrueTypeEmbedder implements Subsetter
 	protected TrueTypeFont ttf;
 	protected PDFontDescriptor fontDescriptor;
 	protected final CmapSubtable cmap;
+	private final Set<Integer> subsetCodePoints = new HashSet<Integer>();
+	private final boolean embedSubset;
 
 	/**
 	 * Creates a new TrueType font for embedding.
 	 */
-	TrueTypeEmbedder(PDDocument document, COSDictionary dict, InputStream ttfStream)
-			throws IOException
+	TrueTypeEmbedder(PDDocument document, COSDictionary dict, InputStream ttfStream,
+			boolean embedSubset) throws IOException
 			{
 		this.document = document;
+		this.embedSubset = embedSubset;
 
 		buildFontFile2(ttfStream);
 		dict.setName(COSName.BASE_FONT, ttf.getName());
 
 		// choose a Unicode "cmap"
-		cmap = getUnicodeCmap(ttf.getCmap());
+		cmap = ttf.getUnicodeCmap();
 			}
 
 	public void buildFontFile2(InputStream ttfStream) throws IOException
@@ -207,38 +211,6 @@ abstract class TrueTypeEmbedder implements Subsetter
     }
 
     /**
-     * Returns the best Unicode from the font (the most general).
-     */
-    private CmapSubtable getUnicodeCmap(CmapTable cmapTable) throws IOException
-    {
-        CmapSubtable cmap = cmapTable.getSubtable(CmapTable.PLATFORM_UNICODE,
-                                                  CmapTable.ENCODING_UNICODE_2_0_FULL);
-        if (cmap == null)
-        {
-            cmap = cmapTable.getSubtable(CmapTable.PLATFORM_UNICODE,
-                                         CmapTable.ENCODING_UNICODE_2_0_BMP);
-        }
-        if (cmap == null)
-        {
-            cmap = cmapTable.getSubtable(CmapTable.PLATFORM_WINDOWS,
-                                         CmapTable.ENCODING_WIN_UNICODE_BMP);
-        }
-        if (cmap == null)
-        {
-            // Microsoft's "Recommendations for OpenType Fonts" says that "Symbol" encoding
-            // actually means "Unicode, non-standard character set"
-            cmap = cmapTable.getSubtable(CmapTable.PLATFORM_WINDOWS,
-                                         CmapTable.ENCODING_WIN_SYMBOL);
-        }
-        if (cmap == null)
-        {
-            throw new IOException("The TrueType font does not contain a Unicode cmap");
-        }
-        return cmap;
-    }
-
-
-    /**
      * Returns the FontBox font.
      */
     public TrueTypeFont getTrueTypeFont()
@@ -255,11 +227,22 @@ abstract class TrueTypeEmbedder implements Subsetter
     }
 
     @Override
-    public void subset(Set<Integer> codePoints) throws IOException
+    public void addToSubset(int codePoint)
+    {
+    	subsetCodePoints.add(codePoint);
+    }
+
+    @Override
+    public void subset() throws IOException
     {
     	if (!isSubsettingPermitted(ttf))
     	{
     		throw new IOException("This font does not permit subsetting");
+    	}
+    	
+    	if (!embedSubset)
+    	{
+    		throw new IllegalStateException("Subsetting is disabled");
     	}
 
     	// PDF spec required tables (if present), all others will be removed
@@ -278,7 +261,7 @@ abstract class TrueTypeEmbedder implements Subsetter
 
     	// set the GIDs to subset
     	TTFSubsetter subsetter = new TTFSubsetter(getTrueTypeFont(), tables);
-    	subsetter.addAll(codePoints);
+    	subsetter.addAll(subsetCodePoints);
 
     	// calculate deterministic tag based on the chosen subset
     	Map<Integer, Integer> gidToCid = subsetter.getGIDMap();
@@ -291,6 +274,14 @@ abstract class TrueTypeEmbedder implements Subsetter
 
     	// re-build the embedded font
     	buildSubset(new ByteArrayInputStream(out.toByteArray()), tag, gidToCid);
+    }
+    
+    /**
+     * Returns true if the font needs to be subset.
+     */
+    public boolean needsSubset()
+    {
+    	return embedSubset;
     }
 
     /**

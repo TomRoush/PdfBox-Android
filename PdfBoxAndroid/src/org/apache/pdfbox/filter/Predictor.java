@@ -10,8 +10,12 @@ import org.apache.pdfbox.io.IOUtils;
  * Helper class to contain predictor decoding used by Flate and LZW filter. 
  * To see the history, look at the FlateFilter class.
  */
-public class Predictor
+public final class Predictor
 {
+	private Predictor()
+	{
+	}
+	
 	static void decodePredictor(int predictor, int colors, int bitsPerComponent, int columns, InputStream in, OutputStream out)
 			throws IOException
 	{
@@ -113,7 +117,7 @@ public class Predictor
 						int avg = actline[p] & 0xff;
 						int left = p - bytesPerPixel >= 0 ? actline[p - bytesPerPixel] & 0xff : 0;
 						int up = lastline[p] & 0xff;
-						actline[p] = (byte) ((avg + (int) Math.floor((left + up) / 2)) & 0xff);
+						actline[p] = (byte) ((avg + ((left + up) / 2)) & 0xff);
 					}
 					break;
 				case 14:// PRED PAETH

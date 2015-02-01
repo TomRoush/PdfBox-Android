@@ -280,10 +280,10 @@ public class PDFStreamEngine
 
 			// compute a matrix which scales and translates the transformed appearance box to align
 			// with the edges of the annotation's rectangle
-			Matrix a = Matrix.getTranslatingInstance(rect.getLowerLeftX(), rect.getLowerLeftY());
+			Matrix a = Matrix.getTranslateInstance(rect.getLowerLeftX(), rect.getLowerLeftY());
 			a.concatenate(Matrix.getScaleInstance((float)(rect.getWidth() / transformedBox.width()),
 					(float)(rect.getHeight() / transformedBox.height())));
-			a.concatenate(Matrix.getTranslatingInstance((float) -transformedBox.left,
+			a.concatenate(Matrix.getTranslateInstance((float) -transformedBox.left,
 					(float) -transformedBox.top));
 
 			// Matrix shall be concatenated with A to form a matrix AA that maps from the appearance’s
@@ -335,7 +335,10 @@ public class PDFStreamEngine
 //		Matrix parentMatrix = initialMatrix;
 //		initialMatrix = Matrix.concatenate(initialMatrix, patternMatrix);
 //
-//		// set up a clean state (new clipping path, line path, etc.)
+//		// save the original graphics state
+//		saveGraphicsState();
+//		
+//		// save a clean state (new clipping path, line path, etc.)
 //		RectF bbox = new RectF();
 //		tilingPattern.getBBox().transform(patternMatrix).computeBounds(bbox, true);
 //		PDRectangle rect = new PDRectangle((float)bbox.getX(), (float)bbox.getY(),
@@ -361,7 +364,8 @@ public class PDFStreamEngine
 //		processStreamOperators(tilingPattern);
 //
 //		initialMatrix = parentMatrix;
-//		restoreGraphicsState();
+//		restoreGraphicsState(); // restores clean state
+//		restoreGraphicsState(); // restores original state
 //		popResources(parent);
 //	}
 
@@ -612,7 +616,7 @@ public class PDFStreamEngine
 	protected void applyTextAdjustment(float tx, float ty) throws IOException
 	{
 		// update the text matrix
-		textMatrix.concatenate(Matrix.getTranslatingInstance(tx, ty));
+		textMatrix.concatenate(Matrix.getTranslateInstance(tx, ty));
 	}
 
 	/**
@@ -701,7 +705,7 @@ public class PDFStreamEngine
 			}
 
 			// update the text matrix
-			textMatrix.concatenate(Matrix.getTranslatingInstance(tx, ty));
+			textMatrix.concatenate(Matrix.getTranslateInstance(tx, ty));
 		}
 	}
 

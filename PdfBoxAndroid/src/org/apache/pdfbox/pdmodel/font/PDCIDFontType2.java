@@ -53,6 +53,11 @@ public class PDCIDFontType2 extends PDCIDFont
 		PDFontDescriptor fd = getFontDescriptor();
 		PDStream ff2Stream = fd.getFontFile2();
 		PDStream ff3Stream = fd.getFontFile3();
+		
+		// Acrobat looks in FontFile too, even though it is not in the spec, see PDFBOX-2599
+		if (ff2Stream == null && ff3Stream == null) {
+			ff2Stream = fd.getFontFile();
+		}
 
 		TrueTypeFont ttfFont = null;
 		boolean fontIsDamaged = false;
@@ -127,7 +132,7 @@ public class PDCIDFontType2 extends PDCIDFont
 			}
 		}
 		ttf = ttfFont;
-		cmap = getUnicodeCmap(ttf.getCmap());
+		cmap = ttf.getUnicodeCmap(false);
 
 		cid2gid = readCIDToGIDMap();
 		gid2cid = invert(cid2gid);
@@ -218,38 +223,38 @@ public class PDCIDFontType2 extends PDCIDFont
 			// font's 'cmap' table. The means by which this is accomplished are implementation-
 			// dependent.
 
-			String unicode;
+			boolean hasUnicodeMap = parent.getCMapUCS2() != null;
 
-			if (cid2gid != null || hasIdentityCid2Gid)
+			if (cid2gid != null)
 			{
+				// Acrobat allows non-embedded GIDs - todo: can we find a test PDF for this?
 				int cid = codeToCID(code);
-				// strange but true, Acrobat allows non-embedded GIDs, test with PDFBOX-2060
-				if (hasIdentityCid2Gid)
-				{
-					return cid;
-				}
-				else
-				{
-					return cid2gid[cid];
-				}
+				return cid2gid[cid];
+			}
+			else if (hasIdentityCid2Gid || !hasUnicodeMap)
+			{
+				// same as above, but for the default Identity CID2GIDMap or when there is no
+				// ToUnicode CMap to fallback to, see PDFBOX-2599 and PDFBOX-2560
+				// todo: can we find a test PDF for the Identity case?
+				return codeToCID(code);
 			}
 			else
 			{
-				// test with PDFBOX-1422 and PDFBOX-2560
-				unicode = parent.toUnicode(code);
-			}
+				// fallback to the ToUnicode CMap, test with PDFBOX-1422 and PDFBOX-2560
+				String unicode = parent.toUnicode(code);
+				if (unicode == null)
+				{
+					LOG.warn("Failed to find a character mapping for " + code + " in " + getName());
+					return 0;
+				}
+				else if (unicode.length() > 1)
+				{
+					LOG.warn("Trying to map multi-byte character using 'cmap', result will be poor");
+				}
 
-			if (unicode == null)
-			{
-				return 0;
+				// a non-embedded font always has a cmap (otherwise ExternalFonts won't load it)
+				return cmap.getGlyphId(unicode.codePointAt(0));
 			}
-			else if (unicode.length() > 1)
-			{
-				LOG.warn("trying to map a multi-byte character using 'cmap', result will be poor");
-			}
-			
-			// a non-embedded font always has a cmap (otherwise ExternalFonts won't load it)
-			return cmap.getGlyphId(unicode.codePointAt(0));
 		}
 		else
 		{
@@ -286,46 +291,7 @@ public class PDCIDFontType2 extends PDCIDFont
 		}
 	}
 
-	/**
-	 * Returns the best Unicode from the font (the most general). The PDF spec says that "The means
-	 * by which this is accomplished are implementation-dependent."
-	 */
-	private CmapSubtable getUnicodeCmap(CmapTable cmapTable)
-	{
-		if (cmapTable == null)
-		{
-			return null;
-		}
-		
-		CmapSubtable cmap = cmapTable.getSubtable(CmapTable.PLATFORM_UNICODE,
-				CmapTable.ENCODING_UNICODE_2_0_FULL);
-		if (cmap == null)
-		{
-			cmap = cmapTable.getSubtable(CmapTable.PLATFORM_UNICODE,
-					CmapTable.ENCODING_UNICODE_2_0_BMP);
-		}
-		if (cmap == null)
-		{
-			cmap = cmapTable.getSubtable(CmapTable.PLATFORM_WINDOWS,
-					CmapTable.ENCODING_WIN_UNICODE_BMP);
-		}
-		if (cmap == null)
-		{
-			// Microsoft's "Recommendations for OpenType Fonts" says that "Symbol" encoding
-			// actually means "Unicode, non-standard character set"
-			cmap = cmapTable.getSubtable(CmapTable.PLATFORM_WINDOWS,
-					CmapTable.ENCODING_WIN_SYMBOL);
-		}
-		if (cmap == null)
-		{
-			// fallback to the first cmap (may not ne Unicode, so may produce poor results)
-			LOG.warn("Used fallback cmap for font " + getBaseFont());
-			cmap = cmapTable.getCmaps()[0];
-		}
-		return cmap;
-	}
-
-	//    @OverrideTODO
+	//    @Override TODO
 	public float getHeight(int code) throws IOException
 	{
 		// todo: really we want the BBox, (for text extraction:)
@@ -333,7 +299,7 @@ public class PDCIDFontType2 extends PDCIDFont
 				/ ttf.getUnitsPerEm(); // todo: shouldn't this be the yMax/yMin?
 	}
 
-	//    @OverrideTODO
+	//    @Override TODO
 	public float getWidthFromFont(int code) throws IOException
 	{
 		int gid = codeToGID(code);

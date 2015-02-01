@@ -89,12 +89,9 @@ public class PDPage implements COSObjectable, PDContentStream
 		{
 			return (COSStream)base;
 		}
-		else if (base instanceof COSArray)
+		else if (base instanceof COSArray && ((COSArray)base).size() > 0)
 		{
-			if (((COSArray)base).size() > 0)
-			{
-				return new COSStreamArray((COSArray)base);
-			}
+			return new COSStreamArray((COSArray)base);
 		}
 		return null;
 	}

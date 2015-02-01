@@ -1250,7 +1250,8 @@ public class COSWriter implements ICOSVisitor, Closeable
 			 }
 			 // reuse origin documentID if available as first value
 			 COSString firstID = missingID ? new COSString( md5.digest() ) : (COSString)idArray.get(0);
-			 COSString secondID = new COSString( md5.digest() );
+			// it's ok to use the same ID for the second part if the ID is created for the first time
+			 COSString secondID = missingID ? firstID : new COSString( md5.digest() );
 			 idArray = new COSArray();
 			 idArray.add( firstID );
 			 idArray.add( secondID );
@@ -1315,11 +1316,6 @@ public class COSWriter implements ICOSVisitor, Closeable
 				 case '(':
 				 case ')':
 				 case '\\':
-				 case '\r':
-				 case '\n':
-				 case '\t':
-				 case '\b':
-				 case '\f':
 					 output.write('\\');
 					 output.write(b);
 					 break;

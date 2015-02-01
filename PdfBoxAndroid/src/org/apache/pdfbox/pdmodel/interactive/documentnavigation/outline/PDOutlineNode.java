@@ -42,6 +42,7 @@ public class PDOutlineNode implements COSObjectable
      *
      * @return The cos object that matches this Java object.
      */
+    @Override
     public COSBase getCOSObject()
     {
         return node;
@@ -90,7 +91,7 @@ public class PDOutlineNode implements COSObjectable
      */
     protected void setParent( PDOutlineNode parent )
     {
-        node.setItem( "Parent", parent );
+        node.setItem(COSName.PARENT, parent );
     }
 
     /**
@@ -142,13 +143,13 @@ public class PDOutlineNode implements COSObjectable
      */
     public PDOutlineItem getFirstChild()
     {
-        PDOutlineItem last = null;
-        COSDictionary lastDic = (COSDictionary)node.getDictionaryObject( "First" );
-        if( lastDic != null )
+        PDOutlineItem first = null;
+        COSDictionary firstDic = (COSDictionary)node.getDictionaryObject( "First" );
+        if( firstDic != null )
         {
-            last = new PDOutlineItem( lastDic );
+            first = new PDOutlineItem( firstDic );
         }
-        return last;
+        return first;
     }
 
     /**
@@ -158,7 +159,7 @@ public class PDOutlineNode implements COSObjectable
      */
     protected void setFirstChild( PDOutlineNode outlineNode )
     {
-        node.setItem( "First", outlineNode );
+        node.setItem(COSName.FIRST, outlineNode );
     }
 
     /**

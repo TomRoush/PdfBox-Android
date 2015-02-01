@@ -34,9 +34,9 @@ public class PDFStreamParser extends BaseParser
 	 */
 	private static final Log LOG = LogFactory.getLog(PDFStreamParser.class);
 
-	private List<Object> streamObjects = new ArrayList<Object>( 100 );
-	//    private final RandomAccess file;
-	private final int    MAX_BIN_CHAR_TEST_LENGTH = 10;
+	private final List<Object> streamObjects = new ArrayList<Object>( 100 );
+
+	private static final int    MAX_BIN_CHAR_TEST_LENGTH = 10;
 	private final byte[] binCharTestArr = new byte[MAX_BIN_CHAR_TEST_LENGTH];
 
 	/**
@@ -104,16 +104,6 @@ public class PDFStreamParser extends BaseParser
 	public List<Object> getTokens()
 	{
 		return streamObjects;
-	}
-
-	/**
-	 * This will close the underlying pdfSource object.
-	 * 
-	 * @throws IOException If there is an error releasing resources.
-	 */
-	public void close() throws IOException
-	{
-		pdfSource.close();
 	}
 
 	/**
@@ -532,19 +522,5 @@ public class PDFStreamParser extends BaseParser
 	private boolean hasNextSpaceOrReturn() throws IOException
 	{
 		return isSpaceOrReturn( pdfSource.peek() );
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void clearResources()
-	{
-		super.clearResources();
-		if (streamObjects != null)
-		{
-			streamObjects.clear();
-			streamObjects = null;
-		}
 	}
 }

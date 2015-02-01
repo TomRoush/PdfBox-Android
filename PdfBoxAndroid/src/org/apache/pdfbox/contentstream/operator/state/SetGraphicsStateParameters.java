@@ -6,7 +6,7 @@ import org.apache.pdfbox.contentstream.operator.Operator;
 import org.apache.pdfbox.contentstream.operator.OperatorProcessor;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.graphics.state.PDExternalGraphicsState;
+import org.apache.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 
 import java.io.IOException;
 
@@ -22,7 +22,7 @@ public class SetGraphicsStateParameters extends OperatorProcessor
     {
         // set parameters from graphics state parameter dictionary
         COSName graphicsName = (COSName)arguments.get( 0 );
-        PDExternalGraphicsState gs = context.getResources().getExtGState( graphicsName );
+        PDExtendedGraphicsState gs = context.getResources().getExtGState( graphicsName );
         gs.copyIntoGraphicsState( context.getGraphicsState() );
     }
 

@@ -104,7 +104,7 @@ public class VisualSignatureParser extends BaseParser
 			}
 			else
 			{
-				pdfSource.unread(buffer.toString().getBytes("ISO-8859-1"));
+				pdfSource.unread(buffer.toString().getBytes(ISO_8859_1));
 				throw new IOException( "Error: Expected to read '" + theString +
 						"' instead started reading '" +buffer.toString() + "'" );
 			}
@@ -175,7 +175,7 @@ public class VisualSignatureParser extends BaseParser
             COSBase pb = parseDirObject();
             String endObjectKey = readString();
 
-            if (endObjectKey.equals("stream"))
+            if (endObjectKey.equals(STREAM_STRING))
             {
                 pdfSource.unread(endObjectKey.getBytes());
                 pdfSource.unread(' ');
@@ -195,9 +195,9 @@ public class VisualSignatureParser extends BaseParser
             pb.setNeedToBeUpdate(true);
             pdfObject.setObject(pb);
 
-            if(!endObjectKey.equals("endobj")) 
+            if(!endObjectKey.equals(ENDOBJ_STRING)) 
             {
-                if(endObjectKey.startsWith("endobj")) 
+                if(endObjectKey.startsWith(ENDOBJ_STRING)) 
                 {
                     /*
                      * Some PDF files don't contain a new line after endobj so we
@@ -222,7 +222,7 @@ public class VisualSignatureParser extends BaseParser
                         //we will try again incase there was some garbage which
                         //some writers will leave behind.
                         String secondEndObjectKey = readString();
-                        if (!secondEndObjectKey.equals("endobj"))
+                        if (!secondEndObjectKey.equals(ENDOBJ_STRING))
                         {
                             if (isClosing())
                             {
@@ -234,7 +234,7 @@ public class VisualSignatureParser extends BaseParser
                             }
                             skipSpaces();
                             String thirdPossibleEndObj = readString();
-                            if(!thirdPossibleEndObj.equals("endobj")) 
+                            if(!thirdPossibleEndObj.equals(ENDOBJ_STRING)) 
                             {
                                 throw new IOException("expected='endobj' firstReadAttempt='" + endObjectKey + "' "
                                         + "secondReadAttempt='" + secondEndObjectKey + "' " + pdfSource, e);

@@ -36,7 +36,7 @@ public class WindowsFontDirFinder implements FontDirFinder
 	 */
 	private String getWinDir(String osName) throws IOException
 	{
-		Process process = null;
+		Process process;
 		Runtime runtime = Runtime.getRuntime();
 		if (osName.startsWith("Windows 9"))
 		{
@@ -48,7 +48,9 @@ public class WindowsFontDirFinder implements FontDirFinder
 		}
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
 				process.getInputStream()));
-		return bufferedReader.readLine();
+		String winDir = bufferedReader.readLine();
+		bufferedReader.close();
+		return winDir;
 	}
 
 	/**
@@ -56,6 +58,7 @@ public class WindowsFontDirFinder implements FontDirFinder
 	 * 
 	 * @return a list of detected font files
 	 */
+	@Override
 	public List<File> find()
 	{
 		List<File> fontDirList = new java.util.ArrayList<File>();
@@ -80,8 +83,8 @@ public class WindowsFontDirFinder implements FontDirFinder
 				// should continue if this fails
 			}
 		}
-		File osFontsDir = null;
-		File psFontsDir = null;
+		File osFontsDir;
+		File psFontsDir;
 		if (windir != null)
 		{
 			// remove any trailing '/'

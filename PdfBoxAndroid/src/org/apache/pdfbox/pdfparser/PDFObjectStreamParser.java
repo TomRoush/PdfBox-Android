@@ -15,19 +15,16 @@ import org.apache.pdfbox.cos.COSStream;
 /**
  * This will parse a PDF 1.5 object stream and extract all of the objects from the stream.
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.6 $
+ * @author Ben Litchfield
  */
 public class PDFObjectStreamParser extends BaseParser
 {
     /**
      * Log instance.
      */
-    private static final Log LOG =
-        LogFactory.getLog(PDFObjectStreamParser.class);
+	private static final Log LOG = LogFactory.getLog(PDFObjectStreamParser.class);
 
     private List<COSObject> streamObjects = null;
-    private List<Long> objectNumbers = null;
     private final COSStream stream;
 
     /**
@@ -40,7 +37,7 @@ public class PDFObjectStreamParser extends BaseParser
     public PDFObjectStreamParser(COSStream strm, COSDocument doc) throws IOException
     {
         super(strm.getUnfilteredStream());
-        setDocument(doc);
+        document = doc;
         stream = strm;
     }
 
@@ -56,12 +53,13 @@ public class PDFObjectStreamParser extends BaseParser
         {
             //need to first parse the header.
             int numberOfObjects = stream.getInt( "N" );
-            objectNumbers = new ArrayList<Long>( numberOfObjects );
+            List<Long> objectNumbers = new ArrayList<Long>( numberOfObjects );
             streamObjects = new ArrayList<COSObject>( numberOfObjects );
             for( int i=0; i<numberOfObjects; i++ )
             {
                 long objectNumber = readObjectNumber();
-                long offset = readLong();
+             // skip offset
+                readLong();
                 objectNumbers.add( objectNumber);
             }
             COSObject object;
@@ -83,6 +81,13 @@ public class PDFObjectStreamParser extends BaseParser
                 if(LOG.isDebugEnabled())
                 {
                     LOG.debug( "parsed=" + object );
+                }
+                // According to the spec objects within an object stream shall not be enclosed 
+                // by obj/endobj tags, but there are some pdfs in the wild using those tags
+                // skip endobject marker if present
+                if (!pdfSource.isEOF() && pdfSource.peek() == 'e')
+                {
+                	readLine();
                 }
                 objectCounter++;
             }

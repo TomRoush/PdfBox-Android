@@ -2,6 +2,7 @@ package org.apache.pdfbox.pdmodel.interactive.form;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -30,7 +31,7 @@ import org.apache.pdfbox.pdmodel.fdf.FDFField;
 public final class PDAcroForm implements COSObjectable
 {
     private static final int FLAG_SIGNATURES_EXIST = 1;
-    private static final int FLAG_APPEND_ONLY = 1;
+    private static final int FLAG_APPEND_ONLY = 1 << 1;
     
     private COSDictionary acroForm;
     private PDDocument document;
@@ -129,7 +130,7 @@ public final class PDAcroForm implements COSObjectable
             addFieldAndChildren( docField, fdfFields );
         }
         fdfDict.setID( document.getDocument().getDocumentID() );
-        if( fdfFields.size() > 0 )
+        if( !fdfFields.isEmpty() )
         {
             fdfDict.setFields( fdfFields );
         }
@@ -150,30 +151,35 @@ public final class PDAcroForm implements COSObjectable
             {
                 addFieldAndChildren((PDFieldTreeNode) kid, childFDFFields);
             }
-            if( childFDFFields.size() > 0 )
+            if( !childFDFFields.isEmpty() )
             {
                 fdfField.setKids( childFDFFields );
             }
         }
-        if( fieldValue != null || childFDFFields.size() > 0 )
+        if( fieldValue != null || !childFDFFields.isEmpty() )
         {
             fdfFields.add( fdfField );
         }
     }
 
     /**
-     * This will return all of the fields in the document.  The type
-     * will be a org.apache.pdfbox.pdmodel.field.PDField.
+     * This will return all of the documents root fields.
      *
-     * @return A list of all the fields.
-     * 
+     * A field might have children that are fields (non-terminal field) or does not
+     * have children which are fields (terminal fields).
+     *
+     * The fields within an AcroForm are organized in a tree structure. The documents root fields
+     * might either be terminal fields, non-terminal fields or a mixture of both. Non-terminal fields
+     * mark branches which contents can be retrieved using {@link PDFieldTreeNode#getKids()}.
+     *
+     * @return A list of the documents root fields. 
      */
     public List<PDFieldTreeNode> getFields()
     {
-        COSArray cosFields = (COSArray) acroForm.getDictionaryObject(COSName.FIELDS);
-        if( cosFields == null )
-        {
-            return null;
+    	COSArray cosFields = (COSArray) acroForm.getDictionaryObject(COSName.FIELDS);
+    	if( cosFields == null )
+    	{
+            return Collections.<PDFieldTreeNode>emptyList();
         }
         List<PDFieldTreeNode> pdFields = new ArrayList<PDFieldTreeNode>();
         for (int i = 0; i < cosFields.size(); i++)
@@ -192,9 +198,9 @@ public final class PDAcroForm implements COSObjectable
     }
 
     /**
-     * Set the fields that are part of this AcroForm.
+     * Set the documents root fields.
      *
-     * @param fields The fields that are part of this form.
+     * @param fields The fields that are part of the documents root fields.
      */
     public void setFields( List<PDFieldTreeNode> fields )
     {

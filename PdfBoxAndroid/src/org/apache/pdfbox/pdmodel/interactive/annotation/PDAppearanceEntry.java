@@ -2,6 +2,7 @@ package org.apache.pdfbox.pdmodel.interactive.annotation;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
@@ -26,7 +27,6 @@ public class PDAppearanceEntry implements COSObjectable
     /**
      * Constructor for reading.
      * @param entry
-     * @param parent
      */
     public PDAppearanceEntry(COSBase entry)
     {

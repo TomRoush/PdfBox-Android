@@ -89,6 +89,7 @@ public class PDFTextStripper extends PDFTextStreamEngine
 				// ignore and use default
 			}
 		}
+
 		// We can't get a Java version, so we'll assume its higher and use quicksort
 		//		// check if we need to use the custom quicksort algorithm as a
 		//		// workaround to the transitivity issue of TextPositionComparator:
@@ -251,6 +252,7 @@ public class PDFTextStripper extends PDFTextStreamEngine
 
 		PDPage endPage = endBookmark == null ? null :
 			endBookmark.findDestinationPage(document);
+
 		if (startPage != null && endPage != null &&
 				startBookmark.getCOSObject() == endBookmark.getCOSObject())
 		{
@@ -260,6 +262,7 @@ public class PDFTextStripper extends PDFTextStreamEngine
 			startBookmarkPageNumber = 0;
 			endBookmarkPageNumber = 0;
 		}
+
 		for (PDPage page : pages)
 		{
 			PDStream contentStream = page.getStream();
@@ -438,14 +441,15 @@ public class PDFTextStripper extends PDFTextStreamEngine
 			if (getSortByPosition())
 			{
 				TextPositionComparator comparator = new TextPositionComparator();
-				// because the TextPositionComparator is not transitive, but
+
+				// because the TextPositionComparator is not transitive, but 
 				// JDK7+ enforces transitivity on comparators, we need to use
 				// a custom quicksort implementation (which is slower, unfortunately).
-				if(useCustomQuicksort)
+				if(useCustomQuicksort) 
 				{
 					QuickSort.sort( textList, comparator );
 				}
-				else
+				else 
 				{
 					Collections.sort( textList, comparator );
 				}
@@ -576,7 +580,7 @@ public class PDFTextStripper extends PDFTextStreamEngine
 
 				// Estimate the expected width of the space based on the average character width
 				// with some margin. This calculation does not make a true average (average of
-				// averages) but we found that it gave the best results after numerous experiments.
+						// averages) but we found that it gave the best results after numerous experiments.
 				// Based on experiments we also found that .3 worked well.
 				float averageCharWidth;
 				if (previousAveCharWidth < 0)
@@ -888,38 +892,38 @@ public class PDFTextStripper extends PDFTextStreamEngine
 			List<TextPosition> textList = charactersByArticle.get(articleDivisionIndex);
 
 			// In the wild, some PDF encoded documents put diacritics (accents on
-			// top of characters) into a separate Tj element.  When displaying them
-			// graphically, the two chunks get overlayed.  With text output though,
-			// we need to do the overlay. This code recombines the diacritic with
-			// its associated character if the two are consecutive.
-			if (textList.isEmpty())
-			{
-				textList.add(text);
-			}
-			else
-			{
-				// test if we overlap the previous entry.
-				// Note that we are making an assumption that we need to only look back
-				// one TextPosition to find what we are overlapping.
-				// This may not always be true. */
-				TextPosition previousTextPosition = textList.get(textList.size() - 1);
-				if (text.isDiacritic() && previousTextPosition.contains(text))
-				{
-					previousTextPosition.mergeDiacritic(text);
-				}
-				// If the previous TextPosition was the diacritic, merge it into this
-				// one and remove it from the list.
-				else if (previousTextPosition.isDiacritic() && text.contains(previousTextPosition))
-				{
-					text.mergeDiacritic(previousTextPosition);
-					textList.remove(textList.size()-1);
-					textList.add(text);
-				}
-				else
-				{
-					textList.add(text);
-				}
-			}
+					// top of characters) into a separate Tj element.  When displaying them
+					// graphically, the two chunks get overlayed.  With text output though,
+					// we need to do the overlay. This code recombines the diacritic with
+					// its associated character if the two are consecutive.
+					if (textList.isEmpty())
+					{
+						textList.add(text);
+					}
+					else
+					{
+						// test if we overlap the previous entry.
+						// Note that we are making an assumption that we need to only look back
+						// one TextPosition to find what we are overlapping.
+						// This may not always be true. */
+						TextPosition previousTextPosition = textList.get(textList.size() - 1);
+						if (text.isDiacritic() && previousTextPosition.contains(text))
+						{
+							previousTextPosition.mergeDiacritic(text);
+						}
+						// If the previous TextPosition was the diacritic, merge it into this
+						// one and remove it from the list.
+						else if (previousTextPosition.isDiacritic() && text.contains(previousTextPosition))
+						{
+							text.mergeDiacritic(previousTextPosition);
+							textList.remove(textList.size()-1);
+							textList.add(text);
+						}
+						else
+						{
+							textList.add(text);
+						}
+					}
 		}
 	}
 
@@ -1470,58 +1474,58 @@ public class PDFTextStripper extends PDFTextStreamEngine
 					lastPosition.getTextPosition().getYDirAdj());
 			float newYVal = multiplyFloat(getDropThreshold(), maxHeightForLine);
 			// do we need to flip this for rtl?
-			float xGap = position.getTextPosition().getXDirAdj() -
-					lastLineStartPosition.getTextPosition().getXDirAdj();
-			float newXVal = multiplyFloat(getIndentThreshold(), position.getTextPosition().getWidthOfSpace());
-			float positionWidth = multiplyFloat(0.25f, position.getTextPosition().getWidth());
-			
-			if (yGap > newYVal)
-			{
-				result = true;
-			}
-			else if (xGap > newXVal)
-			{
-				// text is indented, but try to screen for hanging indent
-				if (!lastLineStartPosition.isParagraphStart())
-				{
-					result = true;
-				}
-				else
-				{
-					position.setHangingIndent();
-				}
-			}
-			else if (xGap < -position.getTextPosition().getWidthOfSpace())
-			{
-				// text is left of previous line. Was it a hanging indent?
-				if (!lastLineStartPosition.isParagraphStart())
-				{
-					result = true;
-				}
-			}
-			else if (Math.abs(xGap) < positionWidth)
-			{
-				// current horizontal position is within 1/4 a char of the last
-				// linestart. We'll treat them as lined up.
-				if (lastLineStartPosition.isHangingIndent())
-				{
-					position.setHangingIndent();
-				}
-				else if (lastLineStartPosition.isParagraphStart())
-				{
-					// check to see if the previous line looks like
-					// any of a number of standard list item formats
-					Pattern liPattern = matchListItemPattern(lastLineStartPosition);
-					if (liPattern!=null)
+					float xGap = position.getTextPosition().getXDirAdj() -
+							lastLineStartPosition.getTextPosition().getXDirAdj();
+					float newXVal = multiplyFloat(getIndentThreshold(), position.getTextPosition().getWidthOfSpace());
+					float positionWidth = multiplyFloat(0.25f, position.getTextPosition().getWidth());
+
+					if (yGap > newYVal)
 					{
-						Pattern currentPattern = matchListItemPattern(position);
-						if (liPattern == currentPattern)
+						result = true;
+					}
+					else if (xGap > newXVal)
+					{
+						// text is indented, but try to screen for hanging indent
+						if (!lastLineStartPosition.isParagraphStart())
+						{
+							result = true;
+						}
+						else
+						{
+							position.setHangingIndent();
+						}
+					}
+					else if (xGap < -position.getTextPosition().getWidthOfSpace())
+					{
+						// text is left of previous line. Was it a hanging indent?
+						if (!lastLineStartPosition.isParagraphStart())
 						{
 							result = true;
 						}
 					}
-				}
-			}
+					else if (Math.abs(xGap) < positionWidth)
+					{
+						// current horizontal position is within 1/4 a char of the last
+						// linestart. We'll treat them as lined up.
+						if (lastLineStartPosition.isHangingIndent())
+						{
+							position.setHangingIndent();
+						}
+						else if (lastLineStartPosition.isParagraphStart())
+						{
+							// check to see if the previous line looks like
+							// any of a number of standard list item formats
+							Pattern liPattern = matchListItemPattern(lastLineStartPosition);
+							if (liPattern!=null)
+							{
+								Pattern currentPattern = matchListItemPattern(position);
+								if (liPattern == currentPattern)
+								{
+									result = true;
+								}
+							}
+						}
+					}
 		}
 		if (result)
 		{
@@ -1535,7 +1539,6 @@ public class PDFTextStripper extends PDFTextStreamEngine
 		// to avoid wrong results when comparing with another float
 		return Math.round(value1 * value2 * 1000) / 1000f;
 	}
-
 	/**
 	 * writes the paragraph separator string to the output.
 	 * @throws IOException if something went wrong
@@ -1915,7 +1918,7 @@ public class PDFTextStripper extends PDFTextStreamEngine
 	 * <p>
 	 * This is implemented as a wrapper since the TextPosition
 	 * class doesn't provide complete access to its
-	 * state fields to subclasses. Also, conceptually TextPosition is
+	 * state fields to subclasses.  Also, conceptually TextPosition is
 	 * immutable while these flags need to be set post-creation so
 	 * it makes sense to put these flags in this separate class.
 	 * </p>
@@ -1928,7 +1931,9 @@ public class PDFTextStripper extends PDFTextStreamEngine
 		private boolean isPageBreak = false;
 		private boolean isHangingIndent = false;
 		private boolean isArticleStart = false;
+
 		private TextPosition position = null;
+
 		/**
 		 * Returns the underlying TextPosition object.
 		 * @return the text position
@@ -1937,10 +1942,12 @@ public class PDFTextStripper extends PDFTextStreamEngine
 		{
 			return position;
 		}
+
 		public boolean isLineStart()
 		{
 			return isLineStart;
 		}
+
 		/**
 		 * Sets the isLineStart() flag to true.
 		 */
@@ -1948,10 +1955,13 @@ public class PDFTextStripper extends PDFTextStreamEngine
 		{
 			this.isLineStart = true;
 		}
+
+
 		public boolean isParagraphStart()
 		{
 			return isParagraphStart;
 		}
+
 		/**
 		 * sets the isParagraphStart() flag to true.
 		 */
@@ -1959,10 +1969,14 @@ public class PDFTextStripper extends PDFTextStreamEngine
 		{
 			this.isParagraphStart = true;
 		}
+
+
 		public boolean isArticleStart()
 		{
 			return isArticleStart;
 		}
+
+
 		/**
 		 * Sets the isArticleStart() flag to true.
 		 */
@@ -1970,10 +1984,12 @@ public class PDFTextStripper extends PDFTextStreamEngine
 		{
 			this.isArticleStart = true;
 		}
+
 		public boolean isPageBreak()
 		{
 			return isPageBreak;
 		}
+
 		/**
 		 * Sets the isPageBreak() flag to true.
 		 */
@@ -1981,10 +1997,12 @@ public class PDFTextStripper extends PDFTextStreamEngine
 		{
 			this.isPageBreak = true;
 		}
+
 		public boolean isHangingIndent()
 		{
 			return isHangingIndent;
 		}
+
 		/**
 		 * Sets the isHangingIndent() flag to true.
 		 */
@@ -1992,6 +2010,7 @@ public class PDFTextStripper extends PDFTextStreamEngine
 		{
 			this.isHangingIndent = true;
 		}
+
 		/**
 		 * Constructs a PositionWrapper around the specified TextPosition object.
 		 * @param position the text position

@@ -6,8 +6,8 @@ import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.interactive.action.PDActionFactory;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionFactory;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
 
@@ -98,9 +98,9 @@ public class PDAnnotationLink extends PDAnnotation
      * TODO not all annotations may have a BS entry
      *
      */
-    public void setBorderStyle( PDBorderStyleDictionary bs )
+    public void setBorderStyle(PDBorderStyleDictionary bs)
     {
-        this.getDictionary().setItem( "BS", bs);
+        this.getDictionary().setItem( COSName.BS, bs);
     }
 
     /**
@@ -108,15 +108,13 @@ public class PDAnnotationLink extends PDAnnotation
      * dash pattern used in drawing the line.
      *
      * @return the border style dictionary.
-     * TODO not all annotations may have a BS entry
      */
     public PDBorderStyleDictionary getBorderStyle()
     {
-        COSDictionary bs = (COSDictionary) this.getDictionary().getItem(
-                COSName.getPDFName( "BS" ) );
-        if (bs != null)
+    	COSBase bs = this.getDictionary().getDictionaryObject(COSName.BS);
+    	if (bs instanceof COSDictionary)
         {
-            return new PDBorderStyleDictionary( bs );
+    		return new PDBorderStyleDictionary((COSDictionary) bs);
         }
         else
         {

@@ -37,7 +37,7 @@ final class PDTrueTypeFontEmbedder extends TrueTypeEmbedder
     PDTrueTypeFontEmbedder(PDDocument document, COSDictionary dict, InputStream ttfStream)
             throws IOException
     {
-        super(document, dict, ttfStream);
+        super(document, dict, ttfStream, false);
         dict.setItem(COSName.SUBTYPE, COSName.TRUE_TYPE);
 
         // only support WinAnsiEncoding encoding right now
@@ -45,6 +45,9 @@ final class PDTrueTypeFontEmbedder extends TrueTypeEmbedder
         GlyphList glyphList = GlyphList.getAdobeGlyphList();
         this.fontEncoding = encoding;
         dict.setItem(COSName.ENCODING, encoding.getCOSObject());
+        
+        fontDescriptor.setSymbolic(false);
+        fontDescriptor.setNonSymbolic(true);
 
         // add the font descriptor
         dict.setItem(COSName.FONT_DESC, fontDescriptor);

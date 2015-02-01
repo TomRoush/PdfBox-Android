@@ -14,9 +14,10 @@ import org.apache.pdfbox.pdmodel.font.PDFontFactory;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import org.apache.pdfbox.pdmodel.graphics.pattern.PDAbstractPattern;
 import org.apache.pdfbox.pdmodel.graphics.shading.PDShading;
-import org.apache.pdfbox.pdmodel.graphics.state.PDExternalGraphicsState;
+import org.apache.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 
 /**
  * A set of resources available at the page/pages/stream level.
@@ -54,7 +55,7 @@ public final class PDResources implements COSObjectable
 	}
 
 	/**
-	 * Returns the the underlying dictionary.
+	 * Returns the underlying dictionary.
 	 */
 	public COSDictionary getCOSObject()
 	{
@@ -103,14 +104,14 @@ public final class PDResources implements COSObjectable
 	/**
 	 * Returns the external graphics state resource with the given name, or null if none exists.
 	 */
-	public PDExternalGraphicsState getExtGState(COSName name) throws IOException
+	public PDExtendedGraphicsState getExtGState(COSName name) throws IOException
 	{
 		COSDictionary dict = (COSDictionary)get(COSName.EXT_G_STATE, name);
 		if (dict == null)
 		{
 			return null;
 		}
-		return new PDExternalGraphicsState(dict);
+		return new PDExtendedGraphicsState(dict);
 	}
 
 	/**
@@ -289,7 +290,7 @@ public final class PDResources implements COSObjectable
 	 * @param extGState the external graphics stae to add
 	 * @return the name of the resource in the resources dictionary
 	 */
-	public COSName add(PDExternalGraphicsState extGState)
+	public COSName add(PDExtendedGraphicsState extGState)
 	{
 		return add(COSName.EXT_G_STATE, "gs", extGState);
 	}
@@ -327,7 +328,14 @@ public final class PDResources implements COSObjectable
 	 */
 	public COSName add(PDPropertyList properties)
 	{
-		return add(COSName.PROPERTIES, "Prop", properties);
+		if (properties instanceof PDOptionalContentGroup)
+		{
+			return add(COSName.PROPERTIES, "oc", properties);
+		}
+		else
+		{
+			return add(COSName.PROPERTIES, "Prop", properties);
+		}
 	}
 
 	/**
@@ -448,7 +456,7 @@ public final class PDResources implements COSObjectable
 	 * @param name the name of the resource
 	 * @param extGState the external graphics state to be added
 	 */
-	public void put(COSName name, PDExternalGraphicsState extGState) throws IOException
+	public void put(COSName name, PDExtendedGraphicsState extGState) throws IOException
 	{
 		put(COSName.EXT_G_STATE, name, extGState);
 	}

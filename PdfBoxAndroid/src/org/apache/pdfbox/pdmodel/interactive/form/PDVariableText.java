@@ -1,10 +1,12 @@
 package org.apache.pdfbox.pdmodel.interactive.form;
 
-import org.apache.pdfbox.cos.COSBase;
+import java.io.IOException;
+
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.cos.COSString;
+import org.apache.pdfbox.pdmodel.common.PDTextStream;
 
 /**
  * Base class for fields which use "Variable Text".
@@ -61,9 +63,10 @@ public abstract class PDVariableText extends PDField
 	 * 
 	 * @return the DA element of the dictionary object
 	 */
-	public COSString getDefaultAppearance()
+	public String getDefaultAppearance()
 	{
-		return (COSString) getInheritableAttribute(COSName.DA);
+		COSString defaultAppearance = (COSString) getInheritableAttribute(COSName.DA);
+		return defaultAppearance.getString();
 	}
 
 	/**
@@ -161,18 +164,65 @@ public abstract class PDVariableText extends PDField
 	 *
 	 * @return the rich text value string
 	 */
-	public String getRichTextValue()
+	public String getRichTextValue() throws IOException
 	{
-		COSBase richTextValue = getDictionary().getDictionaryObject(COSName.RV);
+		PDTextStream textStream = getAsTextStream(getInheritableAttribute(COSName.RV));
 
-		if (richTextValue instanceof COSString)
+		if (textStream != null)
 		{
-			return ((COSString) richTextValue).getString();
+			return textStream.getAsString();
 		}
-		// TODO stream instead of string
+		
 		return "";
 	}
+	
+	/**
+	 * Get the fields rich text value.
+	 *
+	 * The value is stored in the field dictionaries "V" entry.
+	 *
+	 * @return The value of this entry.
+	 * @throws IOException if the field dictionary entry is not a text type
+	 */
+	public PDTextStream getRichTextValueAsStream() throws IOException
+	{
+		return getAsTextStream(getInheritableAttribute(COSName.RV));
+	}
 
+	/**
+	 * Set the fields rich text value.
+	 *
+	 * <p>
+	 * Setting the rich text value will not generate the appearance
+	 * for the field.
+	 *
+	 * <br/>
+	 * You can set {@link PDAcroForm#setNeedAppearances(Boolean)} to
+	 * signal a conforming reader to generate the appearance stream.
+	 *
+	 * </p>
+	 * <p>
+	 * For long text it's more efficient to provide the text content as a
+	 * text stream {@link #setRichTextValue(PDTextStream)}
+	 * </p>
+	 * 
+	 * Providing null as the value will remove the default style string.
+	 *
+	 * @param richTextValue a rich text string
+	 */
+	public void setRichTextValue(String richTextValue)
+	{
+		// TODO stream instead of string
+		if (richTextValue != null)
+		{
+			getDictionary().setItem(COSName.RV, new COSString(richTextValue));
+		}
+		else
+		{
+			getDictionary().removeItem(COSName.RV);
+		}
+	}
+	
 	/**
 	 * Set the fields rich text value.
 	 *
@@ -186,12 +236,11 @@ public abstract class PDVariableText extends PDField
 	 *
 	 * @param richTextValue a rich text string
 	 */
-	public void setRichTextValue(String richTextValue)
+	public void setRichTextValue(PDTextStream richTextValue)
 	{
-		// TODO stream instead of string
 		if (richTextValue != null)
 		{
-			getDictionary().setItem(COSName.RV, new COSString(richTextValue));
+			getDictionary().setItem(COSName.RV, richTextValue.getCOSObject());
 		}
 		else
 		{

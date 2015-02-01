@@ -20,7 +20,7 @@ import org.spongycastle.jce.provider.BouncyCastleProvider;
 public final class SecurityHandlerFactory
 {
     /** Singleton instance */
-    public static SecurityHandlerFactory INSTANCE = new SecurityHandlerFactory();
+    public static final SecurityHandlerFactory INSTANCE = new SecurityHandlerFactory();
 
     static
     {
@@ -106,7 +106,7 @@ public final class SecurityHandlerFactory
         return newSecurityHandler(handlerClass, argsClasses, args);
     }
 
-    /* Returns a new security handler for the given parameters, or null none is available.
+    /** Returns a new security handler for the given parameters, or null none is available.
      *
      * @param handlerClass the handler class.
      * @param argsClasses the parameter array.
@@ -115,7 +115,7 @@ public final class SecurityHandlerFactory
      * @throws RuntimeException
      */
     private SecurityHandler newSecurityHandler(Class<? extends SecurityHandler> handlerClass,
-    		Class[] argsClasses, Object[] args) throws RuntimeException
+    		Class[] argsClasses, Object[] args)
     {
     	try
     	{

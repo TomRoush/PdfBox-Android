@@ -4,7 +4,6 @@ import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSFloat;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.graphics.color.PDGamma;
 
 /**
  * This is the class that represents a line annotation.
@@ -15,8 +14,6 @@ import org.apache.pdfbox.pdmodel.graphics.color.PDGamma;
  */
 public class PDAnnotationLine extends PDAnnotationMarkup
 {
-
-
     /*
      * The various values for intent (get/setIT, see the PDF 1.6 reference Table
      * 8.22
@@ -233,39 +230,26 @@ public class PDAnnotationLine extends PDAnnotationMarkup
     }
 
     /**
-     * This will set interior colour of the line endings defined in the LE
-     * entry. Colour is in DeviceRGB colourspace.
+     * This will set interior color of the line endings defined in the LE
+     * entry. color is in DeviceRGB color space.
      *
-     * @param ic
-     *            colour in the DeviceRGB colourspace.
-     *
+     * @param ic color in the DeviceRGB color space.
      */
-    public void setInteriorColour( PDGamma ic )
-    {
-        getDictionary().setItem( "IC", ic );
-    }
+//    public void setInteriorColor( PDColor ic )
+//    {
+//        getDictionary().setItem(COSName.IC, ic.toCOSArray() );
+//    }TODO
 
     /**
-     * This will retrieve the interior colour of the line endings defined in the
-     * LE entry. Colour is in DeviceRGB colourspace.
+     * This will retrieve the interior color of the line endings defined in the
+     * LE entry. color is in DeviceRGB color space.
      *
-     *
-     * @return PDGamma object representing the colour.
-     *
+     * @return object representing the color.
      */
-    public PDGamma getInteriorColour()
-    {
-
-        COSArray ic = (COSArray) getDictionary().getDictionaryObject( "IC" );
-        if (ic != null)
-        {
-            return new PDGamma( ic );
-        }
-        else
-        {
-            return null;
-        }
-    }
+//    public PDColor getInteriorColor()
+//    {
+//        return getColor(COSName.IC);
+//    }TODO
 
     /**
      * This will set if the contents are shown as a caption to the line.
@@ -308,8 +292,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public PDBorderStyleDictionary getBorderStyle()
     {
-        COSDictionary bs = (COSDictionary) this.getDictionary().getItem(
-                COSName.getPDFName( "BS" ) );
+    	COSDictionary bs = (COSDictionary) this.getDictionary().getItem(COSName.BS);
         if (bs != null)
         {
             return new PDBorderStyleDictionary( bs );
@@ -424,7 +407,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
     /**
      * This will retrieve the horizontal offset of the caption.
      * 
-     * @return the the horizontal offset of the caption
+     * @return the horizontal offset of the caption
      */
     public float getCaptionHorizontalOffset()
     {

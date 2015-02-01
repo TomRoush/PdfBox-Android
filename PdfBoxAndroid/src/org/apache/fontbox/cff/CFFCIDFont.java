@@ -17,13 +17,13 @@
 
 package org.apache.fontbox.cff;
 
-import org.apache.fontbox.type1.Type1CharStringReader;
-
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.fontbox.type1.Type1CharStringReader;
 
 /**
  * A Type 0 CIDFont represented in a CFF file. Thread safe.
@@ -245,16 +245,8 @@ public class CFFCIDFont extends CFFFont
     @Override
     public List<Number> getFontMatrix()
     {
-        // some malformed CIDFonts have their FontMatrix in a Font DICT
-        if (fontDictionaries.size() > 0 && fontDictionaries.get(0).containsKey("FontMatrix"))
-        {
-            return (List<Number>)fontDictionaries.get(0).get("FontMatrix");
-        }
-        else
-        {
-            // but it should be in the Top DICT
-            return (List<Number>)topDict.get("FontMatrix");
-        }
+    	// our parser guarantees that FontMatrix will be present and correct in the Top DICT
+    	return (List<Number>)topDict.get("FontMatrix");
     }
 
     /**

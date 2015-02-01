@@ -63,13 +63,10 @@ public abstract class FDFAnnotation implements COSObjectable
 		}
 
 		String color = element.getAttribute( "color" );
-		if( color != null )
+		if( color != null && color.length() == 7 && color.charAt( 0 ) == '#' )
 		{
-			if( color.length() == 7 && color.charAt( 0 ) == '#' )
-			{
-				int colorValue = Integer.parseInt(color.substring(1,7), 16);
-				//                setColor( new Color(colorValue) );TODO
-			}
+			int colorValue = Integer.parseInt(color.substring(1,7), 16);
+			//                setColor( new Color(colorValue) );TODO
 		}
 
 		setDate( element.getAttribute( "date" ) );

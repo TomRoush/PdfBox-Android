@@ -16,8 +16,13 @@ public class COSWriterXRefEntry implements Comparable<COSWriterXRefEntry>
     private COSBase object;
     private COSObjectKey key;
     private boolean free = false;
-    private static COSWriterXRefEntry nullEntry;
+    private static final COSWriterXRefEntry NULLENTRY;
 
+    static
+    {
+    	NULLENTRY = new COSWriterXRefEntry(0, null, new COSObjectKey(0, 65535));
+    	NULLENTRY.setFree(true);
+    }
 
     /**
      * {@inheritDoc}
@@ -39,12 +44,7 @@ public class COSWriterXRefEntry implements Comparable<COSWriterXRefEntry>
      */
     public static COSWriterXRefEntry getNullEntry()
     {
-      if (nullEntry == null)
-      {
-        nullEntry = new COSWriterXRefEntry(0, null, new COSObjectKey(0, 65535));
-        nullEntry.setFree(true);
-      }
-      return nullEntry;
+      return NULLENTRY;
     }
     
     /**
@@ -102,7 +102,7 @@ public class COSWriterXRefEntry implements Comparable<COSWriterXRefEntry>
      *
      * @param newOffset The new value for the offset.
      */
-    public void setOffset(long newOffset)
+    public final void setOffset(long newOffset)
     {
         offset = newOffset;
     }

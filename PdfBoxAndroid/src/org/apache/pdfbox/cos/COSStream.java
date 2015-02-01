@@ -40,7 +40,7 @@ public class COSStream extends COSDictionary implements Closeable
     /**
      * internal buffer, either held in memory or within a scratch file.
      */
-    private RandomAccess buffer;
+    private final RandomAccess buffer;
     /**
      * The stream with all of the filters applied.
      */
@@ -84,9 +84,9 @@ public class COSStream extends COSDictionary implements Closeable
         super();
         if (useScratchFiles)
         {
-            createScratchFile(scratchDirectory);
+            buffer = createScratchFile(scratchDirectory);
         }
-        if (buffer == null)
+        else
         {
             buffer = new RandomAccessBuffer();
         }
@@ -105,9 +105,9 @@ public class COSStream extends COSDictionary implements Closeable
         super( dictionary );
         if (useScratchFiles)
         {
-            createScratchFile(scratchDirectory);
+            buffer = createScratchFile(scratchDirectory);
         }
-        if (buffer == null)
+        else
         {
             buffer = new RandomAccessBuffer();
         }
@@ -119,18 +119,19 @@ public class COSStream extends COSDictionary implements Closeable
      * @param scratchDirectory directory to be used to create the scratch file. If null java.io.temp is used instead.
      * 
      */
-    private void createScratchFile(File scratchDirectory)
+    private RandomAccess createScratchFile(File scratchDirectory)
     {
         try 
         {
             File scratchFile = File.createTempFile("PDFBox", null, scratchDirectory);
             // mark scratch file to deleted automatically after usage
             scratchFile.deleteOnExit();
-            buffer = new RandomAccessFile(scratchFile, "rw");
+            return new RandomAccessFile(scratchFile, "rw");
         }
         catch (IOException exception)
         {
             LOG.error("Can't create temp file, using memory buffer instead", exception);
+            return new RandomAccessBuffer();
         }
     }
 
@@ -157,6 +158,12 @@ public class COSStream extends COSDictionary implements Closeable
      */
     public InputStream getFilteredStream() throws IOException
     {
+    	if (buffer.isClosed())
+    	{
+    		throw new IOException("COSStream has been closed and cannot be read. " +
+    				"Perhaps its enclosing PDDocument has been closed?");
+    	}
+    	
         if( filteredStream == null )
         {
             doEncode();
@@ -221,6 +228,12 @@ public class COSStream extends COSDictionary implements Closeable
      */
     public InputStream getUnfilteredStream() throws IOException
     {
+    	if (buffer.isClosed())
+    	{
+    		throw new IOException("COSStream has been closed and cannot be read. " +
+    				"Perhaps its enclosing PDDocument has been closed?");
+    	}
+    	
         InputStream retval;
         if( unFilteredStream == null )
         {
@@ -275,14 +288,14 @@ public class COSStream extends COSDictionary implements Closeable
 
         if (unFilteredStream == null || decodeResult == null)
         {
-        	String filterInfo = "";
+        	StringBuilder filterInfo = new StringBuilder();
         	COSBase filters = getFilters();
         	if (filters != null)
         	{
-        		filterInfo = " - filter: ";
+        		filterInfo.append(" - filter: ");
         		if (filters instanceof COSName)
         		{
-        			filterInfo += ((COSName) filters).getName();
+        			filterInfo.append(((COSName) filters).getName());
         		}
         		else if (filters instanceof COSArray)
         		{
@@ -291,9 +304,9 @@ public class COSStream extends COSDictionary implements Closeable
         			{
         				if (filterArray.size() > 1)
         				{
-        					filterInfo += ", ";
+        					filterInfo.append(", ");
         				}
-        				filterInfo += ((COSName) filterArray.get(i)).getName();
+        				filterInfo.append(((COSName) filterArray.get(i)).getName());
         			}
         		}
         	}
@@ -576,28 +589,19 @@ public class COSStream extends COSDictionary implements Closeable
     }
     
     @Override
-    public void close()
+    public void close() throws IOException
     {
-        try
+    	if (buffer != null)
         {
-            if (buffer != null)
-            {
-                buffer.close();
-                buffer = null;
-            }
-        }
-        catch (IOException exception)
-        {
-            LOG.error("Exception occured when closing the file.", exception);
+    		buffer.close();
         }
         if (filteredStream != null)
         {
-            IOUtils.closeQuietly(filteredStream);
+        	filteredStream.close();
         }
         if (unFilteredStream != null)
         {
-            IOUtils.closeQuietly(unFilteredStream);
+        	unFilteredStream.close();
         }
-        clear();
     }
 }

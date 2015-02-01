@@ -16,9 +16,9 @@ public interface Glyph2D {
 	 *
 	 * @return the GeneralPath for the given character code
 	 */
-	public Path getPathForCharacterCode(int code) throws IOException;
+	Path getPathForCharacterCode(int code) throws IOException;
 	/**
 	 * Remove all cached resources.
 	 */
-	public void dispose();
+	void dispose();
 }

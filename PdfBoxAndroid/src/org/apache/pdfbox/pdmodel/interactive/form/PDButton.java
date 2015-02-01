@@ -1,9 +1,12 @@
 package org.apache.pdfbox.pdmodel.interactive.form;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.pdfbox.cos.COSArray;
+import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
@@ -17,22 +20,37 @@ import org.apache.pdfbox.pdmodel.common.COSArrayList;
  */
 public abstract class PDButton extends PDField
 {
+	/**
+	 * The value for the Off state for PDCheckbox and PDRadioButton.
+	 * 
+	 * This shall not be confused with the OFF state as it is used within
+	 * other parts of a PDF. 
+	 */
+	static final COSName OFF = COSName.getPDFName("Off");
+	
     /**
-     * A Ff flag.
-     */
-    public static final int FLAG_NO_TOGGLE_TO_OFF = 1 << 14;
-    /**
-     * A Ff flag.
+     * A Ff flag. If set, the field is a set of radio buttons
      */
     public static final int FLAG_RADIO = 1 << 15;
     /**
-     * A Ff flag.
+     * A Ff flag. If set, the field is a pushbutton.
      */
     public static final int FLAG_PUSHBUTTON = 1 << 16;
     /**
-     * A Ff flag.
+     * A Ff flag. If set, radio buttons individual fields, using the same
+     * value for the on state will turn on and off in unison.
      */
     public static final int FLAG_RADIOS_IN_UNISON = 1 << 25;
+    
+    /**
+     * @see PDField#PDField(PDAcroForm,COSDictionary)
+     *
+     * @param theAcroForm The acroform.
+     */
+    PDButton(PDAcroForm theAcroForm)
+    {
+    	super( theAcroForm );
+    }
 
     /**
      * Constructor.
@@ -45,52 +63,100 @@ public abstract class PDButton extends PDField
     {
         super(acroForm, field, parentNode);
     }
+    
+    @Override
+    public String getDefaultValue() throws IOException
+    {
+    	COSBase attribute = getInheritableAttribute(COSName.DV);
+
+    	if (attribute == null)
+    	{
+    		return "";
+    	}
+    	else if (attribute instanceof COSName)
+    	{
+    		return ((COSName) attribute).getName();
+    	}
+    	else
+    	{
+    		throw new IOException("Expected a COSName entry but got " + attribute.getClass().getName());
+    	}
+    }
 
     /**
-     * This will get the option values "Opt" entry of the pdf button.
+     * Set the fields default value.
+     *
+     * The field value holds a name object which is corresponding to the
+     * appearance state representing the corresponding appearance
+     * from the appearance directory.
+     *
+     * The default value is used to represent the initial state of the
+     * field or to revert when resetting the form.
+     *
+     * @param defaultValue the new field value.
+     */
+    @Override
+    public void setDefaultValue(String defaultValue)
+    {
+    	if (defaultValue == null)
+    	{
+    		getDictionary().removeItem(COSName.DV);
+    	}
+    	else
+    	{
+    		getDictionary().setItem(COSName.DV, COSName.getPDFName(defaultValue));
+    	}
+    }
+
+    /**
+     * This will get the option values - the "Opt" entry.
+     *
+     * <p>The option values are used to define the export values
+     * for the field to
+     * <ul>
+     * <li>hold values in non-Latin writing systems as name objects, which represent the field value, are limited
+     * to PDFDocEncoding
+     * </li>
+     * <li>allow radio buttons having the same export value to be handled independently
+     * </li>
+     * </ul>
+     * </p>
+     *
+     * @return List containing all possible options. If there is no Opt entry an empty list will be returned.
      *
      * @return A list of java.lang.String values.
      */
     public List<String> getOptions()
     {
-        List<String> retval = null;
-        COSArray array = (COSArray)getDictionary().getDictionaryObject( COSName.OPT );
-        if( array != null )
-        {
-            List<String> strings = new ArrayList<String>();
-            for( int i=0; i<array.size(); i++ )
-            {
-                strings.add( ((COSString)array.getObject( i )).getString() );
-            }
-            retval = new COSArrayList<String>( strings, array );
+    	COSBase value = getInheritableAttribute(COSName.OPT);
+    	if (value instanceof COSString)
+    	{
+    		List<String> array = new ArrayList<String>();
+    		array.add(((COSString) value).getString());
+    		return array;
+    	}
+    	else if (value instanceof COSArray)
+    	{
+    		return COSArrayList.convertCOSStringCOSArrayToList((COSArray)value);
         }
-        return retval;
+    	return Collections.<String>emptyList();
     }
 
     /**
-     * Set the field options values.
-     * 
-     * The fields options represent the export value of each annotation in the field. 
-     * It may be used to:
-     * <ul>
-     *  <li>represent the export values in non-Latin writing systems.</li>
-     *  <li>allow radio buttons to be checked independently, even 
-     *  if they have the same export value.</li>
-     * </ul>
-     * 
-     * Providing an empty list or null will remove the entry.
+     * This will set the options.
      *
-     * @param options The list of options for the button.
+     * @see #getOptions()
+     * @param values List containing all possible options. Supplying null or an empty list will remove the Opt entry.
      */
-    public void setOptions( List<String> options )
+    public void setOptions(List<String> values)
     {
-    	if (options == null || options.size() == 0)
+    	if (values == null || values.isEmpty())
     	{
-    		getDictionary().removeItem(COSName.OPT);
+    		removeInheritableAttribute(COSName.OPT);
     	}
     	else
     	{
-    		getDictionary().setItem(COSName.OPT, COSArrayList.converterToCOSArray( options ) );
+    		setInheritableAttribute(COSName.OPT, COSArrayList.convertStringListToCOSStringCOSArray(values));
     	}
     }
 }

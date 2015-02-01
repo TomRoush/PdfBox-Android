@@ -12,8 +12,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,7 +29,6 @@ import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.io.IOUtils;
@@ -67,7 +64,7 @@ public abstract class SecurityHandler
 	/** The RC4 implementation used for cryptographic functions. */
 	protected RC4Cipher rc4 = new RC4Cipher();
 
-	/** indicates if the Metadata have to be decrypted of not */ 
+	/** indicates if the Metadata have to be decrypted of not. */ 
 	protected boolean decryptMetadata; 
 
 	private final Set<COSBase> objects = new HashSet<COSBase>();
@@ -92,9 +89,6 @@ public abstract class SecurityHandler
 
 	/**
 	 * Prepares everything to decrypt the document.
-	 * 
-	 * If {@link #decryptDocument(PDDocument, DecryptionMaterial)} is used, this method is
-	 * called from there. Only if decryption of single objects is needed this should be called instead.
 	 *
 	 * @param encryption  encryption dictionary, can be retrieved via {@link PDDocument#getEncryption()}
 	 * @param documentIDArray  document id which is returned via {@link COSDocument#getDocumentID()}
@@ -106,157 +100,23 @@ public abstract class SecurityHandler
 			DecryptionMaterial decryptionMaterial) throws IOException;
 
 	/**
-	 * Prepare the document for decryption.
-	 *
-	 * @param doc The document to decrypt.
-	 * @param mat Information required to decrypt the document.
-	 * @throws IOException If there is an error with the document.
-	 */
-	public abstract void decryptDocument(PDDocument doc, DecryptionMaterial mat) throws IOException;
-
-	/**
-	 * This method must be called by an implementation of this class to really proceed
-	 * to decryption.
-	 *
-	 * @throws IOException If there is an error in the decryption.
-	 */
-	protected void proceedDecryption() throws IOException
-	{
-
-		COSDictionary trailer = document.getDocument().getTrailer();
-		COSArray fields = (COSArray) trailer.getObjectFromPath("Root/AcroForm/Fields");
-
-		// We need to collect all the signature dictionaries, for some
-		// reason the 'Contents' entry of signatures is not really encrypted
-		if (fields != null)
-		{
-			for (int i = 0; i < fields.size(); i++)
-			{
-				COSDictionary field = (COSDictionary) fields.getObject(i);
-				if (field != null)
-				{
-					addDictionaryAndSubDictionary(potentialSignatures, field);
-				}
-				else
-				{
-					throw new IOException("Could not decypt document, object not found.");
-				}
-			}
-		}
-
-		List<COSObject> allObjects = document.getDocument().getObjects();
-		Iterator<COSObject> objectIter = allObjects.iterator();
-		COSDictionary encryptionDict = document.getEncryption().getCOSDictionary();
-		while (objectIter.hasNext())
-		{
-			COSObject nextObj = objectIter.next();
-			COSBase nextCOSBase = nextObj.getObject();
-			boolean isSignatureDictionary = false;
-			if (nextCOSBase instanceof COSDictionary)
-			{
-				isSignatureDictionary = COSName.SIG.equals(((COSDictionary) nextCOSBase).getCOSName(COSName.TYPE));
-			}
-			if (!isSignatureDictionary && nextCOSBase!= encryptionDict)
-			{
-				decryptObject(nextObj);
-			}
-		}
-		document.setEncryptionDictionary(null);
-	}
-
-	private void addDictionaryAndSubDictionary(Set<COSDictionary> set, COSDictionary dic)
-	{
-		if (dic != null) // in case dictionary is part of object stream we have null value here
-		{
-			set.add(dic);
-			COSArray kids = (COSArray) dic.getDictionaryObject(COSName.KIDS);
-			for (int i = 0; kids != null && i < kids.size(); i++)
-			{
-				addDictionaryAndSubDictionary(set, (COSDictionary) kids.getObject(i));
-			}
-			COSBase value = dic.getDictionaryObject(COSName.V);
-			if (value instanceof COSDictionary)
-			{
-				addDictionaryAndSubDictionary(set, (COSDictionary) value);
-			}
-		}
-	}
-
-	/**
-	 * Encrypt a set of data.
+	 * Encrypt or decrypt a set of data.
 	 *
 	 * @param objectNumber The data object number.
 	 * @param genNumber The data generation number.
 	 * @param data The data to encrypt.
 	 * @param output The output to write the encrypted data to.
-	 * @throws IOException If there is an error reading the data.
-	 * @deprecated While this works fine for RC4 encryption, it will never decrypt AES data
-	 *             You should use encryptData(objectNumber, genNumber, data, output, decrypt)
-	 *             which can do everything.  This function is just here for compatibility
-	 *             reasons and will be removed in the future.
-	 */
-	public void encryptData(long objectNumber, long genNumber, InputStream data,
-			OutputStream output) throws IOException
-	{
-		// default to encrypting since the function is named "encryptData"
-		encryptData(objectNumber, genNumber, data, output, false);
-	}
-
-	/**
-	 * Encrypt a set of data.
-	 *
-	 * @param objectNumber The data object number.
-	 * @param genNumber The data generation number.
-	 * @param data The data to encrypt.
-	 * @param output The output to write the encrypted data to.
-	 * @param decrypt true to decrypt the data, false to encrypt it
+	 * @param decrypt true to decrypt the data, false to encrypt it.
 	 *
 	 * @throws IOException If there is an error reading the data.
 	 */
-	public void encryptData(long objectNumber, long genNumber, InputStream data,
+	private void encryptData(long objectNumber, long genNumber, InputStream data,
 			OutputStream output, boolean decrypt) throws IOException
 	{
 		// Determine whether we're using Algorithm 1 (for RC4 and AES-128), or 1.A (for AES-256)
 		if (useAES && encryptionKey.length == 32)
 		{
-			byte[] iv = new byte[16];
-
-			if (decrypt)
-			{
-				// read IV from stream
-				data.read(iv);
-			}
-			else
-			{
-				// generate random IV and write to stream
-				SecureRandom rnd = new SecureRandom();
-				rnd.nextBytes(iv);
-				output.write(iv);
-			}
-
-			Cipher cipher;
-			try
-			{
-				cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-				SecretKeySpec keySpec = new SecretKeySpec(encryptionKey, "AES");
-				IvParameterSpec ivSpec = new IvParameterSpec(iv);
-				cipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, keySpec, ivSpec);
-
-			}
-			catch (GeneralSecurityException e)
-			{
-				throw new IOException(e);
-			}
-
-			CipherInputStream cis = new CipherInputStream(data, cipher);
-			try
-			{
-				IOUtils.copy(cis, output);
-			}
-			finally
-			{
-				cis.close();
-			}
+			encryptDataAES256(data, output, decrypt);
 		}
 		else
 		{
@@ -265,83 +125,11 @@ public abstract class SecurityHandler
 				throw new IllegalArgumentException("AES encryption with key length other than 256 bits is not yet implemented.");
 			}
 
-			byte[] newKey = new byte[encryptionKey.length + 5];
-			System.arraycopy(encryptionKey, 0, newKey, 0, encryptionKey.length);
-			// PDF 1.4 reference pg 73
-			// step 1
-			// we have the reference
-
-			// step 2
-			newKey[newKey.length - 5] = (byte) (objectNumber & 0xff);
-			newKey[newKey.length - 4] = (byte) (objectNumber >> 8 & 0xff);
-			newKey[newKey.length - 3] = (byte) (objectNumber >> 16 & 0xff);
-			newKey[newKey.length - 2] = (byte) (genNumber & 0xff);
-			newKey[newKey.length - 1] = (byte) (genNumber >> 8 & 0xff);
-
-			// step 3
-			MessageDigest md = MessageDigests.getMD5();
-			md.update(newKey);
-			if (useAES)
-			{
-				md.update(AES_SALT);
-			}
-			byte[] digestedKey = md.digest();
-
-			// step 4
-			int length = Math.min(newKey.length, 16);
-			byte[] finalKey = new byte[length];
-			System.arraycopy(digestedKey, 0, finalKey, 0, length);
+			byte[] finalKey = calcFinalKey(objectNumber, genNumber);
 
 			if (useAES)
 			{
-				byte[] iv = new byte[16];
-
-				data.read(iv);
-
-				try
-				{
-					Cipher decryptCipher;
-					try
-					{
-						decryptCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-					}
-					catch (NoSuchAlgorithmException e)
-					{
-						// should never happen
-						throw new RuntimeException(e);
-					}
-
-					SecretKey aesKey = new SecretKeySpec(finalKey, "AES");
-					IvParameterSpec ips = new IvParameterSpec(iv);
-					decryptCipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, aesKey, ips);
-
-					byte[] buffer = new byte[256];
-					for (int n = 0; -1 != (n = data.read(buffer));)
-					{
-						output.write(decryptCipher.update(buffer,0, n ));
-					}
-					output.write(decryptCipher.doFinal());
-				}
-				catch (InvalidKeyException e)
-				{
-					throw new IOException(e);
-				}
-				catch (InvalidAlgorithmParameterException e)
-				{
-					throw new IOException(e);
-				}
-				catch (NoSuchPaddingException e)
-				{
-					throw new IOException(e);
-				}
-				catch (IllegalBlockSizeException e)
-				{
-					throw new IOException(e);
-				}
-				catch (BadPaddingException e)
-				{
-					throw new IOException(e);
-				}
+				encryptDataAESother(finalKey, data, output, decrypt);
 			}
 			else
 			{
@@ -351,21 +139,159 @@ public abstract class SecurityHandler
 		}
 		output.flush();
 	}
-
+	
 	/**
-	 * This will decrypt an object in the document.
-	 *
-	 * @param object The object to decrypt.
-	 *
-	 * @throws IOException If there is an error getting the stream data.
-	 */
-	private void decryptObject(COSObject object) throws IOException
-	{
-		long objNum = object.getObjectNumber().intValue();
-		long genNum = object.getGenerationNumber().intValue();
-		COSBase base = object.getObject();
-		decrypt(base, objNum, genNum);
-	}
+     * Calculate the key to be used for RC4 and AES-128.
+     *
+     * @param objectNumber The data object number.
+     * @param genNumber The data generation number.
+     * @return the calculated key.
+     */
+    private byte[] calcFinalKey(long objectNumber, long genNumber)
+    {
+        byte[] newKey = new byte[encryptionKey.length + 5];
+        System.arraycopy(encryptionKey, 0, newKey, 0, encryptionKey.length);
+        // PDF 1.4 reference pg 73
+        // step 1
+        // we have the reference
+        // step 2
+        newKey[newKey.length - 5] = (byte) (objectNumber & 0xff);
+        newKey[newKey.length - 4] = (byte) (objectNumber >> 8 & 0xff);
+        newKey[newKey.length - 3] = (byte) (objectNumber >> 16 & 0xff);
+        newKey[newKey.length - 2] = (byte) (genNumber & 0xff);
+        newKey[newKey.length - 1] = (byte) (genNumber >> 8 & 0xff);
+        // step 3
+        MessageDigest md = MessageDigests.getMD5();
+        md.update(newKey);
+        if (useAES)
+        {
+            md.update(AES_SALT);
+        }
+        byte[] digestedKey = md.digest();
+        // step 4
+        int length = Math.min(newKey.length, 16);
+        byte[] finalKey = new byte[length];
+        System.arraycopy(digestedKey, 0, finalKey, 0, length);
+        return finalKey;
+    }
+    
+    /**
+     * Encrypt or decrypt data with AES with key length other than 256 bits.
+     *
+     * @param finalKey The final key obtained with via {@link #calcFinalKey()}.
+     * @param data The data to encrypt.
+     * @param output The output to write the encrypted data to.
+     * @param decrypt true to decrypt the data, false to encrypt it.
+     *
+     * @throws IOException If there is an error reading the data.
+     */
+    private void encryptDataAESother(byte[] finalKey, InputStream data, OutputStream output, boolean decrypt) 
+            throws IOException
+    {
+        byte[] iv = new byte[16];
+        
+        int ivSize = data.read(iv);
+        if (ivSize != iv.length)
+        {
+        	throw new IOException(
+        			"AES initialization vector not fully read: only "
+        					+ ivSize + " bytes read instead of " + iv.length);
+        }
+        
+        try
+        {
+            Cipher decryptCipher;
+            try
+            {
+                decryptCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            }
+            catch (NoSuchAlgorithmException e)
+            {
+                // should never happen
+                throw new RuntimeException(e);
+            }
+            
+            SecretKey aesKey = new SecretKeySpec(finalKey, "AES");
+            IvParameterSpec ips = new IvParameterSpec(iv);
+            decryptCipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, aesKey, ips);
+            byte[] buffer = new byte[256];
+            for (int n = 0; -1 != (n = data.read(buffer));)
+            {
+                output.write(decryptCipher.update(buffer,0, n ));
+            }
+            output.write(decryptCipher.doFinal());
+        }
+        catch (InvalidKeyException e)
+        {
+            throw new IOException(e);
+        }
+        catch (InvalidAlgorithmParameterException e)
+        {
+            throw new IOException(e);
+        }
+        catch (NoSuchPaddingException e)
+        {
+            throw new IOException(e);
+        }
+        catch (IllegalBlockSizeException e)
+        {
+            throw new IOException(e);
+        }
+        catch (BadPaddingException e)
+        {
+            throw new IOException(e);
+        }
+    }
+
+    /**
+     * Encrypt or decrypt data with AES256.
+     *
+     * @param data The data to encrypt.
+     * @param output The output to write the encrypted data to.
+     * @param decrypt true to decrypt the data, false to encrypt it.
+     *
+     * @throws IOException If there is an error reading the data.
+     */
+    private void encryptDataAES256(InputStream data, OutputStream output, boolean decrypt) throws IOException
+    {
+        byte[] iv = new byte[16];
+        
+        if (decrypt)
+        {
+            // read IV from stream
+            data.read(iv);
+        }
+        else
+        {
+            // generate random IV and write to stream
+            SecureRandom rnd = new SecureRandom();
+            rnd.nextBytes(iv);
+            output.write(iv);
+        }
+        
+        Cipher cipher;
+        try
+        {
+            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            SecretKeySpec keySpec = new SecretKeySpec(encryptionKey, "AES");
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+            cipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+        }
+        catch (GeneralSecurityException e)
+        {
+            throw new IOException(e);
+        }
+        
+        CipherInputStream cis = new CipherInputStream(data, cipher);
+        try
+        {
+            IOUtils.copy(cis, output);
+        }
+        finally
+        {
+            cis.close();
+        }
+    }
 
 	/**
 	 * This will dispatch to the correct method.
@@ -376,7 +302,7 @@ public abstract class SecurityHandler
 	 *
 	 * @throws IOException If there is an error getting the stream data.
 	 */
-	private void decrypt(COSBase obj, long objNum, long genNum) throws IOException
+	public void decrypt(COSBase obj, long objNum, long genNum) throws IOException
 	{
 		if (!objects.contains(obj))
 		{
@@ -454,18 +380,22 @@ public abstract class SecurityHandler
 	 */
 	private void decryptDictionary(COSDictionary dictionary, long objNum, long genNum) throws IOException
 	{
-		for (Map.Entry<COSName, COSBase> entry : dictionary.entrySet())
+		// skip dictionary containing the signature
+		if (!COSName.SIG.equals(dictionary.getItem(COSName.TYPE)))
 		{
-			COSBase value = entry.getValue();
-			// within a dictionary only the following kind of COS objects have to be decrypted
-			if (value instanceof COSString || value instanceof COSStream || value instanceof COSArray || value instanceof COSDictionary)
+			for (Map.Entry<COSName, COSBase> entry : dictionary.entrySet())
 			{
-				// if we are a signature dictionary and contain a Contents entry then
-				// we don't decrypt it.
-				if (!(entry.getKey().equals(COSName.CONTENTS) && value instanceof COSString && potentialSignatures
-						.contains(dictionary)))
+				COSBase value = entry.getValue();
+				// within a dictionary only the following kind of COS objects have to be decrypted
+				if (value instanceof COSString || value instanceof COSStream || value instanceof COSArray || value instanceof COSDictionary)
 				{
-					decrypt(value, objNum, genNum);
+					// if we are a signature dictionary and contain a Contents entry then
+					// we don't decrypt it.
+					if (!(entry.getKey().equals(COSName.CONTENTS) && value instanceof COSString && potentialSignatures
+							.contains(dictionary)))
+					{
+						decrypt(value, objNum, genNum);
+					}
 				}
 			}
 		}
@@ -480,7 +410,7 @@ public abstract class SecurityHandler
 	 *
 	 * @throws IOException If an error occurs writing the new string.
 	 */
-	public void decryptString(COSString string, long objNum, long genNum) throws IOException
+	private void decryptString(COSString string, long objNum, long genNum) throws IOException
 	{
 		ByteArrayInputStream data = new ByteArrayInputStream(string.getBytes());
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
@@ -514,7 +444,7 @@ public abstract class SecurityHandler
 	 *
 	 * @throws IOException If there is an error accessing the data.
 	 */
-	public void decryptArray(COSArray array, long objNum, long genNum) throws IOException
+	private void decryptArray(COSArray array, long objNum, long genNum) throws IOException
 	{
 		for (int i = 0; i < array.size(); i++)
 		{

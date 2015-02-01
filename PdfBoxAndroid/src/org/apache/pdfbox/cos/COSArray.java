@@ -16,7 +16,7 @@ import org.apache.pdfbox.pdmodel.common.COSObjectable;
  */
 public class COSArray extends COSBase implements Iterable<COSBase>
 {
-    private List<COSBase> objects = new ArrayList<COSBase>();
+    private final List<COSBase> objects = new ArrayList<COSBase>();
 
     /**
      * Constructor.
@@ -449,13 +449,10 @@ public class COSArray extends COSBase implements Iterable<COSBase>
                 retval = i;
                 break;
             }
-            else if (item instanceof COSObject)
+            else if (item instanceof COSObject && ((COSObject) item).getObject().equals(object))
             {
-                if (((COSObject) item).getObject().equals(object))
-                {
-                    retval = i;
-                    break;
-                }
+            	retval = i;
+            	break;
             }
         }
         return retval;

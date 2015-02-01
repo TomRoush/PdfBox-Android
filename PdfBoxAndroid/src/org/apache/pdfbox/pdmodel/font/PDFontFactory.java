@@ -12,7 +12,7 @@ import org.apache.pdfbox.cos.COSName;
  * Creates the appropriate font subtype based on information in the dictionary.
  * @author Ben Litchfield
  */
-public class PDFontFactory
+public final class PDFontFactory
 {
 	private static final Log LOG = LogFactory.getLog(PDFontFactory.class);
 
@@ -39,24 +39,18 @@ public class PDFontFactory
 		if (COSName.TYPE1.equals(subType))
 		{
 			COSBase fd = dictionary.getDictionaryObject(COSName.FONT_DESC);
-			if (fd != null && fd instanceof COSDictionary)
+			if (fd instanceof COSDictionary && ((COSDictionary) fd).containsKey(COSName.FONT_FILE3))
 			{
-				if (((COSDictionary)fd).containsKey(COSName.FONT_FILE3))
-				{
-					return new PDType1CFont(dictionary);
-				}
+				return new PDType1CFont(dictionary);
 			}
 			return new PDType1Font(dictionary);
 		}
 		else if (COSName.MM_TYPE1.equals(subType))
 		{
 			COSBase fd = dictionary.getDictionaryObject(COSName.FONT_DESC);
-			if (fd != null && fd instanceof COSDictionary)
+			if (fd instanceof COSDictionary && ((COSDictionary)fd).containsKey(COSName.FONT_FILE3))
 			{
-				if (((COSDictionary)fd).containsKey(COSName.FONT_FILE3))
-				{
-					return new PDType1CFont(dictionary);
-				}
+				return new PDType1CFont(dictionary);
 			}
 			return new PDMMType1Font(dictionary);
 		}
@@ -78,7 +72,7 @@ public class PDFontFactory
 		}
 		else if (COSName.CID_FONT_TYPE2.equals(subType))
 		{
-			throw new IllegalArgumentException("Type 0 descendant font not allowed");
+			throw new IllegalArgumentException("Type 2 descendant font not allowed");
 		}
 		else
 		{

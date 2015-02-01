@@ -42,7 +42,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 	public static final Class<?> PROTECTION_POLICY_CLASS = StandardProtectionPolicy.class;
 
 	/** Standard padding for encryption. */
-	public static final byte[] ENCRYPT_PADDING =
+	private static final byte[] ENCRYPT_PADDING =
 		{
 		(byte)0x28, (byte)0xBF, (byte)0x4E, (byte)0x5E, (byte)0x4E,
 		(byte)0x75, (byte)0x8A, (byte)0x41, (byte)0x64, (byte)0x00,
@@ -85,7 +85,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 	 * regarding the encryption key length.
 	 * See PDF Spec 1.6 p 93
 	 *
-	 * @return The computed cersion number.
+	 * @return The computed version number.
 	 */
 	private int computeVersionNumber()
 	{
@@ -116,35 +116,14 @@ public final class StandardSecurityHandler extends SecurityHandler
 		}
 		if (version == 5)
 		{
-			return 6;    // note about revision 5: "Shall not be used. This value was used by a deprecated Adobe extension."
+			// note about revision 5: "Shall not be used. This value was used by a deprecated Adobe extension."
+			return 6;
 		}
 		if ( version == 2 || version == 3 || policy.getPermissions().hasAnyRevision3PermissionSet())
 		{
 			return 3;
 		}
 		return 4;
-	}
-
-	/**
-	 * Decrypt the document.
-	 *
-	 * @param doc The document to be decrypted.
-	 * @param decryptionMaterial Information used to decrypt the document.
-	 *
-	 * @throws IOException If there is an error accessing data.
-	 */
-	@Override
-	public void decryptDocument(PDDocument doc, DecryptionMaterial decryptionMaterial)
-			throws IOException
-	{
-		document = doc;
-
-		PDEncryption dictionary = document.getEncryption();
-		COSArray documentIDArray = document.getDocument().getDocumentID();
-
-		prepareForDecryption(dictionary, documentIDArray, decryptionMaterial);
-
-		proceedDecryption();
 	}
 
 	/**
@@ -447,8 +426,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 		{
 			COSArray idArray = document.getDocument().getDocumentID();
 
-			//check if the document has an id yet.  If it does not then
-			//generate one
+			//check if the document has an id yet.  If it does not then generate one
 			if( idArray == null || idArray.size() < 2 )
 			{
 				MessageDigest md = MessageDigests.getMD5();
@@ -724,12 +702,12 @@ public final class StandardSecurityHandler extends SecurityHandler
 			boolean encryptMetadata) throws IOException
 	{
 		ByteArrayOutputStream result = new ByteArrayOutputStream();
-		byte[] encryptionKey = computeEncryptedKey( password, owner, null, null, null, permissions,
+		byte[] encKey = computeEncryptedKey( password, owner, null, null, null, permissions,
 				id, encRevision, length, encryptMetadata, true );
 
 		if( encRevision == 2 )
 		{
-			rc4.setKey( encryptionKey );
+			rc4.setKey( encKey );
 			rc4.write( ENCRYPT_PADDING, result );
 		}
 		else if( encRevision == 3 || encRevision == 4 )
@@ -740,10 +718,10 @@ public final class StandardSecurityHandler extends SecurityHandler
 			md.update( id );
 			result.write( md.digest() );
 
-			byte[] iterationKey = new byte[ encryptionKey.length ];
+			byte[] iterationKey = new byte[ encKey.length ];
 			for( int i=0; i<20; i++ )
 			{
-				System.arraycopy( encryptionKey, 0, iterationKey, 0, iterationKey.length );
+				System.arraycopy( encKey, 0, iterationKey, 0, iterationKey.length );
 				for( int j=0; j< iterationKey.length; j++ )
 				{
 					iterationKey[j] = (byte)(iterationKey[j] ^ i);
@@ -855,7 +833,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 	 * @param password The plaintext password.
 	 * @param user The u entry of the encryption dictionary.
 	 * @param owner The o entry of the encryption dictionary.
-	 * @param permissions The permissions set in the the PDF.
+	 * @param permissions The permissions set in the PDF.
 	 * @param id The document id used for encryption.
 	 * @param encRevision The revision of the encryption algorithm.
 	 * @param length The length of the encryption key.
@@ -915,7 +893,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 	 * @param password The plaintext password.
 	 * @param user The u entry of the encryption dictionary.
 	 * @param owner The o entry of the encryption dictionary.
-	 * @param permissions The permissions set in the the PDF.
+	 * @param permissions The permissions set in the PDF.
 	 * @param id The document id used for encryption.
 	 * @param encRevision The revision of the encryption algorithm.
 	 * @param length The length of the encryption key.

@@ -24,8 +24,8 @@ import org.apache.pdfbox.cos.COSString;
  */
 public class COSDictionaryMap<K,V> implements Map<K,V>
 {
-    private COSDictionary map;
-    private Map<K,V> actuals;
+    private final COSDictionary map;
+    private final Map<K,V> actuals;
 
     /**
      * Constructor for this map.
@@ -188,20 +188,20 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
 
     /**
      * This will take a map&lt;java.lang.String,org.apache.pdfbox.pdmodel.COSObjectable&gt;
-     * and convert it into a COSDictionary&lt;COSName,COSBase&gt;.
+     * and convert it into a COSDictionary.
      *
      * @param someMap A map containing COSObjectables
      *
      * @return A proper COSDictionary
      */
-    public static COSDictionary convert( Map<?,?> someMap )
+    public static COSDictionary convert(Map<String,?> someMap)
     {
         Iterator<?> iter = someMap.keySet().iterator();
         COSDictionary dic = new COSDictionary();
-        while( iter.hasNext() )
+        for (Entry<String, ?> entry : someMap.entrySet())
         {
-            String name = (String)iter.next();
-            COSObjectable object = (COSObjectable)someMap.get( name );
+        	String name = entry.getKey();
+        	COSObjectable object = (COSObjectable) entry.getValue();
             dic.setItem( COSName.getPDFName( name ), object.getCOSObject() );
         }
         return dic;

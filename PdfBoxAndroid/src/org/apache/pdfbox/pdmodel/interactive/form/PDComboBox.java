@@ -48,58 +48,34 @@ public final class PDComboBox extends PDChoice
     }
 
     /**
-     * Get the fields default value.
-     *
-     * The value is stored in the field dictionaries "DV" entry.
-     *
-     * @return The value of this entry.
+     * Sets the field value - the 'V' key.
+     * 
+     * @param value the value
+     * 
      */
     @Override
-    public Object getDefaultValue()
+    public void setValue(String value)
     {
-    	// TODO add handling specific to combo box
-    	return getInheritableAttribute(COSName.DV);
-    }
-    
-    @Override
-    public void setDefaultValue(String defaultValue)
-    {
-    	if (defaultValue == null)
+    	if (value != null)
     	{
-    		getDictionary().removeItem(COSName.DV);
+    		// check if the options contain the value to be set is
+    		// only necessary if the edit flag has not been set.
+    		// If the edit flag has been set the field allows a custom value.
+    		if (!isEdit() && getOptions().indexOf((String) value) == -1)
+    		{
+    			throw new IllegalArgumentException("The list box does not contain the given value.");
+    		}
+    		else
+    		{
+    			getDictionary().setString(COSName.V, (String)value);
+    			// remove I key for single valued choice field
+    			setSelectedOptionsIndex(null);
+    		}
     	}
     	else
     	{
-    		getDictionary().setString(COSName.DV, defaultValue);
+    		getDictionary().removeItem(COSName.V);
     	}
-    }
-
-    /**
-     * setValue sets the entry "V" to the given value.
-     * 
-     * @param value the value
-     * 
-     */
-    public void setValue(String value)
-    {
-        if ((getFieldFlags() & FLAG_EDIT) != 0)
-        {
-            throw new IllegalArgumentException("The combo box isn't editable.");
-        }
-        super.setValue(value);
-    }
-
-    /**
-     * setValue sets the entry "V" to the given value.
-     * 
-     * @param value the value
-     */
-    public void setValue(String[] value)
-    {
-    	if ((getFieldFlags() & FLAG_EDIT) != 0)
-    	{
-    		throw new IllegalArgumentException("The combo box isn't editable.");
-    	}
-    	super.setValue(value);
+    	// TODO create/update appearance
     }
 }

@@ -6,8 +6,9 @@ import java.util.List;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceEntry;
 
 /**
  * Radio button fields contain a set of related buttons that can each be on or off.
@@ -16,7 +17,21 @@ import org.apache.pdfbox.pdmodel.common.COSObjectable;
  */
 public final class PDRadioButton extends PDButton
 {
-
+	/**
+	 * An Ff flag.
+	 */
+	public static final int FLAG_NO_TOGGLE_TO_OFF = 1 << 14;
+	
+	/**
+	 * @see PDFieldTreeNode#PDFieldTreeNode(PDAcroForm)
+	 *
+	 * @param theAcroForm The acroform.
+	 */
+	public PDRadioButton(PDAcroForm theAcroForm)
+	{
+		super( theAcroForm );
+	}
+	
     /**
      * Constructor.
      * 
@@ -50,51 +65,64 @@ public final class PDRadioButton extends PDButton
     {
         return getDictionary().getFlag(COSName.FF, FLAG_RADIOS_IN_UNISON);
     }
-    
-    @Override
-    public COSName getDefaultValue() throws IOException
-    {
-    	COSBase attribute = getInheritableAttribute(COSName.DV);
-    	if (attribute instanceof COSName)
-    	{
-    		return (COSName) attribute;
-    	}
-    	else
-    	{
-    		throw new IOException("Expected a COSName entry but got " + attribute.getClass().getName());
-    	}
-    }
-    
+
     /**
-     * Set the fields default value.
-     * 
-     * The field value holds a name object which is corresponding to the
-     * appearance state representing the corresponding appearance
-     * from the appearance directory.
-     * 
-     * The default value is used to represent the initial state of the
-     * checkbox or to revert when resetting the form.
-     * 
-     * @param defaultValue the String to set the field value.
+     * This will get the export value.
+     * <p>
+     * A RadioButton might have an export value to allow field values
+     * which can not be encoded as PDFDocEncoding or for the same export value
+     * being assigned to multiple RadioButtons in a group.<br/>
+     * To define an export value the RadioButton must define options {@link #setOptions(List)}
+     * which correspond to the individual items within the RadioButton.</p>
+     * <p>
+     * The method will either return the value from the options entry or in case there
+     * is no such entry the fields value</p>
+     *
+     * @return the export value of the field.
+     * @throws IOException in case the fields value can not be retrieved
      */
-    public void setDefaultValue(String defaultValue)
+    public String getExportValue() throws IOException
     {
-    	if (defaultValue == null)
+    	List<String> options = getOptions();
+    	if (options.isEmpty())
     	{
-    		removeInheritableAttribute(COSName.DV);
+    		return getValue();
     	}
     	else
     	{
-    		setInheritableAttribute(COSName.DV, new COSString(defaultValue));
+    		String fieldValue = getValue();
+    		List<COSObjectable> kids = getKids();
+    		int idx = 0;
+    		for (COSObjectable kid : kids)
+    		{
+    			if (kid instanceof PDCheckbox)
+    			{
+    				PDCheckbox btn = (PDCheckbox) kid;
+    				if (btn.getOnValue().equals(fieldValue))
+    				{
+    					break;
+    				}
+    				idx++;
+    			}
+    		}
+    		if (idx <= options.size())
+    		{
+    			return options.get(idx);
+    		}
     	}
+    	return "";
     }
 
     @Override
     public String getValue() throws IOException
     {
     	COSBase attribute = getInheritableAttribute(COSName.V);
-    	
-    	if (attribute instanceof COSName)
+
+    	if (attribute == null)
+    	{
+    		return "";
+    	}
+    	else if (attribute instanceof COSName)
     	{
     		return ((COSName) attribute).getName();
     	}
@@ -123,20 +151,23 @@ public final class PDRadioButton extends PDButton
         }
         else
         {
-        	setInheritableAttribute(COSName.V, COSName.getPDFName(fieldValue));
+        	COSName nameForValue = COSName.getPDFName(fieldValue);
+        	setInheritableAttribute(COSName.V, nameForValue);
             List<COSObjectable> kids = getKids();
             for (COSObjectable kid : kids)
             {
-                if (kid instanceof PDCheckbox)
+                if (kid instanceof PDAnnotationWidget)
                 {
-                    PDCheckbox btn = (PDCheckbox) kid;
-                    if (btn.getOnValue().equals(fieldValue))
+                	PDAppearanceEntry appearanceEntry = ((PDAnnotationWidget) kid).getAppearance()
+                			.getNormalAppearance();
+                	
+                	if (((COSDictionary) appearanceEntry.getCOSObject()).containsKey(nameForValue))
                     {
-                        btn.check();
+                		((COSDictionary) kid.getCOSObject()).setName(COSName.AS, fieldValue);
                     }
                     else
                     {
-                        btn.unCheck();
+                    	((COSDictionary) kid.getCOSObject()).setName(COSName.AS, "Off");
                     }
                 }
             }

@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.pdfbox.pdfparser.NonSequentialPDFParser;
 import org.apache.pdfbox.pdfparser.PDFObjectStreamParser;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
 import org.apache.pdfbox.persistence.util.COSObjectKey;
@@ -62,8 +61,7 @@ public class COSDocument extends COSBase implements Closeable
 	private boolean warnMissingClose = true;
 
 	/**
-	 * signal that document is already decrypted,
-	 * e.g. with {@link NonSequentialPDFParser}
+	 * Signal that document is already decrypted.
 	 */
 	private boolean isDecrypted = false;
 
@@ -246,14 +244,14 @@ public class COSDocument extends COSBase implements Closeable
 	 *
 	 * @param versionValue The version of the PDF document.
 	 */
-	public void setVersion( float versionValue )
+	public void setVersion( double versionValue )
 	{
 		// update header string
 		if (versionValue != version) 
 		{
 			headerString = headerString.replaceFirst(String.valueOf(version), String.valueOf(versionValue));
 		}
-		version = versionValue;
+		version = (float) versionValue;
 	}
 
 	/**
@@ -268,8 +266,6 @@ public class COSDocument extends COSBase implements Closeable
 
 	/**
 	 * Signals that the document is decrypted completely.
-	 * Needed e.g. by {@link NonSequentialPDFParser} to circumvent
-	 * additional decryption later on.
 	 */
 	public void setDecrypted()
 	{
@@ -278,7 +274,6 @@ public class COSDocument extends COSBase implements Closeable
 
 	/**
 	 * Indicates if a encrypted pdf is already decrypted after parsing.
-	 * Does make sense only if the {@link org.apache.pdfbox.pdfparser.NonSequentialPDFParser} is used.
 	 * 
 	 * @return true indicates that the pdf is decrypted.
 	 */
@@ -495,37 +490,29 @@ public class COSDocument extends COSBase implements Closeable
 	{
 		if (!closed) 
 		{
-			if (trailer != null)
-			{
-				trailer.clear();
-				trailer = null;
-			}
-			// Clear object pool
+			// close all open I/O streams
 			List<COSObject> list = getObjects();
-			if (list != null && !list.isEmpty()) 
+			if (list != null) 
 			{
 				for (COSObject object : list) 
 				{
 					COSBase cosObject = object.getObject();
-					// clear the resources of the pooled objects
 					if (cosObject instanceof COSStream)
 					{
 						((COSStream)cosObject).close();
 					}
-					else if (cosObject instanceof COSDictionary)
-					{
-						((COSDictionary)cosObject).clear();
-					}
-					else if (cosObject instanceof COSArray)
-					{
-						((COSArray)cosObject).clear();
-					}
-					// TODO are there other kind of COSObjects to be cleared?
 				}
-				list.clear();
 			}
 			closed = true;
 		}
+	}
+
+	/**
+	 * Returns true if this document has been closed.
+	 */
+	public boolean isClosed()
+	{
+		return closed;
 	}
 
 	/**

@@ -66,6 +66,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
 	public static final COSName BBOX = new COSName("BBox");
 	public static final COSName BC = new COSName("BC");
 	public static final COSName BEFORE = new COSName("Before");
+	public static final COSName BG = new COSName("BG");
 	public static final COSName BITS_PER_COMPONENT = new COSName("BitsPerComponent");
 	public static final COSName BITS_PER_COORDINATE = new COSName("BitsPerCoordinate");
 	public static final COSName BITS_PER_FLAG = new COSName("BitsPerFlag");
@@ -76,6 +77,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
 	public static final COSName BM = new COSName("BM");
 	public static final COSName BOUNDS = new COSName("Bounds");
 	public static final COSName BPC = new COSName("BPC");
+	public static final COSName BS = new COSName("BS");
 	public static final COSName BYTERANGE = new COSName("ByteRange");
 	// C
 	public static final COSName C = new COSName("C");
@@ -98,6 +100,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
 	public static final COSName CID_FONT_TYPE0 = new COSName("CIDFontType0");
 	public static final COSName CID_FONT_TYPE2 = new COSName("CIDFontType2");
 	public static final COSName CID_TO_GID_MAP = new COSName("CIDToGIDMap");
+	public static final COSName CID_SET = new COSName("CIDSet");
 	public static final COSName CIDSYSTEMINFO = new COSName("CIDSystemInfo");
 	public static final COSName CLR_F = new COSName("ClrF");
 	public static final COSName CLR_FF = new COSName("ClrFf");
@@ -238,6 +241,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
 	public static final COSName HIDE_WINDOWUI = new COSName("HideWindowUI");
 	// I
 	public static final COSName I = new COSName("I");
+	public static final COSName IC = new COSName("IC");
 	public static final COSName ICCBASED = new COSName("ICCBased");
 	public static final COSName ID = new COSName("ID");
 	public static final COSName ID_TREE = new COSName("IDTree");
@@ -265,6 +269,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
 	public static final COSName L = new COSName("L");
 	public static final COSName LAB = new COSName("Lab");
 	public static final COSName LANG = new COSName("Lang");
+	public static final COSName LAST = new COSName("Last");
 	public static final COSName LAST_CHAR = new COSName("LastChar");
 	public static final COSName LAST_MODIFIED = new COSName("LastModified");
 	public static final COSName LC = new COSName("LC");
@@ -295,6 +300,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
 	public static final COSName MEDIA_BOX = new COSName("MediaBox");
 	public static final COSName METADATA = new COSName("Metadata");
 	public static final COSName MISSING_WIDTH = new COSName("MissingWidth");
+	public static final COSName MK = new COSName("MK");
 	public static final COSName ML = new COSName("ML");
 	public static final COSName MM_TYPE1 = new COSName("MMType1");
 	public static final COSName MOD_DATE = new COSName("ModDate");
@@ -345,6 +351,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
 	public static final COSName PAGE_MODE = new COSName("PageMode");
 	public static final COSName PAGES = new COSName("Pages");
 	public static final COSName PAINT_TYPE = new COSName("PaintType");
+	public static final COSName PARAMS = new COSName("Params");
 	public static final COSName PARENT = new COSName("Parent");
 	public static final COSName PARENT_TREE = new COSName("ParentTree");
 	public static final COSName PARENT_TREE_NEXT_KEY = new COSName("ParentTreeNextKey");

@@ -10,6 +10,16 @@ import org.apache.pdfbox.cos.COSName;
  */
 public final class PDListBox extends PDChoice
 {
+	/**
+	 * @see PDFieldTreeNode#PDFieldTreeNode(PDAcroForm)
+	 *
+	 * @param theAcroForm The acroform.
+	 */
+	protected PDListBox(PDAcroForm theAcroForm)
+	{
+		super( theAcroForm );
+	}
+	
     /**
      * Constructor.
      * 
@@ -47,35 +57,5 @@ public final class PDListBox extends PDChoice
         {
             getDictionary().removeItem(COSName.TI);
         }
-    }
-
-    /**
-     * Get the fields default value.
-     *
-     * The value is stored in the field dictionaries "DV" entry.
-     *
-     * @return The value of this entry.
-     */
-    @Override
-    public Object getDefaultValue()
-    {
-    	// TODO add handling specific to list box
-    	return getInheritableAttribute(COSName.DV);
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setDefaultValue(String defaultValue)
-    {
-    	if (defaultValue == null)
-    	{
-    		getDictionary().removeItem(COSName.DV);
-    	}
-    	else
-    	{
-    		getDictionary().setString(COSName.DV, defaultValue);
-    	}
     }
 }

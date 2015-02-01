@@ -11,7 +11,7 @@ import java.io.OutputStream;
  */
 class RC4Cipher
 {
-    private int[] salt;
+    private final int[] salt;
     private int b;
     private int c;
 
@@ -60,7 +60,7 @@ class RC4Cipher
      *
      * @return A value &gt;=0 and &lt; 256
      */
-    private static final int fixByte( byte aByte )
+    private static int fixByte( byte aByte )
     {
         return aByte < 0 ? 256 + aByte : aByte;
     }
@@ -72,7 +72,7 @@ class RC4Cipher
      * @param firstIndex The index of the first element to swap.
      * @param secondIndex The index of the second element to swap.
      */
-    private static final void swap( int[] data, int firstIndex, int secondIndex )
+    private static void swap( int[] data, int firstIndex, int secondIndex )
     {
         int tmp = data[ firstIndex ];
         data[ firstIndex ] = data[ secondIndex ];
@@ -123,7 +123,7 @@ class RC4Cipher
     public void write( InputStream data, OutputStream output ) throws IOException
     {
         byte[] buffer = new byte[1024];
-        int amountRead = 0;
+        int amountRead;
         while( (amountRead = data.read( buffer )) != -1 )
         {
             write( buffer, 0, amountRead, output );

@@ -1,7 +1,6 @@
 package org.apache.pdfbox.pdmodel;
 
 import java.io.IOException;
-
 import java.util.Calendar;
 import java.util.Set;
 import java.util.TreeSet;
@@ -9,7 +8,6 @@ import java.util.TreeSet;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
-
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 
 /**
@@ -62,6 +60,21 @@ public class PDDocumentInformation implements COSObjectable
     public COSBase getCOSObject()
     {
         return info;
+    }
+    
+    /**
+     * Return the properties String value.
+     * <p>
+     * Allows to retrieve the
+     * low level date for validation purposes.
+     * </p>
+     *
+     * @param propertyKey the dictionaries key
+     * @return the properties value
+     */
+    public Object getPropertyStringValue(String propertyKey)
+    {
+    	return info.getString(propertyKey);
     }
 
     /**

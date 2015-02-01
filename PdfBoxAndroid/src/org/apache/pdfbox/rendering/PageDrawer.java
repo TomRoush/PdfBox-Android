@@ -138,6 +138,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
      * @param pattern The tiling pattern to be used.
      * @param colorSpace color space for this tiling.
      * @param color color for this tiling.
+     * @param patternMatrix the pattern matrix
      * @throws IOException If there is an IO error while drawing the page.
      */
 //    public void drawTilingPattern(Graphics2D g, PDTilingPattern pattern, PDColorSpace colorSpace,
@@ -658,6 +659,23 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     {
         org.apache.pdfbox.util.Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
         android.graphics.Matrix at = ctm.createAffineTransform();
+        
+        if (!pdImage.getInterpolate())
+        {
+        	float[] values = new float[9];
+        	at.getValues(values);
+        	boolean isScaledUp = pdImage.getWidth() < Math.round(values[Matrix.MSCALE_X]) ||
+        	pdImage.getHeight() < Math.round(values[Matrix.MSCALE_X]);
+
+        	// if the image is scaled down, we use smooth interpolation, eg PDFBOX-2364
+        	// only when scaled up do we use nearest neighbour, eg PDFBOX-2302 / mori-cvpr01.pdf
+        	// stencils are excluded from this rule (see survey.pdf)
+        	if (isScaledUp || pdImage.isStencil())
+        	{
+//        		graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+//        				RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        	}
+        }
 
         if (pdImage.isStencil())
         {
@@ -670,31 +688,15 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         }
         else
         {
-            if (!pdImage.getInterpolate())
-            {
-            	float[] values = new float[9];
-            	at.getValues(values);
-                boolean isScaledUp = pdImage.getWidth() < Math.round(values[Matrix.MSCALE_X]) ||
-                                     pdImage.getHeight() < Math.round(values[Matrix.MSCALE_X]);
-
-                // if the image is scaled down, we use smooth interpolation, eg PDFBOX-2364
-                // only when scaled up do we use nearest neighbour, eg PDFBOX-2302 / mori-cvpr01.pdf
-                if (isScaledUp)
-                {
-//                    graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-//                                              RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-                }
-            }
-
             // draw the image
             drawBufferedImage(pdImage.getImage(), at);
+        }
 
-            if (!pdImage.getInterpolate())
-            {
-                // JDK 1.7 has a bug where rendering hints are reset by the above call to
-                // the setRenderingHint method, so we re-set all hints, see PDFBOX-2302
-                setRenderingHints();
-            }
+        if (!pdImage.getInterpolate())
+        {
+        	// JDK 1.7 has a bug where rendering hints are reset by the above call to
+        	// the setRenderingHint method, so we re-set all hints, see PDFBOX-2302
+        	setRenderingHints();
         }
     }
 

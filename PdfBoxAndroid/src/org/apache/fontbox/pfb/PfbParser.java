@@ -102,6 +102,16 @@ public class PfbParser
         byte[] pfb = readPfbInput(in);
         parsePfb(pfb);
     }
+    
+    /**
+     * Create a new object.
+     * @param bytes The input.
+     * @throws IOException if an IO-error occurs.
+     */
+    public PfbParser(final byte[] bytes) throws IOException
+    {
+    	parsePfb(bytes);
+    }
 
     /**
      * Parse the pfb-array.
