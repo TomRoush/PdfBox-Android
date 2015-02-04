@@ -99,10 +99,12 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     }
 	
 	/**
-	 * 
-	 * @param g
-	 * @param pageSize
-	 * @throws IOException
+	 * Draws the page to the requested canvas.
+     *
+     * @param p The paint.
+	 * @param c The canvas to draw onto.
+	 * @param pageSize The size of the page to draw.
+	 * @throws IOException If there is an IO error while drawing the page.
 	 */
 	public void drawPage(Paint p, Canvas c, PDRectangle pageSize) throws IOException
 	{
@@ -118,7 +120,8 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 		
 		paint.setStrokeCap(Paint.Cap.BUTT);
 		paint.setStrokeJoin(Paint.Join.MITER);
-		
+        paint.setStrokeWidth(1.0f);
+
 		// adjust for non-(0,0) crop box
 		canvas.translate(-pageSize.getLowerLeftX(), -pageSize.getLowerLeftY());
 		
@@ -456,20 +459,20 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 //        return getPaint(getGraphicsState().getNonStrokingColor());
 //    }
 
-    // create a new stroke based on the current CTM and the current stroke
-//    private BasicStroke getStroke()
-//    {
-//        PDGraphicsState state = getGraphicsState();
-//
-//        // apply the CTM
-//        float lineWidth = transformWidth(state.getLineWidth());
-//
-//        // minimum line width as used by Adobe Reader
-//        if (lineWidth < 0.25)
-//        {
-//            lineWidth = 0.25f;
-//        }
-//
+    // set stroke based on the current CTM and the current stroke
+    private void setStroke()
+    {
+        PDGraphicsState state = getGraphicsState();
+
+        // apply the CTM
+        float lineWidth = transformWidth(state.getLineWidth());
+
+        // minimum line width as used by Adobe Reader
+        if (lineWidth < 0.25)
+        {
+            lineWidth = 0.25f;
+        }
+
 //        PDLineDashPattern dashPattern = state.getLineDashPattern();
 //        int phaseStart = dashPattern.getPhase();
 //        float[] dashArray = dashPattern.getDashArray();
@@ -489,17 +492,29 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 //            }
 //        }
 //        return new BasicStroke(lineWidth, state.getLineCap(), state.getLineJoin(),
-//                               state.getMiterLimit(), dashArray, phaseStart);
-//    }
+//                state.getMiterLimit(), dashArray, phaseStart);
+
+        paint.setStrokeWidth(lineWidth);
+        paint.setStrokeCap(state.getLineCap());
+        paint.setStrokeJoin(state.getLineJoin());
+    }
 
     @Override
     public void strokePath() throws IOException
     {
+
 //        graphics.setComposite(getGraphicsState().getStrokingJavaComposite());
 //        graphics.setPaint(getStrokingPaint());
 //        graphics.setStroke(getStroke());
-        setClip();
+//        setClip();
 //        graphics.draw(linePath);
+//        linePath.reset();
+
+        setStroke();
+        setClip();
+        paint.setARGB(255, 0, 0, 0); // TODO set the correct color from graphics state.
+        paint.setStyle(Paint.Style.STROKE);
+        canvas.drawPath(linePath, paint);
         linePath.reset();
     }
 

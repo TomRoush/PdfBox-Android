@@ -1,5 +1,7 @@
 package org.apache.pdfbox.pdmodel.graphics.state;
 
+import android.graphics.Paint;
+
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.PDLineDashPattern;
 import org.apache.pdfbox.pdmodel.graphics.blend.BlendMode;
@@ -24,8 +26,8 @@ public class PDGraphicsState implements Cloneable
     private PDColorSpace nonStrokingColorSpace = PDDeviceGray.INSTANCE;
     private PDTextState textState = new PDTextState();
     private float lineWidth = 1;
-    private int lineCap = 0; // BUTT, ROUND, SQUARE
-    private int lineJoin = 0; // MITER, ROUND, BEZEL
+    private Paint.Cap lineCap;
+    private Paint.Join lineJoin;
     private float miterLimit = 10;
     private PDLineDashPattern lineDashPattern = new PDLineDashPattern();
     private RenderingIntent renderingIntent;
@@ -100,7 +102,7 @@ public class PDGraphicsState implements Cloneable
      *
      * @return The current line cap.
      */
-    public int getLineCap()
+    public Paint.Cap getLineCap()
     {
         return lineCap;
     }
@@ -110,7 +112,7 @@ public class PDGraphicsState implements Cloneable
      *
      * @param value The current line cap.
      */
-    public void setLineCap(int value)
+    public void setLineCap(Paint.Cap value)
     {
         lineCap = value;
     }
@@ -120,7 +122,7 @@ public class PDGraphicsState implements Cloneable
      *
      * @return The current line join value.
      */
-    public int getLineJoin()
+    public Paint.Join getLineJoin()
     {
         return lineJoin;
     }
@@ -130,7 +132,7 @@ public class PDGraphicsState implements Cloneable
      *
      * @param value The current line join
      */
-    public void setLineJoin(int value)
+    public void setLineJoin(Paint.Join value)
     {
         lineJoin = value;
     }

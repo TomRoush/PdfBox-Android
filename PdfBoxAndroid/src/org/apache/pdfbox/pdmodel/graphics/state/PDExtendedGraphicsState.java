@@ -1,5 +1,7 @@
 package org.apache.pdfbox.pdmodel.graphics.state;
 
+import android.graphics.Paint;
+
 import java.io.IOException;
 
 import org.apache.pdfbox.cos.COSArray;
@@ -173,9 +175,18 @@ public class PDExtendedGraphicsState implements COSObjectable
 	 *
 	 * @return null or the LC value of the dictionary.
 	 */
-	public int getLineCapStyle()
+	public Paint.Cap getLineCapStyle()
 	{
-		return dict.getInt( COSName.LC );
+        switch(dict.getInt( COSName.LC ))  {
+            case 0:
+                return Paint.Cap.BUTT;
+            case 1:
+                return Paint.Cap.ROUND;
+            case 2:
+                return Paint.Cap.SQUARE;
+            default:
+                return null;
+        }
 	}
 
 	/**
@@ -193,9 +204,18 @@ public class PDExtendedGraphicsState implements COSObjectable
 	 *
 	 * @return null or the LJ value in the dictionary.
 	 */
-	public int getLineJoinStyle()
+	public Paint.Join getLineJoinStyle()
 	{
-		return dict.getInt( COSName.LJ );
+        switch(dict.getInt( COSName.LJ ))  {
+            case 0:
+                return Paint.Join.MITER;
+            case 1:
+                return Paint.Join.ROUND;
+            case 2:
+                return Paint.Join.BEVEL;
+            default:
+                return null;
+        }
 	}
 
 	/**
