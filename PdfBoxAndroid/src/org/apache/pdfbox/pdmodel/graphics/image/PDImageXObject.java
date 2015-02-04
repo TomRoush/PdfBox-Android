@@ -16,6 +16,7 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 import android.graphics.Bitmap;
 
@@ -33,7 +34,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
     private static final Log LOG = LogFactory.getLog(PDImageXObject.class);
 
     private Bitmap cachedImage;
-//    private PDColorSpace colorSpace;TODO
+    private PDColorSpace colorSpace;
     private PDResources resources; // current resource dictionary (has color spaces)
 
     /**
@@ -42,22 +43,22 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * @return an XObject
      * @throws IOException if there is an error creating the XObject.
      */
-//    public static PDImageXObject createThumbnail(COSStream cosStream) throws IOException
-//    {
-//        // thumbnails are special, any non-null subtype is treated as being "Image"
-//        PDStream pdStream = new PDStream(cosStream);
-//        return new PDImageXObject(pdStream, null);
-//    }
+    public static PDImageXObject createThumbnail(COSStream cosStream) throws IOException
+    {
+        // thumbnails are special, any non-null subtype is treated as being "Image"
+        PDStream pdStream = new PDStream(cosStream);
+        return new PDImageXObject(pdStream, null);
+    }
 
     /**
      * Creates an Image XObject in the given document.
      * @param document the current document
      * @throws java.io.IOException if there is an error creating the XObject.
      */
-//    public PDImageXObject(PDDocument document) throws IOException
-//    {
-//        this(new PDStream(document), null);
-//    }TODO
+    public PDImageXObject(PDDocument document) throws IOException
+    {
+        this(new PDStream(document), null);
+    }
 
     /**
      * Creates an Image XObject in the given document using the given filtered stream.

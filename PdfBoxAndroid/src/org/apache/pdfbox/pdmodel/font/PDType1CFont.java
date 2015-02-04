@@ -19,8 +19,10 @@ import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
 import org.apache.pdfbox.pdmodel.font.encoding.Type1Encoding;
 import org.apache.pdfbox.util.Matrix;
+import org.apache.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.Path;
+import android.graphics.PointF;
 
 /**
  * Type 1-equivalent CFF font.
@@ -35,7 +37,7 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 	private final Map<String, Float> glyphHeights = new HashMap<String, Float>();
 	private Float avgWidth = null;
 	private Matrix fontMatrix;
-	private final android.graphics.Matrix fontMatrixTransform;
+	private final AffineTransform fontMatrixTransform;
 
 	private final CFFType1Font cffFont; // embedded font
 	private final Type1Equivalent type1Equivalent; // embedded or system font for rendering
@@ -108,7 +110,7 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 		}
 		readEncoding();
 		fontMatrixTransform = getFontMatrix().createAffineTransform();
-		fontMatrixTransform.setScale(1000, 1000);
+		fontMatrixTransform.scale(1000, 1000);
 	}
 
 	@Override
@@ -206,9 +208,9 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 		String name = codeToName(code);
 		float width = type1Equivalent.getWidth(name);
 
-		float[] retval = new float[] {width, 0};
-		fontMatrixTransform.mapPoints(retval);
-		return (float)retval[0];
+		PointF p = new PointF(width, 0f);
+		fontMatrixTransform.transform(p, p);
+		return p.x;
 	}
 
 	@Override

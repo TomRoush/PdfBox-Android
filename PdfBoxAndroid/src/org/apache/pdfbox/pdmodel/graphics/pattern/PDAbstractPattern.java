@@ -9,6 +9,7 @@ import org.apache.pdfbox.cos.COSFloat;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.util.Matrix;
+import org.apache.pdfbox.util.awt.AffineTransform;
 
 /**
  * A Pattern dictionary from a page's resources.
@@ -175,15 +176,15 @@ public abstract class PDAbstractPattern implements COSObjectable
      * Sets the optional Matrix entry for the Pattern.
      * @param transform the transformation matrix
      */
-    public void setMatrix(android.graphics.Matrix transform)
+    public void setMatrix(AffineTransform transform)
     {
-        COSArray matrix = new COSArray();
-        float[] values = new float[9];
-        transform.getValues(values);
-        for (float v : values)
-        {
-            matrix.add(new COSFloat(v));
-        }
-        getCOSDictionary().setItem(COSName.MATRIX, matrix);
+    	COSArray matrix = new COSArray();
+    	double[] values = new double[6];
+    	transform.getMatrix(values);
+    	for (double v : values)
+    	{
+    		matrix.add(new COSFloat((float)v));
+    	}
+    	getCOSDictionary().setItem(COSName.MATRIX, matrix);
     }
 }

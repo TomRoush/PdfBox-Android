@@ -18,6 +18,9 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.util.Matrix;
+import org.apache.pdfbox.util.awt.AffineTransform;
+
+import android.graphics.PointF;
 
 /**
  * Type 0 CIDFont (CFF).
@@ -38,7 +41,7 @@ public class PDCIDFontType0 extends PDCIDFont
 
 	private Float avgWidth = null;
 	private Matrix fontMatrix;
-	private android.graphics.Matrix fontMatrixTransform;
+	private AffineTransform fontMatrixTransform;
 
 	/**
 	 * Constructor.
@@ -142,7 +145,7 @@ public class PDCIDFontType0 extends PDCIDFont
 			isDamaged = fontIsDamaged;
 		}
 		fontMatrixTransform = getFontMatrix().createAffineTransform();
-		fontMatrixTransform.setScale(1000, 1000);
+		fontMatrixTransform.scale(1000, 1000);
 	}
 
 	@Override
@@ -262,9 +265,9 @@ public class PDCIDFontType0 extends PDCIDFont
 		int cid = codeToCID(code);
 		int width = getType2CharString(cid).getWidth();
 
-		float[] retval = new float[] {width, 0};
-		fontMatrixTransform.mapPoints(retval);
-		return (float)retval[0];
+		PointF p = new PointF(width, 0);
+		fontMatrixTransform.transform(p, p);
+		return p.x;
 	}
 
 	@Override

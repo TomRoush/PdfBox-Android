@@ -3,6 +3,7 @@ package org.apache.pdfbox.util;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSFloat;
 import org.apache.pdfbox.cos.COSNumber;
+import org.apache.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.PointF;
 
@@ -32,49 +33,50 @@ public final class Matrix implements Cloneable
 	}
 
 	/**
-	 * Creates a matrix from a 6-element COS array.
-	 */
-	public Matrix(COSArray array)
-	{
-		single = new float[DEFAULT_SINGLE.length];
-		single[0] = ((COSNumber)array.get(0)).floatValue();
-		single[1] = ((COSNumber)array.get(1)).floatValue();
-		single[3] = ((COSNumber)array.get(2)).floatValue();
-		single[4] = ((COSNumber)array.get(3)).floatValue();
-		single[6] = ((COSNumber)array.get(4)).floatValue();
-		single[7] = ((COSNumber)array.get(5)).floatValue();
-	}
+     * Creates a matrix from a 6-element COS array.
+     */
+    public Matrix(COSArray array)
+    {
+        single = new float[DEFAULT_SINGLE.length];
+        single[0] = ((COSNumber)array.get(0)).floatValue();
+        single[1] = ((COSNumber)array.get(1)).floatValue();
+        single[3] = ((COSNumber)array.get(2)).floatValue();
+        single[4] = ((COSNumber)array.get(3)).floatValue();
+        single[6] = ((COSNumber)array.get(4)).floatValue();
+        single[7] = ((COSNumber)array.get(5)).floatValue();
+        single[8] = 1;
+    }
 
-	/**
-	 * Creates a matrix with the given 6 elements.
-	 */
-	public Matrix(float a, float b, float c, float d, float e, float f)
-	{
-		single = new float[DEFAULT_SINGLE.length];
-		single[0] = a;
-		single[1] = b;
-		single[3] = c;
-		single[4] = d;
-		single[6] = e;
-		single[7] = f;
-		single[8] = 1;
-	}
+    /**
+     * Creates a matrix with the given 6 elements.
+     */
+    public Matrix(float a, float b, float c, float d, float e, float f)
+    {
+        single = new float[DEFAULT_SINGLE.length];
+        single[0] = a;
+        single[1] = b;
+        single[3] = c;
+        single[4] = d;
+        single[6] = e;
+        single[7] = f;
+        single[8] = 1;
+    }
 	
-	/**
-	 * Creates a matrix with the same elements as the given AffineTransform.
-	 */
-	public Matrix(android.graphics.Matrix at)
-	{
-		float[] values = new float[9];
-		at.getValues(values);
-		single[0] = (float)values[android.graphics.Matrix.MSCALE_X];
-		single[1] = (float)values[android.graphics.Matrix.MSKEW_Y];
-		single[3] = (float)values[android.graphics.Matrix.MSKEW_X];
-		single[4] = (float)values[android.graphics.Matrix.MSCALE_Y];
-		single[6] = (float)values[android.graphics.Matrix.MTRANS_X];
-		single[7] = (float)values[android.graphics.Matrix.MTRANS_Y];
-		//TODO do we need to fill in  0/1s?
-	}
+    /**
+     * Creates a matrix with the same elements as the given AffineTransform.
+     */
+    public Matrix(AffineTransform at)
+    {
+        single = new float[DEFAULT_SINGLE.length];
+        System.arraycopy(DEFAULT_SINGLE, 0, single, 0, DEFAULT_SINGLE.length);
+        single[0] = (float)at.getScaleX();
+        single[1] = (float)at.getShearY();
+        single[3] = (float)at.getShearX();
+        single[4] = (float)at.getScaleY();
+        single[6] = (float)at.getTranslateX();
+        single[7] = (float)at.getTranslateY();
+    }
+
 
 	/**
 	 * This method resets the numbers in this Matrix to the original values, which are
@@ -89,40 +91,35 @@ public final class Matrix implements Cloneable
 	}
 
 	/**
-	 * Create an affine transform from this matrix's values.
-	 *
-	 * @return An affine transform with this matrix's values.
-	 */
-	public android.graphics.Matrix createAffineTransform()
-	{
-		android.graphics.Matrix retval = new android.graphics.Matrix();
-		//        		(
-		//            single[0], single[1],
-		//            single[3], single[4],
-		//            single[6], single[7] );
-		retval.setValues(single);
-		return retval;
-		// TODO wrong, and will be wrong in other areas
-	}
+     * Create an affine transform from this matrix's values.
+     *
+     * @return An affine transform with this matrix's values.
+     */
+    public AffineTransform createAffineTransform()
+    {
+        return new AffineTransform(
+            single[0], single[1],   // m00 m10 = scaleX shearY
+            single[3], single[4],   // m01 m11 = shearX scaleY
+            single[6], single[7] ); // m02 m12 = tx ty
+    }
 
-	/**
-	 * Set the values of the matrix from the AffineTransform.
-	 *
-	 * @param af The transform to get the values from.
-	 * @deprecated Use the {@link #Matrix(AffineTransform)} constructor instead.
-	 */
-	@Deprecated
-	public void setFromAffineTransform( android.graphics.Matrix af )
-	{
-		float[] values = new float[9];
-		af.getValues(values);
-		single[0] = (float)values[android.graphics.Matrix.MSCALE_X];
-		single[1] = (float)values[android.graphics.Matrix.MSKEW_Y];
-		single[3] = (float)values[android.graphics.Matrix.MSKEW_X];
-		single[4] = (float)values[android.graphics.Matrix.MSCALE_Y];
-		single[6] = (float)values[android.graphics.Matrix.MTRANS_X];
-		single[7] = (float)values[android.graphics.Matrix.MTRANS_Y];
-	}
+    /**
+     * Set the values of the matrix from the AffineTransform.
+     *
+     * @param af The transform to get the values from.
+     * @deprecated Use the {@link #Matrix(AffineTransform)} constructor instead.
+     */
+    @Deprecated
+    public void setFromAffineTransform( AffineTransform af )
+    {
+        single[0] = (float)af.getScaleX();
+        single[1] = (float)af.getShearY();
+        single[3] = (float)af.getShearX();
+        single[4] = (float)af.getScaleY();
+        single[6] = (float)af.getTranslateX();
+        single[7] = (float)af.getTranslateY();
+    }
+
 
 	/**
 	 * This will get a matrix value at some point.
@@ -150,46 +147,46 @@ public final class Matrix implements Cloneable
 	}
 
 	/**
-	 * Return a single dimension array of all values in the matrix.
-	 *
-	 * @return The values of this matrix.
-	 */
-	public float[][] getValues()
-	{
-		float[][] retval = new float[3][3];
-		retval[0][0] = single[0];
-		retval[0][1] = single[1];
-		retval[0][2] = single[2];
-		retval[1][0] = single[3];
-		retval[1][1] = single[4];
-		retval[1][2] = single[5];
-		retval[2][0] = single[6];
-		retval[2][1] = single[7];
-		retval[2][2] = single[8];
-		return retval;
-	}
+     * Return a single dimension array of all values in the matrix.
+     *
+     * @return The values of this matrix.
+     */
+    public float[][] getValues()
+    {
+        float[][] retval = new float[3][3];
+        retval[0][0] = single[0];
+        retval[0][1] = single[1];
+        retval[0][2] = single[2];
+        retval[1][0] = single[3];
+        retval[1][1] = single[4];
+        retval[1][2] = single[5];
+        retval[2][0] = single[6];
+        retval[2][1] = single[7];
+        retval[2][2] = single[8];
+        return retval;
+    }
 
-	/**
-	 * Return a single dimension array of all values in the matrix.
-	 *
-	 * @return The values ot this matrix.
-	 * @deprecated Use {@link #getValues()} instead.
-	 */
-	@Deprecated
-	public double[][] getValuesAsDouble()
-	{
-		double[][] retval = new double[3][3];
-		retval[0][0] = single[0];
-		retval[0][1] = single[1];
-		retval[0][2] = single[2];
-		retval[1][0] = single[3];
-		retval[1][1] = single[4];
-		retval[1][2] = single[5];
-		retval[2][0] = single[6];
-		retval[2][1] = single[7];
-		retval[2][2] = single[8];
-		return retval;
-	}
+    /**
+     * Return a single dimension array of all values in the matrix.
+     *
+     * @return The values ot this matrix.
+     * @deprecated Use {@link #getValues()} instead.
+     */
+    @Deprecated
+    public double[][] getValuesAsDouble()
+    {
+        double[][] retval = new double[3][3];
+        retval[0][0] = single[0];
+        retval[0][1] = single[1];
+        retval[0][2] = single[2];
+        retval[1][0] = single[3];
+        retval[1][1] = single[4];
+        retval[1][2] = single[5];
+        retval[2][0] = single[6];
+        retval[2][1] = single[7];
+        retval[2][2] = single[8];
+        return retval;
+    }
 
 	/**
 	 * Concatenates (premultiplies) the given matrix to this matrix.
@@ -260,102 +257,102 @@ public final class Matrix implements Cloneable
 	}
 
 	/**
-	 * This method multiplies this Matrix with the specified other Matrix, storing the product in the specified
-	 * result Matrix. By reusing Matrix instances like this, multiplication chains can be executed without having
-	 * to create many temporary Matrix objects.
-	 * <p/>
-	 * It is allowed to have (other == this) or (result == this) or indeed (other == result) but if this is done,
-	 * the backing float[] matrix values may be copied in order to ensure a correct product.
-	 *
-	 * @param other the second operand Matrix in the multiplication
-	 * @param result the Matrix instance into which the result should be stored. If result is null, a new Matrix
-	 *               instance is created.
-	 * @return the product of the two matrices.
-	 */
-	public Matrix multiply( Matrix other, Matrix result )
-	{
-		if (result == null)
-		{
-			result = new Matrix();
-		}
+     * This method multiplies this Matrix with the specified other Matrix, storing the product in the specified
+     * result Matrix. By reusing Matrix instances like this, multiplication chains can be executed without having
+     * to create many temporary Matrix objects.
+     * <p/>
+     * It is allowed to have (other == this) or (result == this) or indeed (other == result) but if this is done,
+     * the backing float[] matrix values may be copied in order to ensure a correct product.
+     *
+     * @param other the second operand Matrix in the multiplication
+     * @param result the Matrix instance into which the result should be stored. If result is null, a new Matrix
+     *               instance is created.
+     * @return the product of the two matrices.
+     */
+    public Matrix multiply( Matrix other, Matrix result )
+    {
+        if (result == null)
+        {
+            result = new Matrix();
+        }
 
-		if (other != null && other.single != null)
-		{
-			// the operands
-			float[] thisOperand = this.single;
-			float[] otherOperand = other.single;
+        if (other != null && other.single != null)
+        {
+            // the operands
+            float[] thisOperand = this.single;
+            float[] otherOperand = other.single;
 
-			// We're multiplying 2 sets of floats together to produce a third, but we allow
-			// any of these float[] instances to be the same objects.
-			// There is the possibility then to overwrite one of the operands with result values
-			// and therefore corrupt the result.
+            // We're multiplying 2 sets of floats together to produce a third, but we allow
+            // any of these float[] instances to be the same objects.
+            // There is the possibility then to overwrite one of the operands with result values
+            // and therefore corrupt the result.
 
-			// If either of these operands are the same float[] instance as the result, then
-			// they need to be copied.
+            // If either of these operands are the same float[] instance as the result, then
+            // they need to be copied.
 
-			if (this == result)
-			{
-				final float[] thisOrigVals = new float[this.single.length];
-				System.arraycopy(this.single, 0, thisOrigVals, 0, this.single.length);
+            if (this == result)
+            {
+                final float[] thisOrigVals = new float[this.single.length];
+                System.arraycopy(this.single, 0, thisOrigVals, 0, this.single.length);
 
-				thisOperand = thisOrigVals;
-			}
-			if (other == result)
-			{
-				final float[] otherOrigVals = new float[other.single.length];
-				System.arraycopy(other.single, 0, otherOrigVals, 0, other.single.length);
+                thisOperand = thisOrigVals;
+            }
+            if (other == result)
+            {
+                final float[] otherOrigVals = new float[other.single.length];
+                System.arraycopy(other.single, 0, otherOrigVals, 0, other.single.length);
 
-				otherOperand = otherOrigVals;
-			}
+                otherOperand = otherOrigVals;
+            }
 
-			result.single[0] = thisOperand[0] * otherOperand[0]
-					+ thisOperand[1] * otherOperand[3]
-							+ thisOperand[2] * otherOperand[6];
-			result.single[1] = thisOperand[0] * otherOperand[1]
-					+ thisOperand[1] * otherOperand[4]
-							+ thisOperand[2] * otherOperand[7];
-			result.single[2] = thisOperand[0] * otherOperand[2]
-					+ thisOperand[1] * otherOperand[5]
-							+ thisOperand[2] * otherOperand[8];
-			result.single[3] = thisOperand[3] * otherOperand[0]
-					+ thisOperand[4] * otherOperand[3]
-							+ thisOperand[5] * otherOperand[6];
-			result.single[4] = thisOperand[3] * otherOperand[1]
-					+ thisOperand[4] * otherOperand[4]
-							+ thisOperand[5] * otherOperand[7];
-			result.single[5] = thisOperand[3] * otherOperand[2]
-					+ thisOperand[4] * otherOperand[5]
-							+ thisOperand[5] * otherOperand[8];
-			result.single[6] = thisOperand[6] * otherOperand[0]
-					+ thisOperand[7] * otherOperand[3]
-							+ thisOperand[8] * otherOperand[6];
-			result.single[7] = thisOperand[6] * otherOperand[1]
-					+ thisOperand[7] * otherOperand[4]
-							+ thisOperand[8] * otherOperand[7];
-			result.single[8] = thisOperand[6] * otherOperand[2]
-					+ thisOperand[7] * otherOperand[5]
-							+ thisOperand[8] * otherOperand[8];
-		}
+            result.single[0] = thisOperand[0] * otherOperand[0]
+                             + thisOperand[1] * otherOperand[3]
+                             + thisOperand[2] * otherOperand[6];
+            result.single[1] = thisOperand[0] * otherOperand[1]
+                             + thisOperand[1] * otherOperand[4]
+                             + thisOperand[2] * otherOperand[7];
+            result.single[2] = thisOperand[0] * otherOperand[2]
+                             + thisOperand[1] * otherOperand[5]
+                             + thisOperand[2] * otherOperand[8];
+            result.single[3] = thisOperand[3] * otherOperand[0]
+                             + thisOperand[4] * otherOperand[3]
+                             + thisOperand[5] * otherOperand[6];
+            result.single[4] = thisOperand[3] * otherOperand[1]
+                             + thisOperand[4] * otherOperand[4]
+                             + thisOperand[5] * otherOperand[7];
+            result.single[5] = thisOperand[3] * otherOperand[2]
+                             + thisOperand[4] * otherOperand[5]
+                             + thisOperand[5] * otherOperand[8];
+            result.single[6] = thisOperand[6] * otherOperand[0]
+                             + thisOperand[7] * otherOperand[3]
+                             + thisOperand[8] * otherOperand[6];
+            result.single[7] = thisOperand[6] * otherOperand[1]
+                             + thisOperand[7] * otherOperand[4]
+                             + thisOperand[8] * otherOperand[7];
+            result.single[8] = thisOperand[6] * otherOperand[2]
+                             + thisOperand[7] * otherOperand[5]
+                             + thisOperand[8] * otherOperand[8];
+        }
 
-		return result;
-	}
+        return result;
+    }
 
-	/**
-	 * Transforms the given point by this matrix.
-	 *
-	 * @param point point to transform
-	 */
-	public void transform(PointF point) {
-		float x = (float)point.x;
-		float y = (float)point.y;
-		float a = single[0];
-		float b = single[1];
-		float c = single[3];
-		float d = single[4];
-		float e = single[6];
-		float f = single[7];
-		point.set(x * a + y * c + e, x * b + y * d + f);
-	}
+    /**
+     * Transforms the given point by this matrix.
+     *
+     * @param point point to transform
+     */
+    public void transform(PointF point) {
+        float x = (float)point.x;
+        float y = (float)point.y;
+        float a = single[0];
+        float b = single[1];
+        float c = single[3];
+        float d = single[4];
+        float e = single[6];
+        float f = single[7];
+        point.set(x * a + y * c + e, x * b + y * d + f);
+    }
 
 	/**
 	 * Transforms the given point by this matrix.

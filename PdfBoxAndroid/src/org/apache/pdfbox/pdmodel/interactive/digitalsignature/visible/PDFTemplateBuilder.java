@@ -13,6 +13,7 @@ import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import org.apache.pdfbox.util.awt.AffineTransform;
 
 /**
  * That class builds visible signature template which will be added in our PDF document.
@@ -180,7 +181,7 @@ public interface PDFTemplateBuilder
 	 */
 	void createImageForm(PDResources imageFormResources, PDResources innerFormResource,
                                 PDStream imageFormStream, PDRectangle formrect,
-                                android.graphics.Matrix affineTransform, PDImageXObject img)
+                                AffineTransform affineTransform, PDImageXObject img)
                                 throws IOException;
 	
 	/**

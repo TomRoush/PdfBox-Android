@@ -1,19 +1,3 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package org.apache.pdfbox.pdmodel.graphics.shading;
 
 import java.io.IOException;
@@ -25,6 +9,7 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.function.PDFunction;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 /**
  * A Shading Resource.
@@ -36,7 +21,7 @@ public abstract class PDShading implements COSObjectable
     private COSDictionary dictionary;
     private COSArray background = null;
     private PDRectangle bBox = null;
-//    private PDColorSpace colorSpace = null;TODO
+    private PDColorSpace colorSpace = null;
     private PDFunction function = null;
     private PDFunction[] functionArray = null;
 
@@ -244,18 +229,18 @@ public abstract class PDShading implements COSObjectable
      *
      * @param colorSpace the color space
      */
-//    public void setColorSpace(PDColorSpace colorSpace)
-//    {
-//        this.colorSpace = colorSpace;
-//        if (colorSpace != null)
-//        {
-//            dictionary.setItem(COSName.COLORSPACE, colorSpace.getCOSObject());
-//        }
-//        else
-//        {
-//            dictionary.removeItem(COSName.COLORSPACE);
-//        }
-//    }TODO
+    public void setColorSpace(PDColorSpace colorSpace)
+    {
+    	this.colorSpace = colorSpace;
+    	if (colorSpace != null)
+    	{
+    		dictionary.setItem(COSName.COLORSPACE, colorSpace.getCOSObject());
+    	}
+    	else
+    	{
+    		dictionary.removeItem(COSName.COLORSPACE);
+    	}
+    }
 
     /**
      * Create the correct PD Model shading based on the COS base shading.

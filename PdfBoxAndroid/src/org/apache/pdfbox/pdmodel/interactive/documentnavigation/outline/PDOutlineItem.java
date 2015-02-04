@@ -2,13 +2,17 @@ package org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline;
 
 import java.io.IOException;
 
+import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSFloat;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDestinationNameTreeNode;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentNameDictionary;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionFactory;
 import org.apache.pdfbox.pdmodel.interactive.action.PDActionGoTo;
@@ -250,7 +254,7 @@ public class PDOutlineItem extends PDOutlineNode
             int pageNumber = pageDestination.getPageNumber();
             if( pageNumber != -1 )
             {
-                page = doc.getPage( pageNumber );
+                page = doc.getPage( pageNumber - 1 );
             }
         }
 
@@ -309,29 +313,29 @@ public class PDOutlineItem extends PDOutlineNode
      *
      * @return The structure element of this node.
      */
-//    public PDColor getTextColor()
-//    {
-//        PDColor retval = null;
-//        COSArray csValues = (COSArray)node.getDictionaryObject( COSName.C );
-//        if( csValues == null )
-//        {
-//            csValues = new COSArray();
-//            csValues.growToSize( 3, new COSFloat( 0 ) );
-//            node.setItem( COSName.C, csValues );
-//        }
-//        retval = new PDColor(csValues.toFloatArray());
-//        return retval;
-//    }TODO
+    public PDColor getTextColor()
+    {
+        PDColor retval = null;
+        COSArray csValues = (COSArray)node.getDictionaryObject( COSName.C );
+        if( csValues == null )
+        {
+            csValues = new COSArray();
+            csValues.growToSize( 3, new COSFloat( 0 ) );
+            node.setItem( COSName.C, csValues );
+        }
+        retval = new PDColor(csValues.toFloatArray(), PDDeviceRGB.INSTANCE);
+        return retval;
+    }
 
     /**
      * Set the RGB text color for this node.
      *
      * @param textColor The text color for this node.
      */
-//    public void setTextColor( PDColor textColor )
-//    {
-//        node.setItem( COSName.C, textColor.toCOSArray() );
-//    }TODO
+    public void setTextColor( PDColor textColor )
+    {
+        node.setItem( COSName.C, textColor.toCOSArray() );
+    }
 
     /**
      * Set the RGB text color for this node.

@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.fontbox.ttf.CmapSubtable;
-import org.apache.fontbox.ttf.CmapTable;
 import org.apache.fontbox.ttf.HeaderTable;
 import org.apache.fontbox.ttf.HorizontalHeaderTable;
 import org.apache.fontbox.ttf.OS2WindowsMetricsTable;

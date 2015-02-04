@@ -38,6 +38,7 @@ import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import org.apache.pdfbox.util.awt.AffineTransform;
 
 /**
  * Structure of PDF document with visible signature.
@@ -53,7 +54,7 @@ public class PDFTemplateStructure
     private PDSignature pdSignature;
     private COSDictionary acroFormDictionary;
     private PDRectangle singatureRectangle;
-    private android.graphics.Matrix affineTransform;
+    private AffineTransform affineTransform;
     private COSArray procSet;
     private PDImageXObject image;
     private PDRectangle formaterRectangle;
@@ -211,7 +212,7 @@ public class PDFTemplateStructure
      * Gets AffineTransform
      * @return the AffineTransform
      */
-    public android.graphics.Matrix getAffineTransform()
+    public AffineTransform getAffineTransform()
     {
         return affineTransform;
     }
@@ -220,7 +221,7 @@ public class PDFTemplateStructure
      * Sets AffineTransform
      * @param affineTransform
      */
-    public void setAffineTransform(android.graphics.Matrix affineTransform)
+    public void setAffineTransform(AffineTransform affineTransform)
     {
         this.affineTransform = affineTransform;
     }

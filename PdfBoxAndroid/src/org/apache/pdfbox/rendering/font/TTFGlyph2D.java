@@ -13,6 +13,7 @@ import org.apache.pdfbox.pdmodel.font.PDCIDFontType2;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.apache.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.Path;
 
@@ -128,9 +129,8 @@ public class TTFGlyph2D implements Glyph2D
 				glyphPath = glyph.getPath();
 				if (hasScaling)
 				{
-					android.graphics.Matrix atScale = new android.graphics.Matrix();
-					atScale.setScale(scale, scale);
-					glyphPath.transform(atScale);
+					AffineTransform atScale = AffineTransform.getScaleInstance(scale, scale);
+					glyphPath.transform(atScale.toMatrix());
 				}
 				glyphs.put(gid, glyphPath);
 			}

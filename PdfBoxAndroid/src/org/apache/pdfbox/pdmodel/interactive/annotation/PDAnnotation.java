@@ -12,6 +12,10 @@ import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 
 /**
  * A PDF annotation.
@@ -609,10 +613,10 @@ public abstract class PDAnnotation implements COSObjectable
 	 * @param c colour in the DeviceRGB colourspace
 	 * 
 	 */
-//	public void setColor(PDColor c)
-//	{
-//		getDictionary().setItem(COSName.C, c.toCOSArray());
-//	}TODO
+	public void setColor(PDColor c)
+	{
+		getDictionary().setItem(COSName.C, c.toCOSArray());
+	}
 
 	/**
 	 * This will retrieve the color used in drawing various elements. As of PDF
@@ -623,35 +627,35 @@ public abstract class PDAnnotation implements COSObjectable
 	 * <li>Border of a link annotation</li></ul>
 	 * @return Color object representing the colour
 	 */
-//	public PDColor getColor()
-//	{
-//		return getColor(COSName.C);
-//	}TODO
+	public PDColor getColor()
+	{
+		return getColor(COSName.C);
+	}
 
-//	protected PDColor getColor(COSName itemName)
-//	{
-//		COSBase c = this.getDictionary().getItem(itemName);
-//		if (c instanceof COSArray)
-//		{
-//			PDColorSpace colorSpace = null;
-//			switch (((COSArray) c).size())
-//			{
-//			case 1:
-//				colorSpace = PDDeviceGray.INSTANCE;
-//				break;
-//			case 3:
-//				colorSpace = PDDeviceRGB.INSTANCE;
-//				break;
+	protected PDColor getColor(COSName itemName)
+	{
+		COSBase c = this.getDictionary().getItem(itemName);
+		if (c instanceof COSArray)
+		{
+			PDColorSpace colorSpace = null;
+			switch (((COSArray) c).size())
+			{
+			case 1:
+				colorSpace = PDDeviceGray.INSTANCE;
+				break;
+			case 3:
+				colorSpace = PDDeviceRGB.INSTANCE;
+				break;
 //			case 4:
 //				colorSpace = PDDeviceCMYK.INSTANCE;
-//				break;
-//			default:
-//				break;
-//			}
-//			return new PDColor((COSArray) c, colorSpace);
-//		}
-//		return null;
-//	}TODO
+//				break; TODO
+			default:
+				break;
+			}
+			return new PDColor((COSArray) c, colorSpace);
+		}
+		return null;
+	}
 
 	/**
 	 * This will retrieve the subtype of the annotation.

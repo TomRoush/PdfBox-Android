@@ -12,6 +12,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.util.Matrix;
+import org.apache.pdfbox.util.awt.AffineTransform;
 
 /*
 TODO There are further Form XObjects to implement:
@@ -191,12 +192,12 @@ public class PDFormXObject extends PDXObject implements PDContentStream
 	 * Sets the optional Matrix entry for the form XObject.
 	 * @param transform the transformation matrix
 	 */
-	public void setMatrix(android.graphics.Matrix transform)
+	public void setMatrix(AffineTransform transform)
 	{
 		COSArray matrix = new COSArray();
-		float[] values = new float[9];
-		transform.getValues(values);
-		for (float v : values)
+		double[] values = new double[6];
+		transform.getMatrix(values);
+		for (double v : values)
 		{
 			matrix.add(new COSFloat((float) v));
 		}

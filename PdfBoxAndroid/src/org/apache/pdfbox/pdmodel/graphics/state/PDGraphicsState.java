@@ -3,6 +3,9 @@ package org.apache.pdfbox.pdmodel.graphics.state;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.PDLineDashPattern;
 import org.apache.pdfbox.pdmodel.graphics.blend.BlendMode;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import org.apache.pdfbox.util.Matrix;
 
 /**
@@ -15,10 +18,10 @@ public class PDGraphicsState implements Cloneable
     private boolean isClippingPathDirty;
 //    private Area clippingPath;TODO
     private Matrix currentTransformationMatrix = new Matrix();
-//    private PDColor strokingColor = PDDeviceGray.INSTANCE.getInitialColor();TODO
-//    private PDColor nonStrokingColor = PDDeviceGray.INSTANCE.getInitialColor();TODO
-//    private PDColorSpace strokingColorSpace = PDDeviceGray.INSTANCE;TODO
-//    private PDColorSpace nonStrokingColorSpace = PDDeviceGray.INSTANCE;TODO
+    private PDColor strokingColor = PDDeviceGray.INSTANCE.getInitialColor();
+    private PDColor nonStrokingColor = PDDeviceGray.INSTANCE.getInitialColor();
+    private PDColorSpace strokingColorSpace = PDDeviceGray.INSTANCE;
+    private PDColorSpace nonStrokingColorSpace = PDDeviceGray.INSTANCE;
     private PDTextState textState = new PDTextState();
     private float lineWidth = 1;
     private int lineCap = 0; // BUTT, ROUND, SQUARE
@@ -425,10 +428,10 @@ public class PDGraphicsState implements Cloneable
             PDGraphicsState clone = (PDGraphicsState)super.clone();
             clone.textState = textState.clone();
             clone.currentTransformationMatrix = currentTransformationMatrix.clone();
-//            clone.strokingColor = strokingColor; // immutable TODO
-//            clone.nonStrokingColor = nonStrokingColor; // immutable TODO
+            clone.strokingColor = strokingColor; // immutable 
+            clone.nonStrokingColor = nonStrokingColor; // immutable
             clone.lineDashPattern = lineDashPattern; // immutable
-//            clone.clippingPath = clippingPath; // not cloned, see intersectClippingPath TODO
+//            clone.clippingPath = clippingPath; // not cloned, see intersectClippingPath
             clone.isClippingPathDirty = false;
             return clone;
         }
@@ -444,80 +447,80 @@ public class PDGraphicsState implements Cloneable
      *
      * @return stroking color
      */
-//    public PDColor getStrokingColor()
-//    {
-//        return strokingColor;
-//    }TODO
+    public PDColor getStrokingColor()
+    {
+    	return strokingColor;
+    }
 
     /**
      * Sets the stroking color.
      *
      * @param color The new stroking color
      */
-//    public void setStrokingColor(PDColor color)
-//    {
-//        strokingColor = color;
-//    }TODO
+    public void setStrokingColor(PDColor color)
+    {
+    	strokingColor = color;
+    }
 
     /**
      * Returns the non-stroking color.
      *
      * @return The non-stroking color
      */
-//    public PDColor getNonStrokingColor()
-//    {
-//        return nonStrokingColor;
-//    }TODO
+    public PDColor getNonStrokingColor()
+    {
+    	return nonStrokingColor;
+    }
 
     /**
      * Sets the non-stroking color.
      *
      * @param color The new non-stroking color
      */
-//    public void setNonStrokingColor(PDColor color)
-//    {
-//        nonStrokingColor = color;
-//    }TODO
+    public void setNonStrokingColor(PDColor color)
+    {
+    	nonStrokingColor = color;
+    }
 
     /**
      * Returns the stroking color space.
      *
      * @return The stroking color space.
      */
-//    public PDColorSpace getStrokingColorSpace()
-//    {
-//        return strokingColorSpace;
-//    }TODO
+    public PDColorSpace getStrokingColorSpace()
+    {
+    	return strokingColorSpace;
+    }
 
     /**
      * Sets the the stroking color space.
      *
      * @param colorSpace The new stroking color space.
      */
-//    public void setStrokingColorSpace(PDColorSpace colorSpace)
-//    {
-//        strokingColorSpace = colorSpace;
-//    }TODO
+    public void setStrokingColorSpace(PDColorSpace colorSpace)
+    {
+    	strokingColorSpace = colorSpace;
+    }
 
     /**
      * Returns the non-stroking color space.
      *
      * @return The non-stroking color space.
      */
-//    public PDColorSpace getNonStrokingColorSpace()
-//    {
-//        return nonStrokingColorSpace;
-//    }TODO
+    public PDColorSpace getNonStrokingColorSpace()
+    {
+    	return nonStrokingColorSpace;
+    }
 
     /**
      * Sets the the non-stroking color space.
      *
      * @param colorSpace The new non-stroking color space.
      */
-//    public void setNonStrokingColorSpace(PDColorSpace colorSpace)
-//    {
-//        nonStrokingColorSpace = colorSpace;
-//    }TOOD
+    public void setNonStrokingColorSpace(PDColorSpace colorSpace)
+    {
+    	nonStrokingColorSpace = colorSpace;
+    }
 
     /**
      * Modify the current clipping path by intersecting it with the given path.

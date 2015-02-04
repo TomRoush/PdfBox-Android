@@ -22,6 +22,7 @@ import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import org.apache.pdfbox.util.awt.AffineTransform;
 
 /**
  * Implementation of PDFTemplateBuilder.
@@ -129,8 +130,8 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
     @Override
     public void createAffineTransform(byte[] params)
     {
-        android.graphics.Matrix transform = new android.graphics.Matrix();
-        transform.setValues(new float[] {params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8]});
+    	AffineTransform transform = new AffineTransform(params[0], params[1], params[2],
+    			params[3], params[4], params[5]);
         pdfStructure.setAffineTransform(transform);
         log.info("Matrix has been added");
     }
@@ -271,7 +272,7 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
 
     @Override
     public void createImageForm(PDResources imageFormResources, PDResources innerFormResource,
-                                PDStream imageFormStream, PDRectangle formrect, android.graphics.Matrix at,
+                                PDStream imageFormStream, PDRectangle formrect, AffineTransform at,
                                 PDImageXObject img) throws IOException
     {
         // if you need text on the visible signature:

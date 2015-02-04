@@ -22,6 +22,7 @@ import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import org.apache.pdfbox.util.awt.AffineTransform;
 
 /**
  * Adds an overlay to an existing PDF document.
@@ -404,7 +405,7 @@ public class Overlay
 		xobjForm.setResources(new PDResources(layoutPage.overlayResources));
 		xobjForm.setFormType(1);
 		xobjForm.setBBox( layoutPage.overlayMediaBox.createRetranslatedRectangle());
-		xobjForm.setMatrix(new android.graphics.Matrix());
+		xobjForm.setMatrix(new AffineTransform());
 		PDResources resources = page.getResources();
 		return resources.add(xobjForm, "OL");
 	}

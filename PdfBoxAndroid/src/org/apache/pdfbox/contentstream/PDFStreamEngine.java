@@ -48,7 +48,10 @@ import org.apache.pdfbox.pdmodel.font.PDFontFactory;
 import org.apache.pdfbox.pdmodel.font.PDType3CharProc;
 import org.apache.pdfbox.pdmodel.font.PDType3Font;
 import org.apache.pdfbox.pdmodel.graphics.PDLineDashPattern;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import org.apache.pdfbox.pdmodel.graphics.pattern.PDTilingPattern;
 import org.apache.pdfbox.pdmodel.graphics.state.PDGraphicsState;
 import org.apache.pdfbox.pdmodel.graphics.state.PDTextState;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
@@ -311,11 +314,11 @@ public class PDFStreamEngine
 	 * @param color color to use, if this is an uncoloured pattern, otherwise null.
 	 * @param colorSpace color space to use, if this is an uncoloured pattern, otherwise null.
 	 */
-//	protected final void processTilingPattern(PDTilingPattern tilingPattern, PDColor color,
-//			PDColorSpace colorSpace) throws IOException
-//	{
-//		processTilingPattern(tilingPattern, color, colorSpace, tilingPattern.getMatrix());
-//	}
+	protected final void processTilingPattern(PDTilingPattern tilingPattern, PDColor color,
+			PDColorSpace colorSpace) throws IOException
+	{
+		processTilingPattern(tilingPattern, color, colorSpace, tilingPattern.getMatrix());
+	}
 
 	/**
 	 * Process the given tiling pattern. Allows the pattern matrix to be overridden for custom
@@ -326,48 +329,48 @@ public class PDFStreamEngine
 	 * @param colorSpace color space to use, if this is an uncoloured pattern, otherwise null.
 	 * @param patternMatrix the pattern matrix, may be overridden for custom rendering.
 	 */
-//	protected final void processTilingPattern(PDTilingPattern tilingPattern, PDColor color,
-//			PDColorSpace colorSpace, Matrix patternMatrix)
-//					throws IOException
-//	{
-//		PDResources parent = pushResources(tilingPattern);
-//
-//		Matrix parentMatrix = initialMatrix;
-//		initialMatrix = Matrix.concatenate(initialMatrix, patternMatrix);
-//
-//		// save the original graphics state
-//		saveGraphicsState();
-//		
-//		// save a clean state (new clipping path, line path, etc.)
-//		RectF bbox = new RectF();
-//		tilingPattern.getBBox().transform(patternMatrix).computeBounds(bbox, true);
-//		PDRectangle rect = new PDRectangle((float)bbox.getX(), (float)bbox.getY(),
-//				(float)bbox.getWidth(), (float)bbox.getHeight());
-//		graphicsStack.push(new PDGraphicsState(rect));
-//
-//		// non-colored patterns have to be given a color
-//		if (colorSpace != null)
-//		{
-//			color = new PDColor(color.getComponents(), colorSpace);
-//			getGraphicsState().setNonStrokingColorSpace(colorSpace);
-//			getGraphicsState().setNonStrokingColor(color);
-//			getGraphicsState().setStrokingColorSpace(colorSpace);
-//			getGraphicsState().setStrokingColor(color);
-//		}
-//
-//		// transform the CTM using the stream's matrix
-//		getGraphicsState().getCurrentTransformationMatrix().concatenate(patternMatrix);
-//
-//		// clip to bounding box
-//		clipToRect(tilingPattern.getBBox());
-//
-//		processStreamOperators(tilingPattern);
-//
-//		initialMatrix = parentMatrix;
-//		restoreGraphicsState(); // restores clean state
-//		restoreGraphicsState(); // restores original state
-//		popResources(parent);
-//	}
+	protected final void processTilingPattern(PDTilingPattern tilingPattern, PDColor color,
+			PDColorSpace colorSpace, Matrix patternMatrix)
+					throws IOException
+	{
+		PDResources parent = pushResources(tilingPattern);
+
+		Matrix parentMatrix = initialMatrix;
+		initialMatrix = Matrix.concatenate(initialMatrix, patternMatrix);
+
+		// save the original graphics state
+		saveGraphicsState();
+		
+		// save a clean state (new clipping path, line path, etc.)
+		RectF bbox = new RectF();
+		tilingPattern.getBBox().transform(patternMatrix).computeBounds(bbox, true);
+		PDRectangle rect = new PDRectangle((float)bbox.left, (float)bbox.top,
+				(float)bbox.width(), (float)bbox.height());
+		graphicsStack.push(new PDGraphicsState(rect));
+
+		// non-colored patterns have to be given a color
+		if (colorSpace != null)
+		{
+			color = new PDColor(color.getComponents(), colorSpace);
+			getGraphicsState().setNonStrokingColorSpace(colorSpace);
+			getGraphicsState().setNonStrokingColor(color);
+			getGraphicsState().setStrokingColorSpace(colorSpace);
+			getGraphicsState().setStrokingColor(color);
+		}
+
+		// transform the CTM using the stream's matrix
+		getGraphicsState().getCurrentTransformationMatrix().concatenate(patternMatrix);
+
+		// clip to bounding box
+		clipToRect(tilingPattern.getBBox());
+
+		processStreamOperators(tilingPattern);
+
+		initialMatrix = parentMatrix;
+		restoreGraphicsState(); // restores clean state
+		restoreGraphicsState(); // restores original state
+		popResources(parent);
+	}
 
 	/**
 	 * Shows the given annotation.
@@ -964,7 +967,7 @@ public class PDFStreamEngine
 	public PointF transformedPoint(float x, float y)
 	{
 		float[] position = { x, y };
-		getGraphicsState().getCurrentTransformationMatrix().createAffineTransform().mapPoints(position);
+		getGraphicsState().getCurrentTransformationMatrix().createAffineTransform().transform(position, 0, position, 0, 1);
 		return new PointF(position[0], position[1]);
 	}
 

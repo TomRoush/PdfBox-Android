@@ -6,6 +6,8 @@ import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSInteger;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.graphics.PDLineDashPattern;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 
 /**
  * The Box Style specifies visual characteristics for displaying box areas.
@@ -71,20 +73,20 @@ public class PDBoxStyle implements COSObjectable
      *
      *@return The guideline color.
      */
-//    public PDColor getGuidelineColor()
-//    {
-//        COSArray colorValues = (COSArray)dictionary.getDictionaryObject( "C" );
-//        if( colorValues == null )
-//        {
-//            colorValues = new COSArray();
-//            colorValues.add( COSInteger.ZERO );
-//            colorValues.add( COSInteger.ZERO );
-//            colorValues.add( COSInteger.ZERO );
-//            dictionary.setItem( "C", colorValues );
-//        }
-//        PDColor color = new PDColor(colorValues.toFloatArray());
-//        return color;
-//    }TODO
+    public PDColor getGuidelineColor()
+    {
+        COSArray colorValues = (COSArray)dictionary.getDictionaryObject( "C" );
+        if( colorValues == null )
+        {
+            colorValues = new COSArray();
+            colorValues.add( COSInteger.ZERO );
+            colorValues.add( COSInteger.ZERO );
+            colorValues.add( COSInteger.ZERO );
+            dictionary.setItem( "C", colorValues );
+        }
+        PDColor color = new PDColor(colorValues.toFloatArray(), PDDeviceRGB.INSTANCE);
+        return color;
+    }
 
     /**
      * Set the color space instance for this box style.  This must be a
@@ -92,15 +94,15 @@ public class PDBoxStyle implements COSObjectable
      *
      * @param color The new colorspace value.
      */
-//    public void setGuideLineColor( PDColor color )
-//    {
-//        COSArray values = null;
-//        if( color != null )
-//        {
-//            values = color.toCOSArray();
-//        }
-//        dictionary.setItem( "C", values );
-//    }TODO
+    public void setGuideLineColor( PDColor color )
+    {
+        COSArray values = null;
+        if( color != null )
+        {
+            values = color.toCOSArray();
+        }
+        dictionary.setItem( "C", values );
+    }
 
     /**
      * Get the width of the of the guideline in default user space units.

@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.fontbox.encoding.Encoding;
 import org.apache.fontbox.util.BoundingBox;
+import org.apache.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.Path;
 
@@ -468,7 +469,12 @@ public class TrueTypeFont implements Type1Equivalent
 	public int nameToGID(String name) throws IOException
 	{
 		// look up in 'post' table
+		readPostScriptNames();
 		Integer gid = postScriptNames.get(name);
+		if (gid != null && gid > 0 && gid < getMaximumProfile().getNumGlyphs())
+		{
+			return gid;
+		}
 		// look up in 'cmap'
 		int uni = parseUniName(name);
 		if (uni > -1)
@@ -476,7 +482,6 @@ public class TrueTypeFont implements Type1Equivalent
 			CmapSubtable cmap = getUnicodeCmap(false);
 			return cmap.getGlyphId(uni);
 		}
-
 		return 0;
 	}
 	
@@ -514,7 +519,6 @@ public class TrueTypeFont implements Type1Equivalent
 	public Path getPath(String name) throws IOException
 	{
 		readPostScriptNames();
-
 		int gid = nameToGID(name);
 		if (gid < 0 || gid >= getMaximumProfile().getNumGlyphs())
 		{
@@ -533,9 +537,8 @@ public class TrueTypeFont implements Type1Equivalent
 
 			// scale to 1000upem, per PostScript convention
 			float scale = 1000f / getUnitsPerEm();
-			android.graphics.Matrix atScale = new android.graphics.Matrix();
-			atScale.setScale(scale, scale);
-			path.transform(atScale);
+			AffineTransform atScale = AffineTransform.getScaleInstance(scale, scale);
+			path.transform(atScale.toMatrix());
 
 			return path;
 		}

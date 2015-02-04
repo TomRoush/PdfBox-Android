@@ -4,6 +4,7 @@ import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSFloat;
 import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 
 /**
  * This is the class that represents a line annotation.
@@ -235,10 +236,10 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      *
      * @param ic color in the DeviceRGB color space.
      */
-//    public void setInteriorColor( PDColor ic )
-//    {
-//        getDictionary().setItem(COSName.IC, ic.toCOSArray() );
-//    }TODO
+    public void setInteriorColor( PDColor ic )
+    {
+    	getDictionary().setItem(COSName.IC, ic.toCOSArray() );
+    }
 
     /**
      * This will retrieve the interior color of the line endings defined in the
@@ -246,10 +247,10 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      *
      * @return object representing the color.
      */
-//    public PDColor getInteriorColor()
-//    {
-//        return getColor(COSName.IC);
-//    }TODO
+    public PDColor getInteriorColor()
+    {
+    	return getColor(COSName.IC);
+    }
 
     /**
      * This will set if the contents are shown as a caption to the line.

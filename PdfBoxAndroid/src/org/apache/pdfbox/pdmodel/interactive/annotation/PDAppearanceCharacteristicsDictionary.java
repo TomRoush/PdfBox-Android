@@ -1,11 +1,16 @@
 package org.apache.pdfbox.pdmodel.interactive.annotation;
 
+import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDStream;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 
 /**
@@ -73,40 +78,40 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
      * 
      * @return the border color.
      */
-//    public PDColor getBorderColour()
-//    {
-//    	return getColor(COSName.BC);
-//    }TODO
+    public PDColor getBorderColour()
+    {
+    	return getColor(COSName.BC);
+    }
 
     /**
      * This will set the border color.
      * 
      * @param c the border color
      */
-//    public void setBorderColour(PDColor c)
-//    {
-//        this.getDictionary().setItem(COSName.BC, c.toCOSArray());
-//    }TODO
+    public void setBorderColour(PDColor c)
+    {
+    	this.getDictionary().setItem(COSName.BC, c.toCOSArray());
+    }
 
     /**
      * This will retrieve the background color.
      * 
      * @return the background color.
      */
-//    public PDColor getBackground()
-//    {
-//    	return getColor(COSName.BG);
-//    }TODO
+    public PDColor getBackground()
+    {
+    	return getColor(COSName.BG);
+    }
 
     /**
      * This will set the background color.
      * 
      * @param c the background color
      */
-//    public void setBackground(PDColor c)
-//    {
-//        this.getDictionary().setItem(COSName.BG, c.toCOSArray());
-//    }TODO
+    public void setBackground(PDColor c)
+    {
+    	this.getDictionary().setItem(COSName.BG, c.toCOSArray());
+    }
 
     /**
      * This will retrieve the normal caption.
@@ -213,28 +218,28 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
         return null;
     }
 
-//    private PDColor getColor(COSName itemName)
-//    {
-//    	COSBase c = this.getDictionary().getItem(itemName);
-//    	if (c instanceof COSArray)
-//    	{
-//    		PDColorSpace colorSpace = null;
-//    		switch (((COSArray) c).size())
-//    		{
-//    		case 1:
-//    			colorSpace = PDDeviceGray.INSTANCE;
-//    			break;
-//    		case 3:
-//    			colorSpace = PDDeviceRGB.INSTANCE;
-//    			break;
+    private PDColor getColor(COSName itemName)
+    {
+    	COSBase c = this.getDictionary().getItem(itemName);
+    	if (c instanceof COSArray)
+    	{
+    		PDColorSpace colorSpace = null;
+    		switch (((COSArray) c).size())
+    		{
+    		case 1:
+    			colorSpace = PDDeviceGray.INSTANCE;
+    			break;
+    		case 3:
+    			colorSpace = PDDeviceRGB.INSTANCE;
+    			break;
 //    		case 4:
 //    			colorSpace = PDDeviceCMYK.INSTANCE;
-//    			break;
-//    		default:
-//    			break;
-//    		}
-//    		return new PDColor((COSArray) c, colorSpace);
-//    	}
-//    	return null;
-//    }TODO
+//    			break; TODO
+    		default:
+    			break;
+    		}
+    		return new PDColor((COSArray) c, colorSpace);
+    	}
+    	return null;
+    }
 }

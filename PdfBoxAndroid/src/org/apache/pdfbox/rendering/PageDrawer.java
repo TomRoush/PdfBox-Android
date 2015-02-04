@@ -17,6 +17,7 @@ import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1CFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImage;
 import org.apache.pdfbox.pdmodel.graphics.shading.PDShading;
@@ -29,11 +30,11 @@ import org.apache.pdfbox.rendering.font.Glyph2D;
 import org.apache.pdfbox.rendering.font.TTFGlyph2D;
 import org.apache.pdfbox.rendering.font.Type1Glyph2D;
 import org.apache.pdfbox.util.Vector;
+import org.apache.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
@@ -55,7 +56,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 	// the graphics device to draw to, xform is the initial transform of the device (i.e. DPI)
 	Paint paint;
 	Canvas canvas;
-	private Matrix xform;
+	private AffineTransform xform;
 	
 	// the page box to draw (usually the crop box but may be another)
 	PDRectangle pageSize;
@@ -107,7 +108,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 	{
 		paint = p;
 		canvas = c;
-		xform = canvas.getMatrix();
+		xform = new AffineTransform(canvas.getMatrix());
 		this.pageSize = pageSize;
 		
 		setRenderingHints();
@@ -248,10 +249,10 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     }
 
 //    @Override
-//    protected void showFontGlyph(org.apache.pdfbox.util.Matrix textRenderingMatrix, PDFont font, int code, String unicode,
+//    protected void showFontGlyph(AffineTransform textRenderingMatrix, PDFont font, int code, String unicode,
 //                                 Vector displacement) throws IOException
 //    {
-//        android.graphics.Matrix at = textRenderingMatrix.createAffineTransform();
+//        AffineTransform at = textRenderingMatrix.createAffineTransform();
 //        at.concatenate(font.getFontMatrix().createAffineTransform());
 //
 //        Glyph2D glyph2D = createGlyph2D(font);
@@ -269,7 +270,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
      * @throws IOException if something went wrong
      */
     private void drawGlyph2D(Glyph2D glyph2D, PDFont font, int code, Vector displacement,
-                             android.graphics.Matrix at) throws IOException
+                             AffineTransform at) throws IOException
     {
         PDGraphicsState state = getGraphicsState();
         RenderingMode renderingMode = state.getTextState().getRenderingMode();
@@ -285,7 +286,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
                         Math.abs(fontWidth - displacement.getX() * 1000) > 0.0001)
                 {
                     float pdfWidth = displacement.getX() * 1000;
-                    at.postScale(pdfWidth / fontWidth, 1);
+                    at.scale(pdfWidth / fontWidth, 1);
                 }
             }
 
@@ -658,14 +659,12 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     public void drawImage(PDImage pdImage) throws IOException
     {
         org.apache.pdfbox.util.Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
-        android.graphics.Matrix at = ctm.createAffineTransform();
+        AffineTransform at = ctm.createAffineTransform();
         
         if (!pdImage.getInterpolate())
         {
-        	float[] values = new float[9];
-        	at.getValues(values);
-        	boolean isScaledUp = pdImage.getWidth() < Math.round(values[Matrix.MSCALE_X]) ||
-        	pdImage.getHeight() < Math.round(values[Matrix.MSCALE_X]);
+        	boolean isScaledUp = pdImage.getWidth() < Math.round(at.getScaleX()) ||
+        			pdImage.getHeight() < Math.round(at.getScaleY());
 
         	// if the image is scaled down, we use smooth interpolation, eg PDFBOX-2364
         	// only when scaled up do we use nearest neighbour, eg PDFBOX-2302 / mori-cvpr01.pdf
@@ -680,7 +679,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         if (pdImage.isStencil())
         {
             // fill the image with paint
-//            PDColor color = getGraphicsState().getNonStrokingColor();
+            PDColor color = getGraphicsState().getNonStrokingColor();
 //            Bitmap image = pdImage.getStencilImage(getPaint(color));
 
             // draw the image
@@ -700,16 +699,16 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         }
     }
 
-    public void drawBufferedImage(Bitmap image, android.graphics.Matrix at) throws IOException
+    public void drawBufferedImage(Bitmap image, AffineTransform at) throws IOException
     {
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
         setClip();
         PDSoftMask softMask = getGraphicsState().getSoftMask();
         if( softMask != null )
         {
-            android.graphics.Matrix imageTransform = new android.graphics.Matrix(at);
-            imageTransform.postScale(1, -1);
-            imageTransform.postTranslate(0, -1);
+            AffineTransform imageTransform = new AffineTransform(at);
+            imageTransform.scale(1, -1);
+            imageTransform.translate(0, -1);
 //            Paint awtPaint = new TexturePaint(image,
 //                    new Rectangle2D.Double(imageTransform.getTranslateX(), imageTransform.getTranslateY(),
 //                            imageTransform.getScaleX(), imageTransform.getScaleY()));
@@ -722,9 +721,9 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         {
             int width = image.getWidth();
             int height = image.getHeight();
-            android.graphics.Matrix imageTransform = new android.graphics.Matrix(at);
-            imageTransform.postScale((1.0f / width), (-1.0f / height));
-            imageTransform.postTranslate(0, -height);
+            AffineTransform imageTransform = new AffineTransform(at);
+            imageTransform.scale((1.0f / width), (-1.0f / height));
+            imageTransform.translate(0, -height);
 //            graphics.drawImage(image, imageTransform, null);
         }
     }

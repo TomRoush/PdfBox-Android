@@ -420,23 +420,23 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 		{
 			// try alternative name
 			String altName = ALT_NAMES.get(name);
-					if (altName != null && !name.equals(".notdef") && type1Equivalent.hasGlyph(altName))
+			if (altName != null && !name.equals(".notdef") && type1Equivalent.hasGlyph(altName))
+			{
+				return altName;
+			}
+			else
+			{
+				// try unicode name
+				String unicodes = getGlyphList().toUnicode(name);
+				if (unicodes != null && unicodes.length() == 1)
+				{
+					String uniName = String.format("uni%04X", unicodes.codePointAt(0));
+					if (type1Equivalent.hasGlyph(uniName))
 					{
-						return altName;
+						return uniName;
 					}
-					else
-					{
-						// try unicode name
-						String unicodes = getGlyphList().toUnicode(name);
-						if (unicodes != null && unicodes.length() == 1)
-						{
-							String uniName = String.format("uni%04X", unicodes.codePointAt(0));
-							if (type1Equivalent.hasGlyph(uniName))
-							{
-								return uniName;
-							}
-						}
-					}
+				}
+			}
 		}
 		return ".notdef";
 	}

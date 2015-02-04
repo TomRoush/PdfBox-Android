@@ -12,6 +12,7 @@ import org.apache.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyLis
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDFontFactory;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
@@ -271,17 +272,17 @@ public final class PDResources implements COSObjectable
 		return add(COSName.FONT, "F", font);
 	}
 
-	//    /**
-	//     * Adds the given color space to the resources of the current page and returns the name for the
-	//     * new resources. Returns the existing resource name if the given item already exists.
-	//     *
-	//     * @param colorSpace the color space to add
-	//     * @return the name of the resource in the resources dictionary
-	//     */
-	//    public COSName add(PDColorSpace colorSpace)
-	//    {
-	//        return add(COSName.COLORSPACE, "cs", colorSpace);
-	//    }TODO
+	/**
+	 * Adds the given color space to the resources of the current page and returns the name for the
+	 * new resources. Returns the existing resource name if the given item already exists.
+	 *
+	 * @param colorSpace the color space to add
+	 * @return the name of the resource in the resources dictionary
+	 */
+	public COSName add(PDColorSpace colorSpace)
+	{
+		return add(COSName.COLORSPACE, "cs", colorSpace);
+	}
 
 	/**
 	 * Adds the given external graphics state to the resources of the current page and returns the
@@ -439,16 +440,16 @@ public final class PDResources implements COSObjectable
 		put(COSName.FONT, name, font);
 	}
 
-	//    /**
-	//     * Sets the color space resource with the given name.
-	//     *
-	//     * @param name the name of the resource
-	//     * @param colorSpace the color space to be added
-	//     */
-	//    public void put(COSName name, PDColorSpace colorSpace) throws IOException
-	//    {
-	//        put(COSName.COLORSPACE, name, colorSpace);
-	//    }TODO
+	/**
+	 * Sets the color space resource with the given name.
+	 *
+	 * @param name the name of the resource
+	 * @param colorSpace the color space to be added
+	 */
+	public void put(COSName name, PDColorSpace colorSpace) throws IOException
+	{
+		put(COSName.COLORSPACE, name, colorSpace);
+	}
 
 	/**
 	 * Sets the external graphics state resource with the given name.

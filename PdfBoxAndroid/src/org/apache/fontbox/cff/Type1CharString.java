@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.encoding.StandardEncoding;
 import org.apache.fontbox.type1.Type1CharStringReader;
+import org.apache.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.Path;
 import android.graphics.PointF;
@@ -440,8 +441,7 @@ public class Type1CharString
 			try
 			{
 				Type1CharString accent = font.getType1CharString(accentName);
-				android.graphics.Matrix at = new android.graphics.Matrix();
-				at.setTranslate(
+				AffineTransform at = AffineTransform.getTranslateInstance(
 						leftSideBearing.x + adx.floatValue(),
 						leftSideBearing.y + ady.floatValue());
 //				path.append(accent.getPath().getPathIterator(at), false); TODO: Check this

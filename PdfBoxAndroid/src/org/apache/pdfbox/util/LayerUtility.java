@@ -22,6 +22,7 @@ import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
+import org.apache.pdfbox.util.awt.AffineTransform;
 
 /**
  * This class allows to import pages as Form XObjects into a PDF file and use them to create
@@ -145,7 +146,7 @@ public class LayerUtility
 		transferDict(page.getCOSObject(), form.getCOSStream(), PAGE_TO_FORM_FILTER, true);
 
 		Matrix matrix = form.getMatrix();
-		android.graphics.Matrix at = matrix.createAffineTransform();
+		AffineTransform at = matrix.createAffineTransform();
 		PDRectangle mediaBox = page.getMediaBox();
 		PDRectangle cropBox = page.getCropBox();
 		PDRectangle viewBox = (cropBox != null ? cropBox : mediaBox);
@@ -155,28 +156,28 @@ public class LayerUtility
 
 		//Transform to FOP's user space
 		//at.scale(1 / viewBox.getWidth(), 1 / viewBox.getHeight());
-		at.setTranslate(mediaBox.getLowerLeftX() - viewBox.getLowerLeftX(),
+		at.translate(mediaBox.getLowerLeftX() - viewBox.getLowerLeftX(),
 				mediaBox.getLowerLeftY() - viewBox.getLowerLeftY());
 		switch (rotation)
 		{
 		case 90:
-			at.setScale(viewBox.getWidth() / viewBox.getHeight(), viewBox.getHeight() / viewBox.getWidth());
-			at.setTranslate(0, viewBox.getWidth());
-			at.setRotate((float)(-Math.PI / 2.0));
+			at.scale(viewBox.getWidth() / viewBox.getHeight(), viewBox.getHeight() / viewBox.getWidth());
+			at.translate(0, viewBox.getWidth());
+			at.rotate((float)(-Math.PI / 2.0));
 			break;
 		case 180:
-			at.setTranslate(viewBox.getWidth(), viewBox.getHeight());
-			at.setRotate((float)-Math.PI);
+			at.translate(viewBox.getWidth(), viewBox.getHeight());
+			at.rotate((float)-Math.PI);
 			break;
 		case 270:
-			at.setScale(viewBox.getWidth() / viewBox.getHeight(), viewBox.getHeight() / viewBox.getWidth());
-			at.setTranslate(viewBox.getHeight(), 0);
-			at.setRotate((float)(-Math.PI * 1.5));
+			at.scale(viewBox.getWidth() / viewBox.getHeight(), viewBox.getHeight() / viewBox.getWidth());
+			at.translate(viewBox.getHeight(), 0);
+			at.rotate((float)(-Math.PI * 1.5));
 		default:
 			//no additional transformations necessary
 		}
 		//Compensate for Crop Boxes not starting at 0,0
-		at.setTranslate(-viewBox.getLowerLeftX(), -viewBox.getLowerLeftY());
+		at.translate(-viewBox.getLowerLeftX(), -viewBox.getLowerLeftY());
 		if (!at.isIdentity())
 		{
 			form.setMatrix(at);
@@ -205,7 +206,7 @@ public class LayerUtility
 	 * @throws IOException if an I/O error occurs
 	 */
 	public PDOptionalContentGroup appendFormAsLayer(PDPage targetPage,
-			PDFormXObject form, android.graphics.Matrix transform,
+			PDFormXObject form, AffineTransform transform,
 			String layerName) throws IOException
 	{
 		PDDocumentCatalog catalog = targetDoc.getDocumentCatalog();

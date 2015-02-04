@@ -4,6 +4,7 @@ import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 /**
  * Transparency group.
@@ -14,7 +15,7 @@ public final class PDGroup implements COSObjectable
 {
     private COSDictionary dictionary;
     private COSName subType;
-//    private PDColorSpace colorSpace;TODO
+    private PDColorSpace colorSpace;
 
     /**
      * Creates a group object from a given dictionary
@@ -60,7 +61,7 @@ public final class PDGroup implements COSObjectable
 //                    COSName.COLORSPACE));
 //        }
 //        return colorSpace;
-//    }TODO
+//    }
 
     /**
      * Returns true if this group is isolated. Isolated groups begin with the fully transparent

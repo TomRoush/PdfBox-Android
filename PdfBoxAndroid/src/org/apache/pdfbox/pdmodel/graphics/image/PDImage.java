@@ -64,7 +64,7 @@ public interface PDImage extends COSObjectable
      * Returns the image's color space.
      * @throws IOException If there is an error getting the color space.
      */
-//    PDColorSpace getColorSpace() throws IOException;TODO
+//    PDColorSpace getColorSpace() throws IOException;
 
     /**
      * Sets the color space for this image.
