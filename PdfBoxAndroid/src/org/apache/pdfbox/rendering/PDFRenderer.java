@@ -15,7 +15,7 @@ import android.graphics.Paint;
  * Renders a PDF document to an AWT BufferedImage.
  * This class may be overridden in order to perform custom rendering.
  * @author John Hewson
- * @author Andreas Lehmkühler
+ * @author Andreas LehmkÃ¼hler
  *
  */
 public class PDFRenderer
@@ -40,17 +40,18 @@ public class PDFRenderer
 	 */
 	public Bitmap renderImage(int pageIndex) throws IOException
 	{
-		return renderImage(pageIndex, 1);
+		return renderImage(pageIndex, 1, Bitmap.Config.ARGB_8888);
 	}
 	
 	/**
 	 * Returns the given page as an RGB image at the given scale.
 	 * @param pageIndex the zero-based index of the page to be converted
 	 * @param scale the scaling factor, where 1 = 72 DPI
+     * @param config the bitmap config to create
 	 * @return the rendered page image
 	 * @throws IOException if the PDF cannot be read
 	 */
-	public Bitmap renderImage(int pageIndex, float scale) throws IOException
+	public Bitmap renderImage(int pageIndex, float scale, Bitmap.Config config) throws IOException
 	{
 		PDPage page = document.getPage(pageIndex);
 
@@ -65,26 +66,25 @@ public class PDFRenderer
         Bitmap image;
         if (rotationAngle == 90 || rotationAngle == 270)
         {
-            image = Bitmap.createBitmap(heightPx, widthPx, Bitmap.Config.RGB_565);
+            image = Bitmap.createBitmap(heightPx, widthPx, config);
         }
         else
         {
-            image = Bitmap.createBitmap(widthPx, heightPx, Bitmap.Config.RGB_565);
+            image = Bitmap.createBitmap(widthPx, heightPx, config);
         }
 
         // use a transparent background if the imageType supports alpha
-//        Graphics2D g = image.createGraphics();
         Paint paint = new Paint();
         Canvas canvas = new Canvas(image);
-//        if (imageType != Bitmap.Config.ARGB_8888)
-//        {
+        if (config != Bitmap.Config.ARGB_8888)
+        {
             paint.setColor(Color.WHITE);
             paint.setStyle(Paint.Style.FILL);
             canvas.drawRect(0, 0, image.getWidth(), image.getHeight(), paint);
-//        }
+            paint.reset();
+        }
 
         renderPage(page, paint, canvas, image.getWidth(), image.getHeight(), scale, scale);
-//        g.dispose();
 
         return image;
 	}
@@ -93,8 +93,6 @@ public class PDFRenderer
     private void renderPage(PDPage page, Paint paint, Canvas canvas, int width, int height, float scaleX,
                             float scaleY) throws IOException
     {
-//        graphics.clearRect(0, 0, width, height);
-
         canvas.scale(scaleX, scaleY);
         // TODO should we be passing the scale to PageDrawer rather than messing with Graphics?
 
