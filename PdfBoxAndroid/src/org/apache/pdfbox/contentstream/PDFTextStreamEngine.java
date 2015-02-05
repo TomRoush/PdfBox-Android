@@ -3,8 +3,6 @@ package org.apache.pdfbox.contentstream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.contentstream.operator.DrawObject;
 import org.apache.pdfbox.contentstream.operator.state.Concatenate;
 import org.apache.pdfbox.contentstream.operator.state.Restore;
@@ -38,6 +36,8 @@ import org.apache.pdfbox.text.TextPosition;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.pdfbox.util.Vector;
 
+import android.util.Log;
+
 /**
  * PDFStreamEngine subclass for advanced processing of text via TextPosition.
  *
@@ -47,8 +47,6 @@ import org.apache.pdfbox.util.Vector;
  */
 public class PDFTextStreamEngine extends PDFStreamEngine
 {
-	private static final Log log = LogFactory.getLog(PDFTextStreamEngine.class);
-
 	private int pageRotation;
 	private PDRectangle pageSize;
 	private GlyphList glyphList;
@@ -179,7 +177,7 @@ public class PDFTextStreamEngine extends PDFStreamEngine
 		}
 		catch (Throwable exception)
 		{
-			log.warn(exception, exception);
+			Log.w("PdfBoxAndroid", exception.getMessage(), exception);
 		}
 
 		if (spaceWidthText == 0)

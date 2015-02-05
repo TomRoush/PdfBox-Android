@@ -23,8 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import android.util.Log;
 
 /**
  * A "cmap" subtable.
@@ -33,8 +32,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CmapSubtable
 {
-	private static final Log LOG = LogFactory.getLog(CmapSubtable.class);
-
 	private static final long LEAD_OFFSET = 0xD800 - (0x10000 >> 10);
 	private static final long SURROGATE_OFFSET = 0x10000 - (0xD800 << 10) - 0xDC00;
 
@@ -255,7 +252,7 @@ public class CmapSubtable
 
 				if (firstCode + j > 0x10FFFF)
 				{
-					LOG.warn("Format 12 cmap contains character beyond UCS-4");
+					Log.w("PdfBoxAndroid", "Format 12 cmap contains character beyond UCS-4");
 				}
 				glyphIdToCharacterCode[(int) glyphIndex] = (int) (firstCode + j);
 				characterCodeToGlyphId.put((int) (firstCode + j), (int) glyphIndex);
@@ -281,7 +278,7 @@ public class CmapSubtable
 
 			if (glyphId > numGlyphs)
 			{
-				LOG.warn("Format 13 cmap contains an invalid glyph index");
+				Log.w("PdfBoxAndroid", "Format 13 cmap contains an invalid glyph index");
 				break;
 			}
 
@@ -306,7 +303,7 @@ public class CmapSubtable
 				
 				if (firstCode + j > 0x10FFFF)
 				{
-					LOG.warn("Format 13 cmap contains character beyond UCS-4");
+					Log.w("PdfBoxAndroid", "Format 13 cmap contains character beyond UCS-4");
 				}
 				
 				glyphIdToCharacterCode[(int) glyphId] = (int) (firstCode + j);
@@ -326,7 +323,7 @@ public class CmapSubtable
 	{
 		// Unicode Variation Sequences (UVS)
 		// see http://blogs.adobe.com/CCJKType/2013/05/opentype-cmap-table-ramblings.html
-		LOG.warn("Format 14 cmap table is not supported and will be ignored");
+		Log.w("PdfBoxAndroid", "Format 14 cmap table is not supported and will be ignored");
 	}
 
 	/**
@@ -417,7 +414,7 @@ public class CmapSubtable
 		 */
 		 if (tmpGlyphToChar.isEmpty())
 		 {
-			 LOG.warn("cmap format 4 subtable is empty");
+			 Log.w("PdfBoxAndroid", "cmap format 4 subtable is empty");
 			 return;
 		 }
 		 glyphIdToCharacterCode = newGlyphIdToCharacterCode(Collections.max(tmpGlyphToChar.keySet()) + 1);

@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSDocument;
@@ -17,10 +15,10 @@ import org.apache.pdfbox.io.PushBackInputStream;
 import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
 import org.apache.pdfbox.pdmodel.fdf.FDFDocument;
 
+import android.util.Log;
+
 public class FDFParser extends COSParser
 {
-    private static final Log LOG = LogFactory.getLog(FDFParser.class);
-
     private final RandomAccessBufferedFileInputStream raStream;
 
     private static final InputStream EMPTY_INPUT_STREAM = new ByteArrayInputStream(new byte[0]);
@@ -81,8 +79,8 @@ public class FDFParser extends COSParser
             }
             catch (NumberFormatException nfe)
             {
-                LOG.warn("System property " + SYSPROP_EOFLOOKUPRANGE
-                        + " does not contain an integer value, but: '" + eofLookupRangeStr + "'");
+            	Log.w("PdfBoxAndroid", "System property " + SYSPROP_EOFLOOKUPRANGE
+            			+ " does not contain an integer value, but: '" + eofLookupRangeStr + "'");
             }
         }
         document = new COSDocument(false);
@@ -205,12 +203,12 @@ public class FDFParser extends COSParser
             {
                 if (!tempPDFFile.delete())
                 {
-                    LOG.warn("Temporary file '" + tempPDFFile.getName() + "' can't be deleted");
+                	Log.w("PdfBoxAndroid", "Temporary file '" + tempPDFFile.getName() + "' can't be deleted");
                 }
             }
             catch (SecurityException e)
             {
-                LOG.warn("Temporary file '" + tempPDFFile.getName() + "' can't be deleted", e);
+            	Log.w("PdfBoxAndroid", "Temporary file '" + tempPDFFile.getName() + "' can't be deleted", e);
             }
         }
     }

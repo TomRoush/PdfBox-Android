@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.contentstream.operator.MissingOperandException;
 import org.apache.pdfbox.contentstream.operator.Operator;
 import org.apache.pdfbox.contentstream.operator.OperatorProcessor;
@@ -62,6 +60,7 @@ import org.apache.pdfbox.util.Vector;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
+import android.util.Log;
 
 /**
  * Processes a PDF content stream and executes certain operations.
@@ -71,8 +70,6 @@ import android.graphics.RectF;
  */
 public class PDFStreamEngine
 {
-	private static final Log LOG = LogFactory.getLog(PDFStreamEngine.class);
-
 	private final Map<String, OperatorProcessor> operators = new HashMap<String, OperatorProcessor>();
 
 	private Matrix textMatrix;
@@ -638,7 +635,7 @@ public class PDFStreamEngine
 		PDFont font = textState.getFont();
 		if (font == null)
 		{
-			LOG.warn("No current font, will use default");
+			Log.w("PdfBoxAndroid", "No current font, will use default");
 			font = PDFontFactory.createDefaultFont();
 		}
 
@@ -840,17 +837,17 @@ public class PDFStreamEngine
 				e instanceof MissingResourceException ||
 				e instanceof MissingImageReaderException)
 		{
-			LOG.error(e.getMessage());
+			Log.e("PdfBoxAndroid", e.getMessage());
 		}
 		else if (e instanceof EmptyGraphicsStackException)
 		{
-			LOG.warn(e.getMessage());
+			Log.w("PdfBoxAndroid", e.getMessage());
 		}
 		else if (operator.getName().equals("Do"))
 		{
 			// todo: this too forgiving, but PDFBox has always worked this way for DrawObject
 			// some careful refactoring is needed
-			LOG.warn(e.getMessage());
+			Log.w("PdfBoxAndroid", e.getMessage());
 		}
 		else
 		{
@@ -930,7 +927,7 @@ public class PDFStreamEngine
 	{
 		if (phase < 0)
 		{
-			LOG.warn("Dash phase has negative value " + phase + ", set to 0");
+			Log.w("PdfBoxAndroid", "Dash phase has negative value " + phase + ", set to 0");
 			phase = 0;
 		}
 		PDLineDashPattern lineDash = new PDLineDashPattern(array, phase);

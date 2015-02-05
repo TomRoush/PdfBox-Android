@@ -9,8 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.contentstream.operator.Operator;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSBoolean;
@@ -22,6 +20,8 @@ import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 
+import android.util.Log;
+
 /**
  * This will parse a PDF byte stream and extract operands and such.
  *
@@ -29,11 +29,6 @@ import org.apache.pdfbox.pdmodel.common.PDStream;
  */
 public class PDFStreamParser extends BaseParser
 {
-	/**
-	 * Log instance.
-	 */
-	private static final Log LOG = LogFactory.getLog(PDFStreamParser.class);
-
 	private final List<Object> streamObjects = new ArrayList<Object>( 100 );
 
 	private static final int    MAX_BIN_CHAR_TEST_LENGTH = 10;
@@ -436,7 +431,7 @@ public class PDFStreamParser extends BaseParser
 
 		if (!noBinData)
 		{
-			LOG.warn("ignoring 'EI' assumed to be in the middle of inline image");
+			Log.w("PdfBoxAndroid", "ignoring 'EI' assumed to be in the middle of inline image");
 		}
 
 		return noBinData;

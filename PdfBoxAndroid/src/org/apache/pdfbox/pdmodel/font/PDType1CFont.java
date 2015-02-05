@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.cff.CFFParser;
 import org.apache.fontbox.cff.CFFType1Font;
 import org.apache.fontbox.ttf.Type1Equivalent;
@@ -23,6 +21,7 @@ import org.apache.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.util.Log;
 
 /**
  * Type 1-equivalent CFF font.
@@ -32,8 +31,6 @@ import android.graphics.PointF;
  */
 public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 {
-	private static final Log LOG = LogFactory.getLog(PDType1CFont.class);
-
 	private final Map<String, Float> glyphHeights = new HashMap<String, Float>();
 	private Float avgWidth = null;
 	private Matrix fontMatrix;
@@ -64,7 +61,7 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 				bytes = IOUtils.toByteArray(ff3Stream.createInputStream());
 				if (bytes.length == 0)
 				{
-					LOG.error("Invalid data for embedded Type1C font " + getName());
+					Log.e("PdfBoxAndroid", "Invalid data for embedded Type1C font " + getName());
 					bytes = null;
 				}
 			}
@@ -83,7 +80,7 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 		}
 		catch (IOException e)
 		{
-			LOG.error("Can't read the embedded Type1C font " + getName(), e);
+			Log.e("PdfBoxAndroid", "Can't read the embedded Type1C font " + getName(), e);
 			fontIsDamaged = true;
 		}
 		isDamaged = fontIsDamaged;
@@ -104,7 +101,7 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 			else
 			{
 				type1Equivalent = ExternalFonts.getType1FallbackFont(getFontDescriptor());
-				LOG.warn("Using fallback font " + type1Equivalent.getName() + " for " + getBaseFont());
+				Log.w("PdfBoxAndroid", "Using fallback font " + type1Equivalent.getName() + " for " + getBaseFont());
 			}
 			isEmbedded = false;
 		}
@@ -219,18 +216,18 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 		return isEmbedded;
 	}
 
-	//    @Override
-	//    public float getHeight(int code) throws IOException
-	//    {
-	//        String name = codeToName(code);
-	//        float height = 0;
-	//        if (!glyphHeights.containsKey(name))
-	//        {
-	//            height = (float)cffFont.getType1CharString(name).getBounds().getHeight(); // todo: cffFont could be null
-	//            glyphHeights.put(name, height);
-	//        }
-	//        return height;
-	//    }TODO
+	@Override
+	public float getHeight(int code) throws IOException
+	{
+		String name = codeToName(code);
+		float height = 0;
+		if (!glyphHeights.containsKey(name))
+		{
+			height = (float)cffFont.getType1CharString(name).getBounds().height(); // todo: cffFont could be null
+			glyphHeights.put(name, height);
+		}
+		return height;
+	}
 	
 	@Override
 	protected byte[] encode(int unicode) throws IOException

@@ -2,8 +2,6 @@ package org.apache.pdfbox.pdmodel.graphics.state;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -12,6 +10,8 @@ import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.function.PDFunction;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
+
+import android.util.Log;
 
 /**
  * Soft mask.
@@ -35,7 +35,7 @@ public final class PDSoftMask implements COSObjectable
             }
             else
             {
-                LOG.warn("Invalid SMask " + dictionary);
+            	Log.w("PdfBoxAndroid", "Invalid SMask " + dictionary);
                 return null;
             }
         }
@@ -45,12 +45,10 @@ public final class PDSoftMask implements COSObjectable
         }
         else
         {
-            LOG.warn("Invalid SMask " + dictionary);
+        	Log.w("PdfBoxAndroid", "Invalid SMask " + dictionary);
             return null;
         }
     }
-
-    private static final Log LOG = LogFactory.getLog(PDSoftMask.class);
 
     private COSDictionary dictionary;
     private COSName subType = null;

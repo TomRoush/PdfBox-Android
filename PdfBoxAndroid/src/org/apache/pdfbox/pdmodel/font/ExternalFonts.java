@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.cff.CFFCIDFont;
 import org.apache.fontbox.cff.CFFFont;
 import org.apache.fontbox.cff.CFFParser;
@@ -21,6 +19,8 @@ import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.fontbox.ttf.Type1Equivalent;
 import org.apache.fontbox.type1.Type1Font;
 import org.apache.pdfbox.io.IOUtils;
+
+import android.util.Log;
 
 /**
  * External font service, locates non-embedded fonts via a pluggable FontProvider.
@@ -37,7 +37,6 @@ public final class ExternalFonts
 		private static final FontProvider INSTANCE = new FileSystemFontProvider();
 	}
 
-	private static final Log log = LogFactory.getLog(ExternalFonts.class);
 	private static FontProvider fontProvider;
 
 	/** fallback fonts, used as as a last resort */
@@ -242,7 +241,7 @@ public final class ExternalFonts
 		if (type1Equivalent == null)
 		{
 			// only systems with no fonts should reach this point, so we return a basic fallback
-			log.error("No fallback font for '" + fontName + "'");
+			Log.e("PdfBoxAndroid", "No fallback font for '" + fontName + "'");
 			return ttfFallbackFont;
 		}
 		return type1Equivalent;
@@ -259,7 +258,7 @@ public final class ExternalFonts
 		if (ttf == null)
 		{
 			// we have to return something here as TTFs aren't strictly required on the system
-			log.error("No TTF fallback font for '" + fontName + "'");
+			Log.e("PdfBoxAndroid", "No TTF fallback font for '" + fontName + "'");
 			return ttfFallbackFont;
 		}
 		return ttf;

@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.ttf.Type1Equivalent;
 import org.apache.fontbox.type1.DamagedFontException;
 import org.apache.fontbox.type1.Type1Font;
@@ -27,6 +25,7 @@ import org.apache.pdfbox.util.Matrix;
 
 import android.graphics.Path;
 import android.graphics.RectF;
+import android.util.Log;
 
 /**
  * A PostScript Type 1 Font.
@@ -35,8 +34,6 @@ import android.graphics.RectF;
  */
 public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 {
-	private static final Log LOG = LogFactory.getLog(PDType1Font.class);
-
 	// alternative names for glyphs which are commonly encountered
 	private static final Map<String, String> ALT_NAMES = new HashMap<String, String>();
 	static
@@ -171,12 +168,12 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 				}
 				catch (DamagedFontException e)
 				{
-					LOG.warn("Can't read damaged embedded Type1 font " + fd.getFontName());
+					Log.w("PdfBoxAndroid", "Can't read damaged embedded Type1 font " + fd.getFontName());
 					fontIsDamaged = true;
 				}
 				catch (IOException e)
 				{
-					LOG.error("Can't read the embedded Type1 font " + fd.getFontName(), e);
+					Log.e("PdfBoxAndroid", "Can't read the embedded Type1 font " + fd.getFontName(), e);
 					fontIsDamaged = true;
 				}
 			}
@@ -207,7 +204,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 			else
 			{
 				type1Equivalent = ExternalFonts.getType1FallbackFont(getFontDescriptor());
-				LOG.warn("Using fallback font " + type1Equivalent.getName() + " for " + getBaseFont());
+				Log.w("PdfBoxAndroid", "Using fallback font " + type1Equivalent.getName() + " for " + getBaseFont());
 			}
 		}
 		readEncoding();
@@ -245,7 +242,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 
 		if (length1 - offset != 0 && offset > 0)
 		{
-			LOG.warn("Ignored invalid Length1 for Type 1 font " + getName());
+			Log.w("PdfBoxAndroid", "Ignored invalid Length1 for Type 1 font " + getName());
 			return offset;
 		}
 
@@ -260,7 +257,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 		return dict.getNameAsString(COSName.BASE_FONT);
 	}
 
-	//    @Override
+	//    @Override TODO
 	public float getHeight(int code) throws IOException
 	{
 		String name = codeToName(code);

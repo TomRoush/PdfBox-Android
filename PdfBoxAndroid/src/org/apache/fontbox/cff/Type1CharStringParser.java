@@ -16,13 +16,12 @@
  */
 package org.apache.fontbox.cff;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+
+import android.util.Log;
 
 /**
  * This class represents a converter for a mapping into a Type 1 sequence.
@@ -34,8 +33,6 @@ import java.util.Stack;
  */
 public class Type1CharStringParser
 {
-    private static final Log LOG = LogFactory.getLog(Type1CharStringParser.class);
-
     // 1-byte commands
     static final int RETURN = 11;
     static final int CALLSUBR = 10;
@@ -145,7 +142,7 @@ public class Type1CharStringParser
 
                 if (results.size() > 0)
                 {
-                    LOG.warn("Value left on the PostScript stack in glyph " + glyphName + " of font " + fontName);
+                	Log.w("PdfBoxAndroid", "Value left on the PostScript stack in glyph " + glyphName + " of font " + fontName);
                 }
             }
             else if (b0 >= 0 && b0 <= 31)

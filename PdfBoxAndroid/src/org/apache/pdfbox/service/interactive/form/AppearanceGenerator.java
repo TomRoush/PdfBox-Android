@@ -18,11 +18,11 @@ package org.apache.pdfbox.service.interactive.form;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.pdmodel.common.PDTextStream;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDVariableText;
+
+import android.util.Log;
 
 /**
  * (Re-) Generate the appearance for a field.
@@ -33,9 +33,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDVariableText;
 
 public final class AppearanceGenerator
 {
-
-	private static final Log LOG = LogFactory.getLog(AppearanceGenerator.class);
-
 	private AppearanceGenerator()
 	{
 	}
@@ -70,7 +67,7 @@ public final class AppearanceGenerator
 				}
 				catch (IOException e)
 				{
-					LOG.debug("Unable to generate the field appearance.", e);
+					Log.d("PdfBoxAndroid", "Unable to generate the field appearance.", e);
 				}
 			}
 			else if (fieldValue instanceof PDTextStream)
@@ -81,19 +78,19 @@ public final class AppearanceGenerator
 				}
 				catch (IOException e)
 				{
-					LOG.debug("Unable to generate the field appearance.", e);
+					Log.d("PdfBoxAndroid", "Unable to generate the field appearance.", e);
 				}
 			}
 			else if (fieldValue != null)
 			{
-				LOG.debug("Can't generate the appearance for values typed "
+				Log.d("PdfBoxAndroid", "Can't generate the appearance for values typed "
 						+ fieldValue.getClass().getName() + ".");
 			}
 		}
 		// TODO: implement the handling for additional field types
 		else
 		{
-			LOG.debug("Unable to generate the field appearance.");
+			Log.d("PdfBoxAndroid", "Unable to generate the field appearance.");
 		}
 	}
 }

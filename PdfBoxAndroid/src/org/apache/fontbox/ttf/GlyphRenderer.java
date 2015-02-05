@@ -16,10 +16,8 @@
  */
 package org.apache.fontbox.ttf;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import android.graphics.Path;
+import android.util.Log;
 
 /**
  * This class provides a glyph to GeneralPath conversion for true type fonts.
@@ -29,8 +27,6 @@ import android.graphics.Path;
  */
 class GlyphRenderer
 {
-    private static final Log LOG = LogFactory.getLog(GlyphRenderer.class);
-
     private GlyphDescription glyphDescription;
 
     public GlyphRenderer(GlyphDescription glyphDescription) {
@@ -203,7 +199,7 @@ class GlyphRenderer
                 i++;
                 continue;
             }
-            LOG.error("Unknown glyph command!!");
+            Log.e("PdfBoxAndroid", "Unknown glyph command!!");
             break;
         }
         return path;
@@ -212,38 +208,26 @@ class GlyphRenderer
     private void closePath(Path path)
     {
         path.close();
-        if (LOG.isDebugEnabled())
-        {
-            LOG.trace("closePath");
-        }
+        Log.v("PdfBoxAndroid", "closePath");
     }
 
     private void moveTo(Path path, Point point)
     {
         path.moveTo(point.x, point.y);
-        if (LOG.isDebugEnabled())
-        {
-            LOG.trace("moveTo: " + String.format("%d,%d", point.x, point.y));
-        }
+        Log.v("PdfBoxAndroid", "moveTo: " + String.format("%d,%d", point.x, point.y));
     }
 
     private void lineTo(Path path, Point point)
     {
         path.lineTo(point.x, point.y);
-        if (LOG.isDebugEnabled())
-        {
-            LOG.trace("lineTo: " + String.format("%d,%d", point.x, point.y));
-        }
+        Log.v("PdfBoxAndroid", "lineTo: " + String.format("%d,%d", point.x, point.y));
     }
 
     private void quadTo(Path path, Point ctrlPoint, Point point)
     {
         path.quadTo(ctrlPoint.x, ctrlPoint.y, point.x, point.y);
-        if (LOG.isDebugEnabled())
-        {
-            LOG.trace("quadTo: " + String.format("%d,%d %d,%d", ctrlPoint.x, ctrlPoint.y,
+        Log.v("PdfBoxAndroid", "quadTo: " + String.format("%d,%d %d,%d", ctrlPoint.x, ctrlPoint.y,
                     point.x, point.y));
-        }
     }
 
     private int midValue(int a, int b)

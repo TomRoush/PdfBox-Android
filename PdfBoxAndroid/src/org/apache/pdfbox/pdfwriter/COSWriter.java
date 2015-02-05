@@ -22,8 +22,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSBoolean;
@@ -47,6 +45,8 @@ import org.apache.pdfbox.persistence.util.COSObjectKey;
 import org.apache.pdfbox.util.Charsets;
 import org.apache.pdfbox.util.Hex;
 
+import android.util.Log;
+
 /**
  * This class acts on a in-memory representation of a PDF document.
  *
@@ -55,8 +55,6 @@ import org.apache.pdfbox.util.Hex;
  */
 public class COSWriter implements ICOSVisitor, Closeable
 {
-	private static final Log LOG = LogFactory.getLog(COSWriter.class);
-
 	/**
 	 * The dictionary open token.
 	 */
@@ -262,7 +260,7 @@ public class COSWriter implements ICOSVisitor, Closeable
 		}
 		catch (IOException e)
 		{
-			LOG.error(e,e);
+			Log.e("PdfBoxAndroid", e.getMessage(),e);
 		}
 	}
 

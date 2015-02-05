@@ -7,13 +7,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
+
+import android.util.Log;
 
 /**
  * This class represents a PDF Name tree.  See the PDF Reference 1.5 section 3.8.5
@@ -24,7 +24,6 @@ import org.apache.pdfbox.cos.COSString;
  */
 public class PDNameTreeNode implements COSObjectable
 {
-    private static final Log LOG = LogFactory.getLog(PDNameTreeNode.class);
     private final COSDictionary node;
     private Class<? extends COSObjectable> valueType = null;
     private PDNameTreeNode parent = null;
@@ -195,7 +194,7 @@ public class PDNameTreeNode implements COSObjectable
                 catch (IOException exception)
                 {
                     node.setItem(COSName.LIMITS, null);
-                    LOG.error("Error while calculating the Limits of a PageNameTreeNode:", exception);
+                    Log.e("PdfBoxAndroid", "Error while calculating the Limits of a PageNameTreeNode:", exception);
                 }
             }
         }
@@ -234,7 +233,7 @@ public class PDNameTreeNode implements COSObjectable
             }
             else
             {
-                LOG.warn("NameTreeNode does not have \"names\" nor \"kids\" objects.");
+            	Log.e("PdfBoxAndroid", "NameTreeNode does not have \"names\" nor \"kids\" objects.");
             }
         }
         return retval;

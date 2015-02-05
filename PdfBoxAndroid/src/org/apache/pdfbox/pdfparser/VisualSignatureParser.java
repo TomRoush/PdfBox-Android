@@ -3,8 +3,6 @@ package org.apache.pdfbox.pdfparser;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSDocument;
@@ -12,14 +10,10 @@ import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.pdfwriter.COSWriter;
 import org.apache.pdfbox.persistence.util.COSObjectKey;
 
+import android.util.Log;
+
 public class VisualSignatureParser extends BaseParser 
 {
-
-    /**
-     * Log instance.
-     */
-    private static final Log LOG = LogFactory.getLog(VisualSignatureParser.class);
-
     /**
      * Constructor.
      * 
@@ -57,7 +51,7 @@ public class VisualSignatureParser extends BaseParser
                 } 
                 catch(IOException e) 
                 {
-                    LOG.warn("Parsing Error, Skipping Object", e);
+                	Log.w("PdfBoxAndroid", "Parsing Error, Skipping Object", e);
                     skipToNextObj();
                 }
                 skipSpaces();

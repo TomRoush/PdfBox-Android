@@ -9,10 +9,10 @@ import java.util.zip.DataFormatException;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
+
+import android.util.Log;
 
 /**
  * Decompresses data encoded using the zlib/deflate compression method,
@@ -23,7 +23,6 @@ import org.apache.pdfbox.cos.COSName;
  */
 final class FlateFilter extends Filter
 {
-    private static final Log LOG = LogFactory.getLog(FlateFilter.class);
     private static final int BUFFER_SIZE = 16348;
 
     @Override
@@ -61,7 +60,7 @@ final class FlateFilter extends Filter
         catch (DataFormatException e)
         {
             // if the stream is corrupt a DataFormatException may occur
-            LOG.error("FlateFilter: stop reading corrupt stream due to a DataFormatException");
+        	Log.e("PdfBoxAndroid", "FlateFilter: stop reading corrupt stream due to a DataFormatException");
 
             // re-throw the exception
             throw new IOException(e);

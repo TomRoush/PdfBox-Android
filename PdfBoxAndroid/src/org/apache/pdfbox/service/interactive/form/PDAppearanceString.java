@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.contentstream.operator.Operator;
 import org.apache.pdfbox.cos.COSFloat;
 import org.apache.pdfbox.cos.COSName;
@@ -34,6 +32,8 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDVariableText;
 
+import android.util.Log;
+
 /**
  * A default appearance string contains any graphics state or text state operators needed to
  * establish the graphics state parameters, such as text size and colour, for displaying the field's
@@ -44,8 +44,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDVariableText;
  */
 public final class PDAppearanceString
 {
-	private static final Log LOG = LogFactory.getLog(PDAppearanceString.class);
-
 	private final PDVariableText parent;
 
 	private String value;
@@ -325,7 +323,7 @@ public final class PDAppearanceString
 		{
 			// Unknown quadding value - default to left
 			printWriter.println(paddingLeft + " " + verticalOffset + " Td");
-			LOG.debug("Unknown justification value, defaulting to left: " + q);
+			Log.d("PdfBoxAndroid", "Unknown justification value, defaulting to left: " + q);
 		}
 
 		printWriter.println(leftOffset + " " + verticalOffset + " Td");

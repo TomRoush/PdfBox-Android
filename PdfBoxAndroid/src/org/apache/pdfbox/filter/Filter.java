@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
+
+import android.util.Log;
 
 /**
  * A filter for stream data.
@@ -19,8 +19,6 @@ import org.apache.pdfbox.cos.COSName;
  */
 public abstract class Filter
 {
-    private static final Log LOG = LogFactory.getLog(Filter.class);
-
     protected Filter()
     {
     }
@@ -74,7 +72,7 @@ public abstract class Filter
         }
         else if (obj != null)
         {
-            LOG.error("Expected DecodeParams to be an Array or Dictionary but found " +
+        	Log.e("PdfBoxAndroid", "Expected DecodeParams to be an Array or Dictionary but found " +
                       obj.getClass().getName());
         }
         return new COSDictionary();

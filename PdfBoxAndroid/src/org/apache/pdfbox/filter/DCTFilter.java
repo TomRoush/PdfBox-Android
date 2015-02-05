@@ -20,10 +20,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.io.IOUtils;
+
+import android.util.Log;
 
 /**
  * Decompresses data encoded using a DCT (discrete cosine transform)
@@ -33,8 +33,6 @@ import org.apache.pdfbox.io.IOUtils;
  */
 final class DCTFilter extends Filter
 {
-    private static final Log LOG = LogFactory.getLog(DCTFilter.class);
-
     @Override
     public final DecodeResult decode(InputStream encoded, OutputStream decoded,
                                          COSDictionary parameters, int index) throws IOException
@@ -143,6 +141,6 @@ final class DCTFilter extends Filter
     protected final void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
             throws IOException
     {
-        LOG.warn("DCTFilter#encode is not implemented yet, skipping this stream.");
+    	Log.w("PdfBoxAndroid", "DCTFilter#encode is not implemented yet, skipping this stream.");
     }
 }

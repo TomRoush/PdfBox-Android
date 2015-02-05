@@ -2,8 +2,6 @@ package org.apache.pdfbox.pdmodel.interactive.annotation;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -17,6 +15,8 @@ import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 
+import android.util.Log;
+
 /**
  * A PDF annotation.
  * 
@@ -25,11 +25,6 @@ import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
  */
 public abstract class PDAnnotation implements COSObjectable
 {
-	/**
-	 * Log instance.
-	 */
-	private static final Log LOG = LogFactory.getLog(PDAnnotation.class);
-
 	/**
 	 * An annotation flag.
 	 */
@@ -141,7 +136,7 @@ public abstract class PDAnnotation implements COSObjectable
 				// TODO not yet implemented:
 				// Movie, Screen, PrinterMark, TrapNet, Watermark, 3D, Redact
 				annot = new PDAnnotationUnknown(annotDic);
-				LOG.debug("Unknown or unsupported annotation subtype " + subtype);
+				Log.d("PdfBoxAndroid", "Unknown or unsupported annotation subtype " + subtype);
 			}
 		}
 		else
@@ -204,7 +199,7 @@ public abstract class PDAnnotation implements COSObjectable
 			}
 			else
 			{
-				LOG.warn(rectArray + " is not a rectangle array, returning null");
+				Log.w("PdfBoxAndroid", rectArray + " is not a rectangle array, returning null");
 			}
 		}
 		return rectangle;

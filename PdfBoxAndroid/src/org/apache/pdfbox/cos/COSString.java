@@ -4,10 +4,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.util.Charsets;
 import org.apache.pdfbox.util.Hex;
+
+import android.util.Log;
 
 /**
  * A string object, which may be a text string, a PDFDocEncoded string, ASCII string, or byte string.
@@ -29,8 +29,6 @@ import org.apache.pdfbox.util.Hex;
  */
 public final class COSString extends COSBase
 {
-	private static final Log LOG = LogFactory.getLog(COSString.class);
-
 	// legacy behaviour for old PDFParser
 	public static final boolean FORCE_PARSING =
 			Boolean.getBoolean("org.apache.pdfbox.forceParsing");
@@ -64,7 +62,7 @@ public final class COSString extends COSBase
 			{
 				if (FORCE_PARSING)
 				{
-					LOG.warn("Encountered a malformed hex string");
+					Log.w("PdfBoxAndroid", "Encountered a malformed hex string");
 					bytes.write('?'); // todo: what does Acrobat do? Any example PDFs?
 				}
 				else

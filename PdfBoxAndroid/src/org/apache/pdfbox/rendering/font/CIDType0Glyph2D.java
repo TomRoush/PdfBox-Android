@@ -3,12 +3,11 @@ package org.apache.pdfbox.rendering.font;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.cff.Type2CharString;
 import org.apache.pdfbox.pdmodel.font.PDCIDFontType0;
 
 import android.graphics.Path;
+import android.util.Log;
 
 /**
  * GeneralPath conversion for CFF CIDFont.
@@ -17,7 +16,6 @@ import android.graphics.Path;
  */
 public class CIDType0Glyph2D implements Glyph2D
 {
-	private static final Log LOG = LogFactory.getLog(CIDType0Glyph2D.class);
 	private final HashMap<Integer, Path> cache = new HashMap<Integer, Path>();
 	private final PDCIDFontType0 font;
 	private final String fontName;
@@ -45,7 +43,7 @@ public class CIDType0Glyph2D implements Glyph2D
 			if (charString.getGID() == 0)
 			{
 				String cidHex = String.format("%04x", cid);
-				LOG.warn("No glyph for " + code + " (CID " + cidHex + ") in font " + fontName);
+				Log.w("PdfBoxAndroid", "No glyph for " + code + " (CID " + cidHex + ") in font " + fontName);
 			}
 			Path path = charString.getPath();
 			cache.put(code, path);
@@ -53,7 +51,7 @@ public class CIDType0Glyph2D implements Glyph2D
 		}
 		catch (IOException e)
 		{
-			LOG.error("Glyph rendering failed", e); // todo: escalate this error?
+			Log.w("PdfBoxAndroid", "Glyph rendering failed", e); // todo: escalate this error?
 			return new Path();
 		}
 	}

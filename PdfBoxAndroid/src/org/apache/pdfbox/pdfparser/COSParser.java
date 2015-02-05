@@ -20,8 +20,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -35,6 +33,8 @@ import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdfparser.XrefTrailerResolver.XRefType;
 import org.apache.pdfbox.pdmodel.encryption.SecurityHandler;
 import org.apache.pdfbox.persistence.util.COSObjectKey;
+
+import android.util.Log;
 
 /**
  * PDF-Parser which first reads startxref and xref tables in order to know valid objects and parse only these objects.
@@ -134,8 +134,6 @@ public class COSParser extends BaseParser
 	 * not an option since a number of entries will also refer to page objects (like OpenAction).
 	 */
 	private final boolean parseMinimalCatalog = "true".equals(System.getProperty(SYSPROP_PARSEMINIMAL));
-
-	private static final Log LOG = LogFactory.getLog(COSParser.class);
 	
 	/**
 	 * Collects all Xref/trailer objects and resolves them into single
@@ -252,7 +250,7 @@ public class COSParser extends BaseParser
 					if (pdfSource.getOffset() == trailerOffset)
 					{
 						// warn only the first time
-						LOG.warn("Expected trailer object at position " + trailerOffset
+						Log.w("PdfBoxAndroid", "Expected trailer object at position " + trailerOffset
 								+ ", keep trying");
 					}
 					readLine();
@@ -385,7 +383,7 @@ public class COSParser extends BaseParser
 			{
 				// in lenient mode the '%%EOF' isn't needed
 				bufOff = buf.length;
-				LOG.debug("Missing end of file marker '" + new String(EOF_MARKER) + "'");
+				Log.d("PdfBoxAndroid", "Missing end of file marker '" + new String(EOF_MARKER) + "'");
 			} 
 			else 
 			{
@@ -775,7 +773,7 @@ public class COSParser extends BaseParser
 				{
 					if (isLenient)
 					{
-						LOG.warn("Object (" + readObjNr + ":" + readObjGen + ") at offset "
+						Log.w("PdfBoxAndroid", "Object (" + readObjNr + ":" + readObjGen + ") at offset "
 								+ offsetOrObjstmObNr + " does not end with 'endobj' but with '"
 								+ endObjectKey + "'");
 					}
@@ -951,7 +949,7 @@ public class COSParser extends BaseParser
 			{
 				if(isLenient)
 				{
-					LOG.warn("The stream doesn't provide any stream length, using fallback readUntilEnd");
+					Log.w("PdfBoxAndroid", "The stream doesn't provide any stream length, using fallback readUntilEnd");
 				}
 				else
 				{
@@ -996,14 +994,14 @@ public class COSParser extends BaseParser
 			String endStream = readString();
 			if (endStream.equals(ENDOBJ_STRING) && isLenient)
 			{
-				LOG.warn("stream ends with 'endobj' instead of 'endstream' at offset "
+				Log.w("PdfBoxAndroid", "stream ends with 'endobj' instead of 'endstream' at offset "
 						+ pdfSource.getOffset());
 				// avoid follow-up warning about missing endobj
 				pdfSource.unread(ENDOBJ);
 			}
 			else if (endStream.length() > 9 && isLenient && endStream.substring(0,9).equals(ENDSTREAM_STRING))
 			{
-				LOG.warn("stream ends with '" + endStream + "' instead of 'endstream' at offset "
+				Log.w("PdfBoxAndroid", "stream ends with '" + endStream + "' instead of 'endstream' at offset "
 						+ pdfSource.getOffset());
 				// unread the "extra" bytes
 				pdfSource.unread(endStream.substring(9).getBytes(ISO_8859_1));
@@ -1033,9 +1031,9 @@ public class COSParser extends BaseParser
 		if (expectedEndOfStream > fileLen)
 		{
 			streamLengthIsValid = false;
-			LOG.error("The end of the stream is out of range, using workaround to read the stream");
-			LOG.error("Stream start offset: " + originOffset);
-			LOG.error("Expected endofstream offset: " + expectedEndOfStream);
+			Log.e("PdfBoxAndroid", "The end of the stream is out of range, using workaround to read the stream");
+			Log.e("PdfBoxAndroid", "Stream start offset: " + originOffset);
+			Log.e("PdfBoxAndroid", "Expected endofstream offset: " + expectedEndOfStream);
 		}
 		else
 		{
@@ -1044,9 +1042,9 @@ public class COSParser extends BaseParser
 			if (!isString(ENDSTREAM))
 			{
 				streamLengthIsValid = false;
-				LOG.error("The end of the stream doesn't point to the correct offset, using workaround to read the stream");
-				LOG.error("Stream start offset: " + originOffset);
-				LOG.error("Expected endofstream offset: " + expectedEndOfStream);
+				Log.e("PdfBoxAndroid", "The end of the stream doesn't point to the correct offset, using workaround to read the stream");
+				Log.e("PdfBoxAndroid", "Stream start offset: " + originOffset);
+				Log.e("PdfBoxAndroid", "Expected endofstream offset: " + expectedEndOfStream);
 			}
 			pdfSource.seek(originOffset);
 		}
@@ -1115,17 +1113,17 @@ public class COSParser extends BaseParser
 	{
 		if (objectOffset < 0)
 		{
-			LOG.error("Invalid object offset " + objectOffset + " when searching for a xref table/stream");
+			Log.e("PdfBoxAndroid", "Invalid object offset " + objectOffset + " when searching for a xref table/stream");
 			return 0;
 		}
 		// start a brute force search for all xref tables and try to find the offset we are looking for
 		long newOffset = bfSearchForXRef(objectOffset);
 		if (newOffset > -1)
 		{
-			LOG.debug("Fixed reference for xref table/stream " + objectOffset + " -> " + newOffset);
+			Log.d("PdfBoxAndroid", "Fixed reference for xref table/stream " + objectOffset + " -> " + newOffset);
 			return newOffset;
 		}
-		LOG.error("Can't find the object axref table/stream at offset " + objectOffset);
+		Log.e("PdfBoxAndroid", "Can't find the object axref table/stream at offset " + objectOffset);
 		return 0;
 	}
 
@@ -1161,12 +1159,12 @@ public class COSParser extends BaseParser
 						if (newOffset > -1)
 						{
 							xrefOffset.put(objectKey, newOffset);
-							LOG.debug("Fixed reference for object " + objectNr + " " + objectGen
+							Log.d("PdfBoxAndroid", "Fixed reference for object " + objectNr + " " + objectGen
 									+ " " + objectOffset + " -> " + newOffset);
 						}
 						else
 						{
-							LOG.error("Can't find the object " + objectNr + " " + objectGen
+							Log.d("PdfBoxAndroid", "Can't find the object " + objectNr + " " + objectGen
 									+ " (origin offset " + objectOffset + ")");
 						}
 					}
@@ -1408,7 +1406,7 @@ public class COSParser extends BaseParser
 											}
 										}
 									}
-									LOG.debug("Fixed reference for xref stream " + xrefOffset
+									Log.d("PdfBoxAndroid", "Fixed reference for xref stream " + xrefOffset
 											+ " -> " + newOffset);
 									objFound = true;
 									break;
@@ -1568,7 +1566,7 @@ public class COSParser extends BaseParser
 			{
 				// No version number at all, set to 1.4 as default
 				header = headerMarker + defaultVersion;
-				LOG.debug("No version found, set to " + defaultVersion + " as default.");
+				Log.d("PdfBoxAndroid", "No version found, set to " + defaultVersion + " as default.");
 			}
 		}
 		else
@@ -1650,7 +1648,7 @@ public class COSParser extends BaseParser
 
 		if (str.startsWith("trailer"))
 		{
-			LOG.warn("skipping empty xref table");
+			Log.w("PdfBoxAndroid", "skipping empty xref table");
 			return false;
 		}
 
@@ -1679,7 +1677,7 @@ public class COSParser extends BaseParser
 				String[] splitString = currentLine.split("\\s");
 				if (splitString.length < 3)
 				{
-					LOG.warn("invalid xref line: " + currentLine);
+					Log.w("PdfBoxAndroid", "invalid xref line: " + currentLine);
 					break;
 				}
 				/* This supports the corrupt table as reported in

@@ -7,8 +7,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import android.util.Log;
 
 /**
  * PostScript glyph list, maps glyph names to sequences of Unicode characters.
@@ -16,7 +15,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public final class GlyphList
 {
-	private static final Log LOG = LogFactory.getLog(GlyphList.class);
 	private static final GlyphList DEFAULT;
 	private static final GlyphList ZAPF_DINGBATS;
 
@@ -114,7 +112,7 @@ public final class GlyphList
 					String[] unicodeList = parts[1].split(" ");
 					if (nameToUnicode.containsKey(name))
 					{
-						LOG.warn("duplicate value for " + name + " -> " + parts[1] + " " +
+						Log.w("PdfBoxAndroid", "duplicate value for " + name + " -> " + parts[1] + " " +
 								nameToUnicode.get(name));
 					}
 					int[] codePoints = new int[unicodeList.length];
@@ -205,7 +203,7 @@ public final class GlyphList
 						int codePoint = Integer.parseInt(name.substring(chPos, chPos + 4), 16);
 						if (codePoint > 0xD7FF && codePoint < 0xE000)
 						{
-							LOG.warn("Unicode character name with disallowed code area: " + name);
+							Log.w("PdfBoxAndroid", "Unicode character name with disallowed code area: " + name);
 						}
 						else
 						{
@@ -216,7 +214,7 @@ public final class GlyphList
 				}
 				catch (NumberFormatException nfe)
 				{
-					LOG.warn("Not a number in Unicode character name: " + name);
+					Log.w("PdfBoxAndroid", "Not a number in Unicode character name: " + name);
 				}
 			}
 			else if (name.startsWith("u") && name.length() == 5)
@@ -227,7 +225,7 @@ public final class GlyphList
 					int codePoint = Integer.parseInt(name.substring(1), 16);
 					if (codePoint > 0xD7FF && codePoint < 0xE000)
 					{
-						LOG.warn("Unicode character name with disallowed code area: " + name);
+						Log.w("PdfBoxAndroid", "Unicode character name with disallowed code area: " + name);
 					}
 					else
 					{
@@ -236,7 +234,7 @@ public final class GlyphList
 				}
 				catch (NumberFormatException nfe)
 				{
-					LOG.warn("Not a number in Unicode character name: " + name);
+					Log.w("PdfBoxAndroid", "Not a number in Unicode character name: " + name);
 				}
 			}
 			nameToUnicode.put(name, unicode);

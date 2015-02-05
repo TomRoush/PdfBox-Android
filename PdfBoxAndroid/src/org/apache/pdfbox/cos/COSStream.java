@@ -10,8 +10,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.filter.DecodeResult;
 import org.apache.pdfbox.filter.Filter;
 import org.apache.pdfbox.filter.FilterFactory;
@@ -23,6 +21,8 @@ import org.apache.pdfbox.io.RandomAccessFileInputStream;
 import org.apache.pdfbox.io.RandomAccessFileOutputStream;
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
 
+import android.util.Log;
+
 /**
  * This class represents a stream object in a PDF document.
  *
@@ -30,11 +30,6 @@ import org.apache.pdfbox.pdfparser.PDFStreamParser;
  */
 public class COSStream extends COSDictionary implements Closeable
 {
-    /**
-     * Log instance.
-     */
-    private static final Log LOG = LogFactory.getLog(COSStream.class);
-
     private static final int BUFFER_SIZE=16384;
 
     /**
@@ -130,7 +125,7 @@ public class COSStream extends COSDictionary implements Closeable
         }
         catch (IOException exception)
         {
-            LOG.error("Can't create temp file, using memory buffer instead", exception);
+        	Log.e("PdfBoxAndroid", "Can't create temp file, using memory buffer instead", exception);
             return new RandomAccessBuffer();
         }
     }

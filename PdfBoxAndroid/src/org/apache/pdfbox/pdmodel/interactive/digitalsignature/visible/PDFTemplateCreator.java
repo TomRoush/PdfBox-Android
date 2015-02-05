@@ -1,8 +1,5 @@
 package org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * Using that class, we build pdf template.
  * @author Vakhtang Koroghlishvili
@@ -10,7 +7,6 @@ import org.apache.commons.logging.LogFactory;
 public class PDFTemplateCreator
 {
     PDFTemplateBuilder pdfBuilder;
-    private static final Log logger = LogFactory.getLog(PDFTemplateCreator.class);
 
     /**
      * sets PDFBuilder

@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.ttf.GlyphData;
 import org.apache.fontbox.ttf.HeaderTable;
 import org.apache.fontbox.ttf.TrueTypeFont;
@@ -16,13 +14,13 @@ import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.Path;
+import android.util.Log;
 
 /**
  * This class provides a glyph to GeneralPath conversion for TrueType fonts.
  */
 public class TTFGlyph2D implements Glyph2D
 {
-	private static final Log LOG = LogFactory.getLog(TTFGlyph2D.class);
 	private final PDFont font;
 	private final TrueTypeFont ttf;
 	private float scale = 1.0f;
@@ -104,12 +102,12 @@ public class TTFGlyph2D implements Glyph2D
 				{
 					int cid = ((PDType0Font) font).codeToCID(code);
 					String cidHex = String.format("%04x", cid);
-					LOG.warn("No glyph for " + code + " (CID " + cidHex + ") in font " +
+					Log.w("PdfBoxAndroid", "No glyph for " + code + " (CID " + cidHex + ") in font " +
 							font.getName());
 				}
 				else
 				{
-					LOG.warn("No glyph for " + code + " in font " + font.getName());
+					Log.w("PdfBoxAndroid", "No glyph for " + code + " in font " + font.getName());
 				}
 			}
 			GlyphData glyph = ttf.getGlyph().getGlyph(gid);

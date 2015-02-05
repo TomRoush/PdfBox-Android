@@ -10,8 +10,6 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSBoolean;
@@ -27,6 +25,8 @@ import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.io.PushBackInputStream;
 import org.apache.pdfbox.persistence.util.COSObjectKey;
+
+import android.util.Log;
 
 /**
  * This class is used to contain parsing logic that will be used by both the
@@ -51,11 +51,6 @@ public abstract class BaseParser implements Closeable
 	 * system property allowing to define size of push back buffer.
 	 */
 	public static final String PROP_PUSHBACK_SIZE = "org.apache.pdfbox.baseParser.pushBackSize";
-
-	/**
-	 * Log instance.
-	 */
-	private static final Log LOG = LogFactory.getLog(BaseParser.class);
 
 	private static final int E = 'e';
 	private static final int N = 'n';
@@ -270,7 +265,7 @@ public abstract class BaseParser implements Closeable
 				{
 					//an invalid dictionary, we are expecting
 					//the key, read until we can recover
-					LOG.warn("Invalid dictionary, found: '" + c + "' but expected: '/'");
+					Log.w("PdfBoxAndroid", "Invalid dictionary, found: '" + c + "' but expected: '/'");
 					int read = pdfSource.read();
 					while(read != -1 && read != '/' && read != '>')
 					{
@@ -327,7 +322,7 @@ public abstract class BaseParser implements Closeable
 
 					if( value == null )
 					{
-						LOG.warn("Bad Dictionary Declaration " + pdfSource );
+						Log.w("PdfBoxAndroid", "Bad Dictionary Declaration " + pdfSource );
 					}
 					else
 					{
@@ -463,7 +458,7 @@ public abstract class BaseParser implements Closeable
 					// if 'endstream' was not found fall back to scanning
 					if ( ! foundEndstream )
 					{
-						LOG.warn("Specified stream length " + length 
+						Log.w("PdfBoxAndroid", "Specified stream length " + length 
 								+ " is wrong. Fall back to reading stream until 'endstream'.");
 
 						// push back all read stream bytes
@@ -998,7 +993,7 @@ public abstract class BaseParser implements Closeable
 			else
 			{
 				//it could be a bad object in the array which is just skipped
-				LOG.warn("Corrupt object reference at offset " + pdfSource.getOffset());
+				Log.w("PdfBoxAndroid", "Corrupt object reference at offset " + pdfSource.getOffset());
 
 				// This could also be an "endobj" or "endstream" which means we can assume that
 				// the array has ended.

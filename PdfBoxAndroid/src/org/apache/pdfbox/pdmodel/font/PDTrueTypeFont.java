@@ -7,8 +7,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.ttf.CmapSubtable;
 import org.apache.fontbox.ttf.CmapTable;
 import org.apache.fontbox.ttf.GlyphData;
@@ -23,6 +21,8 @@ import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
 import org.apache.pdfbox.pdmodel.font.encoding.GlyphList;
 import org.apache.pdfbox.pdmodel.font.encoding.MacOSRomanEncoding;
 
+import android.util.Log;
+
 /**
  * TrueType font.
  * 
@@ -30,8 +30,6 @@ import org.apache.pdfbox.pdmodel.font.encoding.MacOSRomanEncoding;
  */
 public class PDTrueTypeFont extends PDSimpleFont
 {
-	private static final Log LOG = LogFactory.getLog(PDTrueTypeFont.class);
-
 	private static final int START_RANGE_F000 = 0xF000;
 	private static final int START_RANGE_F100 = 0xF100;
 	private static final int START_RANGE_F200 = 0xF200;
@@ -115,12 +113,12 @@ public class PDTrueTypeFont extends PDSimpleFont
 				}
 				catch (NullPointerException e) // TTF parser is buggy
 				{
-					LOG.warn("Could not read embedded TTF for font " + getBaseFont(), e);
+					Log.w("PdfBoxAndroid", "Could not read embedded TTF for font " + getBaseFont(), e);
 					fontIsDamaged = true;
 				}
 				catch (IOException e)
 				{
-					LOG.warn("Could not read embedded TTF for font " + getBaseFont(), e);
+					Log.w("PdfBoxAndroid", "Could not read embedded TTF for font " + getBaseFont(), e);
 					fontIsDamaged = true;
 				}
 			}
@@ -137,7 +135,7 @@ public class PDTrueTypeFont extends PDSimpleFont
 			if (ttfFont == null)
 			{
 				ttfFont = ExternalFonts.getTrueTypeFallbackFont(getFontDescriptor());
-				LOG.warn("Using fallback font '" + ttfFont + "' for '" + getBaseFont() + "'");
+				Log.w("PdfBoxAndroid", "Using fallback font '" + ttfFont + "' for '" + getBaseFont() + "'");
 			}
 		}
 		ttf = ttfFont;
@@ -346,7 +344,7 @@ public class PDTrueTypeFont extends PDSimpleFont
 
 		if (gid == 0)
 		{
-			LOG.warn("Can't map code " + code + " in font " + getBaseFont());
+			Log.w("PdfBoxAndroid", "Can't map code " + code + " in font " + getBaseFont());
 		}
 
 		return gid;

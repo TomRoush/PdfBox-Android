@@ -1,16 +1,14 @@
 package org.apache.pdfbox.contentstream.operator.state;
 
-import android.graphics.Paint;
-
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.pdfbox.contentstream.operator.Operator;
 import org.apache.pdfbox.contentstream.operator.OperatorProcessor;
 import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSNumber;
 
-import java.io.IOException;
+import android.graphics.Paint;
 
 /**
  * J: Set the line cap style.

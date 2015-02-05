@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdfwriter.COSWriter;
@@ -32,6 +30,7 @@ import org.apache.pdfbox.util.awt.AWTColor;
 import org.apache.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.Path;
+import android.util.Log;
 
 /**
  * Provides the ability to write to a page content stream.
@@ -40,8 +39,6 @@ import android.graphics.Path;
  */
 public final class PDPageContentStream implements Closeable
 {
-	private static final Log LOG = LogFactory.getLog(PDPageContentStream.class);
-
 	// instance variables
 	private final PDDocument document;
 	private OutputStream output;
@@ -164,7 +161,7 @@ public final class PDPageContentStream implements Closeable
         {
             if (hasContent)
             {
-                LOG.warn("You are overwriting an existing content, you should use the append mode");
+            	Log.w("PdfBoxAndroid", "You are overwriting an existing content, you should use the append mode");
             }
             contents = new PDStream(document);
             if (compress)

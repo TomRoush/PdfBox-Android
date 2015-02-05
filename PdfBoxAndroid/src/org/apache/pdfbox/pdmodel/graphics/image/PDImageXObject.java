@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSName;
@@ -19,6 +17,7 @@ import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 /**
  * An Image XObject.
@@ -28,11 +27,6 @@ import android.graphics.Bitmap;
  */
 public final class PDImageXObject extends PDXObject implements PDImage
 {
-    /**
-     * Log instance.
-     */
-    private static final Log LOG = LogFactory.getLog(PDImageXObject.class);
-
     private Bitmap cachedImage;
     private PDColorSpace colorSpace;
     private PDResources resources; // current resource dictionary (has color spaces)
@@ -160,7 +154,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
     @Override
     public Bitmap getImage() throws IOException
     {
-    	LOG.error("Better reach here");
+    	Log.e("PdfBoxAndroid", "Better reach here");
         if (cachedImage != null)
         {
             return cachedImage;
@@ -334,7 +328,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         }
         else
         {
-        	LOG.debug(getCOSStream().getInt(COSName.BITS_PER_COMPONENT, COSName.BPC));
+        	Log.d("PdfBoxAndroid", getCOSStream().getInt(COSName.BITS_PER_COMPONENT, COSName.BPC)+"");
             return getCOSStream().getInt(COSName.BITS_PER_COMPONENT, COSName.BPC);
         }
     }
@@ -479,7 +473,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         }
         else
         {
-            LOG.warn("getSuffix() returns null, filters: " + filters);
+        	Log.w("PdfBoxAndroid", "getSuffix() returns null, filters: " + filters);
             // TODO more...
             return null;
         }

@@ -48,7 +48,7 @@ public interface PDFontLike
 	 *
 	 * @param code character code
 	 */
-	//    float getHeight(int code) throws IOException;TODO
+	    float getHeight(int code) throws IOException;
 
 	/**
 	 * Returns the advance width of the given character, in glyph space.

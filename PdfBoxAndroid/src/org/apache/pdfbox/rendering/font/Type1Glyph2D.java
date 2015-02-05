@@ -3,18 +3,16 @@ package org.apache.pdfbox.rendering.font;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.pdmodel.font.PDType1Equivalent;
 
 import android.graphics.Path;
+import android.util.Log;
 
 /**
  * Glyph to GeneralPath conversion for Type 1 PFB and CFF, and TrueType fonts with a 'post' table.
  */
 public class Type1Glyph2D implements Glyph2D
 {
-	private static final Log LOG = LogFactory.getLog(Type1Glyph2D.class);
 	private final HashMap<Integer, Path> cache = new HashMap<Integer, Path>();
 	private final PDType1Equivalent font;
 	/**
@@ -40,7 +38,7 @@ public class Type1Glyph2D implements Glyph2D
 			String name = font.codeToName(code);
 			if (name.equals(".notdef"))
 			{
-				LOG.warn("No glyph for " + code + " (" + name + ") in font " + font.getName());
+				Log.w("PdfBoxAndroid", "No glyph for " + code + " (" + name + ") in font " + font.getName());
 			}
 			// todo: can this happen? should it be encapsulated?
 			Path path = font.getPath(name);
@@ -53,7 +51,7 @@ public class Type1Glyph2D implements Glyph2D
 		}
 		catch (IOException e)
 		{
-			LOG.error("Glyph rendering failed", e); // todo: escalate this error?
+			Log.e("PdfBoxAndroid", "Glyph rendering failed", e); // todo: escalate this error?
 			return new Path();
 		}
 	}

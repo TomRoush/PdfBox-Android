@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.cff.CFFCIDFont;
 import org.apache.fontbox.cff.CFFFont;
 import org.apache.fontbox.cff.CFFParser;
@@ -21,6 +19,7 @@ import org.apache.pdfbox.util.Matrix;
 import org.apache.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.PointF;
+import android.util.Log;
 
 /**
  * Type 0 CIDFont (CFF).
@@ -30,8 +29,6 @@ import android.graphics.PointF;
  */
 public class PDCIDFontType0 extends PDCIDFont
 {
-	private static final Log LOG = LogFactory.getLog(PDCIDFontType0.class);
-
 	private final CFFCIDFont cidFont;  // Top DICT that uses CIDFont operators
 	private final CFFType1Font t1Font; // Top DICT that does not use CIDFont operators
 
@@ -67,7 +64,7 @@ public class PDCIDFontType0 extends PDCIDFont
 		CFFFont cffFont = null;
 		if (bytes != null && bytes.length > 0 && (bytes[0] & 0xff) == '%') {
 			// todo: PDFBOX-2642 contains a Type1 PFB font in a CIDFont, but we can't handle it yet
-			LOG.error("Unsupported: Type1 font instead of CFF in " + fd.getFontName());
+			Log.e("PdfBoxAndroid", "Unsupported: Type1 font instead of CFF in " + fd.getFontName());
 			fontIsDamaged = true;
 		} else if (bytes != null) {
 			CFFParser cffParser = new CFFParser();
@@ -77,7 +74,7 @@ public class PDCIDFontType0 extends PDCIDFont
 			}
 			catch (IOException e)
 			{
-				LOG.error("Can't read the embedded CFF font " + fd.getFontName(), e);
+				Log.e("PdfBoxAndroid", "Can't read the embedded CFF font " + fd.getFontName(), e);
 				fontIsDamaged = true;
 			}
 		}
@@ -133,12 +130,12 @@ public class PDCIDFontType0 extends PDCIDFont
 					// Asian and Extended Language Pack
 					if (!fontIsDamaged)
 					{
-						LOG.error("Missing CID-keyed font " + getBaseFont());
+						Log.e("PdfBoxAndroid", "Missing CID-keyed font " + getBaseFont());
 					}
 				}
 				else
 				{
-					LOG.warn("Using fallback for CID-keyed font " + getBaseFont());
+					Log.w("PdfBoxAndroid", "Using fallback for CID-keyed font " + getBaseFont());
 				}
 			}
 			isEmbedded = false;
@@ -282,19 +279,19 @@ public class PDCIDFontType0 extends PDCIDFont
 		return isDamaged;
 	}
 
-	//    @Override
-	//    public float getHeight(int code) throws IOException
-	//    {
-	//        int cid = codeToCID(code);
-	//
-	//        float height = 0;
-	//        if (!glyphHeights.containsKey(cid))
-	//        {
-	//            height =  (float) getType2CharString(cid).getBounds().getHeight();
-	//            glyphHeights.put(cid, height);
-	//        }
-	//        return height;
-	//    }TODO
+	@Override
+	public float getHeight(int code) throws IOException
+	{
+		int cid = codeToCID(code);
+
+		float height = 0;
+		if (!glyphHeights.containsKey(cid))
+		{
+			height =  (float) getType2CharString(cid).getBounds().height();
+			glyphHeights.put(cid, height);
+		}
+		return height;
+	}
 
 	@Override
 	public float getAverageFontWidth()

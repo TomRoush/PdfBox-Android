@@ -21,8 +21,8 @@ package org.apache.fontbox.type1;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+import android.util.Log;
 
 /**
  * Lexer for the ASCII portions of an Adobe Type 1 font.
@@ -44,11 +44,6 @@ import org.apache.commons.logging.LogFactory;
  */
 class Type1Lexer
 {
-    /**
-     * Log instance.
-     */
-    private static final Log LOG = LogFactory.getLog(Type1Lexer.class);
-    
     private final ByteBuffer buffer;
     private Token aheadToken;
     private int openParens = 0;
@@ -148,7 +143,7 @@ class Type1Lexer
                 }
                 else if (c == 0)
                 {
-                    LOG.warn("NULL byte in font, skipped");
+                	Log.w("PdfBoxAndroid", "NULL byte in font, skipped");
                     skip = true;
                 }
                 else

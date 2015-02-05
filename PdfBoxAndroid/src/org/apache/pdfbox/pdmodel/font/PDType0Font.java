@@ -5,8 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.cmap.CMap;
 import org.apache.fontbox.util.BoundingBox;
 import org.apache.pdfbox.cos.COSArray;
@@ -17,6 +15,8 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.pdfbox.util.Vector;
 
+import android.util.Log;
+
 /**
  * A Composite (Type 0) font.
  *
@@ -24,8 +24,6 @@ import org.apache.pdfbox.util.Vector;
  */
 public class PDType0Font extends PDFont
 {
-	private static final Log LOG = LogFactory.getLog(PDType0Font.class);
-
 	private final PDCIDFont descendantFont;
 	private CMap cMap, cMapUCS2;
 	private boolean isCMapPredefined;
@@ -160,7 +158,7 @@ public class PDType0Font extends PDFont
             }
             else if (!cMap.hasCIDMappings())
             {
-                LOG.warn("Invalid Encoding CMap in font " + getName());
+            	Log.w("PdfBoxAndroid", "Invalid Encoding CMap in font " + getName());
             }
         }
     }
@@ -257,11 +255,11 @@ public class PDType0Font extends PDFont
 		return cMap.getWMode() == 1;
 	}
 
-	//    @Override
-	//    public float getHeight(int code) throws IOException
-	//    {
-	//        return descendantFont.getHeight(code);
-	//    }TODO
+	@Override
+	public float getHeight(int code) throws IOException
+	{
+		return descendantFont.getHeight(code);
+	}
 
 	@Override
 	protected byte[] encode(int unicode) throws IOException

@@ -3,8 +3,6 @@ package org.apache.pdfbox.pdmodel.font;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.fontbox.util.BoundingBox;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -16,6 +14,8 @@ import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.pdfbox.util.Vector;
 
+import android.util.Log;
+
 /**
  * A PostScript Type 3 Font.
  *
@@ -23,8 +23,6 @@ import org.apache.pdfbox.util.Vector;
  */
 public class PDType3Font extends PDSimpleFont
 {
-	private static final Log LOG = LogFactory.getLog(PDType3Font.class);
-
 	private PDResources resources;
 	private COSDictionary charProcs;
 	private Matrix fontMatrix;
@@ -83,7 +81,7 @@ public class PDType3Font extends PDSimpleFont
 			else
 			{
 				// todo: call getWidthFromFont?
-				LOG.error("No width for glyph " + code + " in font " + getName());
+				Log.e("PdfBoxAndroid", "No width for glyph " + code + " in font " + getName());
 				return 0;
 			}
 		}

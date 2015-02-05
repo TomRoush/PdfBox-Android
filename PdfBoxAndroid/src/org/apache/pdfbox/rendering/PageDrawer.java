@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -40,6 +38,7 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.Log;
 
 /**
  * Paints a page in a PDF document to a Graphics context.
@@ -48,8 +47,6 @@ import android.graphics.RectF;
  */
 public final class PageDrawer extends PDFGraphicsStreamEngine
 {
-	private static final Log LOG = LogFactory.getLog(PageDrawer.class);
-	
 	// parent document renderer
 	private final PDFRenderer renderer;
 	
@@ -647,7 +644,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public PointF getCurrentPoint()
     {
-    	LOG.debug("PageDrawer.getCurrentPoint does not return the right value");
+    	Log.d("PdfBoxAndroid", "PageDrawer.getCurrentPoint does not return the right value");
     	return new PointF();
 //        return linePath.getCurrentPoint();
     }

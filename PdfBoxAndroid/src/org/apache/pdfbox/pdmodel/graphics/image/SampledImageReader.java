@@ -3,14 +3,13 @@ package org.apache.pdfbox.pdmodel.graphics.image;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.pdmodel.common.PDMemoryStream;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
 /**
  * Reads a sampled image from a PDF file.
@@ -18,8 +17,6 @@ import android.graphics.BitmapFactory;
  */
 final class SampledImageReader
 {
-    private static final Log LOG = LogFactory.getLog(SampledImageReader.class);
-
     /**
      * Returns an ARGB image filled with the given paint and using the given image as a mask.
      * @param paint the paint to fill the visible portions of the image with
@@ -80,7 +77,7 @@ final class SampledImageReader
      */
     public static Bitmap getRGBImage(PDImage pdImage, COSArray colorKey) throws IOException
     {
-    	LOG.error("getting image");
+    	Log.e("PdfBoxAndroid", "getting image");
         if (pdImage.getStream() instanceof PDMemoryStream)
         {
             // for inline images
@@ -413,7 +410,7 @@ final class SampledImageReader
                     float decode1 = ((COSNumber) cosDecode.get(1)).floatValue();
                     if (decode0 >= 0 && decode0 <= 1 && decode1 >= 0 && decode1 <= 1)
                     {
-                        LOG.warn("decode array " + cosDecode
+                    	Log.w("PdfBoxAndroid", "decode array " + cosDecode
                                 + " not compatible with color space, using the first two entries");
                         return new float[]
                         {
@@ -421,7 +418,7 @@ final class SampledImageReader
                         };
                     }
                 }
-                LOG.error("decode array " + cosDecode
+                Log.e("PdfBoxAndroid", "decode array " + cosDecode
                         + " not compatible with color space, using default");
             }
             else

@@ -5,9 +5,8 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
+import android.util.Log;
 /**
  * The standard structure types.
  * 
@@ -15,13 +14,7 @@ import org.apache.commons.logging.LogFactory;
  * @version $Revision: $
  */
 public class StandardStructureTypes
-{
-
-    /**
-     * Log instance.
-     */
-    private static final Log LOG = LogFactory.getLog(StandardStructureTypes.class);
-    
+{   
     private StandardStructureTypes()
     {
     }
@@ -296,10 +289,10 @@ public class StandardStructureTypes
                     types.add(field.get(null).toString());
                 }catch (IllegalArgumentException e)
                 {
-                    LOG.error(e,e);
+                	Log.e("PdfBoxAndroid", e.getMessage(),e);
                 }catch (IllegalAccessException e)
                 {
-                    LOG.error(e,e);
+                	Log.e("PdfBoxAndroid", e.getMessage(),e);
                 }
             }
         }
