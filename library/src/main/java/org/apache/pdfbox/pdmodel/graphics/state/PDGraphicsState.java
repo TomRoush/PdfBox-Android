@@ -1,7 +1,5 @@
 package org.apache.pdfbox.pdmodel.graphics.state;
 
-import android.graphics.Paint;
-
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.PDLineDashPattern;
 import org.apache.pdfbox.pdmodel.graphics.blend.BlendMode;
@@ -9,6 +7,8 @@ import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import org.apache.pdfbox.util.Matrix;
+
+import android.graphics.Paint;
 
 /**
  * The current state of the graphics parameters when executing a content stream.
@@ -542,8 +542,12 @@ public class PDGraphicsState implements Cloneable
 //        // lazy cloning of clipping path for performance
 //        if (!isClippingPathDirty)
 //        {
-//            clippingPath = (Area) clippingPath.clone();
-//            isClippingPathDirty = true;
+//        	// deep copy (can't use clone() as it performs only a shallow copy)
+//        	Area cloned = new Area();
+//        	cloned.add(clippingPath);
+//        	clippingPath = cloned;
+//
+//        	isClippingPathDirty = true;
 //        }
 //
 //        // intersection as usual

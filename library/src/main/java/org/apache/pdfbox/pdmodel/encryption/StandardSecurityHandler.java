@@ -228,7 +228,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 		}
 		else
 		{
-			throw new IOException("Cannot decrypt PDF, the password is incorrect");
+			throw new InvalidPasswordException("Cannot decrypt PDF, the password is incorrect");
 		}
 
 		if (dicRevision == 6 || dicRevision == 5)

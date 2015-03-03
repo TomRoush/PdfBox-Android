@@ -5,10 +5,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.TreeMap;
 
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
@@ -27,7 +26,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 public class PDPageLabels implements COSObjectable
 {
 
-    private SortedMap<Integer, PDPageLabelRange> labels;
+    private Map<Integer, PDPageLabelRange> labels;
 
     private PDDocument doc;
 
@@ -145,9 +144,14 @@ public class PDPageLabels implements COSObjectable
      *            page label range.
      * @param item
      *            the page label item to set.
+     * @throws IllegalArgumentException if the startPage parameter is &lt; 0.
      */
     public void setLabelItem(int startPage, PDPageLabelRange item)
     {
+    	if (startPage < 0)
+    	{
+    		throw new IllegalArgumentException("startPage parameter of setLabelItem may not be < 0");
+    	}
         labels.put(startPage, item);
     }
     
@@ -271,8 +275,8 @@ public class PDPageLabels implements COSObjectable
      */
     private static class LabelGenerator implements Iterator<String>
     {
-        private PDPageLabelRange labelInfo;
-        private int numPages;
+        private final PDPageLabelRange labelInfo;
+        private final int numPages;
         private int currentPage;
 
         LabelGenerator(PDPageLabelRange label, int pages)

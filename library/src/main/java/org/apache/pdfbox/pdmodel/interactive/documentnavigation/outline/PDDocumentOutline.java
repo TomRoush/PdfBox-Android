@@ -9,7 +9,7 @@ import org.apache.pdfbox.cos.COSName;
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
  * @version $Revision: 1.2 $
  */
-public class PDDocumentOutline extends PDOutlineNode
+public final class PDDocumentOutline extends PDOutlineNode
 {
 
     /**
@@ -17,8 +17,7 @@ public class PDDocumentOutline extends PDOutlineNode
      */
     public PDDocumentOutline()
     {
-        super();
-        node.setName( COSName.TYPE, "Outlines" );
+    	getCOSDictionary().setName(COSName.TYPE, COSName.OUTLINES.getName());
     }
 
     /**
@@ -28,6 +27,25 @@ public class PDDocumentOutline extends PDOutlineNode
      */
     public PDDocumentOutline( COSDictionary dic )
     {
-        super( dic );
+    	super( dic );
+    	getCOSDictionary().setName(COSName.TYPE, COSName.OUTLINES.getName());
+    }
+
+    @Override
+    public boolean isNodeOpen()
+    {
+    	return true;
+    }
+
+    @Override
+    public void openNode()
+    {
+    	// The root of the outline hierarchy is not an OutlineItem and cannot be opened or closed
+    }
+
+    @Override
+    public void closeNode()
+    {
+    	// The root of the outline hierarchy is not an OutlineItem and cannot be opened or closed
     }
 }

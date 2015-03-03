@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.apache.pdfbox.pdfparser.PDFObjectStreamParser;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
-import org.apache.pdfbox.persistence.util.COSObjectKey;
 
 import android.util.Log;
 
@@ -44,13 +43,6 @@ public class COSDocument extends COSBase implements Closeable
 	 * Document trailer dictionary.
 	 */
 	private COSDictionary trailer;
-
-	/**
-	 * Signature interface.
-	 */
-	private SignatureInterface signatureInterface;
-
-	private String headerString = "%PDF-" + version;
 
 	private boolean warnMissingClose = true;
 
@@ -234,24 +226,20 @@ public class COSDocument extends COSBase implements Closeable
 	}
 
 	/**
-	 * This will set the version of this PDF document.
+	 * This will set the header version of this PDF document.
 	 *
 	 * @param versionValue The version of the PDF document.
 	 */
-	public void setVersion( double versionValue )
+	public void setVersion( float versionValue )
 	{
 		// update header string
-		if (versionValue != version) 
-		{
-			headerString = headerString.replaceFirst(String.valueOf(version), String.valueOf(versionValue));
-		}
-		version = (float) versionValue;
+		version = versionValue;
 	}
 
 	/**
-	 * This will get the version of this PDF document.
+	 * This will get the version extracted from the header of this PDF document.
 	 *
-	 * @return This documents version.
+	 * @return The header version.
 	 */
 	public float getVersion()
 	{
@@ -300,15 +288,6 @@ public class COSDocument extends COSBase implements Closeable
 	public COSDictionary getEncryptionDictionary()
 	{
 		return (COSDictionary)trailer.getDictionaryObject( COSName.ENCRYPT );
-	}
-
-	/**
-	 * This will return the signature interface.
-	 * @return the signature interface 
-	 */
-	public SignatureInterface getSignatureInterface() 
-	{
-		return signatureInterface;
 	}
 
 	/**
@@ -400,15 +379,6 @@ public class COSDocument extends COSBase implements Closeable
 	public void setDocumentID( COSArray id )
 	{
 		getTrailer().setItem(COSName.ID, id);
-	}
-
-	/**
-	 * Set the signature interface to the given value.
-	 * @param sigInterface the signature interface
-	 */
-	public void setSignatureInterface(SignatureInterface sigInterface) 
-	{
-		signatureInterface = sigInterface;
 	}
 
 	/**
@@ -538,21 +508,6 @@ public class COSDocument extends COSBase implements Closeable
 	public void setWarnMissingClose(boolean warn)
 	{
 		this.warnMissingClose = warn;
-	}
-
-	/**
-	 * @return Returns the headerString.
-	 */
-	public String getHeaderString()
-	{
-		return headerString;
-	}
-	/**
-	 * @param header The headerString to set.
-	 */
-	public void setHeaderString(String header)
-	{
-		headerString = header;
 	}
 
 	/**

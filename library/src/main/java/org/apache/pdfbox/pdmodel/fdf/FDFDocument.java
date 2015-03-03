@@ -38,7 +38,7 @@ public class FDFDocument implements Closeable
     public FDFDocument() throws IOException
     {
         document = new COSDocument();
-        document.setHeaderString( "%FDF-1.2" );
+        document.setVersion( 1.2f );
 
         //First we need a trailer
         document.setTrailer( new COSDictionary() );
@@ -268,7 +268,7 @@ public class FDFDocument implements Closeable
         try
         {
             writer = new COSWriter( output );
-            writer.write( document );
+            writer.write( this );
             writer.close();
         }
         finally

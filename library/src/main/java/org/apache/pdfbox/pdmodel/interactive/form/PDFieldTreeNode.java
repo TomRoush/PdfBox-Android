@@ -17,8 +17,6 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 
 /**
  * A field in an interactive form.
- *
- * @author Andreas Lehmkühler
  * 
  */
 public abstract class PDFieldTreeNode implements COSObjectable
@@ -273,7 +271,7 @@ public abstract class PDFieldTreeNode implements COSObjectable
 	 *
 	 * @param fieldValue The new field value.
 	 */
-	public abstract void setValue(String fieldValue);
+	public abstract void setValue(String fieldValue) throws IOException;
 
 	/**
 	 * sets the field to be read-only.

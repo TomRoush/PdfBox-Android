@@ -44,6 +44,8 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 
+import android.util.Log;
+
 /**
  * This is the in-memory representation of the PDF document.
  * The #close() method must be called once the document is no longer needed.
@@ -80,6 +82,9 @@ public class PDDocument implements Closeable
 	
 	// fonts to subset before saving
 	private final Set<PDFont> fontsToSubset = new HashSet<PDFont>();
+	
+	// Signature interface
+	private SignatureInterface signInterface;
 
 	/**
 	 * Creates an empty PDF document.
@@ -159,7 +164,7 @@ public class PDDocument implements Closeable
 		// Reserve ByteRange
 		sigObject.setByteRange(new int[] { 0, 1000000000, 1000000000, 1000000000 });
 
-		getDocument().setSignatureInterface(signatureInterface);
+		signInterface = signatureInterface;
 
 		//
 		// Create SignatureForm for signature
@@ -178,7 +183,7 @@ public class PDDocument implements Closeable
 
 		// Get the AcroForm from the Root-Dictionary and append the annotation
 		PDAcroForm acroForm = catalog.getAcroForm();
-		catalog.getCOSObject().setNeedToBeUpdate(true);
+		catalog.getCOSObject().setNeedToBeUpdated(true);
 
 		if (acroForm == null)
 		{
@@ -187,7 +192,7 @@ public class PDDocument implements Closeable
 		}
 		else
 		{
-			acroForm.getCOSObject().setNeedToBeUpdate(true);
+			acroForm.getDictionary().setNeedToBeUpdated(true);
 		}
 
 		// For invisible signatures, the annotation has a rectangle array with values [ 0 0 0 0 ]. This annotation is
@@ -240,7 +245,7 @@ public class PDDocument implements Closeable
 					&& ((PDSignatureField) field).getCOSObject().equals(signatureField.getCOSObject()))
 			{
 				checkFields = true;
-				signatureField.getCOSObject().setNeedToBeUpdate(true);
+				((COSDictionary) signatureField.getCOSObject()).setNeedToBeUpdated(true);
 				break;
 			}
 		}
@@ -319,11 +324,11 @@ public class PDDocument implements Closeable
 						signatureField.getWidget().setAppearance(ap);
 
 						// read and set AcroForm DefaultResource
-						COSBase dr = cosBaseDict.getItem(COSName.DR);
+						COSDictionary dr = (COSDictionary) cosBaseDict.getItem(COSName.DR);
 						if (dr != null)
 						{
 							dr.setDirect(true);
-							dr.setNeedToBeUpdate(true);
+							dr.setNeedToBeUpdated(true);
 							acroFormDict.setItem(COSName.DR, dr);
 						}
 						sigFieldNotFound = false;
@@ -346,7 +351,7 @@ public class PDDocument implements Closeable
 		{
 			annotations.add(signatureField.getWidget());
 		}
-		page.getCOSObject().setNeedToBeUpdate(true);
+		((COSDictionary) page.getCOSObject()).setNeedToBeUpdated(true);
 	}
 
 	/**
@@ -361,7 +366,7 @@ public class PDDocument implements Closeable
 			SignatureOptions options) throws IOException
 	{
 		PDDocumentCatalog catalog = getDocumentCatalog();
-		catalog.getCOSObject().setNeedToBeUpdate(true);
+		((COSDictionary) catalog.getCOSObject()).setNeedToBeUpdated(true);
 
 		PDAcroForm acroForm = catalog.getAcroForm();
 		if (acroForm == null)
@@ -371,12 +376,12 @@ public class PDDocument implements Closeable
 		}
 		else
 		{
-			acroForm.getCOSObject().setNeedToBeUpdate(true);
+			((COSDictionary) acroForm.getCOSObject()).setNeedToBeUpdated(true);
 		}
 
 		COSDictionary acroFormDict = acroForm.getDictionary();
 		acroFormDict.setDirect(true);
-		acroFormDict.setNeedToBeUpdate(true);
+		acroFormDict.setNeedToBeUpdated(true);
 		if (!acroForm.isSignaturesExist())
 		{
 			// 1 if at least one signature field is available
@@ -388,7 +393,7 @@ public class PDDocument implements Closeable
 		for (PDSignatureField sigField : sigFields)
 		{
 			PDSignature sigObject = sigField.getSignature();
-			sigField.getCOSObject().setNeedToBeUpdate(true);
+			((COSDictionary) sigField.getCOSObject()).setNeedToBeUpdated(true);
 
 			// Check if the field already exists
 			boolean checkFields = false;
@@ -398,7 +403,7 @@ public class PDDocument implements Closeable
 						&& fieldNode.getCOSObject().equals(sigField.getCOSObject()))
 				{
 					checkFields = true;
-					sigField.getCOSObject().setNeedToBeUpdate(true);
+					((COSDictionary) sigField.getCOSObject()).setNeedToBeUpdated(true);
 					break;
 				}
 			}
@@ -411,7 +416,7 @@ public class PDDocument implements Closeable
 			// Check if we need to add a signature
 			if (sigField.getSignature() != null)
 			{
-				sigField.getCOSObject().setNeedToBeUpdate(true);
+				((COSDictionary) sigField.getCOSObject()).setNeedToBeUpdated(true);
 				if (options == null)
 				{
 
@@ -964,7 +969,7 @@ public class PDDocument implements Closeable
 		try
 		{
 			writer = new COSWriter(output, input);
-			writer.write(this);
+			writer.write(this, signInterface);
 			writer.close();
 		}
 		finally
@@ -1104,5 +1109,74 @@ public class PDDocument implements Closeable
 	public void setDocumentId(Long docId)
 	{
 		documentId = docId;
+	}
+	
+	/**
+	 * Returns the PDF specification version this document conforms to.
+	 *
+	 * @return the PDF version (e.g. 1.4f)
+	 */
+	public float getVersion()
+	{
+		String catalogVersion = getDocumentCatalog().getVersion();
+		float catalogVersionFloat = -1;
+		float headerVersionFloat = getDocument().getVersion();
+		if (catalogVersion != null)
+		{
+			try
+			{
+				catalogVersionFloat = Float.parseFloat(catalogVersion);
+			}
+			catch(NumberFormatException exception)
+			{
+				Log.e("PdfBoxAndroid", "Can't extract the version number of the document catalog.", exception);
+			}
+		}
+		// there may be a second version information in the document catalog starting with 1.4
+		if (catalogVersionFloat >= 1.4f)
+		{
+			// the most recent version is the correct one
+			return Math.max(catalogVersionFloat, headerVersionFloat);
+		}
+		else
+		{
+			return headerVersionFloat;
+		}
+	}
+
+	/**
+	 * Sets the PDF specification version for this document.
+	 *
+	 * @param newVersion the new PDF version (e.g. 1.4f)
+	 *
+	 */
+	public void setVersion(float newVersion)
+	{
+		float currentVersion = getVersion();
+		// nothing to do?
+		if (newVersion == currentVersion)
+		{
+			return;
+		}
+		// the version can't be downgraded
+		if (newVersion < currentVersion)
+		{
+			Log.e("PdfBoxAndroid", "It's not allowed to downgrade the version of a pdf.");
+			return;
+		}
+		// update the catalog version if the new version is >= 1.4
+		if (newVersion >= 1.4f)
+		{
+			getDocumentCatalog().setVersion(Float.toString(newVersion));
+			if (getDocument().getVersion() > newVersion)
+			{
+				getDocument().setVersion(newVersion);
+			}
+		}
+		else
+		{
+			// versions < 1.4f have a version header only
+			getDocument().setVersion(newVersion);
+		}
 	}
 }

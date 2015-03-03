@@ -33,6 +33,7 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSNull;
 import org.apache.pdfbox.cos.COSNumber;
 import org.apache.pdfbox.cos.COSObject;
+import org.apache.pdfbox.cos.COSObjectKey;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.cos.ICOSVisitor;
@@ -40,8 +41,8 @@ import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdfparser.PDFXRefStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.encryption.SecurityHandler;
+import org.apache.pdfbox.pdmodel.fdf.FDFDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
-import org.apache.pdfbox.persistence.util.COSObjectKey;
 import org.apache.pdfbox.util.Charsets;
 import org.apache.pdfbox.util.Hex;
 
@@ -180,7 +181,8 @@ public class COSWriter implements ICOSVisitor, Closeable
 	private final Set<COSBase> actualsAdded = new HashSet<COSBase>();
 
 	private COSObjectKey currentObjectKey = null;
-	private PDDocument document = null;
+	private PDDocument pdDocument = null;
+	private FDFDocument fdfDocument = null;
 	private boolean willEncrypt = false;
 
 	// signing
@@ -190,6 +192,7 @@ public class COSWriter implements ICOSVisitor, Closeable
 	private long byteRangeOffset, byteRangeLength;
 	private InputStream incrementalInput;
 	private OutputStream incrementalOutput;
+	private SignatureInterface signatureInterface;
 
 	/**
 	 * COSWriter constructor comment.
@@ -460,10 +463,16 @@ public class COSWriter implements ICOSVisitor, Closeable
 				cosBase = keyObject.get(cosObjectKey);
 			}
 			if(actual != null && objectKeys.containsKey(actual) &&
-					!object.isNeedToBeUpdate() && (cosBase!= null &&
-					!cosBase.isNeedToBeUpdate()))
+					cosBase!= null)
 			{
-				return;
+				if (object instanceof COSDictionary &&
+						cosBase instanceof COSDictionary &&
+						!((COSDictionary) object).isNeedToBeUpdated() &&
+						!((COSDictionary) cosBase).isNeedToBeUpdated()
+						)
+				{
+					return;
+				}
 			}
 
 			objectsToWrite.add( object );
@@ -525,7 +534,17 @@ public class COSWriter implements ICOSVisitor, Closeable
 	  */
 	 protected void doWriteHeader(COSDocument doc) throws IOException
 	 {
-		 getStandardOutput().write( doc.getHeaderString().getBytes("ISO-8859-1") );
+		 String headerString;
+		 if (fdfDocument != null)
+		 {
+			 headerString = "%FDF-"+ Float.toString(fdfDocument.getDocument().getVersion());
+		 }
+		 else
+		 {
+			 headerString = "%PDF-"+ Float.toString(pdDocument.getDocument().getVersion());
+		 }
+		 getStandardOutput().write( headerString.getBytes("ISO-8859-1") );
+		 
 		 getStandardOutput().writeEOL();
 		 getStandardOutput().write(COMMENT);
 		 getStandardOutput().write(GARBAGE);
@@ -606,6 +625,7 @@ public class COSWriter implements ICOSVisitor, Closeable
 				 trailer.setLong(xrefStm, getStartxref());
 			 }
 			 doWriteXRefTable();
+			 doWriteTrailer(doc);
 		 }
 	 }
 
@@ -641,7 +661,7 @@ public class COSWriter implements ICOSVisitor, Closeable
 		 }
 	 }
 
-	 private void doWriteSignature(COSDocument doc) throws IOException
+	 private void doWriteSignature() throws IOException
 	 {
 		 if (signatureOffset == 0 || byteRangeOffset == 0)
 		 {
@@ -693,7 +713,6 @@ public class COSWriter implements ICOSVisitor, Closeable
 				 new ByteArrayInputStream(signBuffer));
 
 		 // sign the bytes
-		 SignatureInterface signatureInterface = doc.getSignatureInterface();
 		 byte[] sign = signatureInterface.sign(signStream);
 		 String signature = new COSString(sign).toHexString();
 		 // substract 2 bytes because of the enclosing "<>"
@@ -1024,7 +1043,7 @@ public class COSWriter implements ICOSVisitor, Closeable
 
 		 if(incrementalUpdate)
 		 {
-			 doWriteSignature(doc);
+			 doWriteSignature();
 		 }
 
 		 return null;
@@ -1080,7 +1099,7 @@ public class COSWriter implements ICOSVisitor, Closeable
 	 {
 		 if (willEncrypt)
 		 {
-			 document.getEncryption().getSecurityHandler()
+			 pdDocument.getEncryption().getSecurityHandler()
 			 .encryptStream(obj, currentObjectKey.getNumber(),
 					 currentObjectKey.getGeneration());
 		 }
@@ -1147,7 +1166,7 @@ public class COSWriter implements ICOSVisitor, Closeable
 	 {
 		 if (willEncrypt)
 		 {
-			 document.getEncryption().getSecurityHandler().encryptString(
+			 pdDocument.getEncryption().getSecurityHandler().encryptString(
 					 obj,
 					 currentObjectKey.getNumber(),
 					 currentObjectKey.getGeneration());
@@ -1178,10 +1197,24 @@ public class COSWriter implements ICOSVisitor, Closeable
 	  */
 	 public void write(PDDocument doc) throws IOException
 	 {
+		 write(doc, null);
+	 }
+
+	 /**
+	  * This will write the pdf document.
+	  *
+	  * @param doc The document to write.
+	  * @param signInterface class to be used for signing
+	  *
+	  * @throws IOException If an error occurs while generating the data.
+	  */
+	 public void write(PDDocument doc, SignatureInterface signInterface) throws IOException
+	 {
 		 Long idTime = doc.getDocumentId() == null ? System.currentTimeMillis() : 
 			 doc.getDocumentId();
 
-		 document = doc;
+		 pdDocument = doc;
+		 signatureInterface = signInterface;
 		 if(incrementalUpdate)
 		 {
 			 prepareIncrement(doc);
@@ -1199,10 +1232,10 @@ public class COSWriter implements ICOSVisitor, Closeable
 		 }
 		 else
 		 {
-			 if (document.getEncryption() != null)
+			 if (pdDocument.getEncryption() != null)
 			 {
-				 SecurityHandler securityHandler = document.getEncryption().getSecurityHandler();
-				 securityHandler.prepareDocumentForEncryption(document);
+				 SecurityHandler securityHandler = pdDocument.getEncryption().getSecurityHandler();
+				 securityHandler.prepareDocumentForEncryption(pdDocument);
 				 willEncrypt = true;
 			 }
 			 else
@@ -1211,7 +1244,7 @@ public class COSWriter implements ICOSVisitor, Closeable
 			 }
 		 }
 
-		 COSDocument cosDoc = document.getDocument();
+		 COSDocument cosDoc = pdDocument.getDocument();
 		 COSDictionary trailer = cosDoc.getTrailer();
 		 COSArray idArray = (COSArray)trailer.getDictionaryObject( COSName.ID );
 		 boolean missingID = true;
@@ -1255,6 +1288,21 @@ public class COSWriter implements ICOSVisitor, Closeable
 			 idArray.add( secondID );
 			 trailer.setItem( COSName.ID, idArray );
 		 }
+		 cosDoc.accept(this);
+	 }
+	 
+	 /**
+	  * This will write the fdf document.
+	  *
+	  * @param doc The document to write.
+	  *
+	  * @throws IOException If an error occurs while generating the data.
+	  */
+	 public void write(FDFDocument doc) throws IOException
+	 {
+		 fdfDocument = doc;
+		 willEncrypt = false;
+		 COSDocument cosDoc = fdfDocument.getDocument();
 		 cosDoc.accept(this);
 	 }
 

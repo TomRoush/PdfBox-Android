@@ -75,7 +75,7 @@ public class PDFStreamEngine
 	private Matrix textMatrix;
 	private Matrix textLineMatrix;
 
-	private final Stack<PDGraphicsState> graphicsStack = new Stack<PDGraphicsState>();
+	private Stack<PDGraphicsState> graphicsStack = new Stack<PDGraphicsState>();
 
 	private PDResources resources;
 	private PDPage currentPage;
@@ -182,10 +182,10 @@ public class PDFStreamEngine
 	protected void processSoftMask(PDFormXObject group) throws IOException
 	{
 		// clear the current soft mask (this mask) to avoid recursion
-		saveGraphicsState();
+		Stack<PDGraphicsState> savedStack = saveGraphicsStack();
 		getGraphicsState().setSoftMask(null);
 		processTransparencyGroup(group);
-		restoreGraphicsState();
+		restoreGraphicsStack(savedStack);
 	}
 
 	/**
@@ -200,7 +200,7 @@ public class PDFStreamEngine
 		}
 
 		PDResources parent = pushResources(group);
-		saveGraphicsState();
+		Stack<PDGraphicsState> savedStack = saveGraphicsStack();
 
 		// transform the CTM using the stream's matrix
 		getGraphicsState().getCurrentTransformationMatrix().concatenate(group.getMatrix());
@@ -209,7 +209,7 @@ public class PDFStreamEngine
 
 		processStreamOperators(group);
 
-		restoreGraphicsState();
+		restoreGraphicsStack(savedStack);
 		popResources(parent);
 	}
 
@@ -336,7 +336,7 @@ public class PDFStreamEngine
 		initialMatrix = Matrix.concatenate(initialMatrix, patternMatrix);
 
 		// save the original graphics state
-		saveGraphicsState();
+		Stack<PDGraphicsState> savedStack = saveGraphicsStack();
 		
 		// save a clean state (new clipping path, line path, etc.)
 		RectF bbox = new RectF();
@@ -364,8 +364,7 @@ public class PDFStreamEngine
 		processStreamOperators(tilingPattern);
 
 		initialMatrix = parentMatrix;
-		restoreGraphicsState(); // restores clean state
-		restoreGraphicsState(); // restores original state
+		restoreGraphicsStack(savedStack);
 		popResources(parent);
 	}
 
@@ -423,7 +422,7 @@ public class PDFStreamEngine
 	private void processStream(PDContentStream contentStream) throws IOException
 	{
 		PDResources parent = pushResources(contentStream);
-		saveGraphicsState();
+		Stack<PDGraphicsState> savedStack = saveGraphicsStack();
 		Matrix parentMatrix = initialMatrix;
 
 		// transform the CTM using the stream's matrix
@@ -439,7 +438,7 @@ public class PDFStreamEngine
 		processStreamOperators(contentStream);
 
 		initialMatrix = parentMatrix;
-		restoreGraphicsState();
+		restoreGraphicsStack(savedStack);
 		popResources(parent);
 	}
 
@@ -869,6 +868,25 @@ public class PDFStreamEngine
 	public void restoreGraphicsState()
 	{
 		graphicsStack.pop();
+	}
+	
+	/**
+	 * Saves the entire graphics stack.
+	 */
+	protected final Stack<PDGraphicsState> saveGraphicsStack()
+	{
+		Stack<PDGraphicsState> savedStack = graphicsStack;
+		graphicsStack = new Stack<PDGraphicsState>();
+		graphicsStack.add(savedStack.peek().clone());
+		return savedStack;
+	}
+
+	/**
+	 * Restores the entire graphics stack.
+	 */
+	protected final void restoreGraphicsStack(Stack<PDGraphicsState> snapshot)
+	{
+		graphicsStack = snapshot;
 	}
 
 	/**

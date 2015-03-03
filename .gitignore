@@ -11,6 +11,9 @@
 # Generated files
 bin/
 gen/
+lib/
+res/
+tmp/
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -20,6 +23,19 @@ local.properties
 *.iml
 *.iws
 *.ipr
+
+# Eclipse
+.project
+.metadata
+*.tmp
+*.bak
+*.swp
+*~.nib
+.classpath
+.settings/
+#other eclipse
+proguard-project.txt
+project.properties
 
 # Gradle
 .gradle

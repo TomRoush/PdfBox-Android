@@ -34,6 +34,8 @@ import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
+import android.util.Log;
+
 /**
  * A security handler as described in the PDF specifications.
  * A security handler is responsible of documents protection.
@@ -286,6 +288,16 @@ public abstract class SecurityHandler
         try
         {
             IOUtils.copy(cis, output);
+        }
+        catch(IOException exception)
+        {
+        	// starting with java 8 the JVM wraps an IOException around a GeneralSecurityException
+        	// it should be safe to swallow a GeneralSecurityException
+        	if (!(exception.getCause() instanceof GeneralSecurityException))
+        	{
+        		throw exception;
+        	}
+        	Log.d("PdfBoxAndroid", "A GeneralSecurityException occured when decrypting some stream data", exception);
         }
         finally
         {

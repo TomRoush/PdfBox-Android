@@ -13,7 +13,6 @@ import org.apache.pdfbox.util.awt.AffineTransform;
 
 /**
  * A Pattern dictionary from a page's resources.
- * @author Andreas Lehmkühler
  */
 public abstract class PDAbstractPattern implements COSObjectable
 {

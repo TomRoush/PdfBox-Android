@@ -13,8 +13,6 @@ import org.apache.pdfbox.cos.COSName;
  * The attributes such as FT (field type) or V (field value) do not logically
  * belong to the non terminal field but are inheritable attributes
  * for descendant terminal fields.
- * 
- * @author Andreas Lehmkühler
  */
 public class PDNonTerminalField extends PDFieldTreeNode
 {

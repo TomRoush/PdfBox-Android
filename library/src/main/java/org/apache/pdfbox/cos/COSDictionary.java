@@ -19,6 +19,7 @@ import org.apache.pdfbox.util.DateConverter;
 public class COSDictionary extends COSBase
 {
 	private static final String PATH_SEPARATOR = "/";
+	private boolean needToBeUpdated;
 
 	/**
 	 * The name-value pairs of this dictionary. The pairs are kept in the
@@ -1351,6 +1352,26 @@ public class COSDictionary extends COSBase
 	public Object accept(ICOSVisitor  visitor) throws IOException
 	{
 		return visitor.visitFromDictionary(this);
+	}
+	
+	/**
+	 * Get the update state for the COSWriter.
+	 *
+	 * @return the update state.
+	 */
+	public boolean isNeedToBeUpdated()
+	{
+		return needToBeUpdated;
+	}
+
+	/**
+	 * Set the update state of the dictionary for the COSWriter.
+	 *
+	 * @param flag the update state.
+	 */
+	public void setNeedToBeUpdated(boolean flag)
+	{
+		needToBeUpdated = flag;
 	}
 
 	/**

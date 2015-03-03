@@ -13,8 +13,6 @@ import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 /**
  * A Shading Resource.
- *
- * @author Andreas Lehmk�hler
  */
 public abstract class PDShading implements COSObjectable
 {

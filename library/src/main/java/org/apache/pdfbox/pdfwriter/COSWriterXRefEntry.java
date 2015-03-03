@@ -1,7 +1,7 @@
 package org.apache.pdfbox.pdfwriter;
 
 import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.persistence.util.COSObjectKey;
+import org.apache.pdfbox.cos.COSObjectKey;
 
 /**
  * this is en entry in the xref section of the physical pdf document

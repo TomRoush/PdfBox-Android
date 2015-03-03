@@ -48,7 +48,7 @@ public class PDDictionaryWrapper implements COSObjectable
      * 
      * @return the COS dictionary
      */
-    protected COSDictionary getCOSDictionary()
+    public COSDictionary getCOSDictionary()
     {
         return this.dictionary;
     }

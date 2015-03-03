@@ -17,7 +17,6 @@ import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
-import org.apache.pdfbox.pdmodel.font.encoding.MacOSRomanEncoding;
 import org.apache.pdfbox.pdmodel.font.encoding.StandardEncoding;
 import org.apache.pdfbox.pdmodel.font.encoding.Type1Encoding;
 import org.apache.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
@@ -285,7 +284,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 		String name = getGlyphList().codePointToName(unicode);
 		Map<String, Integer> inverted = getInvertedEncoding();
 
-		if (name.equals(".notdef"))
+		if (name.equals(".notdef") || !type1Equivalent.hasGlyph(name))
 		{
 			throw new IllegalArgumentException(
 					String.format("No glyph for U+%04X in font %s", unicode, getName()));
@@ -306,7 +305,8 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 		}
 
 		invertedEncoding = new HashMap<String, Integer>();
-		Map<Integer, String> codeToName = MacOSRomanEncoding.INSTANCE.getCodeToNameMap();
+		//Map<Integer, String> codeToName = MacOSRomanEncoding.INSTANCE.getCodeToNameMap();
+		Map<Integer, String> codeToName = encoding.getCodeToNameMap();
 		for (Map.Entry<Integer, String> entry : codeToName.entrySet())
 		{
 			if (!invertedEncoding.containsKey(entry.getValue()))

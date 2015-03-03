@@ -12,8 +12,6 @@ import android.graphics.Paint;
 
 /**
  * J: Set the line cap style.
- *
- * @author Andreas Lehmkühler
  */
 public class SetLineCapStyle extends OperatorProcessor
 {

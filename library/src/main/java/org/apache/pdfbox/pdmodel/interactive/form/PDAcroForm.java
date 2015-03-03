@@ -391,6 +391,26 @@ public final class PDAcroForm implements COSObjectable
     {
         return acroForm;
     }
+    
+    /**
+     * This will tell if the AcroForm has XFA content.
+     *
+     * @return true if the AcroForm is an XFA form
+     */
+    public boolean hasXFA()
+    {
+    	return acroForm.containsKey(COSName.XFA);
+    }
+
+    /**
+     * This will tell if the AcroForm is a dynamic XFA form.
+     *
+     * @return true if the AcroForm is a dynamic XFA form
+     */
+    public boolean xfaIsDynamic()
+    {
+    	return hasXFA() && getFields().isEmpty();
+    }
 
     /**
      * Get the XFA resource, the XFA resource is only used for PDF 1.5+ forms.

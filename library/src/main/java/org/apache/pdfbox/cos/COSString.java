@@ -248,4 +248,10 @@ public final class COSString extends COSBase
 		int result = Arrays.hashCode(bytes);
 		return result + (forceHexForm ? 17 : 0);
 	}
+	
+	@Override
+	public String toString()
+	{
+		return "COSString{" + getString() + "}";
+	}
 }

@@ -10,7 +10,6 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 
 /**
  * A tiling pattern dictionary.
- * @author Andreas Lehmkühler
  */
 public class PDTilingPattern extends PDAbstractPattern implements PDContentStream
 {

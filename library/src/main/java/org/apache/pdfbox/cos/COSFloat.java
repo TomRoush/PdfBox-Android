@@ -22,7 +22,10 @@ public class COSFloat extends COSNumber
      */
     public COSFloat( float aFloat )
     {
-        setValue(aFloat);
+    	// use a BigDecimal as intermediate state to avoid
+    	// a floating point string representation of the float value
+    	value = new BigDecimal(String.valueOf(aFloat));
+    	valueAsString = removeNullDigits(value.toPlainString());
     }
 
     /**
@@ -45,30 +48,17 @@ public class COSFloat extends COSNumber
         }
     }
 
-    /**
-     * Set the value of the float object.
-     *
-     * @param floatValue The new float value.
-     */
-    public final void setValue( float floatValue )
-    {
-        // use a BigDecimal as intermediate state to avoid 
-        // a floating point string representation of the float value
-        value = new BigDecimal(String.valueOf(floatValue));
-        valueAsString = removeNullDigits(value.toPlainString());
-    }
-
-    private String removeNullDigits(String value)
+    private String removeNullDigits(String plainStringValue)
     {
         // remove fraction digit "0" only
-        if (value.indexOf('.') > -1 && !value.endsWith(".0"))
+        if (plainStringValue.indexOf('.') > -1 && !plainStringValue.endsWith(".0"))
         {
-            while (value.endsWith("0") && !value.endsWith(".0"))
+            while (plainStringValue.endsWith("0") && !plainStringValue.endsWith(".0"))
             {
-                value = value.substring(0,value.length()-1);
+                plainStringValue = plainStringValue.substring(0,plainStringValue.length()-1);
             }
         }
-        return value;
+        return plainStringValue;
     }
 
     /**
@@ -121,7 +111,8 @@ public class COSFloat extends COSNumber
     @Override
     public boolean equals( Object o )
     {
-        return o instanceof COSFloat && Float.floatToIntBits(((COSFloat)o).value.floatValue()) == Float.floatToIntBits(value.floatValue());
+        return o instanceof COSFloat &&
+        		Float.floatToIntBits(((COSFloat)o).value.floatValue()) == Float.floatToIntBits(value.floatValue());
     }
 
     /**

@@ -7,8 +7,8 @@ import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.cos.COSObject;
+import org.apache.pdfbox.cos.COSObjectKey;
 import org.apache.pdfbox.pdfwriter.COSWriter;
-import org.apache.pdfbox.persistence.util.COSObjectKey;
 
 import android.util.Log;
 
@@ -186,7 +186,10 @@ public class VisualSignatureParser extends BaseParser
                 endObjectKey = readString();
             }
             COSObject pdfObject = document.getObjectFromPool(key);
-            pb.setNeedToBeUpdate(true);
+            if (pb instanceof COSDictionary)
+            {
+            	((COSDictionary) pb).setNeedToBeUpdated(true);
+            }
             pdfObject.setObject(pb);
 
             if(!endObjectKey.equals(ENDOBJ_STRING)) 

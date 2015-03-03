@@ -46,6 +46,8 @@ public class COSStream extends COSDictionary implements Closeable
      */
     private RandomAccessFileOutputStream unFilteredStream;
     private DecodeResult decodeResult;
+    
+    private File scratchFile;
 
     /**
      * Constructor.  Creates a new stream with an empty dictionary.
@@ -118,9 +120,7 @@ public class COSStream extends COSDictionary implements Closeable
     {
         try 
         {
-            File scratchFile = File.createTempFile("PDFBox", null, scratchDirectory);
-            // mark scratch file to deleted automatically after usage
-            scratchFile.deleteOnExit();
+        	scratchFile = File.createTempFile("PDFBox", null, scratchDirectory);
             return new RandomAccessFile(scratchFile, "rw");
         }
         catch (IOException exception)
@@ -185,33 +185,6 @@ public class COSStream extends COSDictionary implements Closeable
             doEncode();
         }
         return filteredStream.getLength();
-    }
-    
-    /**
-     * This will set the expected length of the encoded stream. Call this method
-     * if the previously set expected length is wrong, to avoid further trouble.
-     * 
-     * @param length the expected length of the encoded stream.
-     */
-    public void setFilteredLength(long length)
-    {
-        filteredStream.setExpectedLength(COSInteger.get(length));
-    }
-
-    /**
-     * This will get the length of the data written in the encoded stream.
-     *
-     * @return the length of the data written in the encoded stream as long
-     *
-     * @throws IOException
-     */
-    public long getFilteredLengthWritten() throws IOException
-    {
-        if (filteredStream == null)
-        {
-            doEncode();
-        }
-        return filteredStream.getLengthWritten();
     }
     
     /**
@@ -597,6 +570,10 @@ public class COSStream extends COSDictionary implements Closeable
         if (unFilteredStream != null)
         {
         	unFilteredStream.close();
+        }
+        if (scratchFile != null)
+        {
+        	scratchFile.delete();
         }
     }
 }

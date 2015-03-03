@@ -23,10 +23,6 @@ import org.apache.pdfbox.pdmodel.graphics.state.PDGraphicsState;
 import org.apache.pdfbox.pdmodel.graphics.state.PDSoftMask;
 import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
-import org.apache.pdfbox.rendering.font.CIDType0Glyph2D;
-import org.apache.pdfbox.rendering.font.Glyph2D;
-import org.apache.pdfbox.rendering.font.TTFGlyph2D;
-import org.apache.pdfbox.rendering.font.Type1Glyph2D;
 import org.apache.pdfbox.util.Vector;
 import org.apache.pdfbox.util.awt.AffineTransform;
 
@@ -475,21 +471,22 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 //        float[] dashArray = dashPattern.getDashArray();
 //        if (dashArray != null)
 //        {
-//            // apply the CTM
-//            for (int i = 0; i < dashArray.length; ++i)
-//            {
-//                dashArray[i] = transformWidth(dashArray[i]);
-//            }
-//            phaseStart = (int)transformWidth(phaseStart);
+//        	// apply the CTM
+//        	for (int i = 0; i < dashArray.length; ++i)
+//        	{
+//        		// minimum line dash width avoids JVM crash, see PDFBOX-2373
+//        		dashArray[i] = Math.max(transformWidth(dashArray[i]), 0.016f);
+//        	}
+//        	phaseStart = (int)transformWidth(phaseStart);
 //
-//            // empty dash array is illegal
-//            if (dashArray.length == 0)
-//            {
-//                dashArray = null;
-//            }
+//        	// empty dash array is illegal
+//        	if (dashArray.length == 0)
+//        	{
+//        		dashArray = null;
+//        	}
 //        }
 //        return new BasicStroke(lineWidth, state.getLineCap(), state.getLineJoin(),
-//                state.getMiterLimit(), dashArray, phaseStart);
+//        		state.getMiterLimit(), dashArray, phaseStart);
 
         paint.setStrokeWidth(lineWidth);
         paint.setStrokeCap(state.getLineCap());
@@ -758,7 +755,21 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     public void showAnnotation(PDAnnotation annotation) throws IOException
     {
 //        lastClip = null;
-        super.showAnnotation(annotation);
+    	//TODO support more annotation flags (Invisible, NoZoom, NoRotate)
+//    	int deviceType = graphics.getDeviceConfiguration().getDevice().getType();
+//    	if (deviceType == GraphicsDevice.TYPE_PRINTER && !annotation.isPrinted())
+//    	{
+//    		return;
+//    	} Shouldn't be needed
+    	if (/*deviceType == GraphicsDevice.TYPE_RASTER_SCREEN && */annotation.isNoView())
+    	{
+    		return;
+    	}
+    	if (annotation.isHidden())
+    	{
+    		return;
+    	}
+    	super.showAnnotation(annotation);
     }
 
     @Override
