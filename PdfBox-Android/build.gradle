@@ -1,0 +1,39 @@
+apply plugin: 'com.android.library'
+
+ext {
+	PUBLISH_GROUP_ID = 'org.apache'
+	PUBLISH_ARTIFACT_ID = 'pdfbox-android'
+	PUBLISH_VERSION = '1.8.9'
+}
+
+android {
+    compileSdkVersion Integer.parseInt(project.ANDROID_BUILD_SDK_VERSION)
+    buildToolsVersion project.ANDROID_BUILD_TOOLS_VERSION
+    compileOptions.encoding = 'windows-1251'
+
+    defaultConfig {
+        minSdkVersion Integer.parseInt(project.ANDROID_BUILD_MIN_SDK_VERSION)
+        targetSdkVersion Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
+        versionName project.VERSION_NAME
+        versionCode Integer.parseInt(project.VERSION_CODE)
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    compile 'com.madgag.spongycastle:core:1.51.0.0'
+    compile 'com.madgag.spongycastle:pkix:1.51.0.0'
+    compile 'com.madgag.spongycastle:prov:1.51.0.0'
+}
+
+//apply from: 'https://raw.githubusercontent.com/blundell/release-android-library/master/android-release-aar.gradle'
+apply from: 'android-release-jar.gradle'
