@@ -1,1 +1,1 @@
-include ':PdfBox-Android', ':PdfBoxAndroid-Sample'
+include ':library', ':sample'
