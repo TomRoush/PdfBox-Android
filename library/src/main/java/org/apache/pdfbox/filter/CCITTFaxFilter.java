@@ -25,7 +25,7 @@ import android.util.Log;
 final class CCITTFaxFilter extends Filter
 {
     @Override
-    public final DecodeResult decode(InputStream encoded, OutputStream decoded,
+    public DecodeResult decode(InputStream encoded, OutputStream decoded,
                                          COSDictionary parameters, int index) throws IOException
     {
         DecodeResult result = new DecodeResult(new COSDictionary());
@@ -107,7 +107,7 @@ final class CCITTFaxFilter extends Filter
     }
 
     @Override
-    protected final void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
+    protected void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
             throws IOException
     {
     	Log.w("PdfBoxAndroid", "CCITTFaxDecode.encode is not implemented yet, skipping this stream.");

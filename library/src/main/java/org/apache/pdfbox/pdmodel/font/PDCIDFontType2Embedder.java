@@ -77,6 +77,7 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
     /**
      * Rebuild a font subset.
      */
+    @Override
     protected void buildSubset(InputStream ttfSubset, String tag, Map<Integer, Integer> gidToCid)
             throws IOException
     {
@@ -295,6 +296,11 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
 
         cidFont.setItem(COSName.W, getWidths(gidwidths));
     }
+    
+    enum State
+    {
+    	FIRST, BRACKET, SERIAL
+    }
 
     private COSArray getWidths(int[] widths) throws IOException
     {
@@ -312,8 +318,7 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
         COSArray outer = new COSArray();
         outer.add(COSInteger.get(lastCid));
 
-        final int FIRST = 0, BRACKET = 1, SERIAL = 2;
-        int state = FIRST;
+        State state = State.FIRST;
 
         for (int i = 2; i < widths.length; i += 2)
         {
@@ -325,11 +330,11 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
                 case FIRST:
                     if (cid == lastCid + 1 && value == lastValue)
                     {
-                        state = SERIAL;
+                        state = State.SERIAL;
                     }
                     else if (cid == lastCid + 1)
                     {
-                        state = BRACKET;
+                        state = State.BRACKET;
                         inner = new COSArray();
                         inner.add(COSInteger.get(lastValue));
                     }
@@ -344,7 +349,7 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
                 case BRACKET:
                     if (cid == lastCid + 1 && value == lastValue)
                     {
-                        state = SERIAL;
+                        state = State.SERIAL;
                         outer.add(inner);
                         outer.add(COSInteger.get(lastCid));
                     }
@@ -354,7 +359,7 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
                     }
                     else
                     {
-                        state = FIRST;
+                        state = State.FIRST;
                         inner.add(COSInteger.get(lastValue));
                         outer.add(inner);
                         outer.add(COSInteger.get(cid));
@@ -366,7 +371,7 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
                         outer.add(COSInteger.get(lastCid));
                         outer.add(COSInteger.get(lastValue));
                         outer.add(COSInteger.get(cid));
-                        state = FIRST;
+                        state = State.FIRST;
                     }
                     break;
             }

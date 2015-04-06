@@ -1,11 +1,11 @@
 package org.apache.pdfbox.pdmodel.common.function;
 
+import java.io.IOException;
+
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.common.PDRange;
-
-import java.io.IOException;
 
 /**
  * This class represents a Type 3 (stitching) function in a PDF document.
@@ -33,6 +33,7 @@ public class PDFunctionType3 extends PDFunction
     /**
      * {@inheritDoc}
      */
+    @Override
     public int getFunctionType()
     {
         return 3;
@@ -41,6 +42,7 @@ public class PDFunctionType3 extends PDFunction
     /**
     * {@inheritDoc}
     */
+    @Override
     public float[] eval(float[] input) throws IOException
     {
         //This function is known as a "stitching" function. Based on the input, it decides which child function to call.
@@ -84,6 +86,10 @@ public class PDFunctionType3 extends PDFunction
                     break;
                 }
             }
+        }
+        if (function == null)
+        {
+        	throw new IOException("partition not found in type 3 function");
         }
         float[] functionValues = new float[]{x};
         // calculate the output values using the chosen function

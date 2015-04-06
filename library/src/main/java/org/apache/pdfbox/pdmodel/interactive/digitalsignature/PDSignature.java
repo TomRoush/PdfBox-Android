@@ -131,7 +131,7 @@ public class PDSignature implements COSObjectable
      */
     public void setSubFilter(COSName subfilter)
     {
-        dictionary.setItem(COSName.SUBFILTER, subfilter);
+        dictionary.setItem(COSName.SUB_FILTER, subfilter);
     }
 
     /**
@@ -198,7 +198,7 @@ public class PDSignature implements COSObjectable
      */
     public String getSubFilter()
     {
-        return dictionary.getNameAsString(COSName.SUBFILTER);
+        return dictionary.getNameAsString(COSName.SUB_FILTER);
     }
 
     /**

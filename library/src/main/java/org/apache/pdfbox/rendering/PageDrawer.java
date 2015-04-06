@@ -108,7 +108,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 		
 		setRenderingHints();
 		
-		canvas.translate(0, (int) pageSize.getHeight());
+		canvas.translate(0, pageSize.getHeight());
 		canvas.scale(1, -1);
 		
 		paint.setStrokeCap(Paint.Cap.BUTT);

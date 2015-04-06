@@ -7,7 +7,7 @@ import java.nio.charset.Charset;
  *
  * @author John Hewson
  */
-public class Charsets
+public final class Charsets
 {
 	private Charsets() {}
 

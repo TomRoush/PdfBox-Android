@@ -27,7 +27,7 @@ import android.util.Log;
  * 
  * The fields appearance defines the 'look' the field has when it's rendered for display or printing.
  */
-public class AppearanceGenerator
+public final class AppearanceGenerator
 {
 	private AppearanceGenerator()
 	{

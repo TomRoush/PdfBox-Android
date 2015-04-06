@@ -58,7 +58,7 @@ public class LZWFilter extends Filter
      * {@inheritDoc}
      */
     @Override
-    public final DecodeResult decode(InputStream encoded, OutputStream decoded,
+    public DecodeResult decode(InputStream encoded, OutputStream decoded,
             COSDictionary parameters, int index) throws IOException
     {
         int predictor = -1;
@@ -152,7 +152,7 @@ public class LZWFilter extends Filter
      * {@inheritDoc}
      */
     @Override
-    protected final void encode(InputStream rawData, OutputStream encoded, COSDictionary parameters)
+    protected void encode(InputStream rawData, OutputStream encoded, COSDictionary parameters)
             throws IOException
     {
         List<byte[]> codeTable = createCodeTable();

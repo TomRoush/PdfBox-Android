@@ -52,7 +52,8 @@ final class CIDType0Glyph2D implements Glyph2D
 		}
 		catch (IOException e)
 		{
-			Log.w("PdfBoxAndroid", "Glyph rendering failed", e); // todo: escalate this error?
+			// TODO: escalate this error?
+			Log.w("PdfBoxAndroid", "Glyph rendering failed", e);
 			return new Path();
 		}
 	}

@@ -12,10 +12,14 @@ import java.util.Map;
 /**
  * CMap resource loader and cache.
  */
-class CMapManager
+final class CMapManager
 {
     protected static Map<String, CMap> cMapCache =
             Collections.synchronizedMap(new HashMap<String, CMap>());
+    
+    private CMapManager()
+    {
+    }
 
     /**
      * Fetches the predefined CMap from disk (or cache).

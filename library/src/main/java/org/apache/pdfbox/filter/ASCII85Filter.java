@@ -14,7 +14,7 @@ import org.apache.pdfbox.io.IOUtils;
 final class ASCII85Filter extends Filter
 {
     @Override
-    public final DecodeResult decode(InputStream encoded, OutputStream decoded,
+    public DecodeResult decode(InputStream encoded, OutputStream decoded,
                                          COSDictionary parameters, int index) throws IOException
     {
         ASCII85InputStream is = null;
@@ -37,7 +37,7 @@ final class ASCII85Filter extends Filter
     }
 
     @Override
-    protected final void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
+    protected void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
         throws IOException
     {
         ASCII85OutputStream os = new ASCII85OutputStream(encoded);

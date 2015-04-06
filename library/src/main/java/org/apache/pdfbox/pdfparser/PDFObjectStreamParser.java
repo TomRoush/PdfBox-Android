@@ -63,15 +63,13 @@ public class PDFObjectStreamParser extends BaseParser
             while( (cosObject = parseDirObject()) != null )
             {
                 object = new COSObject(cosObject);
-                object.setGenerationNumber( COSInteger.ZERO );
+                object.setGenerationNumber(0);
                 if (objectCounter >= objectNumbers.size())
                 {
                 	Log.e("PdfBoxAndroid", "/ObjStm (object stream) has more objects than /N " + numberOfObjects);
                     break;
                 }
-                COSInteger objNum =
-                    COSInteger.get( objectNumbers.get( objectCounter).intValue() );
-                object.setObjectNumber( objNum );
+                object.setObjectNumber( objectNumbers.get( objectCounter) );
                 streamObjects.add( object );
                 Log.d("PdfBoxAndroid", "parsed=" + object );
                 // According to the spec objects within an object stream shall not be enclosed 

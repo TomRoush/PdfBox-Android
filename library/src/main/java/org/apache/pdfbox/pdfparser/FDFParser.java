@@ -105,7 +105,7 @@ public class FDFParser extends COSParser
         }
         else
         {
-            trailer = searchXref(startXRefOffset);
+            trailer = rebuildTrailer();
         }
     
         // PDFBOX-1557 - ensure that all COSObject are loaded in the trailer

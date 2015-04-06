@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
 
 import org.apache.pdfbox.filter.DecodeResult;
 import org.apache.pdfbox.filter.Filter;
@@ -19,7 +18,6 @@ import org.apache.pdfbox.io.RandomAccessBuffer;
 import org.apache.pdfbox.io.RandomAccessFile;
 import org.apache.pdfbox.io.RandomAccessFileInputStream;
 import org.apache.pdfbox.io.RandomAccessFileOutputStream;
-import org.apache.pdfbox.pdfparser.PDFStreamParser;
 
 import android.util.Log;
 
@@ -128,20 +126,6 @@ public class COSStream extends COSDictionary implements Closeable
         	Log.e("PdfBoxAndroid", "Can't create temp file, using memory buffer instead", exception);
             return new RandomAccessBuffer();
         }
-    }
-
-    /**
-     * This will get all the tokens in the stream.
-     *
-     * @return All of the tokens in the stream.
-     *
-     * @throws IOException If there is an error parsing the stream.
-     */
-    public List<Object> getStreamTokens() throws IOException
-    {
-        PDFStreamParser parser = new PDFStreamParser( this );
-        parser.parse();
-        return parser.getTokens();
     }
 
     /**
@@ -571,9 +555,13 @@ public class COSStream extends COSDictionary implements Closeable
         {
         	unFilteredStream.close();
         }
-        if (scratchFile != null)
+        
+        if (scratchFile != null && scratchFile.exists())
         {
-        	scratchFile.delete();
+        	if (!scratchFile.delete())
+        	{
+        		throw new IOException("Can't delete the temporary scratch file "+scratchFile.getAbsolutePath());
+        	}
         }
     }
 }

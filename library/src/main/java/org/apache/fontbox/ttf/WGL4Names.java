@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * Windows Glyph List 4 (WGL4) names for Mac glyphs.
  */
-public class WGL4Names
+public final class WGL4Names
 {
     /**
      * The number of standard mac glyph names.
@@ -81,7 +81,7 @@ public class WGL4Names
     /**
      * The indices of the standard mac glyph names.
      */
-    public static Map<String,Integer> MAC_GLYPH_NAMES_INDICES;
+    public static final Map<String,Integer> MAC_GLYPH_NAMES_INDICES;
 
     static
     {
@@ -90,5 +90,9 @@ public class WGL4Names
         {
             MAC_GLYPH_NAMES_INDICES.put(MAC_GLYPH_NAMES[i],i);
         }
+    }
+    
+    private WGL4Names()
+    {
     }
 }

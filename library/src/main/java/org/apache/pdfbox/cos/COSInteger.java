@@ -9,7 +9,7 @@ import java.io.OutputStream;
  * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
  * @version $Revision: 1.12 $
  */
-public class COSInteger extends COSNumber
+public final class COSInteger extends COSNumber
 {
 
     /**
@@ -76,7 +76,7 @@ public class COSInteger extends COSNumber
         }
     }
 
-    private long value;
+    private final long value;
 
     /**
      * constructor.

@@ -26,7 +26,7 @@ final class FlateFilter extends Filter
     private static final int BUFFER_SIZE = 16348;
 
     @Override
-    public final DecodeResult decode(InputStream encoded, OutputStream decoded,
+    public DecodeResult decode(InputStream encoded, OutputStream decoded,
                                          COSDictionary parameters, int index) throws IOException
     {
         int predictor = -1;
@@ -99,7 +99,7 @@ final class FlateFilter extends Filter
     }
     
     @Override
-    protected final void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
+    protected void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
             throws IOException
     {
         DeflaterOutputStream out = new DeflaterOutputStream(encoded);

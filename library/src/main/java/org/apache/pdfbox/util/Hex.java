@@ -5,7 +5,7 @@ package org.apache.pdfbox.util;
  *
  * @author John Hewson
  */
-public class Hex
+public final class Hex
 {
     private Hex() {}
 

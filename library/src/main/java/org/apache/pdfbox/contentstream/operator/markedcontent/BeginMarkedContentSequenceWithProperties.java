@@ -8,7 +8,7 @@ import org.apache.pdfbox.contentstream.operator.OperatorProcessor;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.util.PDFMarkedContentExtractor;
+import org.apache.pdfbox.text.PDFMarkedContentExtractor;
 
 /**
  * BDC : Begins a marked-content sequence with property list.

@@ -291,13 +291,13 @@ public class PDFParser extends COSParser
         COSDictionary trailer = null;
         // parse startxref
         long startXRefOffset = getStartxrefOffset();
-        if (startXRefOffset > 0)
+        if (startXRefOffset > -1)
         {
             trailer = parseXref(startXRefOffset);
         }
         else if (isLenient())
         {
-            trailer = searchXref(startXRefOffset);
+            trailer = rebuildTrailer();
         }
         // prepare decryption if necessary
         prepareDecryption();

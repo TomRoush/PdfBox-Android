@@ -34,7 +34,7 @@ import android.util.Log;
 final class DCTFilter extends Filter
 {
     @Override
-    public final DecodeResult decode(InputStream encoded, OutputStream decoded,
+    public DecodeResult decode(InputStream encoded, OutputStream decoded,
                                          COSDictionary parameters, int index) throws IOException
     {
     	// Already ready, just read it back out
@@ -138,7 +138,7 @@ final class DCTFilter extends Filter
     }
 
     @Override
-    protected final void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
+    protected void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
             throws IOException
     {
     	Log.w("PdfBoxAndroid", "DCTFilter#encode is not implemented yet, skipping this stream.");

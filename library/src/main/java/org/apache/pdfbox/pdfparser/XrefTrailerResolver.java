@@ -35,7 +35,7 @@ import android.util.Log;
  * using {@link #setStartxref(long)}. This is used to build the chain of
  * active xref/trailer objects used for creating document trailer and xref table.
  *
- * @author Timo Böhme (timo.boehme at ontochem.com)
+ * @author Timo Böhme
  */
 public class XrefTrailerResolver
 {
@@ -301,7 +301,7 @@ public class XrefTrailerResolver
             return null;
         }
         final Set<Long> refObjNrs = new HashSet<Long>();
-        final int       cmpVal    = - objstmObjNr;
+        final long cmpVal = -objstmObjNr;
         
         for ( Entry<COSObjectKey,Long> xrefEntry : resolvedXrefTrailer.xrefTable.entrySet() ) 
         {

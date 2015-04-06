@@ -17,6 +17,10 @@ import android.util.Log;
  */
 final class SampledImageReader
 {
+	private SampledImageReader()
+	{
+	}
+	
     /**
      * Returns an ARGB image filled with the given paint and using the given image as a mask.
      * @param paint the paint to fill the visible portions of the image with
