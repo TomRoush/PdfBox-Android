@@ -9,9 +9,6 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 
 /**
  * This class represents a viewport dictionary.
- * 
- * @version $Revision: 1.0 $
- *
  */
 public class PDViewportDictionary implements COSObjectable
 {

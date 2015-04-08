@@ -25,7 +25,7 @@ import android.graphics.Path;
 /**
  * A glyph data record in the glyf table.
  * 
- * @author Ben Litchfield (ben@benlitchfield.com)
+ * @author Ben Litchfield
  */
 public class GlyphData
 {

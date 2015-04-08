@@ -6,8 +6,7 @@ import org.apache.pdfbox.cos.COSDictionary;
 /**
  * A wrapper for a COS dictionary.
  *
- * @author <a href="mailto:Johannes%20Koch%20%3Ckoch@apache.org%3E">Johannes Koch</a>
- * @version $Revision: $
+ * @author Ben Litchfield
  *
  */
 public class PDDictionaryWrapper implements COSObjectable

@@ -17,9 +17,8 @@ import android.util.Log;
 /**
  * A root of a structure tree.
  * 
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>, <a
- * href="mailto:Johannes%20Koch%20%3Ckoch@apache.org%3E">Johannes Koch</a>
- * 
+ * @author Ben Litchfield
+ * @author Johannes Koch
  */
 public class PDStructureTreeRoot extends PDStructureNode
 {

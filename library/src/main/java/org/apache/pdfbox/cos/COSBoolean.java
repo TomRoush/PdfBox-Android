@@ -6,8 +6,7 @@ import java.io.OutputStream;
 /**
  * This class represents a boolean value in the PDF document.
  *
- * @author <a href="ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.14 $
+ * @author Ben Litchfield
  */
 public final class COSBoolean extends COSBase
 {

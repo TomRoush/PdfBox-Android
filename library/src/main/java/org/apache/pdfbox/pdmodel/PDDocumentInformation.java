@@ -1,6 +1,5 @@
 package org.apache.pdfbox.pdmodel;
 
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.Set;
 import java.util.TreeSet;
@@ -15,10 +14,8 @@ import org.apache.pdfbox.pdmodel.common.COSObjectable;
  * it exists or null if it does not exist.  If you pass in null for the setXXX
  * method then it will clear the value.
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
+ * @author Ben Litchfield
  * @author  Gerardo Ortiz
- *
- * @version $Revision: 1.12 $
  */
 public final class PDDocumentInformation implements COSObjectable
 {

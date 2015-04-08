@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 
- * @author Koch
- * @version $Revision: $
+ * @author Johannes Koch
  *
  * @param <T> the type of object to store the revision numbers with
  */

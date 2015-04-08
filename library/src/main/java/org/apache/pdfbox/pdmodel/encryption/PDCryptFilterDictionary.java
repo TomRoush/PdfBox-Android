@@ -9,9 +9,6 @@ import org.apache.pdfbox.cos.COSName;
  * This class is a specialized view of the crypt filter dictionary of a PDF document.
  * It contains a low level dictionary (COSDictionary) and provides the methods to
  * manage its fields.
- *
- *
- * @version $Revision: 1.0 $
  */
 public class PDCryptFilterDictionary
 {

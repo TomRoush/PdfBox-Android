@@ -6,7 +6,6 @@ import org.apache.pdfbox.cos.COSDictionary;
  * This is the class that represents an arbitary Unknown Annotation type.
  *
  * @author Paul King
- * @version $Revision: 1.1 $
  */
 public class PDAnnotationUnknown extends PDAnnotation
 {

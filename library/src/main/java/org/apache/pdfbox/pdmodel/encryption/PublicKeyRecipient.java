@@ -7,9 +7,7 @@ import java.security.cert.X509Certificate;
  *
  * @see PublicKeyProtectionPolicy
  *
- * @author Benoit Guillon (benoit.guillon@snv.jussieu.fr)
- *
- * @version $Revision: 1.2 $
+ * @author Benoit Guillon
  */
 public class PublicKeyRecipient
 {

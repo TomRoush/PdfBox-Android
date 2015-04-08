@@ -16,6 +16,8 @@
  */
 package org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline;
 
+import java.util.Iterator;
+
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.common.PDDictionaryWrapper;
@@ -23,8 +25,7 @@ import org.apache.pdfbox.pdmodel.common.PDDictionaryWrapper;
 /**
  * Base class for a node in the outline of a PDF document.
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.3 $
+ * @author Ben Litchfield
  */
 public abstract class PDOutlineNode extends PDDictionaryWrapper
 {
@@ -297,5 +298,20 @@ public abstract class PDOutlineNode extends PDDictionaryWrapper
 				parent.setOpenCount(parent.getOpenCount() - delta);
 			}
 		}
+	}
+	
+	/**
+	 * @return An {@link Iterable} view of the items children
+	 */
+	public Iterable<PDOutlineItem> children()
+	{
+		return new Iterable<PDOutlineItem>()
+				{
+			@Override
+			public Iterator<PDOutlineItem> iterator()
+			{
+				return new PDOutlineItemIterator(getFirstChild());
+			}
+				};
 	}
 }

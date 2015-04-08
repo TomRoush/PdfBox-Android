@@ -4,7 +4,6 @@ import java.util.Map;
 
 /**
  * This class provides all the supported operators.
- * @version $Revision$
  */
 public class Operators
 {

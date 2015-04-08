@@ -13,8 +13,6 @@ import java.io.IOException;
  * This class represents a Type 4 (PostScript calculator) function in a PDF document.
  * <p>
  * See section 3.9.4 of the PDF 1.4 Reference.
- *
- * @version $Revision: 1.2 $
  */
 public class PDFunctionType4 extends PDFunction
 {

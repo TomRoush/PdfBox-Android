@@ -563,7 +563,7 @@ public abstract class PDFieldTreeNode implements COSObjectable
 				
 				if (name[nameIndex].equals(kidDictionary.getString(COSName.T)))
 				{
-					retval = (PDFieldTreeNode) PDFieldTreeNode.createField(acroForm, kidDictionary, this);
+					retval = PDFieldTreeNode.createField(acroForm, kidDictionary, this);
 					if (name.length > nameIndex + 1)
 					{
 						retval = retval.findKid(name, nameIndex + 1);
@@ -779,15 +779,7 @@ public abstract class PDFieldTreeNode implements COSObjectable
 		String fieldType = findFieldType(field);
 		if (FIELD_TYPE_CHOICE.equals(fieldType))
 		{
-			int flags = field.getInt(COSName.FF, 0);
-			if ((flags & PDChoice.FLAG_COMBO) != 0)
-			{
-				return new PDComboBox(form, field, parentNode);
-			}
-			else
-			{
-				return new PDListBox(form, field, parentNode);
-			}
+			return createChoiceSubType(form, field, parentNode);
 		}
 		else if (FIELD_TYPE_TEXT.equals(fieldType))
 		{
@@ -799,26 +791,44 @@ public abstract class PDFieldTreeNode implements COSObjectable
 		}
 		else if (FIELD_TYPE_BUTTON.equals(fieldType))
 		{
-			int flags = field.getInt(COSName.FF, 0);
-			// BJL: I have found that the radio flag bit is not always set
-			// and that sometimes there is just a kids dictionary.
-			// so, if there is a kids dictionary then it must be a radio button group.
-			if ((flags & PDButton.FLAG_RADIO) != 0)
-			{
-				return new PDRadioButton(form, field, parentNode);
-			}
-			else if ((flags & PDButton.FLAG_PUSHBUTTON) != 0)
-			{
-				return new PDPushButton(form, field, parentNode);
-			}
-			else
-			{
-				return new PDCheckbox(form, field, parentNode);
-			}
+			return createButtonSubType(form, field, parentNode);
 		}
 		else
 		{
 			return new PDNonTerminalField(form, field, parentNode); 
+		}
+	}
+	
+	private static PDFieldTreeNode createChoiceSubType(PDAcroForm form, COSDictionary field, PDFieldTreeNode parentNode)
+	{
+		int flags = field.getInt(COSName.FF, 0);
+		if ((flags & PDChoice.FLAG_COMBO) != 0)
+		{
+			return new PDComboBox(form, field, parentNode);
+		}
+		else
+		{
+			return new PDListBox(form, field, parentNode);
+		}
+	}
+
+	private static PDFieldTreeNode createButtonSubType(PDAcroForm form, COSDictionary field, PDFieldTreeNode parentNode)
+	{
+		int flags = field.getInt(COSName.FF, 0);
+		// BJL: I have found that the radio flag bit is not always set
+		// and that sometimes there is just a kids dictionary.
+		// so, if there is a kids dictionary then it must be a radio button group.
+		if ((flags & PDButton.FLAG_RADIO) != 0)
+		{
+			return new PDRadioButton(form, field, parentNode);
+		}
+		else if ((flags & PDButton.FLAG_PUSHBUTTON) != 0)
+		{
+			return new PDPushButton(form, field, parentNode);
+		}
+		else
+		{
+			return new PDCheckbox(form, field, parentNode);
 		}
 	}
 

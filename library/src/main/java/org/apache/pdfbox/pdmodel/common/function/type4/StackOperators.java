@@ -6,8 +6,6 @@ import java.util.Stack;
 
 /**
  * Provides the stack operators such as "pop" and "dup".
- *
- * @version $Revision$
  */
 class StackOperators
 {

@@ -10,8 +10,7 @@ import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalAction
 /**
  * This is the class that represents a widget.
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.3 $
+ * @author Ben Litchfield
  */
 public class PDAnnotationWidget extends PDAnnotation
 {

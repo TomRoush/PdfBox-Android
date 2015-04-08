@@ -6,10 +6,7 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 
 /**
- * This class represents an external data dictionary.
- * 
- * @version $Revision: 1.0 $
- * 
+ * This class represents an external data dictionary. 
  */
 public class PDExternalDataDictionary implements COSObjectable
 {

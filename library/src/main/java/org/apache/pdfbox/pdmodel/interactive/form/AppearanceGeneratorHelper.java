@@ -30,7 +30,7 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import android.util.Log;
 
 /**
- * Create the AcroForms filed appearance helper.
+ * Create the AcroForms field appearance helper.
  * <p>
  * A helper class to the {@link AppearanceGenerator} to generate update an AcroForm field appearance.'
  * </p>
@@ -298,31 +298,37 @@ class AppearanceGeneratorHelper
 		} else 
 		{
 			// Unknown quadding value - default to left
-			printWriter.println(paddingLeft + " " + verticalOffset + " Td");
+			leftOffset = paddingLeft;
 			Log.d("PdfBoxAndroid", "Unknown justification value, defaulting to left: " + q);
 		}
 
-		printWriter.println(leftOffset + " " + verticalOffset + " Td");
-
 		// show the text
-		if (!isMultiLineValue(value) || stringWidth > borderEdge.getWidth() - paddingLeft -
-				paddingRight)
+		if (!isMultiLine())
 		{
+			printWriter.println(leftOffset + " " + verticalOffset + " Td");
 			printWriter.flush();
 			COSWriter.writeString(font.encode(value), output); 
 			printWriter.println("> Tj");
 		}
 		else
 		{
-			String[] paragraphs = value.split("\n");
-			for (int i = 0; i < paragraphs.length; i++)
-			{
-				boolean lastLine = i == paragraphs.length - 1;
-				printWriter.print("<");
-				printWriter.flush();
-				COSWriter.writeString(font.encode(value), output);
-				printWriter.println(lastLine ? " Tj\n" : "> Tj 0 -13 Td");
-			}
+			// adjust offset
+			// TODO: offset is dependent on border value if there is one
+			verticalOffset = verticalOffset + font.getFontDescriptor().getAscent() / 1000 * fontSize;
+			printWriter.println(leftOffset + " " + verticalOffset + " Td");
+			PlainText textContent = new PlainText(value);
+			AppearanceStyle appearanceStyle = new AppearanceStyle();
+			appearanceStyle.setFont(font);
+			appearanceStyle.setFontSize(fontSize);
+			PlainTextFormatter formatter = new PlainTextFormatter
+					.Builder(output)
+			.style(appearanceStyle)
+			.text(textContent)
+			.width(borderEdge.getWidth() - paddingLeft - paddingRight)
+			.wrapLines(true)
+			.textAlign(q)
+			.build();
+			formatter.format();
 		}        
 		printWriter.println("ET");
 		printWriter.flush();
@@ -426,9 +432,9 @@ class AppearanceGeneratorHelper
         return null;
     }
 
-	private boolean isMultiLineValue(String multiLineValue)
+	private boolean isMultiLine()
 	{
-		return (parent instanceof PDTextField && ((PDTextField) parent).isMultiline() && multiLineValue.contains("\n"));
+		return parent instanceof PDTextField && ((PDTextField) parent).isMultiline();
 	}
 
 	/**
@@ -523,7 +529,7 @@ class AppearanceGeneratorHelper
 			float lineWidth = getLineWidth(tokens);
 			float height = pdFont.getFontDescriptor().getFontBoundingBox().getHeight() / 1000f;
 			float availHeight = getAvailableHeight(boundingBox, lineWidth);
-			fontSize = Math.min((availHeight / height), widthBasedFontSize);
+			fontSize = Math.min(availHeight / height, widthBasedFontSize);
 		}
 		return fontSize;
 	}

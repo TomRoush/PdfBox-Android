@@ -18,8 +18,7 @@ import org.apache.pdfbox.cos.COSString;
 /**
  * A class that will take a list of tokens and write out a stream with them.
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.8 $
+ * @author Ben Litchfield
  */
 public class ContentStreamWriter
 {

@@ -2,8 +2,6 @@ package org.apache.pdfbox.pdmodel.common.function.type4;
 
 /**
  * Interface for PostScript operators.
- *
- * @version $Revision$
  */
 public interface Operator
 {

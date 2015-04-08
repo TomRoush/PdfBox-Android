@@ -18,8 +18,6 @@ import org.apache.pdfbox.pdmodel.common.PDStream;
 
 /**
  * Utility class used to clone PDF objects. It keeps track of objects it has already cloned.
- *
- * @version $Revision$
  */
 class PDFCloneUtility
 {

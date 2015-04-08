@@ -9,7 +9,6 @@ import java.io.Writer;
 
 /**
  * This class contains various I/O-related methods.
- * @version $Revision$
  */
 public final class IOUtils
 {

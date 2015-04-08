@@ -13,7 +13,6 @@ import org.apache.pdfbox.pdmodel.common.PDTextStream;
  * annotation types.
  *
  * @author Paul King
- * @version $Revision: 1.1 $
  */
 public class PDAnnotationMarkup extends PDAnnotation
 {

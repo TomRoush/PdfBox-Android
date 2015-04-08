@@ -16,9 +16,7 @@ package org.apache.pdfbox.pdmodel.encryption;
 *  doc.openProtection(dm);
 *  </pre>
 *
-* @author Benoit Guillon (benoit.guillon@snv.jussieu.fr)
-*
-* @version $Revision: 1.2 $
+* @author Benoit Guillon
 */
 
 public class StandardDecryptionMaterial extends DecryptionMaterial
