@@ -95,8 +95,14 @@ final class FileSystemFontProvider extends FontProvider
 
         try
         {
-            // check for 'name' table
-            NamingTable nameTable = ttf.getNaming();
+        	// check for 'name' table
+        	NamingTable nameTable = null;
+
+        	// ttf could still be null
+        	if (ttf != null)
+        	{
+        		nameTable = ttf.getNaming();
+        	}
             if (nameTable == null)
             {
             	Log.w("PdfBoxAndroid", "Missing 'name' table in font " + otfFile);

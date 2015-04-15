@@ -342,7 +342,8 @@ public final class Matrix implements Cloneable
      *
      * @param point point to transform
      */
-    public void transform(PointF point) {
+    public void transform(PointF point)
+    {
         float x = (float)point.x;
         float y = (float)point.y;
         float a = single[0];
@@ -360,7 +361,8 @@ public final class Matrix implements Cloneable
 	 * @param x x-coordinate
 	 * @param y y-coordinate
 	 */
-	public PointF transformPoint(double x, double y) {
+	public PointF transformPoint(double x, double y)
+	{
 		float a = single[0];
 		float b = single[1];
 		float c = single[3];
@@ -375,7 +377,8 @@ public final class Matrix implements Cloneable
 	 *
 	 * @param vector @2D vector
 	 */
-	public Vector transform(Vector vector) {
+	public Vector transform(Vector vector)
+	{
 		float a = single[0];
 		float b = single[1];
 		float c = single[3];

@@ -258,6 +258,9 @@ public class CFFParser
         }
     }
 
+    /**
+     * @param b0  
+     */
     private static Double readRealNumber(CFFDataInput input, int b0) throws IOException
     {
         StringBuffer sb = new StringBuffer();
@@ -511,24 +514,7 @@ public class CFFParser
             DictData privateDict = readDictData(privateDictData);
 
             // populate private dict
-            Map<String, Object> privDict = new LinkedHashMap<String, Object>();
-            privDict.put("BlueValues", getDelta(privateDict, "BlueValues", null));
-            privDict.put("OtherBlues", getDelta(privateDict, "OtherBlues", null));
-            privDict.put("FamilyBlues", getDelta(privateDict, "FamilyBlues", null));
-            privDict.put("FamilyOtherBlues", getDelta(privateDict, "FamilyOtherBlues", null));
-            privDict.put("BlueScale", getNumber(privateDict, "BlueScale", 0.039625));
-            privDict.put("BlueShift", getNumber(privateDict, "BlueShift", 7));
-            privDict.put("BlueFuzz", getNumber(privateDict, "BlueFuzz", 1));
-            privDict.put("StdHW", getNumber(privateDict, "StdHW", null));
-            privDict.put("StdVW", getNumber(privateDict, "StdVW", null));
-            privDict.put("StemSnapH", getDelta(privateDict, "StemSnapH", null));
-            privDict.put("StemSnapV", getDelta(privateDict, "StemSnapV", null));
-            privDict.put("ForceBold", getBoolean(privateDict, "ForceBold", false));
-            privDict.put("LanguageGroup", getNumber(privateDict, "LanguageGroup", 0));
-            privDict.put("ExpansionFactor", getNumber(privateDict, "ExpansionFactor", 0.06));
-            privDict.put("initialRandomSeed", getNumber(privateDict, "initialRandomSeed", 0));
-            privDict.put("defaultWidthX", getNumber(privateDict, "defaultWidthX", 0));
-            privDict.put("nominalWidthX", getNumber(privateDict, "nominalWidthX", 0));
+            Map<String, Object> privDict = readPrivateDict(privateDict);
             privateDictionaries.add(privDict);
 
             // local subrs
@@ -551,13 +537,36 @@ public class CFFParser
         input.setPosition(fdSelectPos);
         FDSelect fdSelect = readFDSelect(input, charStringsIndex.getCount(), font);
 
-        // todo: almost certainly erroneous - CIDFonts do not have a top-level private dict
-        //font.addValueToPrivateDict("defaultWidthX", 1000);
-        //font.addValueToPrivateDict("nominalWidthX", 0);
+        // TODO: almost certainly erroneous - CIDFonts do not have a top-level private dict
+        // font.addValueToPrivateDict("defaultWidthX", 1000);
+        // font.addValueToPrivateDict("nominalWidthX", 0);
 
         font.setFontDict(fontDictionaries);
         font.setPrivDict(privateDictionaries);
         font.setFdSelect(fdSelect);
+    }
+    
+    private Map<String, Object> readPrivateDict(DictData privateDict)
+    {
+    	Map<String, Object> privDict = new LinkedHashMap<String, Object>();
+    	privDict.put("BlueValues", getDelta(privateDict, "BlueValues", null));
+    	privDict.put("OtherBlues", getDelta(privateDict, "OtherBlues", null));
+    	privDict.put("FamilyBlues", getDelta(privateDict, "FamilyBlues", null));
+    	privDict.put("FamilyOtherBlues", getDelta(privateDict, "FamilyOtherBlues", null));
+    	privDict.put("BlueScale", getNumber(privateDict, "BlueScale", 0.039625));
+    	privDict.put("BlueShift", getNumber(privateDict, "BlueShift", 7));
+    	privDict.put("BlueFuzz", getNumber(privateDict, "BlueFuzz", 1));
+    	privDict.put("StdHW", getNumber(privateDict, "StdHW", null));
+    	privDict.put("StdVW", getNumber(privateDict, "StdVW", null));
+    	privDict.put("StemSnapH", getDelta(privateDict, "StemSnapH", null));
+    	privDict.put("StemSnapV", getDelta(privateDict, "StemSnapV", null));
+    	privDict.put("ForceBold", getBoolean(privateDict, "ForceBold", false));
+    	privDict.put("LanguageGroup", getNumber(privateDict, "LanguageGroup", 0));
+    	privDict.put("ExpansionFactor", getNumber(privateDict, "ExpansionFactor", 0.06));
+    	privDict.put("initialRandomSeed", getNumber(privateDict, "initialRandomSeed", 0));
+    	privDict.put("defaultWidthX", getNumber(privateDict, "defaultWidthX", 0));
+    	privDict.put("nominalWidthX", getNumber(privateDict, "nominalWidthX", 0));
+    	return privDict;
     }
 
     /**
@@ -594,23 +603,11 @@ public class CFFParser
         DictData privateDict = readDictData(privateDictData);
 
         // populate private dict
-        font.addToPrivateDict("BlueValues", getDelta(privateDict, "BlueValues", null));
-        font.addToPrivateDict("OtherBlues", getDelta(privateDict, "OtherBlues", null));
-        font.addToPrivateDict("FamilyBlues", getDelta(privateDict, "FamilyBlues", null));
-        font.addToPrivateDict("FamilyOtherBlues", getDelta(privateDict, "FamilyOtherBlues", null));
-        font.addToPrivateDict("BlueScale", getNumber(privateDict, "BlueScale", 0.039625));
-        font.addToPrivateDict("BlueShift", getNumber(privateDict, "BlueShift", 7));
-        font.addToPrivateDict("BlueFuzz", getNumber(privateDict, "BlueFuzz", 1));
-        font.addToPrivateDict("StdHW", getNumber(privateDict, "StdHW", null));
-        font.addToPrivateDict("StdVW", getNumber(privateDict, "StdVW", null));
-        font.addToPrivateDict("StemSnapH", getDelta(privateDict, "StemSnapH", null));
-        font.addToPrivateDict("StemSnapV", getDelta(privateDict, "StemSnapV", null));
-        font.addToPrivateDict("ForceBold", getBoolean(privateDict, "ForceBold", false));
-        font.addToPrivateDict("LanguageGroup", getNumber(privateDict, "LanguageGroup", 0));
-        font.addToPrivateDict("ExpansionFactor", getNumber(privateDict, "ExpansionFactor", 0.06));
-        font.addToPrivateDict("initialRandomSeed", getNumber(privateDict, "initialRandomSeed", 0));
-        font.addToPrivateDict("defaultWidthX", getNumber(privateDict, "defaultWidthX", 0));
-        font.addToPrivateDict("nominalWidthX", getNumber(privateDict, "nominalWidthX", 0));
+        Map<String, Object> privDict = readPrivateDict(privateDict);
+        for (Map.Entry<String, Object> entry : privDict.entrySet())
+        {
+        	font.addToPrivateDict(entry.getKey(), entry.getValue());
+        }
 
         // local subrs
         int localSubrOffset = (Integer) getNumber(privateDict, "Subrs", 0);
@@ -636,11 +633,8 @@ public class CFFParser
             DataInput dataInput = new DataInput(stringIndex.getBytes(index - 391));
             return dataInput.getString();
         }
-        else
-        {
-        	// technically this maps to .notdef, but we need a unique sid name
-        	return "SID" + index;
-        }
+        // technically this maps to .notdef, but we need a unique sid name
+        return "SID" + index;
     }
 
     private String getString(DictData dict, String name) throws IOException
@@ -649,27 +643,27 @@ public class CFFParser
         return entry != null ? readString(entry.getNumber(0).intValue()) : null;
     }
 
-    private Boolean getBoolean(DictData dict, String name, boolean defaultValue) throws IOException
+    private static Boolean getBoolean(DictData dict, String name, boolean defaultValue)
     {
         DictData.Entry entry = dict.getEntry(name);
         return entry != null ? entry.getBoolean(0) : defaultValue;
     }
 
-    private Number getNumber(DictData dict, String name, Number defaultValue) throws IOException
+    private static Number getNumber(DictData dict, String name, Number defaultValue)
     {
         DictData.Entry entry = dict.getEntry(name);
         return entry != null ? entry.getNumber(0) : defaultValue;
     }
 
     // TODO Where is the difference to getDelta??
-    private List<Number> getArray(DictData dict, String name, List<Number> defaultValue) throws IOException
+    private static List<Number> getArray(DictData dict, String name, List<Number> defaultValue)
     {
         DictData.Entry entry = dict.getEntry(name);
         return entry != null ? entry.getArray() : defaultValue;
     }
 
     // TODO Where is the difference to getArray??
-    private List<Number> getDelta(DictData dict, String name, List<Number> defaultValue) throws IOException
+    private static List<Number> getDelta(DictData dict, String name, List<Number> defaultValue)
     {
         DictData.Entry entry = dict.getEntry(name);
         return entry != null ? entry.getArray() : defaultValue;
@@ -769,7 +763,7 @@ public class CFFParser
      * @return the FDSelect data
      * @throws IOException
      */
-    private FDSelect readFDSelect(CFFDataInput dataInput, int nGlyphs, CFFCIDFont ros) throws IOException
+    private static FDSelect readFDSelect(CFFDataInput dataInput, int nGlyphs, CFFCIDFont ros) throws IOException
     {
         int format = dataInput.readCard8();
         if (format == 0)
@@ -795,7 +789,7 @@ public class CFFParser
      * @return the Format 0 of the FDSelect data
      * @throws IOException
      */
-    private Format0FDSelect readFormat0FDSelect(CFFDataInput dataInput, int format, int nGlyphs, CFFCIDFont ros)
+    private static Format0FDSelect readFormat0FDSelect(CFFDataInput dataInput, int format, int nGlyphs, CFFCIDFont ros)
             throws IOException
     {
         Format0FDSelect fdselect = new Format0FDSelect(ros);
@@ -819,7 +813,7 @@ public class CFFParser
      * @return the Format 3 of the FDSelect data
      * @throws IOException
      */
-    private Format3FDSelect readFormat3FDSelect(CFFDataInput dataInput, int format, int nGlyphs, CFFCIDFont ros)
+    private static Format3FDSelect readFormat3FDSelect(CFFDataInput dataInput, int format, int nGlyphs, CFFCIDFont ros)
             throws IOException
     {
         Format3FDSelect fdselect = new Format3FDSelect(ros);
@@ -868,10 +862,7 @@ public class CFFParser
                         {
                             return range3[i].fd;
                         }
-                        else
-                        {
-                            // go to next range
-                        }
+                        // go to next range
                     }
                     else
                     {
@@ -880,10 +871,7 @@ public class CFFParser
                         {
                             return range3[i].fd;
                         }
-                        else
-                        {
-                            return -1;
-                        }
+                        return -1;
                     }
                 }
             }
@@ -933,10 +921,7 @@ public class CFFParser
             {
                 return fds[gid];
             }
-            else
-            {
-                return 0;
-            }
+            return 0;
         }
 
         @Override
@@ -1132,6 +1117,7 @@ public class CFFParser
         /**
          * {@inheritDoc} 
          */
+        @Override
         public String toString()
         {
             return getClass().getName() + "[entries=" + entries + "]";
@@ -1206,15 +1192,6 @@ public class CFFParser
     {
         private int nSups;
         private Supplement[] supplement;
-
-        /*List<Supplement> getSupplements()
-        {
-            if (supplement == null)
-            {
-                return Collections.emptyList();
-            }
-            return Arrays.asList(supplement);
-        }*/
 
         /**
          * Inner class representing a supplement for an encoding. 

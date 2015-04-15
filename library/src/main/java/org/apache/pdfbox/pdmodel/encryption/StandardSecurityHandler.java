@@ -19,6 +19,7 @@ import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.util.Charsets;
 
 import android.util.Log;
 
@@ -51,9 +52,6 @@ public final class StandardSecurityHandler extends SecurityHandler
 
 	// hashes used for Algorithm 2.B, depending on remainder from E modulo 3
 	private static final String[] HASHES_2B = new String[] {"SHA-256", "SHA-384", "SHA-512"};
-
-	private static final Charset ISO_8859_1_CHARSET = Charset.forName("ISO-8859-1");
-
 	private static final int DEFAULT_VERSION = 1;
 
 	private StandardProtectionPolicy policy;
@@ -125,8 +123,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 	/**
 	 * Prepares everything to decrypt the document.
 	 *
-	 * Called from {@link #decryptDocument(PDDocument, DecryptionMaterial)}.
-	 * Only if decryption of single objects is needed this should be called instead.
+	 * Only if decryption of single objects is needed this should be called.
 	 *
 	 * @param encryption  encryption dictionary
 	 * @param documentIDArray  document id
@@ -166,10 +163,10 @@ public final class StandardSecurityHandler extends SecurityHandler
 		byte[] ownerKey = encryption.getOwnerKey();
 		byte[] ue = null, oe = null;
 
-		Charset passwordCharset = ISO_8859_1_CHARSET;
+		Charset passwordCharset = Charsets.ISO_8859_1;
 		if (dicRevision == 6 || dicRevision == 5)
 		{
-			passwordCharset = Charset.forName("UTF-8");
+			passwordCharset = Charsets.UTF_8;
 			ue = encryption.getUserEncryptionKey();
 			oe = encryption.getOwnerEncryptionKey();
 		}
@@ -366,7 +363,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 			rnd.nextBytes(encryptionKey);
 
 			// Algorithm 8a: Compute U
-			byte[] userPasswordBytes = truncate127(userPassword.getBytes("UTF-8"));
+			byte[] userPasswordBytes = truncate127(userPassword.getBytes(Charsets.UTF_8));
 			byte[] userValidationSalt = new byte[8];
 			byte[] userKeySalt = new byte[8];
 			rnd.nextBytes(userValidationSalt);
@@ -383,7 +380,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 			byte[] ue = cipher.doFinal(encryptionKey);
 
 			// Algorithm 9a: Compute O
-			byte[] ownerPasswordBytes = truncate127(ownerPassword.getBytes("UTF-8"));
+			byte[] ownerPasswordBytes = truncate127(ownerPassword.getBytes(Charsets.UTF_8));
 			byte[] ownerValidationSalt = new byte[8];
 			byte[] ownerKeySalt = new byte[8];
 			rnd.nextBytes(ownerValidationSalt);
@@ -450,11 +447,11 @@ public final class StandardSecurityHandler extends SecurityHandler
 			MessageDigest md = MessageDigests.getMD5();
 			BigInteger time = BigInteger.valueOf(System.currentTimeMillis());
 			md.update(time.toByteArray());
-			md.update(ownerPassword.getBytes(ISO_8859_1_CHARSET));
-			md.update(userPassword.getBytes(ISO_8859_1_CHARSET));
+			md.update(ownerPassword.getBytes(Charsets.ISO_8859_1));
+			md.update(userPassword.getBytes(Charsets.ISO_8859_1));
 			md.update(document.getDocument().toString().getBytes());
 
-			byte[] id = md.digest(this.toString().getBytes(ISO_8859_1_CHARSET));
+			byte[] id = md.digest(this.toString().getBytes(Charsets.ISO_8859_1));
 			COSString idString = new COSString(id);
 
 			idArray = new COSArray();
@@ -466,14 +463,14 @@ public final class StandardSecurityHandler extends SecurityHandler
 		COSString id = (COSString) idArray.getObject(0);
 
 		byte[] ownerBytes = computeOwnerPassword(
-				ownerPassword.getBytes(ISO_8859_1_CHARSET),
-				userPassword.getBytes(ISO_8859_1_CHARSET), revision, length);
+				ownerPassword.getBytes(Charsets.ISO_8859_1),
+				userPassword.getBytes(Charsets.ISO_8859_1), revision, length);
 
 		byte[] userBytes = computeUserPassword(
-				userPassword.getBytes(ISO_8859_1_CHARSET),
+				userPassword.getBytes(Charsets.ISO_8859_1),
 				ownerBytes, permissionInt, id.getBytes(), revision, length, true);
 
-		encryptionKey = computeEncryptedKey(userPassword.getBytes(ISO_8859_1_CHARSET), ownerBytes,
+		encryptionKey = computeEncryptedKey(userPassword.getBytes(Charsets.ISO_8859_1), ownerBytes,
 				null, null, null, permissionInt, id.getBytes(), revision, length, true, false);
 
 		encryptionDictionary.setOwnerKey(ownerBytes);
@@ -502,7 +499,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 	{
 		if (encRevision == 6 || encRevision == 5)
 		{            
-			ownerPassword = truncate127(ownerPassword);
+			byte[] truncatedOwnerPassword = truncate127(ownerPassword);
 
 			byte[] oHash = new byte[32];
 			byte[] oValidationSalt = new byte[8];
@@ -512,11 +509,11 @@ public final class StandardSecurityHandler extends SecurityHandler
 			byte[] hash;
 			if (encRevision == 5)
 			{
-				hash = computeSHA256(ownerPassword, oValidationSalt, user);
+				hash = computeSHA256(truncatedOwnerPassword, oValidationSalt, user);
 			}
 			else
 			{
-				hash = computeHash2A(ownerPassword, oValidationSalt, user);
+				hash = computeHash2A(truncatedOwnerPassword, oValidationSalt, user);
 			}
 
 			return Arrays.equals(hash, oHash);
@@ -827,7 +824,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 				digest = md.digest();
 			}
 		}
-		byte[] rc4Key = new byte[(int) length];
+		byte[] rc4Key = new byte[length];
 		System.arraycopy(digest, 0, rc4Key, 0, length);
 		return rc4Key;
 	}
@@ -884,7 +881,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 		}
 		else if (encRevision == 6 || encRevision == 5)
 		{
-			password = truncate127(password);
+			byte[] truncatedPassword = truncate127(password);
 
 			byte[] uHash = new byte[32];
 			byte[] uValidationSalt = new byte[8];
@@ -894,11 +891,11 @@ public final class StandardSecurityHandler extends SecurityHandler
 			byte[] hash;
 			if (encRevision == 5)
 			{
-				hash = computeSHA256(password, uValidationSalt, null);
+				hash = computeSHA256(truncatedPassword, uValidationSalt, null);
 			}
 			else
 			{
-				hash = computeHash2A(password, uValidationSalt, null);
+				hash = computeHash2A(truncatedPassword, uValidationSalt, null);
 			}
 
 			return Arrays.equals(hash, uHash);
@@ -931,12 +928,12 @@ public final class StandardSecurityHandler extends SecurityHandler
 	{
 		if (encRevision == 6 || encRevision == 5)
 		{
-			return isUserPassword(password.getBytes("UTF-8"), user, owner, permissions, id,
+			return isUserPassword(password.getBytes(Charsets.UTF_8), user, owner, permissions, id,
 					encRevision, length, encryptMetadata);
 		}
 		else
 		{
-			return isUserPassword(password.getBytes(ISO_8859_1_CHARSET), user, owner, permissions, id,
+			return isUserPassword(password.getBytes(Charsets.ISO_8859_1), user, owner, permissions, id,
 					encRevision, length, encryptMetadata);
 		}
 	}
@@ -961,18 +958,17 @@ public final class StandardSecurityHandler extends SecurityHandler
 			byte[] id, int encRevision, int length, boolean encryptMetadata)
 					throws IOException
 	{
-		return isOwnerPassword(password.getBytes(ISO_8859_1_CHARSET), user,owner,permissions, id,
+		return isOwnerPassword(password.getBytes(Charsets.ISO_8859_1), user,owner,permissions, id,
 				encRevision, length, encryptMetadata);
 	}
 
 	// Algorithm 2.A from ISO 32000-1
 	private byte[] computeHash2A(byte[] password, byte[] salt, byte[] u) throws IOException
 	{
-		password = truncate127(password);
-
+		byte[] userKey;
 		if (u == null)
 		{
-			u = new byte[0];
+			userKey = new byte[0];
 		}
 		else if (u.length < 48)
 		{
@@ -981,13 +977,18 @@ public final class StandardSecurityHandler extends SecurityHandler
 		else if (u.length > 48)
 		{
 			// must truncate
-			byte[] uTrunc = new byte[48];
-			System.arraycopy(u, 0, uTrunc, 0, 48);
-			u = uTrunc;
+			userKey = new byte[48];
+			System.arraycopy(u, 0, userKey, 0, 48);
 		}
 
-		byte[] input = concat(password, salt, u);
-		return computeHash2B(input, password, u);
+		else
+		{
+			userKey = u;
+		}
+
+		byte[] truncatedPassword = truncate127(password);
+		byte[] input = concat(truncatedPassword, salt, userKey);
+		return computeHash2B(input, truncatedPassword, userKey);
 	}
 
 	// Algorithm 2.B from ISO 32000-2

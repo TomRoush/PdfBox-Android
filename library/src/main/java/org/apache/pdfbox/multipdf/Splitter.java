@@ -167,6 +167,7 @@ public class Splitter
     protected PDDocument createNewDocument() throws IOException
     {
         PDDocument document = new PDDocument();
+        document.getDocument().setVersion(getSourceDocument().getVersion());
         document.setDocumentInformation(getSourceDocument().getDocumentInformation());
         document.getDocumentCatalog().setViewerPreferences(
                 getSourceDocument().getDocumentCatalog().getViewerPreferences());

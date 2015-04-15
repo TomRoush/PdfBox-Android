@@ -31,7 +31,7 @@ final class FlateFilter extends Filter
     {
         int predictor = -1;
 
-        COSDictionary decodeParams = getDecodeParams(parameters, index);
+        final COSDictionary decodeParams = getDecodeParams(parameters, index);
         if (decodeParams != null)
         {
             predictor = decodeParams.getInt(COSName.PREDICTOR);
@@ -70,7 +70,7 @@ final class FlateFilter extends Filter
 
     // Use Inflater instead of InflateInputStream to avoid an EOFException due to a probably
     // missing Z_STREAM_END, see PDFBOX-1232 for details
-    private void decompress(InputStream in, OutputStream out) throws IOException, DataFormatException 
+    private static void decompress(InputStream in, OutputStream out) throws IOException, DataFormatException 
     { 
         byte[] buf = new byte[2048]; 
         int read = in.read(buf); 

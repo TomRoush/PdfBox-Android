@@ -286,10 +286,12 @@ public class StandardStructureTypes
                 try
                 {
                     types.add(field.get(null).toString());
-                }catch (IllegalArgumentException e)
+                }
+                catch (IllegalArgumentException e)
                 {
                 	Log.e("PdfBoxAndroid", e.getMessage(),e);
-                }catch (IllegalAccessException e)
+                }
+                catch (IllegalAccessException e)
                 {
                 	Log.e("PdfBoxAndroid", e.getMessage(),e);
                 }

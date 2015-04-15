@@ -51,7 +51,8 @@ public class RandomAccessFile implements RandomAccess, Closeable
      * {@inheritDoc}
      */
     @Override
-    public long getPosition() throws IOException {
+    public long getPosition() throws IOException
+    {
         return ras.getFilePointer();
     }
     

@@ -204,23 +204,7 @@ public class COSStream extends COSDictionary implements Closeable
         }
         else
         {
-            // We should check if the COSStream contains data, maybe it
-            // has been created with a RandomAccessFile - which is not
-            // necessary empty.
-            // In this case, the creation was been done as an input, this should
-            // be the unfiltered file, since no filter has been applied yet.
-//            if ( (file != null) &&
-//                    (file.length() > 0) )
-//            {
-//                retval = new RandomAccessFileInputStream( file,
-//                                                          0,
-//                                                          file.length() );
-//            }
-//            else
-//            {
-                //if there is no stream data then simply return an empty stream.
-                retval = new ByteArrayInputStream( new byte[0] );
-//            }
+        	retval = new ByteArrayInputStream( new byte[0] );
         }
         return retval;
     }
@@ -265,10 +249,7 @@ public class COSStream extends COSDictionary implements Closeable
         	String subtype = getNameAsString(COSName.SUBTYPE);
         	throw new IOException(subtype + " stream was not read" + filterInfo);
         }
-        else
-        {
-            return decodeResult;
-        }
+        return decodeResult;
     }
 
     @Override
@@ -379,7 +360,7 @@ public class COSStream extends COSDictionary implements Closeable
                 }
             }
         }
-        if (!done)
+        if (!done && exception != null)
         {
             throw exception;
         }

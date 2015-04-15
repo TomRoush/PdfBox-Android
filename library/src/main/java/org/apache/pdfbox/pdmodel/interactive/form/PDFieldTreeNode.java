@@ -113,8 +113,10 @@ public abstract class PDFieldTreeNode implements COSObjectable
 		{
 			return attributesNode.getDictionary().getDictionaryObject(key);
 		}
-
-		return null;
+		else
+		{
+			return getAcroForm().getDictionary().getDictionaryObject(key);
+		}
 	}
 
 	/**
@@ -380,11 +382,11 @@ public abstract class PDFieldTreeNode implements COSObjectable
 		{
 			if (fieldValue instanceof String)
 			{
-				fdfField.setValue((String) fieldValue);
+				setValue((String) fieldValue);
 			}
 			else if (fieldValue instanceof PDTextStream)
 			{
-				fdfField.setValue(((PDTextStream) fieldValue).getAsString());
+				setValue(((PDTextStream) fieldValue).getAsString());
 			}
 			else
 			{

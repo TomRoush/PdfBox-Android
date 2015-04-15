@@ -83,7 +83,7 @@ public final class SecurityHandlerFactory
             return null;
         }
 
-        Class[] argsClasses = { policy.getClass() };
+        Class<?>[] argsClasses = { policy.getClass() };
         Object[] args = { policy };
         return newSecurityHandler(handlerClass, argsClasses, args);
     }
@@ -101,7 +101,7 @@ public final class SecurityHandlerFactory
         	return null;
         }
 
-        Class[] argsClasses = { };
+        Class<?>[] argsClasses = { };
         Object[] args = { };
         return newSecurityHandler(handlerClass, argsClasses, args);
     }
@@ -114,8 +114,8 @@ public final class SecurityHandlerFactory
      * @return a new SecurityHandler instance, or null if none is available.
      * @throws RuntimeException
      */
-    private SecurityHandler newSecurityHandler(Class<? extends SecurityHandler> handlerClass,
-    		Class[] argsClasses, Object[] args)
+    private static SecurityHandler newSecurityHandler(Class<? extends SecurityHandler> handlerClass,
+    		Class<?>[] argsClasses, Object[] args)
     {
     	try
     	{

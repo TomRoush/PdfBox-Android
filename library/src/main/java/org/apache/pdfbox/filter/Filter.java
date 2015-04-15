@@ -55,7 +55,7 @@ public abstract class Filter
 
     // gets the decode params for a specific filter index, this is used to
     // normalise the DecodeParams entry so that it is always a dictionary
-    protected COSDictionary getDecodeParams(COSDictionary dictionary, int index)
+    protected static COSDictionary getDecodeParams(COSDictionary dictionary, int index)
     {
         COSBase obj = dictionary.getDictionaryObject(COSName.DECODE_PARMS, COSName.DP);
         if (obj instanceof COSDictionary)
@@ -86,7 +86,7 @@ public abstract class Filter
      * @return The image reader for the format.
      * @throws MissingImageReaderException if no image reader is found.
      */
-//    protected ImageReader findImageReader(String formatName, String errorCause) throws MissingImageReaderException
+//    protected static ImageReader findImageReader(String formatName, String errorCause) throws MissingImageReaderException
 //    {
 //        Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(formatName);
 //        ImageReader reader = null;

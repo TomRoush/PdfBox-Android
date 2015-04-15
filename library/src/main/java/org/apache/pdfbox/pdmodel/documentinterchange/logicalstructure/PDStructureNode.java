@@ -228,7 +228,7 @@ public abstract class PDStructureNode implements COSObjectable
      */
     protected void insertBefore(COSBase newKid, Object refKid)
     {
-        if ((newKid == null) || (refKid == null))
+        if (newKid == null || refKid == null)
         {
             return;
         }
@@ -244,7 +244,7 @@ public abstract class PDStructureNode implements COSObjectable
         }
         else if (refKid instanceof COSInteger)
         {
-            refKidBase = (COSInteger) refKid;
+            refKidBase = (COSBase) refKid;
         }
         if (k instanceof COSArray)
         {
@@ -354,8 +354,8 @@ public abstract class PDStructureNode implements COSObjectable
      * The type of object depends on the type of the kid. It can be
      * <ul>
      * <li>a {@link PDStructureElement},</li>
-     * <li>a {@link PDAnnotation},</li>
-     * <li>a {@link PDXObject},</li>
+     * <li>a {@link org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation PDAnnotation},</li>
+     * <li>a {@link org.apache.pdfbox.pdmodel.graphics.PDXObject PDXObject},</li>
      * <li>a {@link PDMarkedContentReference}</li>
      * <li>a {@link Integer}</li>
      * </ul>

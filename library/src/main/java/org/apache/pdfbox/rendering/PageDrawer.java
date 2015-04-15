@@ -43,9 +43,6 @@ import android.util.Log;
  */
 public final class PageDrawer extends PDFGraphicsStreamEngine
 {
-	// parent document renderer
-	private final PDFRenderer renderer;
-	
 	// the graphics device to draw to, xform is the initial transform of the device (i.e. DPI)
 	Paint paint;
 	Canvas canvas;
@@ -69,14 +66,12 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 	/**
 	 * Constructor.
 	 * 
-	 * @param renderer renderer to render the page.
 	 * @param page the page that is to be rendered.
 	 * @throws IOException If there is an error loading properties from the file.
 	 */
-	public PageDrawer(PDFRenderer renderer, PDPage page) throws IOException
+	public PageDrawer(PDPage page) throws IOException
 	{
 		super(page);
-		this.renderer = renderer;
 	}
 	
 	/**

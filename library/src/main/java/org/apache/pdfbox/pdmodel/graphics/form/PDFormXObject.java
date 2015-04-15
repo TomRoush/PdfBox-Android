@@ -92,7 +92,8 @@ public class PDFormXObject extends PDXObject implements PDContentStream
 	 *
 	 * @return the group attributes dictionary
 	 */
-	public PDGroup getGroup() {
+	public PDGroup getGroup()
+	{
 		if( group == null ) 
 		{
 			COSDictionary dic = (COSDictionary) getCOSStream().getDictionaryObject(COSName.GROUP);

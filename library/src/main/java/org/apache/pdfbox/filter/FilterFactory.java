@@ -20,7 +20,7 @@ public final class FilterFactory
      */
     public static final FilterFactory INSTANCE = new FilterFactory();
 
-    private Map<COSName, Filter> filters = new HashMap<COSName, Filter>();
+    private final Map<COSName, Filter> filters = new HashMap<COSName, Filter>();
 
     private FilterFactory()
     {

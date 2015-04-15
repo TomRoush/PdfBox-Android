@@ -21,11 +21,11 @@ import android.graphics.RectF;
  */
 public class PDFTextStripperByArea extends PDFTextStripper
 {
-    private List<String> regions = new ArrayList<String>();
-    private Map<String,RectF> regionArea = new HashMap<String,RectF>();
-    private Map<String,Vector<ArrayList<TextPosition>>> regionCharacterList =
-        new HashMap<String,Vector<ArrayList<TextPosition>>>();
-    private Map<String,StringWriter> regionText = new HashMap<String,StringWriter>();
+    private final List<String> regions = new ArrayList<String>();
+    private final Map<String, RectF> regionArea = new HashMap<String, RectF>();
+    private final Map<String, Vector<List<TextPosition>>> regionCharacterList =
+        new HashMap<String, Vector<List<TextPosition>>>();
+    private final Map<String, StringWriter> regionText = new HashMap<String, StringWriter>();
 
     /**
      * Constructor.
@@ -86,7 +86,7 @@ public class PDFTextStripperByArea extends PDFTextStripper
             //reset the stored text for the region so this class
             //can be reused.
             String regionName = regionIter.next();
-            Vector<ArrayList<TextPosition>> regionCharactersByArticle = new Vector<ArrayList<TextPosition>>();
+            Vector<List<TextPosition>> regionCharactersByArticle = new Vector<List<TextPosition>>();
             regionCharactersByArticle.add( new ArrayList<TextPosition>() );
             regionCharacterList.put( regionName, regionCharactersByArticle );
             regionText.put( regionName, new StringWriter() );
@@ -113,7 +113,7 @@ public class PDFTextStripperByArea extends PDFTextStripper
             RectF rect = regionArea.get( region );
             if( rect.contains( text.getX(), text.getY() ) )
             {
-                charactersByArticle = (Vector)regionCharacterList.get( region );
+                charactersByArticle = regionCharacterList.get( region );
                 super.processTextPosition( text );
             }
         }
@@ -125,13 +125,14 @@ public class PDFTextStripperByArea extends PDFTextStripper
      *
      * @throws IOException If there is an error writing the text.
      */
+    @Override
     protected void writePage() throws IOException
     {
         Iterator<String> regionIter = regionArea.keySet().iterator();
         while( regionIter.hasNext() )
         {
             String region = regionIter.next();
-            charactersByArticle = (Vector)regionCharacterList.get( region );
+            charactersByArticle = regionCharacterList.get( region );
             output = regionText.get( region );
             super.writePage();
         }

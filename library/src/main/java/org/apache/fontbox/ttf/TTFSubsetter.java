@@ -147,7 +147,7 @@ public final class TTFSubsetter
      * @return The file offset of the first TTF table to write.
      * @throws IOException Upon errors.
      */
-    private long writeFileHeader(DataOutputStream out, int nTables) throws IOException
+    private static long writeFileHeader(DataOutputStream out, int nTables) throws IOException
     {
         out.writeInt(0x00010000);
         out.writeShort(nTables);
@@ -167,13 +167,13 @@ public final class TTFSubsetter
         return 0x00010000L + toUInt32(nTables, searchRange) + toUInt32(entrySelector, last);
     }
         
-    private long writeTableHeader(DataOutputStream out, String tag, long offset, byte[] bytes)
+    private static long writeTableHeader(DataOutputStream out, String tag, long offset, byte[] bytes)
             throws IOException 
     {
         long checksum = 0;
         for (int nup = 0, n = bytes.length; nup < n; nup++)
         {
-            checksum += ((long)bytes[nup] & 0xffL) << 24- nup % 4 *8;
+            checksum += (bytes[nup] & 0xffL) << 24 - nup % 4 * 8;
         }
         checksum &= 0xffffffffL;
 
@@ -188,7 +188,7 @@ public final class TTFSubsetter
         return toUInt32(tagbytes) + checksum + checksum + offset + bytes.length;
     }
 
-    private void writeTableBody(OutputStream os, byte[] bytes) throws IOException
+    private static void writeTableBody(OutputStream os, byte[] bytes) throws IOException
     {
         int n = bytes.length;
         os.write(bytes);
@@ -255,7 +255,7 @@ public final class TTFSubsetter
         return bos.toByteArray();
     }
 
-    private boolean shouldCopyNameRecord(NameRecord nr)
+    private static boolean shouldCopyNameRecord(NameRecord nr)
     {
         return nr.getPlatformId() == NameRecord.PLATFORM_WINDOWS
                 && nr.getPlatformEncodingId() == NameRecord.ENCODING_WINDOWS_UNICODE_BMP
@@ -443,7 +443,7 @@ public final class TTFSubsetter
         return bos.toByteArray();
     }
 
-    private byte[] buildLocaTable(long[] newOffsets) throws IOException
+    private static byte[] buildLocaTable(long[] newOffsets) throws IOException
     {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         DataOutputStream out = new DataOutputStream(bos);
@@ -493,9 +493,9 @@ public final class TTFSubsetter
                         int flags;
                         do
                         {
-                            flags = ((int)buf[off] & 0xff) << 8 | buf[off + 1] & 0xff;
+                            flags = (buf[off] & 0xff) << 8 | buf[off + 1] & 0xff;
                             off +=2;
-                            int ogid = ((int)buf[off] & 0xff) << 8 | buf[off + 1] & 0xff;
+                            int ogid = (buf[off] & 0xff) << 8 | buf[off + 1] & 0xff;
                             if (!glyphIds.contains(ogid))
                             {
                                 if (glyphIdsToAdd == null)
@@ -584,11 +584,11 @@ public final class TTFSubsetter
                     do
                     {
                         // flags
-                        flags = ((int)buf[off] & 0xff) << 8 | (int)buf[off + 1] & 0xff;
+                        flags = (buf[off] & 0xff) << 8 | buf[off + 1] & 0xff;
                         off += 2;
 
                         // glyphIndex
-                        int componentGid = ((int)buf[off] & 0xff) << 8 | (int)buf[off + 1] & 0xff;
+                        int componentGid = (buf[off] & 0xff) << 8 | buf[off + 1] & 0xff;
                         if (!glyphIds.contains(componentGid))
                         {
                             glyphIds.add(componentGid);
@@ -630,7 +630,7 @@ public final class TTFSubsetter
                     if ((flags & 0x0100) == 0x0100)
                     {
                         // USHORT numInstr
-                        int numInstr = ((int)buf[off] & 0xff) << 8 | (int)buf[off + 1] & 0xff;
+                        int numInstr = (buf[off] & 0xff) << 8 | buf[off + 1] & 0xff;
                         off += 2;
 
                         // BYTE instr[numInstr]
@@ -937,16 +937,34 @@ public final class TTFSubsetter
 
             // save to TTF in optimized order
             Map<String, byte[]> tables = new TreeMap<String, byte[]>();
-            if (os2 != null)  { tables.put("OS/2", os2); }
-            if (cmap != null) { tables.put("cmap", cmap); }
-            if (glyf != null) { tables.put("glyf", glyf); }
+            if (os2 != null)
+            {
+            	tables.put("OS/2", os2);
+            }
+            if (cmap != null)
+            {
+            	tables.put("cmap", cmap);
+            }
+            if (glyf != null)
+            {
+            	tables.put("glyf", glyf);
+            }
             tables.put("head", head);
             tables.put("hhea", hhea);
             tables.put("hmtx", hmtx);
-            if (loca != null) { tables.put("loca", loca); }
+            if (loca != null)
+            {
+            	tables.put("loca", loca);
+            }
             tables.put("maxp", maxp);
-            if (name != null) { tables.put("name", name); }
-            if (post != null) { tables.put("post", post); }
+            if (name != null)
+            {
+            	tables.put("name", name);
+            }
+            if (post != null)
+            {
+            	tables.put("post", post);
+            }
 
             // copy all other tables
             for (Map.Entry<String, TTFTable> entry : ttf.getTableMap().entrySet())
@@ -986,7 +1004,7 @@ public final class TTFSubsetter
         }
     }
 
-    private void writeFixed(DataOutputStream out, double f) throws IOException
+    private static void writeFixed(DataOutputStream out, double f) throws IOException
     {
         double ip = Math.floor(f);
         double fp = (f-ip) * 65536.0;
@@ -994,27 +1012,27 @@ public final class TTFSubsetter
         out.writeShort((int)fp);
     }
 
-    private void writeUint32(DataOutputStream out, long l) throws IOException
+    private static void writeUint32(DataOutputStream out, long l) throws IOException
     {
         out.writeInt((int)l);
     }
 
-    private void writeUint16(DataOutputStream out, int i) throws IOException
+    private static void writeUint16(DataOutputStream out, int i) throws IOException
     {
         out.writeShort(i);
     }
 
-    private void writeSInt16(DataOutputStream out, short i) throws IOException
+    private static void writeSInt16(DataOutputStream out, short i) throws IOException
     {
         out.writeShort(i);
     }
 
-    private void writeUint8(DataOutputStream out, int i) throws IOException
+    private static void writeUint8(DataOutputStream out, int i) throws IOException
     {
         out.writeByte(i);
     }
 
-    private void writeLongDateTime(DataOutputStream out, Calendar calendar) throws IOException
+    private static void writeLongDateTime(DataOutputStream out, Calendar calendar) throws IOException
     {
         // inverse operation of TTFDataStream.readInternationalDate()
         GregorianCalendar cal = new GregorianCalendar( 1904, 0, 1 );
@@ -1023,20 +1041,20 @@ public final class TTFSubsetter
         out.writeLong(secondsSince1904);
     }
 
-    private long toUInt32(int high, int low)
+    private static long toUInt32(int high, int low)
     {
-        return ((long)high & 0xffffL) << 16 | (long)low & 0xffffL;
+        return (high & 0xffffL) << 16 | low & 0xffffL;
     }
 
-    private long toUInt32(byte[] bytes)
+    private static long toUInt32(byte[] bytes)
     {
-        return ((long)bytes[0] & 0xffL) << 24 |
-               ((long)bytes[1] & 0xffL) << 16 |
-               ((long)bytes[2] & 0xffL) << 8 |
-                (long)bytes[3] & 0xffL;
+        return (bytes[0] & 0xffL) << 24
+                | (bytes[1] & 0xffL) << 16
+                | (bytes[2] & 0xffL) << 8
+                | bytes[3] & 0xffL;
     }
 
-    private int log2(int num)
+    private static int log2(int num)
     {
         return (int)Math.round(Math.log(num) / Math.log(2));
     }

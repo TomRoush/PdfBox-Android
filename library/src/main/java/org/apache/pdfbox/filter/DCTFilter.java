@@ -132,7 +132,7 @@ final class DCTFilter extends Filter
 //    } TODO
 
     // clamps value to 0-255 range
-    private int clamp(float value)
+    private static int clamp(float value)
     {
         return (int)((value < 0) ? 0 : ((value > 255) ? 255 : value));
     }

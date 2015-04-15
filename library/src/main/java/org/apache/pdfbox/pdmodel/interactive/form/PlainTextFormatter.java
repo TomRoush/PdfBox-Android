@@ -17,18 +17,13 @@
 package org.apache.pdfbox.pdmodel.interactive.form;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.text.NumberFormat;
 import java.util.List;
-import java.util.Locale;
 
-import org.apache.pdfbox.pdfwriter.COSWriter;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.interactive.form.PlainText.Line;
 import org.apache.pdfbox.pdmodel.interactive.form.PlainText.Paragraph;
 import org.apache.pdfbox.pdmodel.interactive.form.PlainText.TextAttribute;
 import org.apache.pdfbox.pdmodel.interactive.form.PlainText.Word;
-import org.apache.pdfbox.util.Charsets;
 
 /**
  * TextFormatter to handle plain text formatting.
@@ -71,18 +66,18 @@ class PlainTextFormatter
 	private AppearanceStyle appearanceStyle;
 	private final boolean wrapLines;
 	private final float width;
-	private final OutputStream outputstream;
+	private final AppearancePrimitivesComposer composer;
 	private final PlainText textContent;
 	private final TextAlign textAlignment;
 
-	// number format
-	private final NumberFormat formatDecimal = NumberFormat.getNumberInstance(Locale.US);
+	private float horizontalOffset;
+	private float verticalOffset;
 
 	static class Builder
 	{
 
 		// required parameters
-		private OutputStream outputstream;
+		private AppearancePrimitivesComposer composer;
 
 		// optional parameters
 		private AppearanceStyle appearanceStyle;
@@ -90,10 +85,14 @@ class PlainTextFormatter
 		private float width = 0f;
 		private PlainText textContent;
 		private TextAlign textAlignment = TextAlign.LEFT;
+		
+		// initial offset from where to start the position of the first line
+		private float horizontalOffset = 0f;
+		private float verticalOffset = 0f;
 
-		public Builder(OutputStream outputstream)
+		public Builder(AppearancePrimitivesComposer composer)
 		{
-			this.outputstream = outputstream;
+			this.composer = composer;
 		}
 
 		Builder style(AppearanceStyle appearanceStyle)
@@ -131,6 +130,13 @@ class PlainTextFormatter
 			this.textContent  = textContent;
 			return this;
 		}
+		
+		Builder initialOffset(float horizontalOffset, float verticalOffset)
+		{
+			this.horizontalOffset = horizontalOffset;
+			this.verticalOffset = verticalOffset;
+			return this;
+		}
 
 		PlainTextFormatter build()
 		{
@@ -143,9 +149,11 @@ class PlainTextFormatter
 		appearanceStyle = builder.appearanceStyle;
 		wrapLines = builder.wrapLines;
 		width = builder.width;
-		outputstream = builder.outputstream;
+		composer = builder.composer;
 		textContent = builder.textContent;
 		textAlignment = builder.textAlignment;
+		horizontalOffset = builder.horizontalOffset;
+		verticalOffset = builder.verticalOffset;
 	}
 
 	/**
@@ -170,7 +178,7 @@ class PlainTextFormatter
 				}
 				else
 				{
-					showText(paragraph.getText(), appearanceStyle.getFont());
+					composer.showText(paragraph.getText(), appearanceStyle.getFont());
 				}
 			}
 		}
@@ -214,75 +222,34 @@ class PlainTextFormatter
 				startOffset = 0f;
 			}
 
-			float offset = -lastPos + startOffset;
-			newLineAtOffset(offset, -appearanceStyle.getLeading());
+			float offset = -lastPos + startOffset + horizontalOffset;
+			if (lines.indexOf(line) == 0)
+			{
+				composer.newLineAtOffset(offset, verticalOffset);
+				// reset the initial verticalOffset
+				verticalOffset = 0f;
+				horizontalOffset = 0f;
+			}
+			else
+			{
+				// keep the last position
+				verticalOffset = verticalOffset - appearanceStyle.getLeading();
+				composer.newLineAtOffset(offset, -appearanceStyle.getLeading());
+			}
 			lastPos = startOffset;
 
 			List<Word> words = line.getWords();
 			for (Word word : words)
 			{
-				showText(word.getText(), font);
+				composer.showText(word.getText(), font);
 				wordWidth = (Float) word.getAttributes().getIterator().getAttribute(TextAttribute.WIDTH);
 				if (words.indexOf(word) != words.size() -1)
 				{
-					newLineAtOffset(wordWidth + interWordSpacing, 0f);
+					composer.newLineAtOffset(wordWidth + interWordSpacing, 0f);
 					lastPos = lastPos + wordWidth + interWordSpacing;
 				}
 			}
 		}
-	}
-
-	/**
-	 * Shows the given text at the location specified by the current text matrix.
-	 *
-	 * @param text The Unicode text to show.
-	 * @throws IOException if there is an error writing to the stream.
-	 */
-	private void showText(String text, PDFont font) throws IOException
-	{
-		COSWriter.writeString(font.encode(text), outputstream);
-		write(" ");
-		writeOperator("Tj");
-	}
-
-	/**
-	 * Writes a string to the content stream as ASCII.
-	 */
-	private void write(String text) throws IOException
-	{
-		outputstream.write(text.getBytes(Charsets.US_ASCII));
-	}
-
-	/**
-	 * Writes a string to the content stream as ASCII.
-	 */
-	private void writeOperator(String text) throws IOException
-	{
-		outputstream.write(text.getBytes(Charsets.US_ASCII));
-		outputstream.write('\n');
-	}
-
-	/**
-	 * The Td operator.
-	 * Move to the start of the next line, offset from the start of the current line by (tx, ty).
-	 *
-	 * @param tx The x translation.
-	 * @param ty The y translation.
-	 * @throws IOException if there is an error writing to the stream.
-	 */
-	public void newLineAtOffset(float tx, float ty) throws IOException
-	{
-		writeOperand(tx);
-		writeOperand(ty);
-		writeOperator("Td");
-	}
-
-	/**
-	 * Writes a real real to the content stream.
-	 */
-	private void writeOperand(float real) throws IOException
-	{
-		write(formatDecimal.format(real));
-		outputstream.write(' ');
+		horizontalOffset = horizontalOffset -lastPos;
 	}
 }

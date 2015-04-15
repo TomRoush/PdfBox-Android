@@ -13,6 +13,16 @@ import org.apache.pdfbox.cos.COSDictionary;
  */
 public class PDPushButton extends PDButton
 {
+	/**
+	 * @see PDFieldTreeNode#PDFieldTreeNode(PDAcroForm)
+	 *
+	 * @param theAcroForm The acroform.
+	 */
+	public PDPushButton(PDAcroForm theAcroForm)
+	{
+		super( theAcroForm );
+		setPushButton(true);
+	}
 
     /**
      * Constructor.

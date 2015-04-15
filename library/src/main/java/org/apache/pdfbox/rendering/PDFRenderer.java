@@ -120,7 +120,7 @@ public class PDFRenderer
             canvas.rotate((float) Math.toRadians(rotationAngle));
         }
 
-        PageDrawer drawer = new PageDrawer(this, page);
+        PageDrawer drawer = new PageDrawer(page);
         drawer.drawPage(paint, canvas, cropBox);
     }
 }

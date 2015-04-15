@@ -58,6 +58,7 @@ public class PDObjectReference implements COSObjectable
     /**
      * {@inheritDoc}
      */
+    @Override
     public COSBase getCOSObject()
     {
         return this.dictionary;

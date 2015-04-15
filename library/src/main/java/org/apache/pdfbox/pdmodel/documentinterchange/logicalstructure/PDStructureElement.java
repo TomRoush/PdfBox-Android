@@ -80,7 +80,7 @@ public class PDStructureElement extends PDStructureNode
         {
             return null;
         }
-        return PDStructureNode.create((COSDictionary) p);
+        return PDStructureNode.create(p);
     }
 
     /**

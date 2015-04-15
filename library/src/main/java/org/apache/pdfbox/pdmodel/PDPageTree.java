@@ -1,18 +1,17 @@
 package org.apache.pdfbox.pdmodel;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Queue;
+
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSInteger;
 import org.apache.pdfbox.cos.COSName;
-
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * The page tree, which defines the ordering of pages in the document in an efficient manner.
@@ -330,18 +329,20 @@ public class PDPageTree implements COSObjectable, Iterable<PDPage>
         // remove from parent's kids
         COSDictionary parent = (COSDictionary) node.getDictionaryObject(COSName.PARENT, COSName.P);
         COSArray kids = (COSArray)parent.getDictionaryObject(COSName.KIDS);
-        kids.remove(node);
-
-        // update ancestor counts
-        do
+        
+        if (kids.removeObject(node))
         {
-            node = (COSDictionary) node.getDictionaryObject(COSName.PARENT, COSName.P);
-            if (node != null)
-            {
-                node.setInt(COSName.COUNT, node.getInt(COSName.COUNT) - 1);
-            }
+        	// update ancestor counts
+        	do
+        	{
+        		node = (COSDictionary) node.getDictionaryObject(COSName.PARENT, COSName.P);
+        		if (node != null)
+        		{
+        			node.setInt(COSName.COUNT, node.getInt(COSName.COUNT) - 1);
+        		}
+        	}
+        	while (node != null);
         }
-        while (node != null);
     }
 
     /**
@@ -358,15 +359,15 @@ public class PDPageTree implements COSObjectable, Iterable<PDPage>
         // add to parent's kids
         COSArray kids = (COSArray)root.getDictionaryObject(COSName.KIDS);
         kids.add(node);
-
+        
         // update ancestor counts
         do
         {
-            node = (COSDictionary) node.getDictionaryObject(COSName.PARENT, COSName.P);
-            if (node != null)
-            {
-                node.setInt(COSName.COUNT, node.getInt(COSName.COUNT) + 1);
-            }
+        	node = (COSDictionary) node.getDictionaryObject(COSName.PARENT, COSName.P);
+        	if (node != null)
+        	{
+        		node.setInt(COSName.COUNT, node.getInt(COSName.COUNT) + 1);
+        	}
         }
         while (node != null);
     }

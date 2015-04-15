@@ -94,11 +94,11 @@ public class LZWFilter extends Filter
         return new DecodeResult(parameters);
     }
 
-    private void doLZWDecode(InputStream encoded, OutputStream decoded, int earlyChange) throws IOException
+    private static void doLZWDecode(InputStream encoded, OutputStream decoded, int earlyChange) throws IOException
     {
-        List<byte[]> codeTable = null;
+        List<byte[]> codeTable = new ArrayList<byte[]>();
         int chunk = 9;
-        MemoryCacheImageInputStream in = new MemoryCacheImageInputStream(encoded);
+        final MemoryCacheImageInputStream in = new MemoryCacheImageInputStream(encoded);
         long nextCommand;
         long prevCommand = -1;
 
@@ -159,7 +159,7 @@ public class LZWFilter extends Filter
         int chunk = 9;
 
         byte[] inputPattern = null;
-        MemoryCacheImageOutputStream out = new MemoryCacheImageOutputStream(encoded);
+        final MemoryCacheImageOutputStream out = new MemoryCacheImageOutputStream(encoded);
         out.writeBits(CLEAR_TABLE, chunk);
         int foundCode = -1;
         int r;
@@ -218,7 +218,8 @@ public class LZWFilter extends Filter
         out.writeBits(0, 7);
 
         // must do or file will be empty :-(
-        out.flush(); 
+        out.flush();
+//        out.close();
     }
 
     /**
@@ -229,7 +230,7 @@ public class LZWFilter extends Filter
      * @return The index of the longest matching pattern or -1 if nothing is
      * found.
      */
-    private int findPatternCode(List<byte[]> codeTable, byte[] pattern)
+    private static int findPatternCode(List<byte[]> codeTable, byte[] pattern)
     {
         int foundCode = -1;
         int foundLen = 0;
@@ -263,7 +264,7 @@ public class LZWFilter extends Filter
      * Init the code table with 1 byte entries and the EOD and CLEAR_TABLE
      * markers.
      */
-    private List<byte[]> createCodeTable()
+    private static List<byte[]> createCodeTable()
     {
         List<byte[]> codeTable = new ArrayList<byte[]>(4096);
         for (int i = 0; i < 256; ++i)
@@ -283,7 +284,7 @@ public class LZWFilter extends Filter
      *
      * @return a value between 9 and 12
      */
-    private int calculateChunk(int tabSize, int earlyChange)
+    private static int calculateChunk(int tabSize, int earlyChange)
     {
         if (tabSize >= 2048 - earlyChange)
         {

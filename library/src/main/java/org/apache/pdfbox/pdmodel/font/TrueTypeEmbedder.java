@@ -250,7 +250,7 @@ abstract class TrueTypeEmbedder implements Subsetter
     	tables.add("hhea");
     	tables.add("loca");
     	tables.add("maxp");
-    	tables.add("cvt");
+    	tables.add("cvt ");
     	tables.add("prep");
     	tables.add("glyf");
     	tables.add("hmtx");

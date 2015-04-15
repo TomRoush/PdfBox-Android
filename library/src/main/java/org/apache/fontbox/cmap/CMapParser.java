@@ -182,7 +182,7 @@ public class CMapParser
             Object next = parseNextToken(cmapStream);
             if (next instanceof Number)
             {
-                result.setVersion(((Number) next).toString());
+                result.setVersion(next.toString());
             }
             else if (next instanceof String)
             {
@@ -373,11 +373,7 @@ public class CMapParser
                 tokenBytes = (byte[]) nextToken;
             }
             boolean done = false;
-            // don't add 1:1 mappings to reduce the memory footprint
-            /*if (Arrays.equals(startCode, tokenBytes))
-             {
-             done = true;
-             }*/
+            
             String value = null;
 
             int arrayIndex = 0;
@@ -400,7 +396,7 @@ public class CMapParser
                     arrayIndex++;
                     if (arrayIndex < array.size())
                     {
-                        tokenBytes = (byte[]) array.get(arrayIndex);
+                        tokenBytes = array.get(arrayIndex);
                     }
                 }
             }
@@ -574,7 +570,7 @@ public class CMapParser
         }
         case -1:
         {
-            // EOF return null;
+            // EOF returning null
             break;
         }
         case '0':
@@ -634,7 +630,7 @@ public class CMapParser
         return retval;
     }
 
-    private void readUntilEndOfLine(InputStream is, StringBuffer buf) throws IOException
+    private static void readUntilEndOfLine(InputStream is, StringBuffer buf) throws IOException
     {
         int nextByte = is.read();
         while (nextByte != -1 && nextByte != 0x0D && nextByte != 0x0A)
@@ -644,13 +640,13 @@ public class CMapParser
         }
     }
 
-    private boolean isWhitespaceOrEOF(int aByte)
+    private static boolean isWhitespaceOrEOF(int aByte)
     {
         return aByte == -1 || aByte == 0x20 || aByte == 0x0D || aByte == 0x0A;
     }
 
     /** Is this a standard PDF delimiter character? */
-    private boolean isDelimiter(int aByte) 
+    private static boolean isDelimiter(int aByte) 
     {
         switch (aByte) 
         {
@@ -688,7 +684,7 @@ public class CMapParser
         }
     }
 
-    private int createIntFromBytes(byte[] bytes)
+    private static int createIntFromBytes(byte[] bytes)
     {
         int intValue = (bytes[0] + 256) % 256;
         if (bytes.length == 2)
@@ -699,7 +695,7 @@ public class CMapParser
         return intValue;
     }
 
-    private String createStringFromBytes(byte[] bytes) throws IOException
+    private static String createStringFromBytes(byte[] bytes) throws IOException
     {
         String retval;
         if (bytes.length == 1)
@@ -713,7 +709,7 @@ public class CMapParser
         return retval;
     }
 
-    private int compare(byte[] first, byte[] second)
+    private static int compare(byte[] first, byte[] second)
     {
         int retval = 1;
         int firstLength = first.length;

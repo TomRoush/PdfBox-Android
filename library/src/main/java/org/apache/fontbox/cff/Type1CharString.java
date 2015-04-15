@@ -137,6 +137,7 @@ public class Type1CharString
 		leftSideBearing = new PointF(0, 0);
 		width = 0;
 		CharStringHandler handler = new CharStringHandler() {
+			@Override
 			public List<Integer> handleCommand(List<Integer> numbers, CharStringCommand command)
 			{
 				return Type1CharString.this.handleCommand(numbers, command);
@@ -413,6 +414,7 @@ public class Type1CharString
 	 * Standard Encoding Accented Character
 	 *
 	 * Makes an accented character from two other characters.
+	 * @param asb
 	 */
 	private void seac(Number asb, Number adx, Number ady, Number bchar, Number achar)
 	{
