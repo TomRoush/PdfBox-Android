@@ -79,19 +79,19 @@ public final class PDResources implements COSObjectable
 	/**
 	 * Returns the color space resource with the given name, or null if none exists.
 	 */
-//	public PDColorSpace getColorSpace(COSName name) throws IOException
-//	{
-//		// get the instance
-//		COSBase object = get(COSName.COLORSPACE, name);
-//		if (object != null)
-//		{
-//			return PDColorSpace.create(object, this);
-//		}
-//		else
-//		{
-//			return PDColorSpace.create(name, this);
-//		}
-//	} TODO
+	public PDColorSpace getColorSpace(COSName name) throws IOException
+	{
+		// get the instance
+		COSBase object = get(COSName.COLORSPACE, name);
+		if (object != null)
+		{
+			return PDColorSpace.create(object, this);
+		}
+		else
+		{
+			return PDColorSpace.create(name, this);
+		}
+	}
 
 	/**
 	 * Returns true if the given color space name exists in these resources.

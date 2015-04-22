@@ -16,6 +16,7 @@ import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1CFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImage;
 import org.apache.pdfbox.pdmodel.graphics.shading.PDShading;
@@ -38,7 +39,7 @@ import android.util.Log;
 
 /**
  * Paints a page in a PDF document to a Graphics context.
- * 
+ *
  * @author Ben Litchfield
  */
 public final class PageDrawer extends PDFGraphicsStreamEngine
@@ -47,10 +48,10 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 	Paint paint;
 	Canvas canvas;
 	private AffineTransform xform;
-	
+
 	// the page box to draw (usually the crop box but may be another)
 	PDRectangle pageSize;
-	
+
 	// clipping winding rule used for the clipping path
     private int clipWindingRule = -1;
     private Path linePath = new Path();
@@ -62,10 +63,10 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 //    private Area textClippingArea;TODO
 
     private final Map<PDFont, Glyph2D> fontGlyph2D = new HashMap<PDFont, Glyph2D>();
-	
+
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param page the page that is to be rendered.
 	 * @throws IOException If there is an error loading properties from the file.
 	 */
@@ -73,7 +74,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 	{
 		super(page);
 	}
-	
+
 	/**
      * Sets high-quality rendering hints on the current Graphics2D.
      */
@@ -85,7 +86,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 //                                  RenderingHints.VALUE_RENDER_QUALITY);
         paint.setAntiAlias(true);
     }
-	
+
 	/**
 	 * Draws the page to the requested canvas.
      *
@@ -100,29 +101,29 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 		canvas = c;
 		xform = new AffineTransform(canvas.getMatrix());
 		this.pageSize = pageSize;
-		
+
 		setRenderingHints();
-		
+
 		canvas.translate(0, pageSize.getHeight());
 		canvas.scale(1, -1);
-		
+
 		paint.setStrokeCap(Paint.Cap.BUTT);
 		paint.setStrokeJoin(Paint.Join.MITER);
         paint.setStrokeWidth(1.0f);
 
 		// adjust for non-(0,0) crop box
 		canvas.translate(-pageSize.getLowerLeftX(), -pageSize.getLowerLeftY());
-		
+
 		processPage(getPage());
-		
+
 		for (PDAnnotation annotation : getPage().getAnnotations())
 		{
 			showAnnotation(annotation);
 		}
-		
+
 //		graphics = null;
 	}
-	
+
 	/**
      * Draws the pattern stream to the requested context.
      *
@@ -199,6 +200,16 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 //        }
 //    }
 
+    // returns an integer for color that Android understands from the PDColor
+    private int getColor(PDColor color) throws IOException {
+        PDColorSpace colorSpace = color.getColorSpace();
+        float[] floats = colorSpace.toRGB(color.getComponents());
+        int r = Math.round(floats[0] * 255);
+        int g = Math.round(floats[1] * 255);
+        int b = Math.round(floats[2] * 255);
+        return Color.rgb(r, g, b);
+    }
+
     // sets the clipping path using caching for performance, we track lastClip manually because
     // Graphics2D#getClip() returns a new object instead of the same one passed to setClip
     private void setClip()
@@ -252,7 +263,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 
     /**
      * Render the font using the Glyph2D interface.
-     * 
+     *
      * @param glyph2D the Glyph2D implementation provided a GeneralPath for each glyph
      * @param font the font
      * @param code character code
@@ -318,7 +329,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 
     /**
      * Provide a Glyph2D for the given font.
-     * 
+     *
      * @param font the font
      * @return the implementation of the Glyph2D interface for the given font
      * @throws IOException if something went wrong
@@ -398,7 +409,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 
     /**
      * Generates AWT raster for a soft mask
-     * 
+     *
      * @param softMask soft mask
      * @return AWT raster for soft mask
      * @throws IOException
@@ -440,6 +451,10 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 //                getPaint(getGraphicsState().getStrokingColor()),
 //                getGraphicsState().getSoftMask());
 //    }
+
+    private int getStrokingColor() throws IOException {
+        return getColor(getGraphicsState().getStrokingColor());
+    }
 
     // returns the non-stroking AWT Paint
 //    private Paint getNonStrokingPaint() throws IOException
@@ -503,6 +518,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         setClip();
         paint.setARGB(255, 0, 0, 0); // TODO set the correct color from graphics state.
         paint.setStyle(Paint.Style.STROKE);
+        paint.setColor(getStrokingColor());
         canvas.drawPath(linePath, paint);
         linePath.reset();
     }
@@ -658,13 +674,13 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 //        }
         linePath.reset();
     }
-    
+
     @Override
     public void drawImage(PDImage pdImage) throws IOException
     {
         org.apache.pdfbox.util.Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
         AffineTransform at = ctm.createAffineTransform();
-        
+
         if (!pdImage.getInterpolate())
         {
         	boolean isScaledUp = pdImage.getWidth() < Math.round(at.getScaleX()) ||
@@ -875,7 +891,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
                     processTransparencyGroup(form);
                 }
             }
-            finally 
+            finally
             {
 //                lastClip = lastClipOriginal;                
 //                graphics.dispose();
