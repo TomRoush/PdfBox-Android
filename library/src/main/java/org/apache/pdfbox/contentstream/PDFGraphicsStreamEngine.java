@@ -1,7 +1,9 @@
 package org.apache.pdfbox.contentstream;
 
-import java.io.IOException;
+import android.graphics.PointF;
 
+import org.apache.pdfbox.contentstream.operator.color.SetStrokingColor;
+import org.apache.pdfbox.contentstream.operator.color.SetStrokingDeviceRGBColor;
 import org.apache.pdfbox.contentstream.operator.graphics.AppendRectangleToPath;
 import org.apache.pdfbox.contentstream.operator.graphics.CloseAndStrokePath;
 import org.apache.pdfbox.contentstream.operator.graphics.CloseFillEvenOddAndStrokePath;
@@ -47,7 +49,7 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImage;
 
-import android.graphics.PointF;
+import java.io.IOException;
 
 /**
  * PDFStreamEngine subclass for advanced processing of graphics.
@@ -55,16 +57,14 @@ import android.graphics.PointF;
  *
  * @author John Hewson
  */
-public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine
-{
+public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
     // may be null, for example if the stream is a tiling pattern
     private final PDPage page;
 
     /**
      * Constructor.
      */
-    protected PDFGraphicsStreamEngine(PDPage page)
-    {
+    protected PDFGraphicsStreamEngine(PDPage page) {
         this.page = page;
 
         addOperator(new CloseFillNonZeroAndStrokePath());
@@ -99,12 +99,12 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine
         addOperator(new Save());
         addOperator(new Restore());
         addOperator(new AppendRectangleToPath());
-//        addOperator(new SetStrokingDeviceRGBColor());TODO
+        addOperator(new SetStrokingDeviceRGBColor());
 //        addOperator(new SetNonStrokingDeviceRGBColor());TODO
         addOperator(new SetRenderingIntent());
         addOperator(new CloseAndStrokePath());
         addOperator(new StrokePath());
-//        addOperator(new SetStrokingColor());TODO
+        addOperator(new SetStrokingColor());
 //        addOperator(new SetNonStrokingColor());TODO
 //        addOperator(new SetStrokingColorN());TODO
 //        addOperator(new SetNonStrokingColorN());TODO
@@ -134,8 +134,7 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine
     /**
      * Returns the page.
      */
-    protected final PDPage getPage()
-    {
+    protected final PDPage getPage() {
         return page;
     }
 
