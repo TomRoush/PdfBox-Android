@@ -90,7 +90,7 @@ public class PDFRenderer
 	}
 	
 	// renders a page to the given graphics
-    private void renderPage(PDPage page, Paint paint, Canvas canvas, int width, int height, float scaleX,
+    public void renderPage(PDPage page, Paint paint, Canvas canvas, int width, int height, float scaleX,
                             float scaleY) throws IOException
     {
         canvas.scale(scaleX, scaleY);
