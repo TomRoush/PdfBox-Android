@@ -1,8 +1,14 @@
 package org.apache.pdfbox.contentstream;
 
-import android.graphics.PointF;
+import java.io.IOException;
 
+import org.apache.pdfbox.contentstream.operator.color.SetNonStrokingColor;
+import org.apache.pdfbox.contentstream.operator.color.SetNonStrokingColorSpace;
+import org.apache.pdfbox.contentstream.operator.color.SetNonStrokingDeviceGrayColor;
+import org.apache.pdfbox.contentstream.operator.color.SetNonStrokingDeviceRGBColor;
 import org.apache.pdfbox.contentstream.operator.color.SetStrokingColor;
+import org.apache.pdfbox.contentstream.operator.color.SetStrokingColorSpace;
+import org.apache.pdfbox.contentstream.operator.color.SetStrokingDeviceGrayColor;
 import org.apache.pdfbox.contentstream.operator.color.SetStrokingDeviceRGBColor;
 import org.apache.pdfbox.contentstream.operator.graphics.AppendRectangleToPath;
 import org.apache.pdfbox.contentstream.operator.graphics.CloseAndStrokePath;
@@ -12,6 +18,7 @@ import org.apache.pdfbox.contentstream.operator.graphics.ClosePath;
 import org.apache.pdfbox.contentstream.operator.graphics.CurveTo;
 import org.apache.pdfbox.contentstream.operator.graphics.CurveToReplicateFinalPoint;
 import org.apache.pdfbox.contentstream.operator.graphics.CurveToReplicateInitialPoint;
+import org.apache.pdfbox.contentstream.operator.graphics.DrawObject;
 import org.apache.pdfbox.contentstream.operator.graphics.EndPath;
 import org.apache.pdfbox.contentstream.operator.graphics.LineTo;
 import org.apache.pdfbox.contentstream.operator.graphics.MoveTo;
@@ -49,7 +56,7 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImage;
 
-import java.io.IOException;
+import android.graphics.PointF;
 
 /**
  * PDFStreamEngine subclass for advanced processing of graphics.
@@ -75,16 +82,16 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
         addOperator(new BeginText());
         addOperator(new CurveTo());
         addOperator(new Concatenate());
-//        addOperator(new SetStrokingColorSpace());TODO
-//        addOperator(new SetNonStrokingColorSpace());TODO
+        addOperator(new SetStrokingColorSpace());
+        addOperator(new SetNonStrokingColorSpace());
         addOperator(new SetLineDashPattern());
-//        addOperator(new DrawObject()); // special graphics version TODO
+        addOperator(new DrawObject()); // special graphics version
         addOperator(new EndText());
 //        addOperator(new FillNonZeroRule());TODO
 //        addOperator(new LegacyFillNonZeroRule());TODO
 //        addOperator(new FillEvenOddRule());TODO
-//        addOperator(new SetStrokingDeviceGrayColor());TODO
-//        addOperator(new SetNonStrokingDeviceGrayColor());TODO
+        addOperator(new SetStrokingDeviceGrayColor());
+        addOperator(new SetNonStrokingDeviceGrayColor());
         addOperator(new SetGraphicsStateParameters());
         addOperator(new ClosePath());
         addOperator(new SetFlatness());
@@ -100,12 +107,12 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
         addOperator(new Restore());
         addOperator(new AppendRectangleToPath());
         addOperator(new SetStrokingDeviceRGBColor());
-//        addOperator(new SetNonStrokingDeviceRGBColor());TODO
+        addOperator(new SetNonStrokingDeviceRGBColor());
         addOperator(new SetRenderingIntent());
         addOperator(new CloseAndStrokePath());
         addOperator(new StrokePath());
         addOperator(new SetStrokingColor());
-//        addOperator(new SetNonStrokingColor());TODO
+        addOperator(new SetNonStrokingColor());
 //        addOperator(new SetStrokingColorN());TODO
 //        addOperator(new SetNonStrokingColorN());TODO
         addOperator(new ShadingFill());
