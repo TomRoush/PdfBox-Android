@@ -34,6 +34,7 @@ task androidJavadocs(type: Javadoc) {
     exclude "org/apache/fontbox/resources/**"
     exclude "org/apache/pdfbox/resources/**"
     options {
+        encoding = "windows-1251"
         title("PdfBox-Android");
         links("http://docs.oracle.com/javase/7/docs/api/");
         linksOffline("http://d.android.com/reference", "${android.sdkDirectory}/docs/reference");
