@@ -19,6 +19,7 @@ import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.fontbox.ttf.Type1Equivalent;
 import org.apache.fontbox.type1.Type1Font;
 import org.apache.pdfbox.io.IOUtils;
+import org.apache.pdfbox.util.PDFBoxResourceLoader;
 
 import android.util.Log;
 
@@ -48,23 +49,46 @@ public final class ExternalFonts
 		{
 			// ttf
 			String ttfName = "org/apache/pdfbox/resources/ttf/LiberationSans-Regular.ttf";
-			URL url = ExternalFonts.class.getClassLoader().getResource(ttfName);
-			if (url == null)
-			{
-				throw new IOException("Error loading resource: " + ttfName);
+			InputStream ttfStream;
+			if(PDFBoxResourceLoader.isReady()) {
+				ttfStream = PDFBoxResourceLoader.getStream(ttfName);
+				if (ttfStream == null)
+				{
+					throw new IOException("Error loading resource: " + ttfStream);
+				}
+			} else {
+				// Fallback
+				URL url = ExternalFonts.class.getClassLoader().getResource(ttfName);
+				if (url == null)
+				{
+					throw new IOException("Error loading resource: " + ttfName);
+				}
+				ttfStream = url.openStream();
 			}
-			InputStream ttfStream = url.openStream();
+			
+			
 			TTFParser ttfParser = new TTFParser();
 			ttfFallbackFont = ttfParser.parse(ttfStream);
 
 			// cff
 			String cffName = "org/apache/pdfbox/resources/otf/AdobeBlank.otf";
-			url = ExternalFonts.class.getClassLoader().getResource(cffName);
-			if (url == null)
-			{
-				throw new IOException("Error loading resource: " + ttfName);
+			InputStream cffStream;
+			if(PDFBoxResourceLoader.isReady()) {
+				cffStream = PDFBoxResourceLoader.getStream(cffName);
+				if (cffStream == null)
+				{
+					throw new IOException("Error loading resource: " + cffName);
+				} 
+			} else {
+				// Fallback
+				URL url = ExternalFonts.class.getClassLoader().getResource(cffName);
+				if (url == null)
+				{
+					throw new IOException("Error loading resource: " + ttfName);
+				}
+				cffStream = url.openStream();
 			}
-			InputStream cffStream = url.openStream();
+			
 			byte[] bytes = IOUtils.toByteArray(cffStream);
 			CFFParser cffParser = new CFFParser();
 			cidFallbackFont = (CFFCIDFont)cffParser.parse(bytes).get(0);

@@ -8,16 +8,18 @@ def version = project.PUBLISH_VERSION
 
 def localReleaseDest = "${buildDir}/release/${version}"
 
-android.libraryVariants.all { variant ->
-    def name = variant.buildType.name
-    if (!name.equals("debug")) {
-        def task = project.tasks.create "jar${name.capitalize()}", Jar
-        task.dependsOn variant.javaCompile
-        task.from variant.javaCompile.destinationDir
-        task.from "src/main/resources"
-        artifacts.add('archives', task);
-    }
+task copyResources(type: Copy) {
+    from fileTree('src/main/resources') //.files
+    into 'src/main/assets'
+    include('**/*')
 }
+
+preBuild.dependsOn copyResources
+
+clean {
+    delete 'src/main/assets'
+}
+
 
 if (JavaVersion.current().isJava8Compatible()) {
     tasks.withType(Javadoc) {
@@ -33,14 +35,15 @@ task androidJavadocs(type: Javadoc) {
     // Exclude non java dirs
     exclude "org/apache/fontbox/resources/**"
     exclude "org/apache/pdfbox/resources/**"
+    
+    ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
+    classpath += files(ext.androidJar)
     options {
         encoding = "windows-1251"
         title("PdfBox-Android");
         links("http://docs.oracle.com/javase/7/docs/api/");
         linksOffline("http://d.android.com/reference", "${android.sdkDirectory}/docs/reference");
-}
-    ext.androidJar = "${android.sdkDirectory}/platforms/${android.compileSdkVersion}/android.jar"
-    classpath += files(ext.androidJar)
+    }
 }
 
 task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {

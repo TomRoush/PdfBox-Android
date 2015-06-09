@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.pdfbox.util.PDFBoxResourceLoader;
+
 import android.util.Log;
 
 /**
@@ -37,12 +39,25 @@ public final class GlyphList
 	{
 		try
 		{
-			ClassLoader loader = GlyphList.class.getClassLoader();
 			String path = "org/apache/pdfbox/resources/glyphlist/";
 			// Adobe Glyph List (AGL)
-			DEFAULT = new GlyphList(loader.getResourceAsStream(path + "glyphlist.txt"));
+			if(PDFBoxResourceLoader.isReady()) {
+				DEFAULT = new GlyphList(PDFBoxResourceLoader.getStream(path + "glyphlist.txt"));
+			} else {
+				// Fallback
+				ClassLoader loader = GlyphList.class.getClassLoader();
+				DEFAULT = new GlyphList(loader.getResourceAsStream(path + "glyphlist.txt"));
+			}
+			
 			// Zapf Dingbats has its own glyph list
-			ZAPF_DINGBATS = new GlyphList(loader.getResourceAsStream(path + "zapfdingbats.txt"));
+			if(PDFBoxResourceLoader.isReady()) {
+				ZAPF_DINGBATS = new GlyphList(PDFBoxResourceLoader.getStream(path + "zapfdingbats.txt"));
+			} else {
+				// Fallback
+				ClassLoader loader = GlyphList.class.getClassLoader();
+				ZAPF_DINGBATS = new GlyphList(loader.getResourceAsStream(path + "zapfdingbats.txt"));
+			}
+			
 			// not supported in PDFBox 2.0, but we issue a warning, see PDFBOX-2379
 			try
 			{

@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.apache.fontbox.afm.AFMParser;
 import org.apache.fontbox.afm.FontMetrics;
+import org.apache.pdfbox.util.PDFBoxResourceLoader;
 
 /**
  * The "Standard 14" PDF fonts, also known as the "base 14" fonts.
@@ -93,24 +94,31 @@ class Standard14Fonts
 		}
 
 		String resourceName = "org/apache/pdfbox/resources/afm/" + afmName + ".afm";
-		URL url = PDType1Font.class.getClassLoader().getResource(resourceName);
-		if (url != null)
-		{
-			InputStream afmStream = url.openStream();
-			try
+		InputStream afmStream;
+		if(PDFBoxResourceLoader.isReady()) {
+			afmStream = PDFBoxResourceLoader.getStream(resourceName);
+		} else {
+			// Fallback
+			URL url = PDType1Font.class.getClassLoader().getResource(resourceName);
+			if (url != null)
 			{
-				AFMParser parser = new AFMParser(afmStream);
-				FontMetrics metric = parser.parse();
-				STANDARD14_AFM_MAP.put(fontName, metric);
+				afmStream = url.openStream();
 			}
-			finally
+			else
 			{
-				afmStream.close();
+				throw new IOException(resourceName + " not found");
 			}
 		}
-		else
+		
+		try
 		{
-			throw new IOException(resourceName + " not found");
+			AFMParser parser = new AFMParser(afmStream);
+			FontMetrics metric = parser.parse();
+			STANDARD14_AFM_MAP.put(fontName, metric);
+		}
+		finally
+		{
+			afmStream.close();
 		}
 	}
 

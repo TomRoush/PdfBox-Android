@@ -34,6 +34,7 @@ import org.apache.pdfbox.pdmodel.font.PDType3Font;
 import org.apache.pdfbox.pdmodel.font.encoding.GlyphList;
 import org.apache.pdfbox.pdmodel.graphics.state.PDGraphicsState;
 import org.apache.pdfbox.util.Matrix;
+import org.apache.pdfbox.util.PDFBoxResourceLoader;
 import org.apache.pdfbox.util.Vector;
 
 import android.util.Log;
@@ -82,7 +83,13 @@ class PDFTextStreamEngine extends PDFStreamEngine
 		
 		// load additional glyph list for Unicode mapping
 		String path = "org/apache/pdfbox/resources/glyphlist/additional.txt";
-		InputStream input = GlyphList.class.getClassLoader().getResourceAsStream(path);
+		InputStream input;
+		if(PDFBoxResourceLoader.isReady()) {
+			input = GlyphList.class.getClassLoader().getResourceAsStream(path);
+		} else {
+			// Fallback
+			input = GlyphList.class.getClassLoader().getResourceAsStream(path);
+		}
 		glyphList = new GlyphList(GlyphList.getAdobeGlyphList(), input);
 	}
 

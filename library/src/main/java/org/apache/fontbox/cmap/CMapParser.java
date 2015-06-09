@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.pdfbox.util.PDFBoxResourceLoader;
+
 /**
  * Parses a CMap stream.
  *
@@ -408,12 +410,18 @@ public class CMapParser
      */
     protected InputStream getExternalCMap(String name) throws IOException
     {
+    	if(PDFBoxResourceLoader.isReady()) {
+    		return PDFBoxResourceLoader.getStream("/org/apache/fontbox/resources/cmap/" + name);
+    	}
+    	
+    	// Fallback
         URL url = getClass().getResource("/org/apache/fontbox/resources/cmap/" + name);
         if (url == null)
         {
             throw new IOException("Error: Could not find referenced cmap stream " + name);
         }
         return url.openStream();
+    	
     }
 
     private Object parseNextToken(PushbackInputStream is) throws IOException
