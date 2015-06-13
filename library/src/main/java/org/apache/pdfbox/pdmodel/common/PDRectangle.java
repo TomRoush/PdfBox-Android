@@ -316,20 +316,20 @@ public class PDRectangle implements COSObjectable
 	 * Returns a general path equivalent to this rectangle. This method avoids the problems
 	 * caused by Rectangle2D not working well with -ve rectangles.
 	 */
-	//	public GeneralPath toGeneralPath()
-	//	{
-	//		float x1 = getLowerLeftX();
-	//		float y1 = getLowerLeftY();
-	//		float x2 = getUpperRightX();
-	//		float y2 = getUpperRightY();
-	//		GeneralPath path = new GeneralPath();
-	//		path.moveTo(x1, y1);
-	//		path.lineTo(x2, y1);
-	//		path.lineTo(x2, y2);
-	//		path.lineTo(x1, y2);
-	//		path.closePath();
-	//		return path;
-	//	}TODO
+	public Path toGeneralPath()
+	{
+		float x1 = getLowerLeftX();
+		float y1 = getLowerLeftY();
+		float x2 = getUpperRightX();
+		float y2 = getUpperRightY();
+		Path path = new Path();
+		path.moveTo(x1, y1);
+		path.lineTo(x2, y1);
+		path.lineTo(x2, y2);
+		path.lineTo(x1, y2);
+		path.close();
+		return path;
+	}
 
 	/**
 	 * This will return a string representation of this rectangle.

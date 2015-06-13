@@ -9,6 +9,10 @@ import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import org.apache.pdfbox.util.Matrix;
 
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Region;
 
 /**
  * The current state of the graphics parameters when executing a content stream.
@@ -18,7 +22,7 @@ import android.graphics.Paint;
 public class PDGraphicsState implements Cloneable
 {
     private boolean isClippingPathDirty;
-//    private Area clippingPath;TODO
+    private Region clippingPath;
     private Matrix currentTransformationMatrix = new Matrix();
     private PDColor strokingColor = PDDeviceGray.INSTANCE.getInitialColor();
     private PDColor nonStrokingColor = PDDeviceGray.INSTANCE.getInitialColor();
@@ -55,6 +59,12 @@ public class PDGraphicsState implements Cloneable
     public PDGraphicsState(PDRectangle page)
     {
 //        clippingPath = new Area(new GeneralPath(page.toGeneralPath()));TODO
+    	RectF bounds = new RectF();
+    	page.toGeneralPath().computeBounds(bounds, true);
+    	clippingPath = new Region();
+    	Rect boundsRounded = new Rect();
+    	bounds.round(boundsRounded);
+    	clippingPath.setPath(page.toGeneralPath(), new Region(boundsRounded));
     }
 
     /**
@@ -433,7 +443,7 @@ public class PDGraphicsState implements Cloneable
             clone.strokingColor = strokingColor; // immutable 
             clone.nonStrokingColor = nonStrokingColor; // immutable
             clone.lineDashPattern = lineDashPattern; // immutable
-//            clone.clippingPath = clippingPath; // not cloned, see intersectClippingPath
+            clone.clippingPath = clippingPath; // not cloned, see intersectClippingPath
             clone.isClippingPathDirty = false;
             return clone;
         }
@@ -528,41 +538,47 @@ public class PDGraphicsState implements Cloneable
      * Modify the current clipping path by intersecting it with the given path.
      * @param path path to intersect with the clipping path
      */
-//    public void intersectClippingPath(GeneralPath path)
-//    {
-//        intersectClippingPath(new Area(path));
-//    }TODO
+    public void intersectClippingPath(Path path)
+    {
+    	RectF bounds = new RectF();
+    	path.computeBounds(bounds, true);
+    	Region r = new Region();
+    	Rect boundsRounded = new Rect();
+    	bounds.round(boundsRounded);
+    	r.setPath(path, new Region(boundsRounded));
+        intersectClippingPath(r);
+    }
 
     /**
      * Modify the current clipping path by intersecting it with the given path.
      * @param area area to intersect with the clipping path
      */
-//    public void intersectClippingPath(Area area)
-//    {
-//        // lazy cloning of clipping path for performance
-//        if (!isClippingPathDirty)
-//        {
-//        	// deep copy (can't use clone() as it performs only a shallow copy)
-//        	Area cloned = new Area();
+    public void intersectClippingPath(Region area)
+    {
+        // lazy cloning of clipping path for performance
+        if (!isClippingPathDirty)
+        {
+        	// deep copy (can't use clone() as it performs only a shallow copy)
+        	Region cloned = new Region(area);
 //        	cloned.add(clippingPath);
-//        	clippingPath = cloned;
-//
-//        	isClippingPathDirty = true;
-//        }
-//
-//        // intersection as usual
-//        clippingPath.intersect(area);
-//    }TODO
+        	clippingPath = cloned;
+
+        	isClippingPathDirty = true;
+        }
+
+        // intersection as usual
+        clippingPath.op(area, Region.Op.INTERSECT);
+    }
 
     /**
      * This will get the current clipping path. Do not modify this Area object!
      *
      * @return The current clipping path.
      */
-//    public Area getCurrentClippingPath()
-//    {
-//        return clippingPath;
-//    }TODO
+    public Region getCurrentClippingPath()
+    {
+        return clippingPath;
+    }
 
 //    public Composite getStrokingJavaComposite()
 //    {

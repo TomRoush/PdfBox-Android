@@ -35,6 +35,7 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Region;
 import android.util.Log;
 
 /**
@@ -57,10 +58,10 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     private Path linePath = new Path();
 
     // last clipping path
-//    private Area lastClip;TODO
+    private Region lastClip;
 
     // buffered clipping area for text being drawn
-//    private Area textClippingArea;TODO
+    private Region textClippingArea;
 
     private final Map<PDFont, Glyph2D> fontGlyph2D = new HashMap<PDFont, Glyph2D>();
 
@@ -214,12 +215,13 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     // Graphics2D#getClip() returns a new object instead of the same one passed to setClip
     private void setClip()
     {
-//        Area clippingPath = getGraphicsState().getCurrentClippingPath();
-//        if (clippingPath != lastClip)
-//        {
+        Region clippingPath = getGraphicsState().getCurrentClippingPath();
+        if (clippingPath != lastClip)
+        {
 //            graphics.setClip(clippingPath);
-//            lastClip = clippingPath;
-//        }
+        	canvas.clipRegion(clippingPath);
+            lastClip = clippingPath;
+        }
     }
 
     @Override
@@ -237,7 +239,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         // buffer the text clip because it represents a single clipping area
         if (renderingMode.isClip())
         {
-//            textClippingArea = new Area();
+            textClippingArea = new Region();
         }
 
         super.showText(string);
@@ -245,8 +247,8 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         // apply the buffered clip as one area
         if (renderingMode.isClip())
         {
-//            state.intersectClippingPath(textClippingArea);
-//            textClippingArea = null;
+            state.intersectClippingPath(textClippingArea);
+            textClippingArea = null;
         }
     }
 
