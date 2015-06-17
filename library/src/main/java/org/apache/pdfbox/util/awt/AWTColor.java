@@ -141,7 +141,16 @@ public class AWTColor {
 	public int color;
 	
 	/**
-	 * Creates a AWTColor with the specified RGB values that is fully opaque
+	 * Creates an AWTColor from a color int
+	 * 
+	 * @param c The color integer
+	 */
+	public AWTColor(int c) {
+		color = c;
+	}
+	
+	/**
+	 * Creates an AWTColor with the specified RGB values that is fully opaque
 	 * 
 	 * @param r The red component
 	 * @param g The green component
@@ -153,7 +162,7 @@ public class AWTColor {
 	}
 	
 	/**
-	 * Creates a AWTColor with the specified RGBA values
+	 * Creates an AWTColor with the specified RGBA values
 	 * 
 	 * @param r The red component
 	 * @param g The green component

@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDStream;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 import android.graphics.Bitmap;
 
@@ -64,13 +65,13 @@ public interface PDImage extends COSObjectable
      * Returns the image's color space.
      * @throws IOException If there is an error getting the color space.
      */
-//    PDColorSpace getColorSpace() throws IOException;
+    PDColorSpace getColorSpace() throws IOException;
 
     /**
      * Sets the color space for this image.
      * @param colorSpace The color space for this image.
      */
-//    void setColorSpace(PDColorSpace colorSpace);TODO
+    void setColorSpace(PDColorSpace colorSpace);
 
     /**
      * Returns height of this image, or -1 if one has not been set.

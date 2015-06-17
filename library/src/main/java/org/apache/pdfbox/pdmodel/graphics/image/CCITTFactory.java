@@ -11,6 +11,7 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.io.RandomAccess;
 import org.apache.pdfbox.io.RandomAccessFile;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 
 /**
  * Factory for creating a PDImageXObject containing a CCITT Fax compressed TIFF image.
@@ -121,8 +122,7 @@ public final class CCITTFactory
                 COSName.CCITTFAX_DECODE, 
                 decodeParms.getInt(COSName.COLUMNS), 
                 decodeParms.getInt(COSName.ROWS),
-                1); //,
-//                PDDeviceGray.INSTANCE);
+                1, PDDeviceGray.INSTANCE);
                 
         
         COSDictionary dict = pdImage.getCOSStream();

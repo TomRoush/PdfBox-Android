@@ -7,6 +7,7 @@ import java.io.InputStream;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -44,18 +45,16 @@ public final class JPEGFactory extends ImageFactory
 		// create Image XObject from stream
 		PDImageXObject pdImage = new PDImageXObject(document, byteStream, 
 				COSName.DCT_DECODE, awtImage.getWidth(), awtImage.getHeight(), 
-				8); //awtImage.getColorModel().getComponentSize(0),
-		//                getColorSpaceFromAWT(awtImage));
-		//                null);
+				8, //awtImage.getColorModel().getComponentSize(0), TODO
+		        PDDeviceRGB.INSTANCE); //        getColorSpaceFromAWT(awtImage)); TODO
 
 		// no alpha
-		//        if (awtImage.getColorModel().hasAlpha())
-		//        {
-		//            throw new UnsupportedOperationException("alpha channel not implemented");
-		//        } TODO
+		if (awtImage.hasAlpha())
+		{
+			throw new UnsupportedOperationException("alpha channel not implemented");
+		}
 
 		return pdImage;
-		//        return null;
 	}
 
 	private static Bitmap readJPEG(InputStream stream) throws IOException

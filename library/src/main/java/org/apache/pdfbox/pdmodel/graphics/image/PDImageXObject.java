@@ -15,6 +15,7 @@ import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.graphics.PDXObject;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -66,17 +67,17 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * @throws IOException if there is an error creating the XObject.
      */
     public PDImageXObject(PDDocument document, InputStream filteredStream, 
-            COSBase cosFilter, int width, int height, int bitsPerComponent /*, 
-            PDColorSpace initColorSpace*/) throws IOException
+            COSBase cosFilter, int width, int height, int bitsPerComponent, 
+            PDColorSpace initColorSpace) throws IOException
     {
         super(new PDStream(document, filteredStream, true), COSName.IMAGE);
         getCOSStream().setItem(COSName.FILTER, cosFilter);
         resources = null;
-//        colorSpace = null;TOOD
+        colorSpace = null;
         setBitsPerComponent(bitsPerComponent);
         setWidth(width);
         setHeight(height);
-        setColorSpace(/*initColorSpace*/);
+        setColorSpace(initColorSpace);
     }
 
     /**
@@ -154,7 +155,6 @@ public final class PDImageXObject extends PDXObject implements PDImage
     @Override
     public Bitmap getImage() throws IOException
     {
-    	Log.e("PdfBoxAndroid", "Better reach here");
         if (cachedImage != null)
         {
             return cachedImage;
@@ -164,20 +164,20 @@ public final class PDImageXObject extends PDXObject implements PDImage
         Bitmap image = SampledImageReader.getRGBImage(this, getColorKeyMask());
 
         // soft mask (overrides explicit mask)
-//        PDImageXObject softMask = getSoftMask();
-//        if (softMask != null)
-//        {
-//            image = applyMask(image, softMask.getOpaqueImage(), true);
-//        }
-//        else
-//        {
+        PDImageXObject softMask = getSoftMask();
+        if (softMask != null)
+        {
+//            image = applyMask(image, softMask.getOpaqueImage(), true); TODO
+        }
+        else
+        {
 //            // explicit mask
-//            PDImageXObject mask = getMask();
-//            if (mask != null)
-//            {
-//                image = applyMask(image, mask.getOpaqueImage(), false);
-//            }
-//        } TODO
+            PDImageXObject mask = getMask();
+            if (mask != null)
+            {
+//                image = applyMask(image, mask.getOpaqueImage(), false); TODO
+            }
+        }
 
         cachedImage = image;
         return image;
@@ -210,16 +210,16 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
     // explicit mask: RGB + Binary -> ARGB
     // soft mask: RGB + Gray -> ARGB
-//    private BufferedImage applyMask(BufferedImage image, BufferedImage mask, boolean isSoft)
-//            throws IOException
-//    {
-//        if (mask == null)
-//        {
-//            return image;
-//        }
+    private Bitmap applyMask(Bitmap image, Bitmap mask, boolean isSoft)
+            throws IOException
+    {
+        if (mask == null)
+        {
+            return image;
+        }
 //
-//        int width = image.getWidth();
-//        int height = image.getHeight();
+        int width = image.getWidth();
+        int height = image.getHeight();
 //
 //        // compose to ARGB
 //        BufferedImage masked = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -238,58 +238,59 @@ public final class PDImageXObject extends PDXObject implements PDImage
 //        WritableRaster dest = masked.getRaster();
 //        WritableRaster alpha = mask.getRaster();
 //
-//        float[] rgb = new float[4];
-//        float[] rgba = new float[4];
-//        float[] alphaPixel = null;
-//        for (int y = 0; y < height; y++)
-//        {
-//            for (int x = 0; x < width; x++)
-//            {
+        float[] rgb = new float[4];
+        float[] rgba = new float[4];
+        float[] alphaPixel = null;
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
 //                src.getPixel(x, y, rgb);
 //
-//                rgba[0] = rgb[0];
-//                rgba[1] = rgb[1];
-//                rgba[2] = rgb[2];
+                rgba[0] = rgb[0];
+                rgba[1] = rgb[1];
+                rgba[2] = rgb[2];
 //                
 //                alphaPixel = alpha.getPixel(x, y, alphaPixel);
-//                if (isSoft)
-//                {
-//                    rgba[3] = alphaPixel[0];
-//                }
-//                else
-//                {
-//                    rgba[3] = 255 - alphaPixel[0];
-//                }
+                if (isSoft)
+                {
+                    rgba[3] = alphaPixel[0];
+                }
+                else
+                {
+                    rgba[3] = 255 - alphaPixel[0];
+                }
 //
 //                dest.setPixel(x, y, rgba);
-//            }
-//        }
-//
+            }
+        }
+
 //        return masked;
-//    }TODO
+        return null;
+    }
 
     /**
      * Returns the Mask Image XObject associated with this image, or null if there is none.
      * @return Mask Image XObject
      */
-//    public PDImageXObject getMask() throws IOException
-//    {
-//        COSBase mask = getCOSStream().getDictionaryObject(COSName.MASK);
-//        if (mask instanceof COSArray)
-//        {
-//            // color key mask, no explicit mask to return
-//            return null;
-//        }
-//        else
-//        {
-//            COSStream cosStream = (COSStream)getCOSStream().getDictionaryObject(COSName.MASK);
-//            if (cosStream != null)
-//            {
-//                return new PDImageXObject(new PDStream(cosStream), null); // always DeviceGray
-//            }
-//            return null;
-//        }
-//    }TODO
+    public PDImageXObject getMask() throws IOException
+    {
+        COSBase mask = getCOSStream().getDictionaryObject(COSName.MASK);
+        if (mask instanceof COSArray)
+        {
+            // color key mask, no explicit mask to return
+            return null;
+        }
+        else
+        {
+            COSStream cosStream = (COSStream)getCOSStream().getDictionaryObject(COSName.MASK);
+            if (cosStream != null)
+            {
+                return new PDImageXObject(new PDStream(cosStream), null); // always DeviceGray
+            }
+            return null;
+        }
+    }
 
     /**
      * Returns the color key mask array associated with this image, or null if there is none.
@@ -309,15 +310,15 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * Returns the Soft Mask Image XObject associated with this image, or null if there is none.
      * @return the SMask Image XObject, or null.
      */
-//    public PDImageXObject getSoftMask() throws IOException
-//    {
-//        COSStream cosStream = (COSStream)getCOSStream().getDictionaryObject(COSName.SMASK);
-//        if (cosStream != null)
-//        {
-//            return new PDImageXObject(new PDStream(cosStream), null);  // always DeviceGray
-//        }
-//        return null;
-//    }TODO
+    public PDImageXObject getSoftMask() throws IOException
+    {
+        COSStream cosStream = (COSStream)getCOSStream().getDictionaryObject(COSName.SMASK);
+        if (cosStream != null)
+        {
+            return new PDImageXObject(new PDStream(cosStream), null);  // always DeviceGray
+        }
+        return null;
+    }
 
     @Override
     public int getBitsPerComponent()
@@ -339,29 +340,29 @@ public final class PDImageXObject extends PDXObject implements PDImage
         getCOSStream().setInt(COSName.BITS_PER_COMPONENT, bpc);
     }
 
-//    @Override
-//    public PDColorSpace getColorSpace() throws IOException
-//    {
-//        if (colorSpace == null)
-//        {
-//            COSBase cosBase = getCOSStream().getDictionaryObject(COSName.COLORSPACE, COSName.CS);
-//            if (cosBase != null)
-//            {
-//                colorSpace = PDColorSpace.create(cosBase, resources);
-//            }
-//            else if (isStencil())
-//            {
-//                // stencil mask color space must be gray, it is often missing
-//                return PDDeviceGray.INSTANCE;
-//            }
-//            else
-//            {
-//                // an image without a color space is always broken
-//                throw new IOException("could not determine color space");
-//            }
-//        }
-//        return colorSpace;
-//    }TODO
+    @Override
+    public PDColorSpace getColorSpace() throws IOException
+    {
+        if (colorSpace == null)
+        {
+            COSBase cosBase = getCOSStream().getDictionaryObject(COSName.COLORSPACE, COSName.CS);
+            if (cosBase != null)
+            {
+                colorSpace = PDColorSpace.create(cosBase, resources);
+            }
+            else if (isStencil())
+            {
+                // stencil mask color space must be gray, it is often missing
+                return PDDeviceGray.INSTANCE;
+            }
+            else
+            {
+                // an image without a color space is always broken
+                throw new IOException("could not determine color space");
+            }
+        }
+        return colorSpace;
+    }
 
     @Override
     public PDStream getStream() throws IOException
@@ -369,10 +370,10 @@ public final class PDImageXObject extends PDXObject implements PDImage
         return getPDStream();
     }
 
-//    @Override
-    public void setColorSpace(/*PDColorSpace cs*/)
+    @Override
+    public void setColorSpace(PDColorSpace cs)
     {
-//        getCOSStream().setItem(COSName.COLORSPACE, cs != null ? cs.getCOSObject() : null); TODO
+        getCOSStream().setItem(COSName.COLORSPACE, cs != null ? cs.getCOSObject() : null);
     	getCOSStream().setItem(COSName.COLORSPACE, COSName.DEVICERGB);
     }
 
