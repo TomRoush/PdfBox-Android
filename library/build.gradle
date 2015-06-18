@@ -3,7 +3,7 @@ apply plugin: 'com.android.library'
 ext {
 	PUBLISH_GROUP_ID = 'org.apache'
 	PUBLISH_ARTIFACT_ID = 'pdfbox-android'
-	PUBLISH_VERSION = '1.8.8'
+	PUBLISH_VERSION = VERSION_NAME
 }
 
 android {

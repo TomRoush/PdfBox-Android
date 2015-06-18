@@ -521,7 +521,7 @@ public class OS2WindowsMetricsTable extends TTFTable
     }
 
     /**
-     * @param typeLineGapValue The typoLineGap to set.
+     * @param typoLineGapValue The typoLineGap to set.
      */
     public void setTypeLineGap(int typoLineGapValue)
     {

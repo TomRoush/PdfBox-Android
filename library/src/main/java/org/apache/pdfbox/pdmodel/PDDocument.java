@@ -425,8 +425,6 @@ public class PDDocument implements Closeable
 	 * Remove the page from the document.
 	 * 
 	 * @param page The page to remove from the document.
-	 * 
-	 * @return true if the page was found false otherwise.
 	 */
 	public void removePage(PDPage page)
 	{
@@ -437,7 +435,6 @@ public class PDDocument implements Closeable
 	 * Remove the page from the document.
 	 * 
 	 * @param pageNumber 0 based index to page number.
-	 * @return true if the page was found false otherwise.
 	 */
 	public void removePage(int pageNumber)
 	{

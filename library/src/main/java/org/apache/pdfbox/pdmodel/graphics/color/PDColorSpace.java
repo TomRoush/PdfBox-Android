@@ -162,22 +162,22 @@ public abstract class PDColorSpace implements COSObjectable {
      */
     public abstract float[] toRGB(float[] value) throws IOException;
 
-    /**
-     * Returns the (A)RGB equivalent of the given raster.
-     * @param raster the source raster
-     * @return an (A)RGB Bitmap
-     * @throws IOException if the color conversion fails
-     */
+//    /**
+//     * Returns the (A)RGB equivalent of the given raster.
+//     * @param raster the source raster
+//     * @return an (A)RGB Bitmap
+//     * @throws IOException if the color conversion fails
+//     */
 //    public abstract Bitmap toRGBImage(WritableRaster raster) throws IOException; TODO
 
-    /**
-     * Returns the (A)RGB equivalent of the given raster, using the given AWT color space
-     * to perform the conversion.
-     *
-     * @param raster     the source raster
-     * @param colorSpace the AWT
-     * @return an (A)RGB buffered image
-     */
+//    /**
+//     * Returns the (A)RGB equivalent of the given raster, using the given AWT color space
+//     * to perform the conversion.
+//     *
+//     * @param raster     the source raster
+//     * @param colorSpace the AWT
+//     * @return an (A)RGB buffered image
+//     */
 //    protected Bitmap toRGBImageAWT(WritableRaster raster, ColorSpace colorSpace)
 //    {
 //        //

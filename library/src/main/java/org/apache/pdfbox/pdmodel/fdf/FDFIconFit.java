@@ -10,7 +10,7 @@ import org.apache.pdfbox.pdmodel.common.PDRange;
 /**
  * This represents an Icon fit dictionary for an FDF field.
  *
- * @@author Ben Litchfield
+ * @author Ben Litchfield
  */
 public class FDFIconFit implements COSObjectable
 {

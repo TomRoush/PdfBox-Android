@@ -56,7 +56,7 @@ public abstract class PDButton extends PDField
     /**
      * Constructor.
      * 
-     * @param aroForm The form that this field is part of.
+     * @param acroForm The form that this field is part of.
      * @param field the PDF object to represent as a field.
      * @param parentNode the parent node of the node to be created
      */
