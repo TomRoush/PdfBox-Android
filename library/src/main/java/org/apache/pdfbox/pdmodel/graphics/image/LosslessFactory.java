@@ -136,7 +136,7 @@ public final class LosslessFactory
         {
             return null;
         }
-
+        
         // extract the alpha information
 //        WritableRaster alphaRaster = image.getAlphaRaster();
 //        if (alphaRaster == null)
@@ -149,9 +149,14 @@ public final class LosslessFactory
 //                alphaRaster.getSampleModel().getWidth(),
 //                alphaRaster.getSampleModel().getHeight(),
 //                (int[]) null);
-        int[] pixels = null;
-        image.extractAlpha().getPixels(pixels, 0, 0, 0, 0, image.getWidth(), image.getHeight());
+        int[] pixels = new int[image.getHeight() * image.getWidth()];
         
+//        image.getPixels(pixels, 0, image.getWidth(), 0, 0, image.getHeight(), image.getWidth());
+        for(int y = 0; y < image.getHeight(); y++) {
+        	for(int x = 0; x < image.getWidth(); x++) {
+        		pixels[x + y * image.getWidth()] = image.getPixel(x, y);
+        	}
+        } 
         
         
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -182,22 +187,21 @@ public final class LosslessFactory
             bpc = 8;
             for (int pixel : pixels)
             {
-                bos.write(pixel);
+                bos.write(Color.alpha(pixel));
             }
 //        }
 
         PDImageXObject pdImage = prepareImageXObject(document, bos.toByteArray(), 
                 image.getWidth(), image.getHeight(), bpc, PDDeviceGray.INSTANCE);
-
         return pdImage;
     }
 
     // create alpha image the hard way: get the alpha through getRGB()
-    private static PDImageXObject createAlphaFromARGBImage2(PDDocument document, Bitmap bi)
-            throws IOException
-    {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        int bpc;
+//    private static PDImageXObject createAlphaFromARGBImage2(PDDocument document, Bitmap bi)
+//            throws IOException
+//    {
+//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+//        int bpc;
 //        if (bi.getTransparency() == Transparency.BITMASK)
 //        {
 //            bpc = 1;
@@ -219,22 +223,22 @@ public final class LosslessFactory
 //        }
 //        else
 //        {
-            bpc = 8;
-            for (int y = 0, h = bi.getHeight(); y < h; ++y)
-            {
-                for (int x = 0, w = bi.getWidth(); x < w; ++x)
-                {
-                    int alpha = Color.alpha(bi.getPixel(x, y));
-                    bos.write(alpha);
-                }
-            }
+//            bpc = 8;
+//            for (int y = 0, h = bi.getHeight(); y < h; ++y)
+//            {
+//                for (int x = 0, w = bi.getWidth(); x < w; ++x)
+//                {
+//                    int alpha = Color.alpha(bi.getPixel(x, y));
+//                    bos.write(alpha);
+//                }
+//            }
 //        }
-
-        PDImageXObject pdImage = prepareImageXObject(document, bos.toByteArray(), 
-                bi.getWidth(), bi.getHeight(), bpc, PDDeviceGray.INSTANCE);
-
-        return pdImage;
-    }            
+//
+//        PDImageXObject pdImage = prepareImageXObject(document, bos.toByteArray(), 
+//                bi.getWidth(), bi.getHeight(), bpc, PDDeviceGray.INSTANCE);
+//
+//        return pdImage;
+//    }            
 
     /**
      * Create a PDImageXObject while making a decision whether not to 

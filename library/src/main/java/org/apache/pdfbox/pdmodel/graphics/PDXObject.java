@@ -1,5 +1,7 @@
 package org.apache.pdfbox.pdmodel.graphics;
 
+import java.io.IOException;
+
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSStream;
@@ -9,8 +11,6 @@ import org.apache.pdfbox.pdmodel.common.COSObjectable;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-
-import java.io.IOException;
 
 /**
  * An external object, or "XObject".

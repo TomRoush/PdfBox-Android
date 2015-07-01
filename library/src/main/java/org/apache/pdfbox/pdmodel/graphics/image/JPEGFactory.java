@@ -45,9 +45,9 @@ public final class JPEGFactory extends ImageFactory
 		// create Image XObject from stream
 		PDImageXObject pdImage = new PDImageXObject(document, byteStream, 
 				COSName.DCT_DECODE, awtImage.getWidth(), awtImage.getHeight(), 
-				8, //awtImage.getColorModel().getComponentSize(0), TODO
-		        PDDeviceRGB.INSTANCE); //        getColorSpaceFromAWT(awtImage)); TODO
-
+				8, //awtImage.getColorModel().getComponentSize(0),
+		PDDeviceRGB.INSTANCE //getColorSpaceFromAWT(awtImage));
+				);
 		// no alpha
 		if (awtImage.hasAlpha())
 		{

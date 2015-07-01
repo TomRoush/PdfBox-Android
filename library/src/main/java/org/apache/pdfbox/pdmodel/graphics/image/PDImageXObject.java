@@ -18,6 +18,7 @@ import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.util.Log;
 
 /**
@@ -67,7 +68,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * @throws IOException if there is an error creating the XObject.
      */
     public PDImageXObject(PDDocument document, InputStream filteredStream, 
-            COSBase cosFilter, int width, int height, int bitsPerComponent, 
+    		COSBase cosFilter, int width, int height, int bitsPerComponent , 
             PDColorSpace initColorSpace) throws IOException
     {
         super(new PDStream(document, filteredStream, true), COSName.IMAGE);
@@ -167,15 +168,15 @@ public final class PDImageXObject extends PDXObject implements PDImage
         PDImageXObject softMask = getSoftMask();
         if (softMask != null)
         {
-//            image = applyMask(image, softMask.getOpaqueImage(), true); TODO
+            image = applyMask(image, softMask.getOpaqueImage(), true);
         }
         else
         {
-//            // explicit mask
+            // explicit mask
             PDImageXObject mask = getMask();
             if (mask != null)
             {
-//                image = applyMask(image, mask.getOpaqueImage(), false); TODO
+                image = applyMask(image, mask.getOpaqueImage(), false);
             }
         }
 
@@ -217,56 +218,38 @@ public final class PDImageXObject extends PDXObject implements PDImage
         {
             return image;
         }
-//
+
         int width = image.getWidth();
         int height = image.getHeight();
-//
-//        // compose to ARGB
-//        BufferedImage masked = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-//
-//        // scale mask to fit image
-//        if (mask.getWidth() != width || mask.getHeight() != height)
-//        {
-//            BufferedImage mask2 = new BufferedImage(width, height, mask.getType());
-//            Graphics2D g = mask2.createGraphics();
-//            g.drawImage(mask, 0, 0, width, height, 0, 0, mask.getWidth(), mask.getHeight(), null);
-//            g.dispose();
-//            mask = mask2;
-//        }
-//
-//        WritableRaster src = image.getRaster();
-//        WritableRaster dest = masked.getRaster();
-//        WritableRaster alpha = mask.getRaster();
-//
-        float[] rgb = new float[4];
-        float[] rgba = new float[4];
-        float[] alphaPixel = null;
+
+        // compose to ARGB
+        Bitmap masked = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        		//new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        // scale mask to fit image
+        if (mask.getWidth() != width || mask.getHeight() != height)
+        {
+        	mask = Bitmap.createScaledBitmap(mask, width, height, true);
+        }
+
+        int alphaPixel;
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
-//                src.getPixel(x, y, rgb);
-//
-                rgba[0] = rgb[0];
-                rgba[1] = rgb[1];
-                rgba[2] = rgb[2];
-//                
-//                alphaPixel = alpha.getPixel(x, y, alphaPixel);
-                if (isSoft)
+                int color = image.getPixel(x, y);
+                
+                alphaPixel = Color.alpha(mask.getPixel(x, y));
+                if (!isSoft)
                 {
-                    rgba[3] = alphaPixel[0];
+                    alphaPixel = 255 - alphaPixel;
                 }
-                else
-                {
-                    rgba[3] = 255 - alphaPixel[0];
-                }
-//
-//                dest.setPixel(x, y, rgba);
+
+                masked.setPixel(x, y, Color.argb(alphaPixel, Color.red(color), Color.green(color), Color.blue(color)));
             }
         }
 
-//        return masked;
-        return null;
+        return masked;
     }
 
     /**
@@ -329,7 +312,6 @@ public final class PDImageXObject extends PDXObject implements PDImage
         }
         else
         {
-        	Log.d("PdfBoxAndroid", getCOSStream().getInt(COSName.BITS_PER_COMPONENT, COSName.BPC)+"");
             return getCOSStream().getInt(COSName.BITS_PER_COMPONENT, COSName.BPC);
         }
     }
@@ -374,7 +356,6 @@ public final class PDImageXObject extends PDXObject implements PDImage
     public void setColorSpace(PDColorSpace cs)
     {
         getCOSStream().setItem(COSName.COLORSPACE, cs != null ? cs.getCOSObject() : null);
-    	getCOSStream().setItem(COSName.COLORSPACE, COSName.DEVICERGB);
     }
 
     @Override
