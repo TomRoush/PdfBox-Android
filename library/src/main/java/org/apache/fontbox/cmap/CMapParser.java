@@ -411,7 +411,7 @@ public class CMapParser
     protected InputStream getExternalCMap(String name) throws IOException
     {
     	if(PDFBoxResourceLoader.isReady()) {
-    		return PDFBoxResourceLoader.getStream("/org/apache/fontbox/resources/cmap/" + name);
+    		return PDFBoxResourceLoader.getStream("org/apache/fontbox/resources/cmap/" + name);
     	}
     	
     	// Fallback
