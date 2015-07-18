@@ -24,6 +24,7 @@ import org.apache.pdfbox.pdmodel.graphics.state.PDGraphicsState;
 import org.apache.pdfbox.pdmodel.graphics.state.PDSoftMask;
 import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import org.apache.pdfbox.util.Matrix;
 import org.apache.pdfbox.util.Vector;
 import org.apache.pdfbox.util.awt.AffineTransform;
 
@@ -33,7 +34,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.util.Log;
@@ -202,6 +202,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 //    }
 
     // returns an integer for color that Android understands from the PDColor
+	// TODO: alpha?
     private int getColor(PDColor color) throws IOException {
         PDColorSpace colorSpace = color.getColorSpace();
         float[] floats = colorSpace.toRGB(color.getComponents());
@@ -252,16 +253,16 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         }
     }
 
-//    @Override
-//    protected void showFontGlyph(AffineTransform textRenderingMatrix, PDFont font, int code, String unicode,
-//                                 Vector displacement) throws IOException
-//    {
-//        AffineTransform at = textRenderingMatrix.createAffineTransform();
-//        at.concatenate(font.getFontMatrix().createAffineTransform());
-//
-//        Glyph2D glyph2D = createGlyph2D(font);
-//        drawGlyph2D(glyph2D, font, code, displacement, at);
-//    }
+    @Override
+    protected void showFontGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
+                                 Vector displacement) throws IOException
+    {
+        AffineTransform at = textRenderingMatrix.createAffineTransform();
+        at.concatenate(font.getFontMatrix().createAffineTransform());
+
+        Glyph2D glyph2D = createGlyph2D(font);
+        drawGlyph2D(glyph2D, font, code, displacement, at);
+    }
 
     /**
      * Render the font using the Glyph2D interface.
@@ -296,30 +297,33 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 
             // render glyph
 //            Shape glyph = at.createTransformedShape(path);
+            path.transform(at.toMatrix());
 
             if (renderingMode.isFill())
             {
 //                graphics.setComposite(state.getNonStrokingJavaComposite());
 //                graphics.setPaint(getNonStrokingPaint());
-            	paint.setColor(Color.BLACK);
+            	paint.setColor(getNonStrokingColor());
                 setClip();
 //                graphics.fill(glyph);
                 paint.setStyle(Paint.Style.FILL);
-                canvas.clipPath(path);
-                canvas.drawRect(new Rect(0, 0, canvas.getWidth(), canvas.getHeight()), paint);
+                canvas.drawPath(path, paint);
+//                canvas.clipPath(path);
+//                canvas.drawRect(new Rect(0, 0, canvas.getWidth(), canvas.getHeight()), paint);
             }
 
             if (renderingMode.isStroke())
             {
 //                graphics.setComposite(state.getStrokingJavaComposite());
 //                graphics.setPaint(getStrokingPaint());
-            	paint.setColor(Color.BLACK);
+            	paint.setColor(getStrokingColor());
 //                graphics.setStroke(getStroke());
                 setClip();
 //                graphics.draw(glyph);
                 paint.setStyle(Paint.Style.STROKE);
-                canvas.clipPath(path);
-                canvas.drawRect(new Rect(0, 0, canvas.getWidth(), canvas.getHeight()), paint);
+                canvas.drawPath(path, paint);
+//                canvas.clipPath(path);
+//                canvas.drawRect(new Rect(0, 0, canvas.getWidth(), canvas.getHeight()), paint);
             }
 
             if (renderingMode.isClip())
@@ -382,7 +386,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         // cache the Glyph2D instance
         if (glyph2D != null)
         {
-            fontGlyph2D.put(font, glyph2D);
+//            fontGlyph2D.put(font, glyph2D); TODO: use caching
         }
 
         if (glyph2D == null)
@@ -463,6 +467,10 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 //    {
 //        return getPaint(getGraphicsState().getNonStrokingColor());
 //    }
+    
+    private int getNonStrokingColor() throws IOException {
+        return getColor(getGraphicsState().getNonStrokingColor());
+    }
 
     // set stroke based on the current CTM and the current stroke
     private void setStroke()
@@ -710,7 +718,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         else
         {
             // draw the image
-            drawBufferedImage(pdImage.getImage(), at);
+//            drawBufferedImage(pdImage.getImage(), at); // Currently crashes if PDF has an image
         }
 
         if (!pdImage.getInterpolate())

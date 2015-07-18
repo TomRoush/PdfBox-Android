@@ -379,6 +379,34 @@ public class AffineTransform
 		m01 = m02 = m10 = m12 = 0;
 		m11 = sy;
 	}
+	
+	/**
+	 * Set this transform to the result of performing the original version of
+	 * this followed by tx. This is commonly used when chaining transformations
+	 * from one space to another. In matrix form:
+	 * <pre>
+	 * [ this ] = [ this ] x [ tx ]
+	 * </pre>
+	 *
+	 * @param tx the transform to concatenate
+	 * @throws NullPointerException if tx is null
+	 * @see #preConcatenate(AffineTransform)
+	 */
+	public void concatenate(AffineTransform tx)
+	{
+		double n00 = m00 * tx.m00 + m01 * tx.m10;
+		double n01 = m00 * tx.m01 + m01 * tx.m11;
+		double n02 = m00 * tx.m02 + m01 * tx.m12 + m02;
+		double n10 = m10 * tx.m00 + m11 * tx.m10;
+		double n11 = m10 * tx.m01 + m11 * tx.m11;
+		double n12 = m10 * tx.m02 + m11 * tx.m12 + m12;
+		m00 = n00;
+		m01 = n01;
+		m02 = n02;
+		m10 = n10;
+		m11 = n11;
+		m12 = n12;
+	}
 
 	/**
 	 * Tests if this matrix is an identity matrix
