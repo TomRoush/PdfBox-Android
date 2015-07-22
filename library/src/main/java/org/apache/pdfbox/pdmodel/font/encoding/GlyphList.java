@@ -113,9 +113,9 @@ public final class GlyphList
 		BufferedReader in = new BufferedReader(new InputStreamReader(input));
 		try
 		{
-			while (in.ready())
+			String line = null;
+			while ((line = in.readLine()) != null)
 			{
-				String line = in.readLine();
 				if (!line.startsWith("#"))
 				{
 					String[] parts = line.split(";");
