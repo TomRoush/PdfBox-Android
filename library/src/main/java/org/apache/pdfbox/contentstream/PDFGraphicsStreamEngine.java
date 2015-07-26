@@ -3,14 +3,18 @@ package org.apache.pdfbox.contentstream;
 import java.io.IOException;
 
 import org.apache.pdfbox.contentstream.operator.color.SetNonStrokingColor;
+import org.apache.pdfbox.contentstream.operator.color.SetNonStrokingColorN;
 import org.apache.pdfbox.contentstream.operator.color.SetNonStrokingColorSpace;
 import org.apache.pdfbox.contentstream.operator.color.SetNonStrokingDeviceGrayColor;
 import org.apache.pdfbox.contentstream.operator.color.SetNonStrokingDeviceRGBColor;
 import org.apache.pdfbox.contentstream.operator.color.SetStrokingColor;
+import org.apache.pdfbox.contentstream.operator.color.SetStrokingColorN;
 import org.apache.pdfbox.contentstream.operator.color.SetStrokingColorSpace;
 import org.apache.pdfbox.contentstream.operator.color.SetStrokingDeviceGrayColor;
 import org.apache.pdfbox.contentstream.operator.color.SetStrokingDeviceRGBColor;
 import org.apache.pdfbox.contentstream.operator.graphics.AppendRectangleToPath;
+import org.apache.pdfbox.contentstream.operator.graphics.ClipEvenOddRule;
+import org.apache.pdfbox.contentstream.operator.graphics.ClipNonZeroRule;
 import org.apache.pdfbox.contentstream.operator.graphics.CloseAndStrokePath;
 import org.apache.pdfbox.contentstream.operator.graphics.CloseFillEvenOddAndStrokePath;
 import org.apache.pdfbox.contentstream.operator.graphics.CloseFillNonZeroAndStrokePath;
@@ -20,6 +24,11 @@ import org.apache.pdfbox.contentstream.operator.graphics.CurveToReplicateFinalPo
 import org.apache.pdfbox.contentstream.operator.graphics.CurveToReplicateInitialPoint;
 import org.apache.pdfbox.contentstream.operator.graphics.DrawObject;
 import org.apache.pdfbox.contentstream.operator.graphics.EndPath;
+import org.apache.pdfbox.contentstream.operator.graphics.FillEvenOddAndStrokePath;
+import org.apache.pdfbox.contentstream.operator.graphics.FillEvenOddRule;
+import org.apache.pdfbox.contentstream.operator.graphics.FillNonZeroAndStrokePath;
+import org.apache.pdfbox.contentstream.operator.graphics.FillNonZeroRule;
+import org.apache.pdfbox.contentstream.operator.graphics.LegacyFillNonZeroRule;
 import org.apache.pdfbox.contentstream.operator.graphics.LineTo;
 import org.apache.pdfbox.contentstream.operator.graphics.MoveTo;
 import org.apache.pdfbox.contentstream.operator.graphics.ShadingFill;
@@ -56,6 +65,7 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImage;
 
+import android.graphics.Path;
 import android.graphics.PointF;
 
 /**
@@ -75,9 +85,9 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
         this.page = page;
 
         addOperator(new CloseFillNonZeroAndStrokePath());
-//        addOperator(new FillNonZeroAndStrokePath());TODO
+        addOperator(new FillNonZeroAndStrokePath());
         addOperator(new CloseFillEvenOddAndStrokePath());
-//        addOperator(new FillEvenOddAndStrokePath());TODO
+        addOperator(new FillEvenOddAndStrokePath());
 //        addOperator(new BeginInlineImage());TODO
         addOperator(new BeginText());
         addOperator(new CurveTo());
@@ -87,9 +97,9 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
         addOperator(new SetLineDashPattern());
         addOperator(new DrawObject()); // special graphics version
         addOperator(new EndText());
-//        addOperator(new FillNonZeroRule());TODO
-//        addOperator(new LegacyFillNonZeroRule());TODO
-//        addOperator(new FillEvenOddRule());TODO
+        addOperator(new FillNonZeroRule());
+        addOperator(new LegacyFillNonZeroRule());
+        addOperator(new FillEvenOddRule());
         addOperator(new SetStrokingDeviceGrayColor());
         addOperator(new SetNonStrokingDeviceGrayColor());
         addOperator(new SetGraphicsStateParameters());
@@ -113,8 +123,8 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
         addOperator(new StrokePath());
         addOperator(new SetStrokingColor());
         addOperator(new SetNonStrokingColor());
-//        addOperator(new SetStrokingColorN());TODO
-//        addOperator(new SetNonStrokingColorN());TODO
+        addOperator(new SetStrokingColorN());
+        addOperator(new SetNonStrokingColorN());
         addOperator(new ShadingFill());
         addOperator(new NextLine());
         addOperator(new SetCharSpacing());
@@ -131,8 +141,8 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
         addOperator(new SetTextHorizontalScaling());
         addOperator(new CurveToReplicateInitialPoint());
         addOperator(new SetLineWidth());
-//        addOperator(new ClipNonZeroRule());TODO
-//        addOperator(new ClipEvenOddRule());TODO
+        addOperator(new ClipNonZeroRule());
+        addOperator(new ClipEvenOddRule());
         addOperator(new CurveToReplicateFinalPoint());
         addOperator(new ShowTextLine());
         addOperator(new ShowTextLineAndSpace());
@@ -164,7 +174,7 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
      *
      * @param windingRule The winding rule which will be used for clipping.
      */
-    public abstract void clip(int windingRule) throws IOException;
+    public abstract void clip(Path.FillType windingRule) throws IOException;
 
     /**
      * Starts a new path at (x,y).
@@ -210,14 +220,14 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
      *
      * @param windingRule The winding rule this path will use.
      */
-    public abstract void fillPath(int windingRule) throws IOException;
+    public abstract void fillPath(Path.FillType windingRule) throws IOException;
 
     /**
      * Fills and then strokes the path.
      *
      * @param windingRule The winding rule this path will use.
      */
-    public abstract void fillAndStrokePath(int windingRule) throws IOException;
+    public abstract void fillAndStrokePath(Path.FillType windingRule) throws IOException;
 
     /**
      * Fill with Shading.

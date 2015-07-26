@@ -54,7 +54,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 	PDRectangle pageSize;
 
 	// clipping winding rule used for the clipping path
-    private int clipWindingRule = -1;
+    private Path.FillType clipWindingRule = null;
     private Path linePath = new Path();
 
     // last clipping path
@@ -518,28 +518,24 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     {
 
 //        graphics.setComposite(getGraphicsState().getStrokingJavaComposite());
-//        graphics.setPaint(getStrokingPaint());
-//        graphics.setStroke(getStroke());
-//        setClip();
-//        graphics.draw(linePath);
-//        linePath.reset();
 
         setStroke();
         setClip();
         paint.setARGB(255, 0, 0, 0); // TODO set the correct color from graphics state.
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(getStrokingColor());
+        setClip();
         canvas.drawPath(linePath, paint);
         linePath.reset();
     }
 
     @Override
-    public void fillPath(int windingRule) throws IOException
+    public void fillPath(Path.FillType windingRule) throws IOException
     {
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
-//        graphics.setPaint(getNonStrokingPaint());
-        setClip();
-//        linePath.setWindingRule(windingRule);
+    	paint.setColor(getNonStrokingColor());
+    	setClip();
+    	linePath.setFillType(windingRule);
 
         // disable anti-aliasing for rectangular paths, this is a workaround to avoid small stripes
         // which occur when solid fills are used to simulate piecewise gradients, see PDFBOX-2302
@@ -550,14 +546,15 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 //                                      RenderingHints.VALUE_ANTIALIAS_OFF);
         }
 
-//        graphics.fill(linePath);
-//        linePath.reset();
+        paint.setStyle(Paint.Style.FILL);
+        canvas.drawPath(linePath, paint);     
+        linePath.reset();
 
 //        if (isRectangular)
         {
             // JDK 1.7 has a bug where rendering hints are reset by the above call to
             // the setRenderingHint method, so we re-set all hints, see PDFBOX-2302
-            setRenderingHints();
+        	setRenderingHints();
         }
     }
 
@@ -625,7 +622,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
      * @throws IOException If there is an IO error while filling the path.
      */
     @Override
-    public void fillAndStrokePath(int windingRule) throws IOException
+    public void fillAndStrokePath(Path.FillType windingRule) throws IOException
     {
         // TODO can we avoid cloning the path?
         Path path = new Path(linePath);
@@ -635,10 +632,10 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     }
 
     @Override
-    public void clip(int windingRule)
+    public void clip(Path.FillType windingRule)
     {
         // the clipping path will not be updated until the succeeding painting operator is called
-//        clipWindingRule = windingRule;
+        clipWindingRule = windingRule;
     }
 
     @Override
@@ -718,7 +715,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         else
         {
             // draw the image
-//            drawBufferedImage(pdImage.getImage(), at); // Currently crashes if PDF has an image
+//            drawBufferedImage(pdImage.getImage(), at); // TODO: Currently crashes if PDF has an image
         }
 
         if (!pdImage.getInterpolate())
