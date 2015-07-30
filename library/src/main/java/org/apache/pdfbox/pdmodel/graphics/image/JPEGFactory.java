@@ -1,6 +1,7 @@
 package org.apache.pdfbox.pdmodel.graphics.image;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -105,11 +106,11 @@ public final class JPEGFactory extends ImageFactory
 	 * @return a new Image XObject
 	 * @throws IOException if the JPEG data cannot be written
 	 */
-	//    public static PDImageXObject createFromImage(PDDocument document, BufferedImage image)
-	//        throws IOException
-	//    {
-	//        return createFromImage(document, image, 0.75f);
-	//    }TODO
+    public static PDImageXObject createFromImage(PDDocument document, Bitmap image)
+        throws IOException
+    {
+        return createFromImage(document, image, 0.75f);
+    }
 
 	/**
 	 * Creates a new JPEG Image XObject from a Buffered Image and a given quality.
@@ -120,11 +121,11 @@ public final class JPEGFactory extends ImageFactory
 	 * @return a new Image XObject
 	 * @throws IOException if the JPEG data cannot be written
 	 */
-	//    public static PDImageXObject createFromImage(PDDocument document, BufferedImage image,
-	//                                                 float quality) throws IOException
-	//    {
-	//        return createFromImage(document, image, quality, 72);
-	//    }TODO
+    public static PDImageXObject createFromImage(PDDocument document, Bitmap image,
+            float quality) throws IOException
+    {
+        return createFromImage(document, image, quality, 72);
+    }
 
 	/**
 	 * Creates a new JPEG Image XObject from a Buffered Image, a given quality and DPI.
@@ -135,11 +136,11 @@ public final class JPEGFactory extends ImageFactory
 	 * @return a new Image XObject
 	 * @throws IOException if the JPEG data cannot be written
 	 */
-	//    public static PDImageXObject createFromImage(PDDocument document, BufferedImage image,
-	//                                                 float quality, int dpi) throws IOException
-	//    {
-	//        return createJPEG(document, image, quality, dpi);
-	//    }TODO
+    public static PDImageXObject createFromImage(PDDocument document, Bitmap image,
+                                                 float quality, int dpi) throws IOException
+    {
+        return createJPEG(document, image, quality, dpi);
+    }
 
 	// returns the alpha channel of an image
 	//    private static BufferedImage getAlphaImage(BufferedImage image) throws IOException
@@ -166,9 +167,20 @@ public final class JPEGFactory extends ImageFactory
 	//    }TODO
 
 	// Creates an Image XObject from a Buffered Image using JAI Image I/O
-	//    private static PDImageXObject createJPEG(PDDocument document, BufferedImage image,
-	//                                             float quality, int dpi) throws IOException
-	//    {
+    private static PDImageXObject createJPEG(PDDocument document, Bitmap image,
+            float quality, int dpi) throws IOException
+    {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
+        image.compress(Bitmap.CompressFormat.JPEG, (int)(quality * 100), bos); 
+        byte[] bitmapData = bos.toByteArray();
+        ByteArrayInputStream byteStream = new ByteArrayInputStream(bitmapData);
+
+        PDImageXObject pdImage = new PDImageXObject(document, byteStream, 
+                COSName.DCT_DECODE, image.getWidth(), image.getHeight(), 
+                8, //awtImage.getColorModel().getComponentSize(0),
+                PDDeviceRGB.INSTANCE //getColorSpaceFromAWT(awtImage));
+        );
+
 	//        // extract alpha channel (if any)
 	//        BufferedImage awtColorImage = getColorImage(image);
 	//        BufferedImage awtAlphaImage = getAlphaImage(image);
@@ -191,8 +203,8 @@ public final class JPEGFactory extends ImageFactory
 	//            pdImage.getCOSStream().setItem(COSName.SMASK, xAlpha);
 	//        }
 	//
-	//        return pdImage;
-	//    }TODO
+	        return pdImage;
+	}
 
 //	private static void encodeImageToJPEGStream(BufferedImage image, float quality, int dpi,
 //			OutputStream out) throws IOException
