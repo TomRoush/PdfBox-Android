@@ -29,7 +29,7 @@ public class PDVisibleSigProperties
     {
         PDFTemplateBuilder builder = new PDVisibleSigBuilder();
         PDFTemplateCreator creator = new PDFTemplateCreator(builder);
-//        setVisibleSignature(creator.buildPDF(getPdVisibleSignature()));TODO
+        setVisibleSignature(creator.buildPDF(getPdVisibleSignature()));
     }
 
     /**

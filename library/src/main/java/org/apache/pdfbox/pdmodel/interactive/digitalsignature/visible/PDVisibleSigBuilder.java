@@ -14,6 +14,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.graphics.image.JPEGFactory;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
@@ -23,6 +24,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.apache.pdfbox.util.awt.AffineTransform;
 
 import android.util.Log;
+import android.graphics.Bitmap;
 
 /**
  * Implementation of PDFTemplateBuilder.
@@ -147,12 +149,12 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
         Log.i("PdfBoxAndroid", "ProcSet array has been created");
     }
 
-//    @Override
-//    public void createSignatureImage(PDDocument template, BufferedImage image) throws IOException
-//    {
-//        pdfStructure.setImage(JPEGFactory.createFromImage(template, image));
-//        Log.i("PdfBoxAndroid", "Visible Signature Image has been created");
-//    }TODO
+    @Override
+    public void createSignatureImage(PDDocument template, Bitmap image) throws IOException
+    {
+        pdfStructure.setImage(JPEGFactory.createFromImage(template, image));
+        Log.i("PdfBoxAndroid", "Visible Signature Image has been created");
+    }
 
     @Override
     public void createFormaterRectangle(byte[] params)
