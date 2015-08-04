@@ -1,6 +1,8 @@
 package org.apache.pdfbox.pdmodel.graphics.image;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -8,9 +10,15 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
 
 /**
  * Factory for creating a PDImageXObject containing a JPEG compressed image.
@@ -105,11 +113,11 @@ public final class JPEGFactory extends ImageFactory
 	 * @return a new Image XObject
 	 * @throws IOException if the JPEG data cannot be written
 	 */
-	//    public static PDImageXObject createFromImage(PDDocument document, BufferedImage image)
-	//        throws IOException
-	//    {
-	//        return createFromImage(document, image, 0.75f);
-	//    }TODO
+    public static PDImageXObject createFromImage(PDDocument document, Bitmap image)
+        throws IOException
+    {
+        return createFromImage(document, image, 0.75f);
+    }
 
 	/**
 	 * Creates a new JPEG Image XObject from a Buffered Image and a given quality.
@@ -120,11 +128,11 @@ public final class JPEGFactory extends ImageFactory
 	 * @return a new Image XObject
 	 * @throws IOException if the JPEG data cannot be written
 	 */
-	//    public static PDImageXObject createFromImage(PDDocument document, BufferedImage image,
-	//                                                 float quality) throws IOException
-	//    {
-	//        return createFromImage(document, image, quality, 72);
-	//    }TODO
+    public static PDImageXObject createFromImage(PDDocument document, Bitmap image,
+            float quality) throws IOException
+    {
+        return createFromImage(document, image, quality, 72);
+    }
 
 	/**
 	 * Creates a new JPEG Image XObject from a Buffered Image, a given quality and DPI.
@@ -135,64 +143,66 @@ public final class JPEGFactory extends ImageFactory
 	 * @return a new Image XObject
 	 * @throws IOException if the JPEG data cannot be written
 	 */
-	//    public static PDImageXObject createFromImage(PDDocument document, BufferedImage image,
-	//                                                 float quality, int dpi) throws IOException
-	//    {
-	//        return createJPEG(document, image, quality, dpi);
-	//    }TODO
+    public static PDImageXObject createFromImage(PDDocument document, Bitmap image,
+                                                 float quality, int dpi) throws IOException
+    {
+        return createJPEG(document, image, quality, dpi);
+    }
 
 	// returns the alpha channel of an image
-	//    private static BufferedImage getAlphaImage(BufferedImage image) throws IOException
-	//    {
-	//        if (!image.getColorModel().hasAlpha())
-	//        {
-	//            return null;
-	//        }
-	//        if (image.getTransparency() == Transparency.BITMASK)
-	//        {
-	//            throw new UnsupportedOperationException("BITMASK Transparency JPEG compression is not" +
-	//" useful, use LosslessImageFactory instead");
-	//        }
-	//        WritableRaster alphaRaster = image.getAlphaRaster();
-	//        if (alphaRaster == null)
-	//        {
-	//	// happens sometimes (PDFBOX-2654) despite colormodel claiming to have alpha
-	//            return null;
-	//        }
-	//        BufferedImage alphaImage = new BufferedImage(image.getWidth(), image.getHeight(),
-	//    BufferedImage.TYPE_BYTE_GRAY);
-	//        alphaImage.setData(alphaRaster);
-	//        return alphaImage;
-	//    }TODO
+    private static Bitmap getAlphaImage(Bitmap image) throws IOException
+    {
+        if (!image.hasAlpha())
+        {
+            return null;
+        }
+        return image.extractAlpha(); 
+    }
 
 	// Creates an Image XObject from a Buffered Image using JAI Image I/O
-	//    private static PDImageXObject createJPEG(PDDocument document, BufferedImage image,
-	//                                             float quality, int dpi) throws IOException
-	//    {
-	//        // extract alpha channel (if any)
-	//        BufferedImage awtColorImage = getColorImage(image);
-	//        BufferedImage awtAlphaImage = getAlphaImage(image);
-	//
-	//        // create XObject
-	//        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	//        encodeImageToJPEGStream(awtColorImage, quality, dpi, baos);
-	//        ByteArrayInputStream byteStream = new ByteArrayInputStream(baos.toByteArray());
-	//        
-	//        
-	//        PDImageXObject pdImage = new PDImageXObject(document, byteStream, 
-	//                COSName.DCT_DECODE, awtColorImage.getWidth(), awtColorImage.getHeight(), 
-	//                awtColorImage.getColorModel().getComponentSize(0),
-	//                getColorSpaceFromAWT(awtColorImage));
-	//
-	//        // alpha -> soft mask
-	//        if (awtAlphaImage != null)
-	//        {
-	//            PDImage xAlpha = JPEGFactory.createFromImage(document, awtAlphaImage, quality);
-	//            pdImage.getCOSStream().setItem(COSName.SMASK, xAlpha);
-	//        }
-	//
-	//        return pdImage;
-	//    }TODO
+    private static PDImageXObject createJPEG(PDDocument document, Bitmap image,
+            float quality, int dpi) throws IOException
+    {
+        Bitmap whiteImage = Bitmap.createBitmap(image.getWidth(), image.getHeight(),image.getConfig()); 
+        Bitmap alphaImage = getAlphaImage(image);
+
+        whiteImage.eraseColor(Color.WHITE);
+        Canvas canvas = new Canvas(whiteImage);
+        canvas.drawBitmap(image, 0f, 0f, null);
+        image.recycle();
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
+        whiteImage.compress(Bitmap.CompressFormat.JPEG, (int)(quality * 100), bos); 
+        byte[] bitmapData = bos.toByteArray();
+        ByteArrayInputStream byteStream = new ByteArrayInputStream(bitmapData);
+
+        PDImageXObject pdImage = new PDImageXObject(document, byteStream, 
+                COSName.DCT_DECODE, whiteImage.getWidth(), whiteImage.getHeight(), 
+                8, 
+                PDDeviceRGB.INSTANCE 
+        );
+
+        // alpha -> soft mask
+        if (alphaImage != null)
+        {
+            ByteArrayOutputStream aBos = new ByteArrayOutputStream(); 
+            // This is problematic at the moment as
+            // compress does not seem to support ALPHA_8 as returned by getAlphaImage()
+            boolean ok = alphaImage.compress(Bitmap.CompressFormat.JPEG, (int)(quality * 100), aBos); 
+            System.err.println("Compressing alpha image: " + String.valueOf(ok) + " " + alphaImage.getConfig().toString());
+            byte[] aBitmapData = aBos.toByteArray();
+            ByteArrayInputStream aByteStream = new ByteArrayInputStream(aBitmapData);
+
+            PDImageXObject xAlpha = new PDImageXObject(document, aByteStream, 
+                    COSName.DCT_DECODE, alphaImage.getWidth(), alphaImage.getHeight(), 
+                    8, 
+                    PDDeviceGray.INSTANCE 
+            );
+
+            pdImage.getCOSStream().setItem(COSName.SMASK, xAlpha);
+        }
+	    return pdImage;
+	}
 
 //	private static void encodeImageToJPEGStream(BufferedImage image, float quality, int dpi,
 //			OutputStream out) throws IOException

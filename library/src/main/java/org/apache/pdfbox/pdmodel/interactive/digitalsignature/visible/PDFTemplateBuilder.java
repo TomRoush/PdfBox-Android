@@ -15,6 +15,8 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.apache.pdfbox.util.awt.AffineTransform;
 
+import android.graphics.Bitmap;
+
 /**
  * That class builds visible signature template which will be added in our PDF document.
  * @author Vakhtang Koroghlishvili
@@ -92,7 +94,7 @@ public interface PDFTemplateBuilder
      * @param image
      * @throws IOException
      */
-//	void createSignatureImage(PDDocument template, BufferedImage image) throws IOException;TODO
+	void createSignatureImage(PDDocument template, Bitmap image) throws IOException;
 	
 	/**
 	 * 

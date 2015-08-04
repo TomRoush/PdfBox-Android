@@ -1,8 +1,13 @@
 package org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible;
 
+import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 
 /**
  * Builder for visible signature design.
@@ -18,7 +23,7 @@ public class PDVisibleSignDesigner
     private float yAxis;
     private float pageHeight;
     private float pageWidth;
-//    private BufferedImage image;TODO
+    private Bitmap image;
     private String signatureFieldName = "sig"; // default
     private byte[] formaterRectangleParams = { 0, 0, 100, 50 }; // default
     private byte[] AffineTransformParams =   { 1, 0, 0, 1, 0, 0 }; // default
@@ -32,11 +37,11 @@ public class PDVisibleSignDesigner
      * @param page The page are you going to add visible signature
      * @throws IOException
      */
-//    public PDVisibleSignDesigner(String filename, InputStream jpegStream, int page)
-//            throws IOException
-//    {
-//        this(new FileInputStream(filename), jpegStream, page);
-//    }TODO
+    public PDVisibleSignDesigner(String filename, InputStream jpegStream, int page)
+            throws IOException
+    {
+        this(new FileInputStream(filename), jpegStream, page);
+    }
 
     /**
      * Constructor.
@@ -46,20 +51,20 @@ public class PDVisibleSignDesigner
      * @param page The page are you going to add visible signature
      * @throws IOException
      */
-//    public PDVisibleSignDesigner(InputStream documentStream, InputStream jpegStream, int page)
-//            throws IOException
-//    {
-//        // set visible singature image Input stream
-//        signatureImageStream(jpegStream);
-//
-//        // create PD document
-//        PDDocument document = PDDocument.load(documentStream);
-//
-//        // calculate height an width of document
-//        calculatePageSize(document, page);
-//
-//        document.close();
-//    }TODO
+    public PDVisibleSignDesigner(InputStream documentStream, InputStream jpegStream, int page)
+            throws IOException
+    {
+        // set visible singature image Input stream
+        signatureImageStream(jpegStream);
+
+        // create PD document
+        PDDocument document = PDDocument.load(documentStream);
+
+        // calculate height an width of document
+        calculatePageSize(document, page);
+
+        document.close();
+    }
 
     /**
      * Constructor.
@@ -69,11 +74,11 @@ public class PDVisibleSignDesigner
      * @param page
      * @throws IOException - If we can't read, flush, or can't close stream
      */
-//    public PDVisibleSignDesigner(PDDocument doc, InputStream jpegStream, int page) throws IOException
-//    {
-//        signatureImageStream(jpegStream);
-//        calculatePageSize(doc, page);
-//    }TODO
+    public PDVisibleSignDesigner(PDDocument doc, InputStream jpegStream, int page) throws IOException
+    {
+        signatureImageStream(jpegStream);
+        calculatePageSize(doc, page);
+    }
 
     /**
      * Each page of document can be different sizes.
@@ -106,11 +111,11 @@ public class PDVisibleSignDesigner
      * @return image Stream
      * @throws IOException
      */
-//    public PDVisibleSignDesigner signatureImage(String path) throws IOException
-//    {
-//        InputStream fin = new FileInputStream(path);
-//        return signatureImageStream(fin);
-//    }TODO
+    public PDVisibleSignDesigner signatureImage(String path) throws IOException
+    {
+        InputStream fin = new FileInputStream(path);
+        return signatureImageStream(fin);
+    }
 
     /**
      * zoom signature image with some percent.
@@ -262,10 +267,10 @@ public class PDVisibleSignDesigner
      * 
      * @return image Image
      */
-//    public BufferedImage getImage()
-//    {
-//        return image;
-//    }TODO
+    public Bitmap getImage()
+    {
+        return image;
+    }
 
     /**
      * 
@@ -273,14 +278,13 @@ public class PDVisibleSignDesigner
      * @return Visible Signature Configuration Object
      * @throws IOException If we can't read, flush, or close stream of image
      */
-//    private PDVisibleSignDesigner signatureImageStream(InputStream stream) throws IOException
-//    {
-//        ImageIO.setUseCache(false);
-//        image = ImageIO.read(stream);
-//        imageHeight = (float)image.getHeight();
-//        imageWidth = (float)image.getWidth();
-//        return this;
-//    }TODO
+    private PDVisibleSignDesigner signatureImageStream(InputStream stream) throws IOException
+    {
+        image = BitmapFactory.decodeStream(stream); 
+        imageHeight = (float)image.getHeight();
+        imageWidth = (float)image.getWidth();
+        return this;
+    }
 
     /**
      * 
