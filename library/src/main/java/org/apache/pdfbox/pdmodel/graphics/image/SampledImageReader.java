@@ -2,13 +2,16 @@ package org.apache.pdfbox.pdmodel.graphics.image;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSNumber;
+import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.common.PDMemoryStream;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.util.Log;
 
 /**
@@ -70,7 +73,7 @@ final class SampledImageReader
 //        return masked;
 //    }TODO
 
-    /**
+	/**
      * Returns the content of the given image as an AWT buffered image with an RGB color space.
      * If a color key mask is provided then an ARGB image is returned instead.
      * This method never returns null.
@@ -81,7 +84,6 @@ final class SampledImageReader
      */
     public static Bitmap getRGBImage(PDImage pdImage, COSArray colorKey) throws IOException
     {
-    	Log.e("PdfBoxAndroid", "getting image");
         if (pdImage.getStream() instanceof PDMemoryStream)
         {
             // for inline images
@@ -96,12 +98,12 @@ final class SampledImageReader
         }
 
         // get parameters, they must be valid or have been repaired
-//        final PDColorSpace colorSpace = pdImage.getColorSpace(); TODO
-//        final int numComponents = 3; // colorSpace.getNumberOfComponents(); TODO
-//        final int width = pdImage.getWidth();
-//        final int height = pdImage.getHeight();
-//        final int bitsPerComponent = pdImage.getBitsPerComponent();
-//        final float[] decode = getDecodeArray(pdImage);
+//        final PDColorSpace colorSpace = pdImage.getColorSpace();
+//        final int numComponents = colorSpace.getNumberOfComponents();
+        final int width = pdImage.getWidth();
+        final int height = pdImage.getHeight();
+        final int bitsPerComponent = pdImage.getBitsPerComponent();
+        final float[] decode = getDecodeArray(pdImage);
 
         //
         // An AWT raster must use 8/16/32 bits per component. Images with < 8bpc
@@ -109,30 +111,28 @@ final class SampledImageReader
         // in depth to 8bpc as they will be drawn to TYPE_INT_RGB images anyway. All code
         // in PDColorSpace#toRGBImage expects and 8-bit range, i.e. 0-255.
         //
-//        LOG.error("getting raster");
-//        WritableRaster raster = Raster.createBandedRaster(DataBuffer.TYPE_BYTE, width, height,
-//                numComponents, new Point(0, 0));
-//        LOG.error("got raster");
+        Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
         // convert image, faster path for non-decoded, non-colormasked 8-bit images
-        //final float[] defaultDecode = pdImage.getColorSpace().getDefaultDecode(8);
-//        final float[] defaultDecode = { 0, 1, 0, 1, 0, 1 }; // TODO: For RGB
-//        if (bitsPerComponent == 8 && Arrays.equals(decode, defaultDecode) && colorKey == null)
-//        {
-//            return from8bit(pdImage, raster);
-        
-        // Other code probably not necessary
-        InputStream input = pdImage.getStream().createInputStream();
-        
-        return BitmapFactory.decodeStream(input);
-//        }
-//        else if (bitsPerComponent == 1 && colorKey == null)
-//        {
+        final float[] defaultDecode = pdImage.getColorSpace().getDefaultDecode(8);
+        if(pdImage.getSuffix().equals("jpg")) {
+        	return BitmapFactory.decodeStream(pdImage.getStream().createInputStream());
+        }
+        else if (bitsPerComponent == 8 && Arrays.equals(decode, defaultDecode) && colorKey == null)
+        {
+            return from8bit(pdImage, raster);
+        }
+        else if (bitsPerComponent == 1 && colorKey == null)
+        {
 //            return from1Bit(pdImage, raster);
-//        }
-//        else
-//        {
+            return from8bit(pdImage, raster);
+        }
+        else
+        {
+        	Log.e("PdfBoxAndroid", "Trying to create other-bit image not supported");
 //            return fromAny(pdImage, raster, colorKey);
-//        }
+            return from8bit(pdImage, raster);
+        }
     }
     
 //    private static BufferedImage from1Bit(PDImage pdImage, WritableRaster raster)
@@ -210,40 +210,51 @@ final class SampledImageReader
 //    }TODO
 
     // faster, 8-bit non-decoded, non-colormasked image conversion
-//    private static Bitmap from8bit(PDImage pdImage, WritableRaster raster)
-//            throws IOException
-//    {
-//        InputStream input = pdImage.getStream().createInputStream();
-//        try
-//        {
-//            // get the raster's underlying byte buffer
+    private static Bitmap from8bit(PDImage pdImage, Bitmap raster)
+            throws IOException
+    {
+        InputStream input = pdImage.getStream().createInputStream();
+        try
+        {
+            // get the raster's underlying byte buffer
 //            byte[][] banks = ((DataBufferByte) raster.getDataBuffer()).getBankData();
 //            byte[] source = IOUtils.toByteArray(input);
-//
-//            final int width = pdImage.getWidth();
-//            final int height = pdImage.getHeight();
-//            final int numComponents = 8; //pdImage.getColorSpace().getNumberOfComponents(); TODO
+
+            final int width = pdImage.getWidth();
+            final int height = pdImage.getHeight();
+            final int numComponents = pdImage.getColorSpace().getNumberOfComponents();
 //            int max = width * height;
-//
-//            for (int c = 0; c < numComponents; c++)
-//            {
-//                int sourceOffset = c;
-//                for (int i = 0; i < max; i++)
-//                {
+/*
+            for (int c = 0; c < numComponents; c++)
+            {
+                int sourceOffset = c;
+                for (int i = 0; i < max; i++)
+                {
 //                    banks[c][i] = source[sourceOffset];
-//                    sourceOffset += numComponents;
-//                }
-//            }
-//
-////            // use the color space to convert the image to RGB
-////            return pdImage.getColorSpace().toRGBImage(raster);
-//        	return BitmapFactory.decodeStream(input);
-//        }
-//        finally
-//        {
-//            IOUtils.closeQuietly(input);
-//        }
-//    } TODO : Not at all correct
+                    sourceOffset += numComponents;
+                }
+            }
+            */
+            for(int y = 0; y < height; y++) {
+            	for(int x = 0; x < width; x++) {
+            		if(numComponents == 1) {
+            			int in = input.read();
+            			raster.setPixel(x, y, Color.argb(255, in, in, in));
+            		} else {
+            			raster.setPixel(x, y, Color.argb(255, input.read(), input.read(), input.read()));
+            		}
+            	}
+            }
+
+//            // use the color space to convert the image to RGB
+//            return pdImage.getColorSpace().toRGBImage(raster);
+            return raster;
+        }
+        finally
+        {
+            IOUtils.closeQuietly(input);
+        }
+    }
     
     // slower, general-purpose image conversion from any image format
 //    private static BufferedImage fromAny(PDImage pdImage, WritableRaster raster, COSArray colorKey)
@@ -403,7 +414,7 @@ final class SampledImageReader
 
         if (cosDecode != null)
         {
-            int numberOfComponents = 8; //pdImage.getColorSpace().getNumberOfComponents();
+            int numberOfComponents = pdImage.getColorSpace().getNumberOfComponents();
             if (cosDecode.size() != numberOfComponents * 2)
             {
                 if (pdImage.isStencil() && cosDecode.size() >= 2
@@ -434,8 +445,7 @@ final class SampledImageReader
         // use color space default
         if (decode == null)
         {
-        	 return new float[] { 0, 1, 0, 1, 0, 1 }; // for RGB TODO
-            //return pdImage.getColorSpace().getDefaultDecode(pdImage.getBitsPerComponent());
+            return pdImage.getColorSpace().getDefaultDecode(pdImage.getBitsPerComponent());
         }
 
         return decode;

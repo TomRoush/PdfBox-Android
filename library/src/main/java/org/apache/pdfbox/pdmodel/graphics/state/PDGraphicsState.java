@@ -30,8 +30,8 @@ public class PDGraphicsState implements Cloneable
     private PDColorSpace nonStrokingColorSpace = PDDeviceGray.INSTANCE;
     private PDTextState textState = new PDTextState();
     private float lineWidth = 1;
-    private Paint.Cap lineCap;
-    private Paint.Join lineJoin;
+    private Paint.Cap lineCap = Paint.Cap.BUTT;
+    private Paint.Join lineJoin = Paint.Join.MITER;
     private float miterLimit = 10;
     private PDLineDashPattern lineDashPattern = new PDLineDashPattern();
     private RenderingIntent renderingIntent;

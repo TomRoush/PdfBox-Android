@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.graphics.Path;
-import android.util.Log;
 
 /**
  * This class provides a glyph to GeneralPath conversion for true type fonts.
@@ -139,20 +138,20 @@ class GlyphRenderer
     private void moveTo(Path path, Point point)
     {
         path.moveTo(point.x, point.y);
-        Log.v("PdfBoxAndroid", "moveTo: " + String.format("%d,%d", point.x, point.y));
+//        Log.v("PdfBoxAndroid", "moveTo: " + String.format("%d,%d", point.x, point.y));
     }
 
     private void lineTo(Path path, Point point)
     {
         path.lineTo(point.x, point.y);
-        Log.v("PdfBoxAndroid", "lineTo: " + String.format("%d,%d", point.x, point.y));
+//        Log.v("PdfBoxAndroid", "lineTo: " + String.format("%d,%d", point.x, point.y));
     }
 
     private void quadTo(Path path, Point ctrlPoint, Point point)
     {
         path.quadTo(ctrlPoint.x, ctrlPoint.y, point.x, point.y);
-        Log.v("PdfBoxAndroid", "quadTo: " + String.format("%d,%d %d,%d", ctrlPoint.x, ctrlPoint.y,
-                    point.x, point.y));
+//        Log.v("PdfBoxAndroid", "quadTo: " + String.format("%d,%d %d,%d", ctrlPoint.x, ctrlPoint.y,
+//                    point.x, point.y));
     }
 
     private int midValue(int a, int b)

@@ -715,7 +715,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         else
         {
             // draw the image
-//            drawBufferedImage(pdImage.getImage(), at); // TODO: Currently crashes if PDF has an image
+            drawBufferedImage(pdImage.getImage(), at);
         }
 
         if (!pdImage.getInterpolate())
@@ -751,7 +751,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
             AffineTransform imageTransform = new AffineTransform(at);
             imageTransform.scale((1.0f / width), (-1.0f / height));
             imageTransform.translate(0, -height);
-//            graphics.drawImage(image, imageTransform, null);
+            canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
         }
     }
 

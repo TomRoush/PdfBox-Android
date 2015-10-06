@@ -224,7 +224,6 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
         // compose to ARGB
         Bitmap masked = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        		//new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
         // scale mask to fit image
         if (mask.getWidth() != width || mask.getHeight() != height)
@@ -239,7 +238,8 @@ public final class PDImageXObject extends PDXObject implements PDImage
             {
                 int color = image.getPixel(x, y);
                 
-                alphaPixel = Color.alpha(mask.getPixel(x, y));
+                // Greyscale, any rgb component should do
+                alphaPixel = Color.red(mask.getPixel(x, y));
                 if (!isSoft)
                 {
                     alphaPixel = 255 - alphaPixel;
