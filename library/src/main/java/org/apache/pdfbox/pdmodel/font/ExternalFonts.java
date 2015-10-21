@@ -148,21 +148,22 @@ public final class ExternalFonts
 						"LiberationSans-BoldItalic", "NimbusSanL-BoldItal","Roboto-BoldItalic"));
 		substitutes.put("Times-Roman",
 				Arrays.asList("TimesNewRomanPSMT", "TimesNewRoman", "TimesNewRomanPS",
-						"LiberationSerif", "NimbusRomNo9L-Regu","DroidSerif-Regular"));
+						"LiberationSerif", "NimbusRomNo9L-Regu","DroidSerif-Regular", "Roboto-Regular"));
 		substitutes.put("Times-Bold",
 				Arrays.asList("TimesNewRomanPS-BoldMT", "TimesNewRomanPS-Bold",
 						"TimesNewRoman-Bold", "LiberationSerif-Bold",
-						"NimbusRomNo9L-Medi", "DroidSerif-Bold"));
+						"NimbusRomNo9L-Medi", "DroidSerif-Bold", "Roboto-Bold"));
 		substitutes.put("Times-Italic",
 				Arrays.asList("TimesNewRomanPS-ItalicMT", "TimesNewRomanPS-Italic",
 						"TimesNewRoman-Italic", "LiberationSerif-Italic",
-						"NimbusRomNo9L-ReguItal","DroidSerif-Italic"));
+						"NimbusRomNo9L-ReguItal","DroidSerif-Italic", "Roboto-Italic"));
 		substitutes.put("Times-BoldItalic",
 				Arrays.asList("TimesNewRomanPS-BoldItalicMT", "TimesNewRomanPS-BoldItalic",
 						"TimesNewRoman-BoldItalic", "LiberationSerif-BoldItalic",
-						"NimbusRomNo9L-MediItal","DroidSerif-BoldItalic"));
+						"NimbusRomNo9L-MediItal","DroidSerif-BoldItalic", "Roboto-BoldItalic"));
 		substitutes.put("Symbol", Arrays.asList("SymbolMT", "StandardSymL"));
 		substitutes.put("ZapfDingbats", Arrays.asList("ZapfDingbatsITC", "Dingbats"));
+		// TODO: load extra fonts? (DroidSerif for times and a symbol font)
 
 		// extra substitute mechanism for CJK CIDFonts when all we know is the ROS
 		substitutes.put("$Adobe-CNS1", Arrays.asList("AdobeMingStd-Light"));
