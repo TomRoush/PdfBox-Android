@@ -93,9 +93,6 @@ public class PDFRenderer
     public void renderPage(PDPage page, Paint paint, Canvas canvas, int width, int height, float scaleX,
                             float scaleY) throws IOException
     {
-        canvas.scale(scaleX, scaleY);
-        // TODO should we be passing the scale to PageDrawer rather than messing with Graphics?
-
         PDRectangle cropBox = page.getCropBox();
         int rotationAngle = page.getRotation();
 
