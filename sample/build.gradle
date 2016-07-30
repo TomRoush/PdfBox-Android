@@ -25,6 +25,6 @@ android {
 
 dependencies {
     compile project(':library')
+//    compile 'org.apache:pdfbox-android:1.8.9.0'
     compile 'com.android.support:appcompat-v7:21.0.3'
-    compile 'com.android.support:recyclerview-v7:21.0.2'
 }
