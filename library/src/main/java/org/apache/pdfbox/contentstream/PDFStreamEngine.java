@@ -16,15 +16,10 @@
  */
 package org.apache.pdfbox.contentstream;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import android.graphics.Path;
+import android.graphics.PointF;
+import android.graphics.RectF;
+import android.util.Log;
 
 import org.apache.pdfbox.contentstream.operator.MissingOperandException;
 import org.apache.pdfbox.contentstream.operator.Operator;
@@ -57,10 +52,15 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import org.apache.pdfbox.util.Matrix;
 import org.apache.pdfbox.util.Vector;
 
-import android.graphics.Path;
-import android.graphics.PointF;
-import android.graphics.RectF;
-import android.util.Log;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  * Processes a PDF content stream and executes certain operations.
@@ -286,8 +286,8 @@ public class PDFStreamEngine
 			a.concatenate(Matrix.getTranslateInstance((float) -transformedBox.left,
 					(float) -transformedBox.top));
 
-			// Matrix shall be concatenated with A to form a matrix AA that maps from the appearance’s
-			// coordinate system to the annotation’s rectangle in default user space
+			// Matrix shall be concatenated with A to form a matrix AA that maps from the appearance's
+			// coordinate system to the annotation's rectangle in default user space
 			Matrix aa = Matrix.concatenate(matrix, a);
 
 			// make matrix AA the CTM

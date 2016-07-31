@@ -315,7 +315,7 @@ class AppearanceGeneratorHelper
 
 	/*
      * To update an existing appearance stream first copy any needed resources from the
-     * document’s DR dictionary into the stream’s Resources dictionary.
+     * document's DR dictionary into the stream's Resources dictionary.
      * If the DR and Resources dictionaries contain resources with the same name,
      * the one already in the Resources dictionary shall be left intact,
      * not replaced with the corresponding value from the DR dictionary. 

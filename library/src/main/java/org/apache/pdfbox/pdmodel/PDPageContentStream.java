@@ -1,13 +1,7 @@
 package org.apache.pdfbox.pdmodel;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Stack;
+import android.graphics.Path;
+import android.util.Log;
 
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSName;
@@ -29,8 +23,14 @@ import org.apache.pdfbox.util.Matrix;
 import org.apache.pdfbox.util.awt.AWTColor;
 import org.apache.pdfbox.util.awt.AffineTransform;
 
-import android.graphics.Path;
-import android.util.Log;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Stack;
 
 /**
  * Provides the ability to write to a page content stream.
@@ -1193,8 +1193,8 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * Append a cubic Bézier curve to the current path. The curve extends from the current
-     * point to the point (x3 , y3 ), using (x1 , y1 ) and (x2 , y2 ) as the Bézier control points
+     * Append a cubic BÃ©zier curve to the current path. The curve extends from the current
+     * point to the point (x3 , y3 ), using (x1 , y1 ) and (x2 , y2 ) as the BÃ©zier control points
      * @param x1 x coordinate of the point 1
      * @param y1 y coordinate of the point 1
      * @param x2 x coordinate of the point 2
@@ -1211,8 +1211,8 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * Append a cubic Bézier curve to the current path. The curve extends from the current point to
-     * the point (x3, y3), using (x1, y1) and (x2, y2) as the Bézier control points.
+     * Append a cubic BÃ©zier curve to the current path. The curve extends from the current point to
+     * the point (x3, y3), using (x1, y1) and (x2, y2) as the BÃ©zier control points.
      *
      * @param x1 x coordinate of the point 1
      * @param y1 y coordinate of the point 1
@@ -1238,8 +1238,8 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * Append a cubic Bézier curve to the current path. The curve extends from the current
-     * point to the point (x3 , y3 ), using the current point and (x2 , y2 ) as the Bézier control points
+     * Append a cubic BÃ©zier curve to the current path. The curve extends from the current
+     * point to the point (x3 , y3 ), using the current point and (x2 , y2 ) as the BÃ©zier control points
      * @param x2 x coordinate of the point 2
      * @param y2 y coordinate of the point 2
      * @param x3 x coordinate of the point 3
@@ -1254,8 +1254,8 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * Append a cubic Bézier curve to the current path. The curve extends from the current point to
-     * the point (x3, y3), using the current point and (x2, y2) as the Bézier control points.
+     * Append a cubic BÃ©zier curve to the current path. The curve extends from the current point to
+     * the point (x3, y3), using the current point and (x2, y2) as the BÃ©zier control points.
      *
      * @param x2 x coordinate of the point 2
      * @param y2 y coordinate of the point 2
@@ -1277,8 +1277,8 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * Append a cubic Bézier curve to the current path. The curve extends from the current
-     * point to the point (x3 , y3 ), using (x1 , y1 ) and (x3 , y3 ) as the Bézier control points
+     * Append a cubic BÃ©zier curve to the current path. The curve extends from the current
+     * point to the point (x3 , y3 ), using (x1 , y1 ) and (x3 , y3 ) as the BÃ©zier control points
      * @param x1 x coordinate of the point 1
      * @param y1 y coordinate of the point 1
      * @param x3 x coordinate of the point 3
@@ -1293,8 +1293,8 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * Append a cubic Bézier curve to the current path. The curve extends from the current point to
-     * the point (x3, y3), using (x1, y1) and (x3, y3) as the Bézier control points.
+     * Append a cubic BÃ©zier curve to the current path. The curve extends from the current point to
+     * the point (x3, y3), using (x1, y1) and (x3, y3) as the BÃ©zier control points.
      *
      * @param x1 x coordinate of the point 1
      * @param y1 y coordinate of the point 1

@@ -59,7 +59,7 @@ public abstract class PDVariableText extends PDField
 	 * This is an inheritable attribute.
 	 * 
 	 * The default appearance contains a set of default graphics and text operators
-	 * to define the field’s text size and color.
+	 * to define the field's text size and color.
 	 * 
 	 * @return the DA element of the dictionary object
 	 */

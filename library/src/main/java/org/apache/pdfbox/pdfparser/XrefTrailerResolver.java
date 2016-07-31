@@ -1,5 +1,11 @@
 package org.apache.pdfbox.pdfparser;
 
+import android.util.Log;
+
+import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSName;
+import org.apache.pdfbox.cos.COSObjectKey;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,12 +16,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSObjectKey;
-
-import android.util.Log;
 
 /**
  * This class will collect all XRef/trailer objects and creates correct
@@ -35,7 +35,7 @@ import android.util.Log;
  * using {@link #setStartxref(long)}. This is used to build the chain of
  * active xref/trailer objects used for creating document trailer and xref table.
  *
- * @author Timo Böhme
+ * @author Timo BÃ¶hme
  */
 public class XrefTrailerResolver
 {
