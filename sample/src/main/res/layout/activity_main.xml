@@ -1,11 +1,62 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
+    tools:context=".MainActivity" >
 
-    <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/buttonCreate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Create PDF"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="10dp"
+        android:onClick="createPdf" />
+
+    <Button
+        android:id="@+id/buttonRender"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Render PDF to Image"
+        android:layout_below="@+id/buttonCreate"
+        android:layout_marginTop="10dp"
+        android:onClick="renderFile" />
+
+    <Button
+        android:id="@+id/buttonFillForm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Fill PDF Form"
+        android:layout_below="@+id/buttonRender"
+        android:layout_marginTop="10dp"
+        android:onClick="fillForm" />
+
+    <Button
+        android:id="@+id/buttonStripText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Strip Text From PDF"
+        android:layout_below="@+id/buttonFillForm"
+        android:layout_marginTop="10dp"
+        android:onClick="stripText" />
+
+    <TextView
+        android:id="@+id/statusTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/buttonStripText"
+        android:text="@string/hello_world"
+        android:background="#EEE"/>
+
+    <ImageView
+        android:id="@+id/renderedImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/statusTextView"
+        android:layout_below="@+id/statusTextView" />
 
 </RelativeLayout>
