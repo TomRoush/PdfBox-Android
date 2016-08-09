@@ -1,9 +1,5 @@
 package org.apache.pdfbox.pdmodel.interactive.form;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
@@ -11,6 +7,10 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSString;
 import org.apache.pdfbox.pdmodel.common.COSArrayList;
 import org.apache.pdfbox.pdmodel.interactive.form.FieldUtils.KeyValue;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A choice field contains several text items, one or more of which shall be selected as the field value.
@@ -286,7 +286,7 @@ public abstract class PDChoice extends PDVariableText
 	 * Determines if Sort is set.
 	 * 
 	 * <p>
-	 * If set, the field’s option items shall be sorted alphabetically.
+	 * If set, the field's option items shall be sorted alphabetically.
 	 * The sorting has to be done when writing the PDF. PDF Readers are supposed to
 	 * display the options in the order in which they occur in the Opt array.
 	 * </p>
