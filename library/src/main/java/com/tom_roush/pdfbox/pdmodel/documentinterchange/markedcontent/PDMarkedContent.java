@@ -1,13 +1,13 @@
-package org.apache.pdfbox.pdmodel.documentinterchange.markedcontent;
+package com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.documentinterchange.taggedpdf.PDArtifactMarkedContent;
-import org.apache.pdfbox.pdmodel.graphics.PDXObject;
-import org.apache.pdfbox.text.TextPosition;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.documentinterchange.taggedpdf.PDArtifactMarkedContent;
+import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
+import com.tom_roush.pdfbox.text.TextPosition;
 
 /**
  * A marked content.

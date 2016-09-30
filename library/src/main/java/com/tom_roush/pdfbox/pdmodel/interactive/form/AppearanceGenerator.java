@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.pdfbox.pdmodel.interactive.form;
+package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.pdmodel.common.PDTextStream;
+import com.tom_roush.pdfbox.pdmodel.common.PDTextStream;
 
 import android.util.Log;
 

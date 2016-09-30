@@ -1,11 +1,11 @@
-package org.apache.pdfbox.pdmodel.interactive.annotation;
+package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
-import org.apache.pdfbox.pdmodel.interactive.action.PDActionFactory;
-import org.apache.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalActions;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.interactive.action.PDAction;
+import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionFactory;
+import com.tom_roush.pdfbox.pdmodel.interactive.action.PDAnnotationAdditionalActions;
 
 /**
  * This is the class that represents a widget.

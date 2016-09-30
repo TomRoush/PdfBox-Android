@@ -1,4 +1,4 @@
-package org.apache.pdfbox.util;
+package com.tom_roush.pdfbox.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -8,9 +8,9 @@ import java.io.Writer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.text.PDFTextStripper;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.text.PDFTextStripper;
 
 
 /**

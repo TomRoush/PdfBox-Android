@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.fontbox.type1;
+package com.tom_roush.fontbox.type1;
 
-import org.apache.fontbox.encoding.CustomEncoding;
-import org.apache.fontbox.encoding.StandardEncoding;
+import com.tom_roush.fontbox.encoding.CustomEncoding;
+import com.tom_roush.fontbox.encoding.StandardEncoding;
 
 import java.io.IOException;
 import java.util.ArrayList;

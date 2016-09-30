@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel;
+package com.tom_roush.pdfbox.pdmodel;
 
 /**
  * A name object specifying the page layout shall be used when the document is opened.

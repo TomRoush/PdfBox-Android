@@ -1,10 +1,10 @@
-package org.apache.pdfbox.rendering;
+package com.tom_roush.pdfbox.rendering;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.pdfbox.pdmodel.font.PDType1Equivalent;
+import com.tom_roush.pdfbox.pdmodel.font.PDType1Equivalent;
 
 import android.graphics.Path;
 import android.util.Log;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.fontbox.cff;
+package com.tom_roush.fontbox.cff;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.fontbox.type1.Type1CharStringReader;
+import com.tom_roush.fontbox.type1.Type1CharStringReader;
 
 /**
  * A Type 0 CIDFont represented in a CFF file. Thread safe.

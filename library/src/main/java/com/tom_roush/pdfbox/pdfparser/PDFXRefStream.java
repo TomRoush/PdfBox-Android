@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdfparser;
+package com.tom_roush.pdfbox.pdfparser;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -10,14 +10,14 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSInteger;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSObject;
-import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.pdfwriter.COSWriterXRefEntry;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSInteger;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSObject;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.pdfwriter.COSWriterXRefEntry;
 
 /**
  * @author Alexander Funk

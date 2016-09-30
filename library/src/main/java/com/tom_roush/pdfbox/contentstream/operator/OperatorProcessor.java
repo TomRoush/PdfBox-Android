@@ -1,7 +1,7 @@
-package org.apache.pdfbox.contentstream.operator;
+package com.tom_roush.pdfbox.contentstream.operator;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.contentstream.PDFStreamEngine;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.contentstream.PDFStreamEngine;
 import java.util.List;
 import java.io.IOException;
 

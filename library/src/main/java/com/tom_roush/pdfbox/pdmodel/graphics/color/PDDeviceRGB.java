@@ -1,6 +1,6 @@
-package org.apache.pdfbox.pdmodel.graphics.color;
+package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * Colours in the DeviceRGB colour space are specified according to the additive

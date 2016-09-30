@@ -1,4 +1,8 @@
-package org.apache.pdfbox.pdmodel.font.encoding;
+package com.tom_roush.pdfbox.pdmodel.font.encoding;
+
+import android.util.Log;
+
+import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,10 +10,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.pdfbox.util.PDFBoxResourceLoader;
-
-import android.util.Log;
 
 /**
  * PostScript glyph list, maps glyph names to sequences of Unicode characters.
@@ -39,7 +39,7 @@ public final class GlyphList
 	{
 		try
 		{
-			String path = "org/apache/pdfbox/resources/glyphlist/";
+			String path = "com/tom_roush/pdfbox/resources/glyphlist/";
 			// Adobe Glyph List (AGL)
 			if(PDFBoxResourceLoader.isReady()) {
 				DEFAULT = new GlyphList(PDFBoxResourceLoader.getStream(path + "glyphlist.txt"));

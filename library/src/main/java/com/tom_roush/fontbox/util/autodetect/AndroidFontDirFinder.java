@@ -1,4 +1,4 @@
-package org.apache.fontbox.util.autodetect;
+package com.tom_roush.fontbox.util.autodetect;
 
 
 public class AndroidFontDirFinder extends NativeFontDirFinder

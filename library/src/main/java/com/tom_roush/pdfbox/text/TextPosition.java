@@ -1,11 +1,11 @@
-package org.apache.pdfbox.text;
+package com.tom_roush.pdfbox.text;
 
 import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.util.Matrix;
+import com.tom_roush.pdfbox.pdmodel.font.PDFont;
+import com.tom_roush.pdfbox.util.Matrix;
 
 /**
  * This represents a string and a position on the screen of those characters.

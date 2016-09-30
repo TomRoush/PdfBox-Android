@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.pdfbox.pdmodel.interactive.pagenavigation;
+package com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation;
 
 /**
  * The direction of motion for the specified transition effect. Only for {@link PDTransitionStyle#Split},

@@ -1,19 +1,19 @@
-package org.apache.pdfbox.pdmodel.graphics.state;
+package com.tom_roush.pdfbox.pdmodel.graphics.state;
 
 import android.graphics.Paint;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSFloat;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSNumber;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
-import org.apache.pdfbox.pdmodel.graphics.PDFontSetting;
-import org.apache.pdfbox.pdmodel.graphics.PDLineDashPattern;
-import org.apache.pdfbox.pdmodel.graphics.blend.BlendMode;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSFloat;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.graphics.PDFontSetting;
+import com.tom_roush.pdfbox.pdmodel.graphics.PDLineDashPattern;
+import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
 
 /**
  * An extended graphics state dictionary.

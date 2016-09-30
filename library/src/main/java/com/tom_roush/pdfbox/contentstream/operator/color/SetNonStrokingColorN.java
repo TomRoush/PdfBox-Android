@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.pdfbox.contentstream.operator.color;
+package com.tom_roush.pdfbox.contentstream.operator.color;
 
 /**
  * scn: Sets the colour to use for stroking non-stroking operations.

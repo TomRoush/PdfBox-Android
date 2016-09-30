@@ -1,9 +1,9 @@
-package org.apache.pdfbox.pdmodel.interactive.form;
+package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * A pushbutton is a purely interactive control that responds immediately to user

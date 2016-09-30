@@ -1,11 +1,11 @@
-package org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible;
+package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible;
 
 import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 

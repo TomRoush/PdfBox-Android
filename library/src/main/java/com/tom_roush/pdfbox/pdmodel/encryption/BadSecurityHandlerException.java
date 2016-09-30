@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.encryption;
+package com.tom_roush.pdfbox.pdmodel.encryption;
 
 /**
  * This exception can be thrown by the SecurityHandlersManager class when

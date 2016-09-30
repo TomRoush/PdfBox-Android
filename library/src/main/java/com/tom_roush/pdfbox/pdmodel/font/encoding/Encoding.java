@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.font.encoding;
+package com.tom_roush.pdfbox.pdmodel.font.encoding;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * A PostScript encoding vector, maps character codes to glyph names.

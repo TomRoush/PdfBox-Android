@@ -1,4 +1,4 @@
-package org.apache.pdfbox.cos;
+package com.tom_roush.pdfbox.cos;
 
 
 /**

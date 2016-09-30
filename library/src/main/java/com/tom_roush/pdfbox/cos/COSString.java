@@ -1,13 +1,13 @@
-package org.apache.pdfbox.cos;
+package com.tom_roush.pdfbox.cos;
+
+import android.util.Log;
+
+import com.tom_roush.pdfbox.util.Charsets;
+import com.tom_roush.pdfbox.util.Hex;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-
-import org.apache.pdfbox.util.Charsets;
-import org.apache.pdfbox.util.Hex;
-
-import android.util.Log;
 
 /**
  * A string object, which may be a text string, a PDFDocEncoded string, ASCII string, or byte string.
@@ -31,7 +31,7 @@ public final class COSString extends COSBase
 {
 	// legacy behaviour for old PDFParser
 	public static final boolean FORCE_PARSING =
-			Boolean.getBoolean("org.apache.pdfbox.forceParsing");
+			Boolean.getBoolean("com.tom_roush.pdfbox.forceParsing");
 
 	/**
 	 * This will create a COS string from a string of hex characters.

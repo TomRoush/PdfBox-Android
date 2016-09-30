@@ -1,4 +1,4 @@
-package org.apache.pdfbox.text;
+package com.tom_roush.pdfbox.text;
 
 import java.util.Comparator;
 

@@ -1,7 +1,7 @@
-package org.apache.pdfbox.pdmodel.font.encoding;
+package com.tom_roush.pdfbox.pdmodel.font.encoding;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * This the win ansi encoding.

@@ -1,4 +1,17 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
+
+import android.util.Log;
+
+import com.tom_roush.fontbox.cff.CFFCIDFont;
+import com.tom_roush.fontbox.cff.CFFFont;
+import com.tom_roush.fontbox.cff.CFFParser;
+import com.tom_roush.fontbox.cff.CFFType1Font;
+import com.tom_roush.fontbox.ttf.TTFParser;
+import com.tom_roush.fontbox.ttf.TrueTypeFont;
+import com.tom_roush.fontbox.ttf.Type1Equivalent;
+import com.tom_roush.fontbox.type1.Type1Font;
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,19 +22,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.fontbox.cff.CFFCIDFont;
-import org.apache.fontbox.cff.CFFFont;
-import org.apache.fontbox.cff.CFFParser;
-import org.apache.fontbox.cff.CFFType1Font;
-import org.apache.fontbox.ttf.TTFParser;
-import org.apache.fontbox.ttf.TrueTypeFont;
-import org.apache.fontbox.ttf.Type1Equivalent;
-import org.apache.fontbox.type1.Type1Font;
-import org.apache.pdfbox.io.IOUtils;
-import org.apache.pdfbox.util.PDFBoxResourceLoader;
-
-import android.util.Log;
 
 /**
  * External font service, locates non-embedded fonts via a pluggable FontProvider.
@@ -48,7 +48,7 @@ public final class ExternalFonts
 		try
 		{
 			// ttf
-			String ttfName = "org/apache/pdfbox/resources/ttf/LiberationSans-Regular.ttf";
+			String ttfName = "com/tom_roush/pdfbox/resources/ttf/LiberationSans-Regular.ttf";
 			InputStream ttfStream;
 			if(PDFBoxResourceLoader.isReady()) {
 				ttfStream = PDFBoxResourceLoader.getStream(ttfName);
@@ -71,7 +71,7 @@ public final class ExternalFonts
 			ttfFallbackFont = ttfParser.parse(ttfStream);
 
 			// cff
-			String cffName = "org/apache/pdfbox/resources/otf/AdobeBlank.otf";
+			String cffName = "com/tom_roush/pdfbox/resources/otf/AdobeBlank.otf";
 			InputStream cffStream;
 			if(PDFBoxResourceLoader.isReady()) {
 				cffStream = PDFBoxResourceLoader.getStream(cffName);

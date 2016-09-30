@@ -1,12 +1,12 @@
-package org.apache.pdfbox.pdmodel.interactive.form;
+package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSNumber;
-import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.pdmodel.common.PDTextStream;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.pdmodel.common.PDTextStream;
 
 /**
  * Base class for fields which use "Variable Text".

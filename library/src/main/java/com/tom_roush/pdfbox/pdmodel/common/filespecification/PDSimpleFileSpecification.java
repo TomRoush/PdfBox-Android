@@ -1,7 +1,7 @@
-package org.apache.pdfbox.pdmodel.common.filespecification;
+package com.tom_roush.pdfbox.pdmodel.common.filespecification;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSString;
 
 /**
  * A file specification that is just a string.

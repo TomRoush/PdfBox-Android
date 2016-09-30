@@ -1,4 +1,4 @@
-package org.apache.pdfbox.util;
+package com.tom_roush.pdfbox.util;
 
 /**
  * Utility functions for hex encoding.

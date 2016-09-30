@@ -1,4 +1,4 @@
-package org.apache.pdfbox.util;
+package com.tom_roush.pdfbox.util;
 
 /**
  * A 2D vector.

@@ -1,9 +1,9 @@
-package org.apache.pdfbox.util;
+package com.tom_roush.pdfbox.util;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSFloat;
-import org.apache.pdfbox.cos.COSNumber;
-import org.apache.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSFloat;
+import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.PointF;
 

@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.graphics.state;
+package com.tom_roush.pdfbox.pdmodel.graphics.state;
 
 /**
  * Rendering intent.

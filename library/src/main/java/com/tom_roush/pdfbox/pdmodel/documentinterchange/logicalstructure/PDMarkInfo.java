@@ -1,8 +1,8 @@
-package org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure;
+package com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * The MarkInfo provides additional information relevant to specialized

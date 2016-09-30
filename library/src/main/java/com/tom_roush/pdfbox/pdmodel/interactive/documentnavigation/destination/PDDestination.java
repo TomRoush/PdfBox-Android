@@ -1,12 +1,12 @@
-package org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination;
+package com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.pdmodel.common.PDDestinationOrAction;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.pdmodel.common.PDDestinationOrAction;
 
 /**
  * This represents a destination in a PDF document.

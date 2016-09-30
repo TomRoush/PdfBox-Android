@@ -1,11 +1,11 @@
-package org.apache.pdfbox.pdmodel.graphics.image;
+package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
-import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 import android.graphics.Bitmap;
 

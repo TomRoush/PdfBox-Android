@@ -1,6 +1,6 @@
-package org.apache.pdfbox.pdmodel.graphics.color;
+package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * A color space with black, white, and intermediate shades of gray.

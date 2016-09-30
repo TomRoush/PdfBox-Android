@@ -1,4 +1,4 @@
-package org.apache.pdfbox.cos;
+package com.tom_roush.pdfbox.cos;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -9,15 +9,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.pdfbox.filter.DecodeResult;
-import org.apache.pdfbox.filter.Filter;
-import org.apache.pdfbox.filter.FilterFactory;
-import org.apache.pdfbox.io.IOUtils;
-import org.apache.pdfbox.io.RandomAccess;
-import org.apache.pdfbox.io.RandomAccessBuffer;
-import org.apache.pdfbox.io.RandomAccessFile;
-import org.apache.pdfbox.io.RandomAccessFileInputStream;
-import org.apache.pdfbox.io.RandomAccessFileOutputStream;
+import com.tom_roush.pdfbox.filter.DecodeResult;
+import com.tom_roush.pdfbox.filter.Filter;
+import com.tom_roush.pdfbox.filter.FilterFactory;
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.io.RandomAccess;
+import com.tom_roush.pdfbox.io.RandomAccessBuffer;
+import com.tom_roush.pdfbox.io.RandomAccessFile;
+import com.tom_roush.pdfbox.io.RandomAccessFileInputStream;
+import com.tom_roush.pdfbox.io.RandomAccessFileOutputStream;
 
 import android.util.Log;
 

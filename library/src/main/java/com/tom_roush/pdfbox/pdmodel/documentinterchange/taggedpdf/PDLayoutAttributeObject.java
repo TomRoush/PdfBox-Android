@@ -1,10 +1,10 @@
-package org.apache.pdfbox.pdmodel.documentinterchange.taggedpdf;
+package com.tom_roush.pdfbox.pdmodel.documentinterchange.taggedpdf;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.graphics.color.PDGamma;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDGamma;
 
 /**
  * A Layout attribute object.

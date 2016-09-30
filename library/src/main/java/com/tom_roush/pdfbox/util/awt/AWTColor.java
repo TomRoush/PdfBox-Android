@@ -1,4 +1,4 @@
-package org.apache.pdfbox.util.awt;
+package com.tom_roush.pdfbox.util.awt;
 
 import android.graphics.Color;
 

@@ -1,6 +1,6 @@
-package org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination;
+package com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination;
 
-import org.apache.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSArray;
 
 /**
  * This represents a destination to a page and the page contents will be magnified to just

@@ -1,14 +1,14 @@
-package org.apache.pdfbox.pdmodel.common;
+package com.tom_roush.pdfbox.pdmodel.common;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.io.IOUtils;
 
 /**
  * A PDTextStream class is used when the PDF specification supports either

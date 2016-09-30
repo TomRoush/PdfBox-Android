@@ -1,6 +1,6 @@
-package org.apache.pdfbox.pdmodel.common;
+package com.tom_roush.pdfbox.pdmodel.common;
 
-import org.apache.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSBase;
 
 /**
  * This is an interface to represent a PDModel object that holds two COS objects.

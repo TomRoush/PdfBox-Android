@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.interactive.form;
+package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -9,10 +9,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 

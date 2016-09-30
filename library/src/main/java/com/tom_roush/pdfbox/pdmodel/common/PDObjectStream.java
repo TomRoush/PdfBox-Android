@@ -1,9 +1,9 @@
-package org.apache.pdfbox.pdmodel.common;
+package com.tom_roush.pdfbox.pdmodel.common;
 
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSStream;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 
 
 

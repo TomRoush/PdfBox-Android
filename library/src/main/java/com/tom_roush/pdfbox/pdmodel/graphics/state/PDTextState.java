@@ -1,6 +1,6 @@
-package org.apache.pdfbox.pdmodel.graphics.state;
+package com.tom_roush.pdfbox.pdmodel.graphics.state;
 
-import org.apache.pdfbox.pdmodel.font.PDFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 
 /**
  * This class will hold the current state of the text parameters when executing a

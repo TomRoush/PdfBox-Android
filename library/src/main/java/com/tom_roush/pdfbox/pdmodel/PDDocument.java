@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel;
+package com.tom_roush.pdfbox.pdmodel;
 
 import java.io.Closeable;
 import java.io.File;
@@ -12,38 +12,38 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.cos.COSInteger;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSObject;
-import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.cos.COSUpdateInfo;
-import org.apache.pdfbox.io.IOUtils;
-import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
-import org.apache.pdfbox.pdfparser.BaseParser;
-import org.apache.pdfbox.pdfparser.PDFParser;
-import org.apache.pdfbox.pdfwriter.COSWriter;
-import org.apache.pdfbox.pdmodel.common.COSArrayList;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
-import org.apache.pdfbox.pdmodel.encryption.PDEncryption;
-import org.apache.pdfbox.pdmodel.encryption.ProtectionPolicy;
-import org.apache.pdfbox.pdmodel.encryption.SecurityHandler;
-import org.apache.pdfbox.pdmodel.encryption.SecurityHandlerFactory;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
-import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDocument;
+import com.tom_roush.pdfbox.cos.COSInteger;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSObject;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.cos.COSUpdateInfo;
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.io.RandomAccessBufferedFileInputStream;
+import com.tom_roush.pdfbox.pdfparser.BaseParser;
+import com.tom_roush.pdfbox.pdfparser.PDFParser;
+import com.tom_roush.pdfbox.pdfwriter.COSWriter;
+import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
+import com.tom_roush.pdfbox.pdmodel.encryption.PDEncryption;
+import com.tom_roush.pdfbox.pdmodel.encryption.ProtectionPolicy;
+import com.tom_roush.pdfbox.pdmodel.encryption.SecurityHandler;
+import com.tom_roush.pdfbox.pdmodel.encryption.SecurityHandlerFactory;
+import com.tom_roush.pdfbox.pdmodel.font.PDFont;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
+import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
+import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
+import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
 
 import android.util.Log;
 
@@ -1024,8 +1024,8 @@ public class PDDocument implements Closeable
 	 * Protects the document with the protection policy pp. The document content will be really encrypted when it will
 	 * be saved. This method only marks the document for encryption.
 	 *
-	 * @see org.apache.pdfbox.pdmodel.encryption.StandardProtectionPolicy
-	 * @see org.apache.pdfbox.pdmodel.encryption.PublicKeyProtectionPolicy
+	 * @see com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy
+	 * @see com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyProtectionPolicy
 	 * 
 	 * @param policy The protection policy.
 	 * 

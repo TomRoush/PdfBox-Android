@@ -1,11 +1,11 @@
-package org.apache.pdfbox.contentstream.operator.graphics;
+package com.tom_roush.pdfbox.contentstream.operator.graphics;
 
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.pdfbox.contentstream.operator.Operator;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSNumber;
 
 import android.graphics.PointF;
 

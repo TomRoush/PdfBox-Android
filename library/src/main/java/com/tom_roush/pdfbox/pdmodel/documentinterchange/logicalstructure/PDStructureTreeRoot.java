@@ -1,16 +1,16 @@
-package org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure;
+package com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure;
 
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.common.COSDictionaryMap;
-import org.apache.pdfbox.pdmodel.common.PDNameTreeNode;
-import org.apache.pdfbox.pdmodel.common.PDNumberTreeNode;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.common.COSDictionaryMap;
+import com.tom_roush.pdfbox.pdmodel.common.PDNameTreeNode;
+import com.tom_roush.pdfbox.pdmodel.common.PDNumberTreeNode;
 
 import android.util.Log;
 

@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.encryption;
+package com.tom_roush.pdfbox.pdmodel.encryption;
 
 /**
  * The protection policy to add to a document for password-based protection.

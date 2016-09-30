@@ -1,4 +1,4 @@
-package org.apache.pdfbox.cos;
+package com.tom_roush.pdfbox.cos;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * An array of PDFBase objects as part of the PDF document.

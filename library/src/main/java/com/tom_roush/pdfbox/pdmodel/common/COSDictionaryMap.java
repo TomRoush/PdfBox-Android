@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.common;
+package com.tom_roush.pdfbox.pdmodel.common;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -8,13 +8,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSBoolean;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSFloat;
-import org.apache.pdfbox.cos.COSInteger;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSBoolean;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSFloat;
+import com.tom_roush.pdfbox.cos.COSInteger;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSString;
 
 /**
  * This is a Map that will automatically sync the contents to a COSDictionary.
@@ -186,7 +186,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     }
 
     /**
-     * This will take a map&lt;java.lang.String,org.apache.pdfbox.pdmodel.COSObjectable&gt;
+     * This will take a map&lt;java.lang.String,com.tom_roush.pdfbox.pdmodel.COSObjectable&gt;
      * and convert it into a COSDictionary.
      *
      * @param someMap A map containing COSObjectables

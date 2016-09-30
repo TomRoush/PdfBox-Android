@@ -1,6 +1,6 @@
-package org.apache.pdfbox.pdmodel.common;
+package com.tom_roush.pdfbox.pdmodel.common;
 
-import org.apache.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSBase;
 
 /**
  * This is an interface used to get/create the underlying COSObject.

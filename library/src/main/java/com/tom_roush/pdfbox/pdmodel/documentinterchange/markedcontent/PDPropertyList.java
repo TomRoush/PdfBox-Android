@@ -1,9 +1,9 @@
-package org.apache.pdfbox.pdmodel.documentinterchange.markedcontent;
+package com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
-import org.apache.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 
 /**
  * A property list is a dictionary containing private information meaningful to the conforming

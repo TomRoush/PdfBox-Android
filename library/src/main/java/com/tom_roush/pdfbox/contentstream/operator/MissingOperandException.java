@@ -1,9 +1,9 @@
-package org.apache.pdfbox.contentstream.operator;
+package com.tom_roush.pdfbox.contentstream.operator;
 
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSBase;
 
 /**
  * Throw when a PDF operator is missing required operands.

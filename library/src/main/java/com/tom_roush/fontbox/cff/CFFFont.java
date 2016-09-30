@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.fontbox.cff;
+package com.tom_roush.fontbox.cff;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.fontbox.util.BoundingBox;
+import com.tom_roush.fontbox.util.BoundingBox;
 
 /**
  * An Adobe Compact Font Format (CFF) font. Thread safe.

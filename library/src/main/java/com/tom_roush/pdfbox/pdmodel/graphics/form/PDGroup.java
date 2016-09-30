@@ -1,10 +1,10 @@
-package org.apache.pdfbox.pdmodel.graphics.form;
+package com.tom_roush.pdfbox.pdmodel.graphics.form;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 /**
  * Transparency group.

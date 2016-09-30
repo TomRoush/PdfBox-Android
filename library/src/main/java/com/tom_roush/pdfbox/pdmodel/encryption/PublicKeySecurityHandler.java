@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.encryption;
+package com.tom_roush.pdfbox.pdmodel.encryption;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,9 +24,9 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import org.spongycastle.asn1.ASN1InputStream;
 import org.spongycastle.asn1.ASN1ObjectIdentifier;
 import org.spongycastle.asn1.ASN1Primitive;
@@ -92,7 +92,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 	 * @param encryption encryption dictionary, can be retrieved via
 	 * {@link PDDocument#getEncryption()}
 	 * @param documentIDArray document id which is returned via
-	 * {@link org.apache.pdfbox.cos.COSDocument#getDocumentID()} (not used by
+	 * {@link com.tom_roush.pdfbox.cos.COSDocument#getDocumentID()} (not used by
 	 * this handler)
 	 * @param decryptionMaterial Information used to decrypt the document.
 	 *

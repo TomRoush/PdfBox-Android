@@ -1,10 +1,10 @@
-package org.apache.pdfbox.util.awt;
+package com.tom_roush.pdfbox.util.awt;
 
 import android.graphics.PointF;
 
 /**
  * Represents a affine transformation between 2 points
- * @see org.apache.pdfbox.util.Matrix
+ * @see com.tom_roush.pdfbox.util.Matrix
  * 
  * [ x']   [ m00 m01 m02 ] [ x ]   [ m00*x + m01*y + m02 ]
  * [ y'] = [ m10 m11 m12 ] [ y ] = [ m10*x + m11*y + m12 ]

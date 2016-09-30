@@ -1,4 +1,4 @@
-package org.apache.pdfbox.rendering;
+package com.tom_roush.pdfbox.rendering;
 
 import java.io.IOException;
 

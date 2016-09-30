@@ -1,10 +1,10 @@
-package org.apache.pdfbox.pdfparser;
+package com.tom_roush.pdfbox.pdfparser;
 
 import android.util.Log;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSObjectKey;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSObjectKey;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,11 +1,11 @@
-package org.apache.pdfbox.pdmodel.interactive.action;
+package com.tom_roush.pdfbox.pdmodel.interactive.action;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 
-import org.apache.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
+import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
 
 /**
  * This represents a remote go-to action that can be executed in a PDF document.

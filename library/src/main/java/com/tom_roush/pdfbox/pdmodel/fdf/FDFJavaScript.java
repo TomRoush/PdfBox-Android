@@ -1,16 +1,16 @@
-package org.apache.pdfbox.pdmodel.fdf;
+package com.tom_roush.pdfbox.pdmodel.fdf;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.common.COSArrayList;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
-import org.apache.pdfbox.pdmodel.common.PDNamedTextStream;
-import org.apache.pdfbox.pdmodel.common.PDTextStream;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.common.PDNamedTextStream;
+import com.tom_roush.pdfbox.pdmodel.common.PDTextStream;
 
 /**
  * This represents an FDF JavaScript dictionary that is part of the FDF document.

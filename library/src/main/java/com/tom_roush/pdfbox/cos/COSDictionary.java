@@ -1,4 +1,4 @@
-package org.apache.pdfbox.cos;
+package com.tom_roush.pdfbox.cos;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -7,8 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
-import org.apache.pdfbox.util.DateConverter;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.util.DateConverter;
 
 /**
  * This class represents a dictionary where name/value pairs reside.

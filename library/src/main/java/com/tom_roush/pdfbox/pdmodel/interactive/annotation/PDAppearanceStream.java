@@ -1,9 +1,9 @@
-package org.apache.pdfbox.pdmodel.interactive.annotation;
+package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
-import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 
 /**
  * An appearance stream is a form XObject, a self-contained content stream that shall be rendered

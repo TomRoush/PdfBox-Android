@@ -1,4 +1,4 @@
-package org.apache.pdfbox.cos;
+package com.tom_roush.pdfbox.cos;
 
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;

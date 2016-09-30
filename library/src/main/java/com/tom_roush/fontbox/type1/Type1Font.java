@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.fontbox.type1;
+package com.tom_roush.fontbox.type1;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.fontbox.cff.Type1CharString;
-import org.apache.fontbox.cff.Type1CharStringParser;
-import org.apache.fontbox.encoding.Encoding;
-import org.apache.fontbox.pfb.PfbParser;
-import org.apache.fontbox.ttf.Type1Equivalent;
-import org.apache.fontbox.util.BoundingBox;
+import com.tom_roush.fontbox.cff.Type1CharString;
+import com.tom_roush.fontbox.cff.Type1CharStringParser;
+import com.tom_roush.fontbox.encoding.Encoding;
+import com.tom_roush.fontbox.pfb.PfbParser;
+import com.tom_roush.fontbox.ttf.Type1Equivalent;
+import com.tom_roush.fontbox.util.BoundingBox;
 
 import android.graphics.Path;
 

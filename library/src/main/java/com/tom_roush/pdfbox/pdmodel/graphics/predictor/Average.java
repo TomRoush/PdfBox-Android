@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.graphics.predictor;
+package com.tom_roush.pdfbox.pdmodel.graphics.predictor;
 
 /**
  * We can use raw on the right hand side of

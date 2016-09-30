@@ -1,12 +1,12 @@
-package org.apache.pdfbox.contentstream.operator.state;
+package com.tom_roush.pdfbox.contentstream.operator.state;
 
 import java.util.List;
 
-import org.apache.pdfbox.contentstream.operator.Operator;
-import org.apache.pdfbox.contentstream.operator.OperatorProcessor;
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSNumber;
 
 /**
  * d: Set the line dash pattern.

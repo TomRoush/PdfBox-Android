@@ -1,12 +1,12 @@
-package org.apache.pdfbox.pdmodel.interactive.digitalsignature;
+package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.pdfparser.VisualSignatureParser;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSigProperties;
+import com.tom_roush.pdfbox.cos.COSDocument;
+import com.tom_roush.pdfbox.pdfparser.VisualSignatureParser;
+import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSigProperties;
 
 /**
  * TODO description needed

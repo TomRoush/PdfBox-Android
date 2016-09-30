@@ -1,4 +1,4 @@
-package org.apache.pdfbox.text;
+package com.tom_roush.pdfbox.text;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 import android.graphics.RectF;
 

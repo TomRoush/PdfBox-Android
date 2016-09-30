@@ -5,7 +5,7 @@ android {
     buildToolsVersion project.ANDROID_BUILD_TOOLS_VERSION
 
     defaultConfig {
-        applicationId 'org.apache.pdfboxandroid.sample'
+        applicationId 'com.tom_roush.pdfboxandroid.sample'
         minSdkVersion Integer.parseInt(project.ANDROID_BUILD_MIN_SDK_VERSION)
         targetSdkVersion Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
         versionName project.VERSION_NAME
@@ -25,6 +25,6 @@ android {
 
 dependencies {
     compile project(':library')
-//    compile 'org.apache:pdfbox-android:1.8.9.0'
+//    compile 'com.tom_roush:pdfbox-android:1.8.9.0'
     compile 'com.android.support:appcompat-v7:21.0.3'
 }

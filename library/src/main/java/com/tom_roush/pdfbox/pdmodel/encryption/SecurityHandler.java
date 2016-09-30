@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.encryption;
+package com.tom_roush.pdfbox.pdmodel.encryption;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,14 +24,14 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.io.IOUtils;
-import org.apache.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 
 import android.util.Log;
 
@@ -92,7 +92,7 @@ public abstract class SecurityHandler
 	 * Prepares everything to decrypt the document.
 	 *
 	 * @param encryption  encryption dictionary, can be retrieved via {@link PDDocument#getEncryption()}
-	 * @param documentIDArray  document id which is returned via {@link org.apache.pdfbox.cos.COSDocument#getDocumentID()}
+	 * @param documentIDArray  document id which is returned via {@link com.tom_roush.pdfbox.cos.COSDocument#getDocumentID()}
 	 * @param decryptionMaterial Information used to decrypt the document.
 	 *
 	 * @throws IOException If there is an error accessing data.

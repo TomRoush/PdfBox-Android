@@ -1,7 +1,7 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
 
-import org.apache.fontbox.cmap.CMap;
-import org.apache.fontbox.cmap.CMapParser;
+import com.tom_roush.fontbox.cmap.CMap;
+import com.tom_roush.fontbox.cmap.CMapParser;
 
 import java.io.IOException;
 import java.io.InputStream;

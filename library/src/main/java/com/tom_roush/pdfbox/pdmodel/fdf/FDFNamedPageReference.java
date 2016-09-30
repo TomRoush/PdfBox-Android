@@ -1,12 +1,12 @@
-package org.apache.pdfbox.pdmodel.fdf;
+package com.tom_roush.pdfbox.pdmodel.fdf;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
-import org.apache.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
 
 /**
  * This represents an FDF named page reference that is part of the FDF field.

@@ -1,7 +1,7 @@
-package org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline;
+package com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * This represents an outline in a pdf document.

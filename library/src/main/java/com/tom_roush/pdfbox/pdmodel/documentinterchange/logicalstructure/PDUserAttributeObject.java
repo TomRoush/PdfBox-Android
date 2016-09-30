@@ -1,11 +1,11 @@
-package org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure;
+package com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * A User attribute object.

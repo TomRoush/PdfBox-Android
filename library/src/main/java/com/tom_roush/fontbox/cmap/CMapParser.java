@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.fontbox.cmap;
+package com.tom_roush.fontbox.cmap;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.pdfbox.util.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 /**
  * Parses a CMap stream.
@@ -411,11 +411,11 @@ public class CMapParser
     protected InputStream getExternalCMap(String name) throws IOException
     {
     	if(PDFBoxResourceLoader.isReady()) {
-    		return PDFBoxResourceLoader.getStream("org/apache/fontbox/resources/cmap/" + name);
+    		return PDFBoxResourceLoader.getStream("com/tom_roush/fontbox/resources/cmap/" + name);
     	}
     	
     	// Fallback
-        URL url = getClass().getResource("/org/apache/fontbox/resources/cmap/" + name);
+        URL url = getClass().getResource("/com/tom_roush/fontbox/resources/cmap/" + name);
         if (url == null)
         {
             throw new IOException("Error: Could not find referenced cmap stream " + name);

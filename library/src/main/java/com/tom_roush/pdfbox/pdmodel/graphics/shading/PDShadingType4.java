@@ -1,7 +1,7 @@
-package org.apache.pdfbox.pdmodel.graphics.shading;
+package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * Resources for a shading type 4 (Free-Form Gouraud-Shaded Triangle Mesh).

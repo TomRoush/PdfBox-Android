@@ -1,15 +1,15 @@
-package org.apache.pdfbox.pdmodel.graphics.pattern;
+package com.tom_roush.pdfbox.pdmodel.graphics.pattern;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSFloat;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
-import org.apache.pdfbox.util.Matrix;
-import org.apache.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSFloat;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.util.Matrix;
+import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
 /**
  * A Pattern dictionary from a page's resources.

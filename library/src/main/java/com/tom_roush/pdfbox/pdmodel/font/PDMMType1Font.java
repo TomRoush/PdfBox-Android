@@ -1,8 +1,8 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * Type 1 Multiple Master Font.

@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel;
+package com.tom_roush.pdfbox.pdmodel;
 
 /**
  * A name object specifying how the document shall be displayed when opened.

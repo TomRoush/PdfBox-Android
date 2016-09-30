@@ -1,6 +1,6 @@
-package org.apache.pdfbox.pdmodel.documentinterchange.taggedpdf;
+package com.tom_roush.pdfbox.pdmodel.documentinterchange.taggedpdf;
 
-import org.apache.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * A PrintField attribute object.

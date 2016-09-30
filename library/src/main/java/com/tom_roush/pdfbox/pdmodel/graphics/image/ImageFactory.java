@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.graphics.image;
+package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
 
 /**

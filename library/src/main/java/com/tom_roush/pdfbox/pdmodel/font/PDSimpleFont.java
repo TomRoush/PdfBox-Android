@@ -1,18 +1,18 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.font.encoding.DictionaryEncoding;
-import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
-import org.apache.pdfbox.pdmodel.font.encoding.GlyphList;
-import org.apache.pdfbox.pdmodel.font.encoding.MacRomanEncoding;
-import org.apache.pdfbox.pdmodel.font.encoding.StandardEncoding;
-import org.apache.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.DictionaryEncoding;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.GlyphList;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.MacRomanEncoding;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.StandardEncoding;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
 
 import android.util.Log;
 

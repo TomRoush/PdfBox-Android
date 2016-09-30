@@ -1,9 +1,9 @@
-package org.apache.pdfbox.pdmodel.fdf;
+package com.tom_roush.pdfbox.pdmodel.fdf;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * This represents an object that can be used in a Field's Opt entry to represent

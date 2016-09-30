@@ -1,27 +1,27 @@
-package org.apache.pdfbox.pdmodel;
+package com.tom_roush.pdfbox.pdmodel;
 
 import android.graphics.Path;
 import android.util.Log;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdfwriter.COSWriter;
-import org.apache.pdfbox.pdmodel.common.COSStreamArray;
-import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.graphics.PDXObject;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
-import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
-import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
-import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.pdmodel.graphics.shading.PDShading;
-import org.apache.pdfbox.util.Charsets;
-import org.apache.pdfbox.util.Matrix;
-import org.apache.pdfbox.util.awt.AWTColor;
-import org.apache.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdfwriter.COSWriter;
+import com.tom_roush.pdfbox.pdmodel.common.COSStreamArray;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
+import com.tom_roush.pdfbox.pdmodel.font.PDFont;
+import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
+import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
+import com.tom_roush.pdfbox.util.Charsets;
+import com.tom_roush.pdfbox.util.Matrix;
+import com.tom_roush.pdfbox.util.awt.AWTColor;
+import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
 import java.io.Closeable;
 import java.io.IOException;

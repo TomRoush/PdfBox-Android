@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.encryption;
+package com.tom_roush.pdfbox.pdmodel.encryption;
 
 /**
  * This class represents the access permissions to a document.
@@ -22,7 +22,7 @@ package org.apache.pdfbox.pdmodel.encryption;
  * granted to the user who decrypted the document.
  *
  * @see ProtectionPolicy
- * @see org.apache.pdfbox.pdmodel.PDDocument#getCurrentAccessPermission()
+ * @see com.tom_roush.pdfbox.pdmodel.PDDocument#getCurrentAccessPermission()
  *
  * @author Ben Litchfield
  * @author Benoit Guillon

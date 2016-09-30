@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.fdf;
+package com.tom_roush.pdfbox.pdmodel.fdf;
 
 import java.io.IOException;
 import java.io.InputStream;

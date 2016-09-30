@@ -1,16 +1,16 @@
-package org.apache.pdfbox.filter;
+package com.tom_roush.pdfbox.filter;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.filter.ccitt.CCITTFaxG31DDecodeInputStream;
-import org.apache.pdfbox.filter.ccitt.FillOrderChangeInputStream;
-import org.apache.pdfbox.filter.ccitt.TIFFFaxDecoder;
-import org.apache.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.filter.ccitt.CCITTFaxG31DDecodeInputStream;
+import com.tom_roush.pdfbox.filter.ccitt.FillOrderChangeInputStream;
+import com.tom_roush.pdfbox.filter.ccitt.TIFFFaxDecoder;
+import com.tom_roush.pdfbox.io.IOUtils;
 
 import android.util.Log;
 

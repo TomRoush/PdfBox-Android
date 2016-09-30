@@ -1,9 +1,9 @@
-package org.apache.pdfbox.pdmodel.graphics.shading;
+package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.common.PDRange;
-import org.apache.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.common.PDRange;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * Intermediate class extended by the shading types 4,5,6 and 7 that contains the common methods

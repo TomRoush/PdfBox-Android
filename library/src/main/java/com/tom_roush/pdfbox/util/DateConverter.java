@@ -1,4 +1,4 @@
-package org.apache.pdfbox.util;
+package com.tom_roush.pdfbox.util;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -9,7 +9,7 @@ import java.util.Locale;
 import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 
-import org.apache.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.cos.COSString;
 
 /*
  * Date format is described in PDF Reference 1.7 section 3.8.2

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.pdfbox.pdmodel.interactive.pagenavigation;
+package com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation;
 
 /**
  * The transition style that shall be used when moving to the page from another during a presentation. Ref. table 162

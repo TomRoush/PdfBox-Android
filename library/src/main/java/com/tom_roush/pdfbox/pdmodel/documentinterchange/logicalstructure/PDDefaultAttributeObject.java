@@ -1,13 +1,13 @@
-package org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure;
+package com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * A default attribute object.

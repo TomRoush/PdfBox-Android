@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.fontbox.util.autodetect;
+package com.tom_roush.fontbox.util.autodetect;
 
 import java.io.File;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.List;
  * Implementers provide find method for searching native operating system for available fonts.
  * This class is based on a class provided by Apache FOP.
  *
- * See org.apache.fop.fonts.autodetect.FontDirFinder
+ * See com.tom_roush.fop.fonts.autodetect.FontDirFinder
  */
 public interface FontDirFinder
 {

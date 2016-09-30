@@ -1,7 +1,7 @@
-package org.apache.pdfbox.pdmodel.graphics.color;
+package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * Device colour spaces directly specify colours or shades of gray produced by an output device.

@@ -1,4 +1,4 @@
-package org.apache.pdfbox.cos;
+package com.tom_roush.pdfbox.cos;
 
 import java.io.Closeable;
 import java.io.File;
@@ -10,7 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.pdfbox.pdfparser.PDFObjectStreamParser;
+import com.tom_roush.pdfbox.pdfparser.PDFObjectStreamParser;
 
 import android.util.Log;
 

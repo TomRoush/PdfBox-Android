@@ -1,32 +1,32 @@
-package org.apache.pdfbox.rendering;
+package com.tom_roush.pdfbox.rendering;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDCIDFontType0;
-import org.apache.pdfbox.pdmodel.font.PDCIDFontType2;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
-import org.apache.pdfbox.pdmodel.font.PDType1CFont;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
-import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import org.apache.pdfbox.pdmodel.graphics.image.PDImage;
-import org.apache.pdfbox.pdmodel.graphics.shading.PDShading;
-import org.apache.pdfbox.pdmodel.graphics.state.PDGraphicsState;
-import org.apache.pdfbox.pdmodel.graphics.state.PDSoftMask;
-import org.apache.pdfbox.pdmodel.graphics.state.RenderingMode;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
-import org.apache.pdfbox.util.Matrix;
-import org.apache.pdfbox.util.Vector;
-import org.apache.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.pdfbox.contentstream.PDFGraphicsStreamEngine;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType0;
+import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType2;
+import com.tom_roush.pdfbox.pdmodel.font.PDFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDTrueTypeFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDType0Font;
+import com.tom_roush.pdfbox.pdmodel.font.PDType1CFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage;
+import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
+import com.tom_roush.pdfbox.pdmodel.graphics.state.PDGraphicsState;
+import com.tom_roush.pdfbox.pdmodel.graphics.state.PDSoftMask;
+import com.tom_roush.pdfbox.pdmodel.graphics.state.RenderingMode;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import com.tom_roush.pdfbox.util.Matrix;
+import com.tom_roush.pdfbox.util.Vector;
+import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -685,7 +685,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public void drawImage(PDImage pdImage) throws IOException
     {
-        org.apache.pdfbox.util.Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
+        com.tom_roush.pdfbox.util.Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
         AffineTransform at = ctm.createAffineTransform();
 
         if (!pdImage.getInterpolate())
@@ -759,7 +759,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     public void shadingFill(COSName shadingName) throws IOException
     {
         PDShading shading = getResources().getShading(shadingName);
-        org.apache.pdfbox.util.Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
+        com.tom_roush.pdfbox.util.Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
 //        Paint paint = shading.toPaint(ctm);
 
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());

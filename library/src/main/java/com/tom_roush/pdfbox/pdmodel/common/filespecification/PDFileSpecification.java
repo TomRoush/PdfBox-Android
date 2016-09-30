@@ -1,11 +1,11 @@
-package org.apache.pdfbox.pdmodel.common.filespecification;
+package com.tom_roush.pdfbox.pdmodel.common.filespecification;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * This represents a file specification.

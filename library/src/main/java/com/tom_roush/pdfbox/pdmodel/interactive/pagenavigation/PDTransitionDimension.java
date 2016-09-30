@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.pdfbox.pdmodel.interactive.pagenavigation;
+package com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation;
 
 /**
  * The dimension in which the specified transition effect shall occur. Only for {@link PDTransitionStyle#Split} and

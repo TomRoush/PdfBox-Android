@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.fdf;
+package com.tom_roush.pdfbox.pdmodel.fdf;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
@@ -12,11 +12,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdfparser.FDFParser;
-import org.apache.pdfbox.pdfwriter.COSWriter;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDocument;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdfparser.FDFParser;
+import com.tom_roush.pdfbox.pdfwriter.COSWriter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 

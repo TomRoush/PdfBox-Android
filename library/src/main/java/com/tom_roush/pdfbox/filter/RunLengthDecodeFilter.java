@@ -1,10 +1,10 @@
-package org.apache.pdfbox.filter;
+package com.tom_roush.pdfbox.filter;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 
 import android.util.Log;
 

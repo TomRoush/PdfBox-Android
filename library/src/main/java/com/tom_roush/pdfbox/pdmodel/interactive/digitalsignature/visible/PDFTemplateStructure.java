@@ -14,31 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible;
+package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdfwriter.COSWriter;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDResources;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
-import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
-import org.apache.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDocument;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdfwriter.COSWriter;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.PDResources;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
+import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
 /**
  * Structure of PDF document with visible signature.
@@ -532,7 +532,7 @@ public class PDFTemplateStructure
 
     /**
      * Gets COSDocument of visible Signature.
-     * @see org.apache.pdfbox.cos.COSDocument
+     * @see com.tom_roush.pdfbox.cos.COSDocument
      * @return the visual signature
      */
     public COSDocument getVisualSignature()
@@ -543,7 +543,7 @@ public class PDFTemplateStructure
     /**
      * 
      * Sets COSDocument of visible Signature.
-     * @see org.apache.pdfbox.cos.COSDocument
+     * @see com.tom_roush.pdfbox.cos.COSDocument
      * @param visualSignature
      */
     public void setVisualSignature(COSDocument visualSignature)
@@ -590,8 +590,8 @@ public class PDFTemplateStructure
 
     /**
      * Gets Widget Dictionary.
-     * {@link org.apache.pdfbox.pdmodel.interactive.form.PDField}
-     * @see org.apache.pdfbox.pdmodel.interactive.form.PDField#getWidget()
+     * {@link com.tom_roush.pdfbox.pdmodel.interactive.form.PDField}
+     * @see com.tom_roush.pdfbox.pdmodel.interactive.form.PDField#getWidget()
      * @return the widget dictionary
      */
     public COSDictionary getWidgetDictionary()
@@ -601,8 +601,8 @@ public class PDFTemplateStructure
 
     /**
      * Sets Widget Dictionary.
-     * {@link org.apache.pdfbox.pdmodel.interactive.form.PDField}
-     * @see org.apache.pdfbox.pdmodel.interactive.form.PDField#getWidget()
+     * {@link com.tom_roush.pdfbox.pdmodel.interactive.form.PDField}
+     * @see com.tom_roush.pdfbox.pdmodel.interactive.form.PDField#getWidget()
      * @param widgetDictionary
      */
     public void setWidgetDictionary(COSDictionary widgetDictionary)

@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.fontbox.ttf;
+package com.tom_roush.fontbox.ttf;
 
 import java.io.IOException;
-import org.apache.fontbox.cff.CFFFont;
-import org.apache.fontbox.cff.CFFParser;
+import com.tom_roush.fontbox.cff.CFFFont;
+import com.tom_roush.fontbox.cff.CFFParser;
 
 /**
  * PostScript font program (compact font format).

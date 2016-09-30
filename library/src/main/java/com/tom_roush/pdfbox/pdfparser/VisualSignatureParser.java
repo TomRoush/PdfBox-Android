@@ -1,15 +1,15 @@
-package org.apache.pdfbox.pdfparser;
+package com.tom_roush.pdfbox.pdfparser;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.cos.COSObject;
-import org.apache.pdfbox.cos.COSObjectKey;
-import org.apache.pdfbox.cos.COSUpdateInfo;
-import org.apache.pdfbox.pdfwriter.COSWriter;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDocument;
+import com.tom_roush.pdfbox.cos.COSObject;
+import com.tom_roush.pdfbox.cos.COSObjectKey;
+import com.tom_roush.pdfbox.cos.COSUpdateInfo;
+import com.tom_roush.pdfbox.pdfwriter.COSWriter;
 
 import android.util.Log;
 

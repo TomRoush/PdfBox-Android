@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel;
+package com.tom_roush.pdfbox.pdmodel;
 
 import java.io.IOException;
 

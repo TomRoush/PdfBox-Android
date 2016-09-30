@@ -1,10 +1,10 @@
-package org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination;
+package com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSString;
 
 /**
  * This represents a destination to a page by referencing it with a name.

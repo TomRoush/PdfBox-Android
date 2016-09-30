@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdfwriter;
+package com.tom_roush.pdfbox.pdfwriter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

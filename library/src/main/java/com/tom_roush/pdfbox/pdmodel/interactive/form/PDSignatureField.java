@@ -1,15 +1,15 @@
-package org.apache.pdfbox.pdmodel.interactive.form;
+package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSeedValue;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSeedValue;
+import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 
 /**
  * A signature field is a form field that contains a digital signature.

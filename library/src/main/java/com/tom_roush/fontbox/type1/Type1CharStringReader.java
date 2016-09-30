@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.fontbox.type1;
+package com.tom_roush.fontbox.type1;
 
-import org.apache.fontbox.cff.Type1CharString;
+import com.tom_roush.fontbox.cff.Type1CharString;
 import java.io.IOException;
 
 /**

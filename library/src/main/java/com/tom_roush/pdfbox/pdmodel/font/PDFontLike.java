@@ -1,9 +1,9 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
-import org.apache.fontbox.util.BoundingBox;
-import org.apache.pdfbox.util.Matrix;
-import org.apache.pdfbox.util.Vector;
+import com.tom_roush.fontbox.util.BoundingBox;
+import com.tom_roush.pdfbox.util.Matrix;
+import com.tom_roush.pdfbox.util.Vector;
 
 /**
  * A font-like object.

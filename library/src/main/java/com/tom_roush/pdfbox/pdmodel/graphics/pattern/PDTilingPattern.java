@@ -1,12 +1,12 @@
-package org.apache.pdfbox.pdmodel.graphics.pattern;
+package com.tom_roush.pdfbox.pdmodel.graphics.pattern;
 
-import org.apache.pdfbox.contentstream.PDContentStream;
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.pdmodel.PDResources;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.contentstream.PDContentStream;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.pdmodel.PDResources;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 
 /**
  * A tiling pattern dictionary.

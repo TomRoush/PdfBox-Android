@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.common;
+package com.tom_roush.pdfbox.pdmodel.common;
 
 /**
  * This is an interface used for some elements such as the document

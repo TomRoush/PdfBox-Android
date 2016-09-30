@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.graphics.predictor;
+package com.tom_roush.pdfbox.pdmodel.graphics.predictor;
 
 /**
  * The up algorithm.

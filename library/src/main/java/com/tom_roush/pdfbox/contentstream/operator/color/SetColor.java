@@ -15,16 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.pdfbox.contentstream.operator.color;
+package com.tom_roush.pdfbox.contentstream.operator.color;
 
-import org.apache.pdfbox.contentstream.operator.MissingOperandException;
-import org.apache.pdfbox.contentstream.operator.Operator;
-import org.apache.pdfbox.contentstream.operator.OperatorProcessor;
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
-import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceColorSpace;
+import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceColorSpace;
 
 import java.io.IOException;
 import java.util.List;

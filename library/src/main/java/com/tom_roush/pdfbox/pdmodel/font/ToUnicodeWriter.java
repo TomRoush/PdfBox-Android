@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.pdfbox.util.Charsets;
+import com.tom_roush.pdfbox.util.Charsets;
 
 /**
  * Writes ToUnicode Mapping Files.

@@ -1,8 +1,8 @@
-package org.apache.pdfbox.pdmodel.graphics.optionalcontent;
+package com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
 
 /**
  * An optional content group (OCG).

@@ -1,6 +1,6 @@
-package org.apache.pdfbox.pdfparser;
+package com.tom_roush.pdfbox.pdfparser;
 
-import org.apache.pdfbox.cos.COSObject;
+import com.tom_roush.pdfbox.cos.COSObject;
 
 /**
  * @author Alexander Funk

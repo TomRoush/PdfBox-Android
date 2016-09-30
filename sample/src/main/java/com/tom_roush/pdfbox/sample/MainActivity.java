@@ -1,4 +1,4 @@
-package org.apache.pdfboxandroid.sample;
+package com.tom_roush.pdfbox.sample;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
@@ -10,24 +10,24 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.graphics.image.JPEGFactory;
-import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import org.apache.pdfbox.pdmodel.interactive.form.PDCheckbox;
-import org.apache.pdfbox.pdmodel.interactive.form.PDComboBox;
-import org.apache.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
-import org.apache.pdfbox.pdmodel.interactive.form.PDListBox;
-import org.apache.pdfbox.pdmodel.interactive.form.PDRadioButton;
-import org.apache.pdfbox.rendering.PDFRenderer;
-import org.apache.pdfbox.text.PDFTextStripper;
-import org.apache.pdfbox.util.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
+import com.tom_roush.pdfbox.pdmodel.font.PDFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.JPEGFactory;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.LosslessFactory;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDCheckbox;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDComboBox;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDListBox;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDRadioButton;
+import com.tom_roush.pdfbox.rendering.PDFRenderer;
+import com.tom_roush.pdfbox.text.PDFTextStripper;
+import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -76,7 +76,7 @@ public class MainActivity extends Activity {
 	/**
 	 * Creates a new PDF from scratch and saves it to a file
 	 */
-	protected void createPdf(View v) {
+	public void createPdf(View v) {
 		PDDocument document = new PDDocument();
 		PDPage page = new PDPage();
 		document.addPage(page);
@@ -139,7 +139,7 @@ public class MainActivity extends Activity {
 	/**
 	 * Loads an existing PDF and renders it to a Bitmap
 	 */
-	protected void renderFile(View v) {
+	public void renderFile(View v) {
 		// Render the page and save it to an image file
 		try {
 			// Load in an already created PDF
@@ -166,7 +166,7 @@ public class MainActivity extends Activity {
 	/**
 	 * Fills in a PDF form and saves the result
 	 */
-	protected void fillForm(View v) {
+	public void fillForm(View v) {
 		try {
 			// Load the document and get the AcroForm
 			PDDocument document = PDDocument.load(assetManager.open("FormTest.pdf"));
@@ -203,14 +203,10 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	public static void fillField(PDAcroForm acroForm, String fieldName, String value) throws IOException {
-
-	}
-
 	/**
 	 * Strips the text from a PDF and displays the text on screen
 	 */
-	protected void stripText(View v) {
+	public void stripText(View v) {
 		String parsedText = null;
 		PDDocument document = null;
 		try {

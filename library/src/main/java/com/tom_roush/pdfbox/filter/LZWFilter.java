@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.pdfbox.filter;
+package com.tom_roush.pdfbox.filter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,10 +25,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.javax.imageio.stream.MemoryCacheImageInputStream;
-import org.apache.javax.imageio.stream.MemoryCacheImageOutputStream;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.javax.imageio.stream.MemoryCacheImageInputStream;
+import com.tom_roush.javax.imageio.stream.MemoryCacheImageOutputStream;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 
 import android.util.Log;
 

@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.encryption;
+package com.tom_roush.pdfbox.pdmodel.encryption;
 
 /**
  * This class represents the protection policy to apply to a document.
@@ -6,7 +6,7 @@ package org.apache.pdfbox.pdmodel.encryption;
  * Objects implementing this abstract class can be passed to the protect method of PDDocument
  * to protect a document.
  *
- * @see org.apache.pdfbox.pdmodel.PDDocument#protect(ProtectionPolicy)
+ * @see com.tom_roush.pdfbox.pdmodel.PDDocument#protect(ProtectionPolicy)
  *
  * @author Benoit Guillon
  */

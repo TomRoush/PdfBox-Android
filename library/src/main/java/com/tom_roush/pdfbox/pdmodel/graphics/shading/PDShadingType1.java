@@ -1,10 +1,10 @@
-package org.apache.pdfbox.pdmodel.graphics.shading;
+package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSFloat;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.util.Matrix;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSFloat;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.util.Matrix;
 
 /**
  * Resources for a function based shading.

@@ -1,10 +1,10 @@
-package org.apache.pdfbox.pdmodel.interactive.viewerpreferences;
+package com.tom_roush.pdfbox.pdmodel.interactive.viewerpreferences;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * This is the document viewing preferences.

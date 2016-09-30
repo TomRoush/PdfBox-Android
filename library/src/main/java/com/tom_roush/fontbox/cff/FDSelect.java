@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.fontbox.cff;
+package com.tom_roush.fontbox.cff;
 
 public abstract class FDSelect
 {

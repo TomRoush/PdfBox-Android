@@ -1,4 +1,4 @@
-package org.apache.pdfbox.text;
+package com.tom_roush.pdfbox.text;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -18,14 +18,14 @@ import java.util.TreeSet;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageTree;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
-import org.apache.pdfbox.pdmodel.interactive.pagenavigation.PDThreadBead;
-import org.apache.pdfbox.util.QuickSort;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.PDPageTree;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
+import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDThreadBead;
+import com.tom_roush.pdfbox.util.QuickSort;
 
 /**
  * This class will take a pdf document and strip out all of the text and ignore the

@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdfwriter;
+package com.tom_roush.pdfbox.pdfwriter;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;

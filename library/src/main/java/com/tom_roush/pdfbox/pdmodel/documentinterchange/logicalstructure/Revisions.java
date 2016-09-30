@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure;
+package com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,11 +1,11 @@
-package org.apache.pdfbox.pdmodel.graphics.color;
+package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSFloat;
-import org.apache.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSFloat;
+import com.tom_roush.pdfbox.cos.COSNumber;
 
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * A tristimulus, or collection of three floating point parameters used for color operations.

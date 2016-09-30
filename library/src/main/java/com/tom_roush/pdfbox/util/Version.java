@@ -1,4 +1,4 @@
-package org.apache.pdfbox.util;
+package com.tom_roush.pdfbox.util;
 
 import java.io.IOException;
 import java.net.URL;
@@ -10,7 +10,7 @@ import java.util.Properties;
 public final class Version
 {
     private static final String PDFBOX_VERSION_PROPERTIES =
-            "org/apache/pdfbox/resources/pdfbox.properties";
+            "com/tom_roush/pdfbox/resources/pdfbox.properties";
 
     private Version()
     {

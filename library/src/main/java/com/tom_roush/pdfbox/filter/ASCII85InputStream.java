@@ -1,4 +1,4 @@
-package org.apache.pdfbox.filter;
+package com.tom_roush.pdfbox.filter;
 
 import java.io.FilterInputStream;
 import java.io.IOException;

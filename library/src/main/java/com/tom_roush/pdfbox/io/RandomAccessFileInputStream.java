@@ -1,4 +1,4 @@
-package org.apache.pdfbox.io;
+package com.tom_roush.pdfbox.io;
 
 import java.io.IOException;
 import java.io.InputStream;

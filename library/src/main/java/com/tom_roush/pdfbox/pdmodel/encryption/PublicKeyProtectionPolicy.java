@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.encryption;
+package com.tom_roush.pdfbox.pdmodel.encryption;
 
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -35,7 +35,7 @@ import java.util.List;
  * doc.save(out);
  * </pre>
  *
- * @see org.apache.pdfbox.pdmodel.PDDocument#protect(ProtectionPolicy)
+ * @see com.tom_roush.pdfbox.pdmodel.PDDocument#protect(ProtectionPolicy)
  * @see AccessPermission
  * @see PublicKeyRecipient
  * @author Benoit Guillon

@@ -1,22 +1,22 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.fontbox.cff.CFFCIDFont;
-import org.apache.fontbox.cff.CFFFont;
-import org.apache.fontbox.cff.CFFParser;
-import org.apache.fontbox.cff.CFFType1Font;
-import org.apache.fontbox.cff.Type2CharString;
-import org.apache.fontbox.util.BoundingBox;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.io.IOUtils;
-import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.util.Matrix;
-import org.apache.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.fontbox.cff.CFFCIDFont;
+import com.tom_roush.fontbox.cff.CFFFont;
+import com.tom_roush.fontbox.cff.CFFParser;
+import com.tom_roush.fontbox.cff.CFFType1Font;
+import com.tom_roush.fontbox.cff.Type2CharString;
+import com.tom_roush.fontbox.util.BoundingBox;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.util.Matrix;
+import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.PointF;
 import android.util.Log;

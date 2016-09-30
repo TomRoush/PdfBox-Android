@@ -1,7 +1,7 @@
-package org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination;
+package com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
 
 /**
  * This represents a destination to a page at an x,y coordinate with a zoom setting.

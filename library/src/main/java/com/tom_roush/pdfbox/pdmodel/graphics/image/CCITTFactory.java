@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.graphics.image;
+package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -6,12 +6,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.io.RandomAccess;
-import org.apache.pdfbox.io.RandomAccessFile;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.io.RandomAccess;
+import com.tom_roush.pdfbox.io.RandomAccessFile;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 
 /**
  * Factory for creating a PDImageXObject containing a CCITT Fax compressed TIFF image.

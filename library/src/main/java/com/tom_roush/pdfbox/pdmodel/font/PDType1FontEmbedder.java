@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -7,23 +7,23 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.fontbox.afm.AFMParser;
-import org.apache.fontbox.afm.CharMetric;
-import org.apache.fontbox.afm.FontMetrics;
-import org.apache.fontbox.pfb.PfbParser;
-import org.apache.fontbox.type1.Type1Font;
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSInteger;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.io.IOUtils;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.common.COSArrayList;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.pdmodel.font.encoding.DictionaryEncoding;
-import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
-import org.apache.pdfbox.pdmodel.font.encoding.Type1Encoding;
+import com.tom_roush.fontbox.afm.AFMParser;
+import com.tom_roush.fontbox.afm.CharMetric;
+import com.tom_roush.fontbox.afm.FontMetrics;
+import com.tom_roush.fontbox.pfb.PfbParser;
+import com.tom_roush.fontbox.type1.Type1Font;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSInteger;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.DictionaryEncoding;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.Type1Encoding;
 
 /**
  * Embedded PDType1Font builder. Helper class to populate a PDType1Font from a PFB and AFM.

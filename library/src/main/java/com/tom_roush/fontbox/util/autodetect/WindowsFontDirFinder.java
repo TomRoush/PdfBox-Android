@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.fontbox.util.autodetect;
+package com.tom_roush.fontbox.util.autodetect;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  * FontFinder for native Windows platforms. This class is based on a class provided by Apache FOP. see
- * org.apache.fop.fonts.autodetect.WindowsFontDirFinder
+ * com.tom_roush.fop.fonts.autodetect.WindowsFontDirFinder
  */
 public class WindowsFontDirFinder implements FontDirFinder
 {

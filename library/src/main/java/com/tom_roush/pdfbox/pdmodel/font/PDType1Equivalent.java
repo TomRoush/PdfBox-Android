@@ -1,8 +1,8 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
 
-import org.apache.fontbox.ttf.Type1Equivalent;
+import com.tom_roush.fontbox.ttf.Type1Equivalent;
 
 import android.graphics.Path;
 

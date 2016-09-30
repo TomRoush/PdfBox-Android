@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdfparser;
+package com.tom_roush.pdfbox.pdfparser;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -6,21 +6,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSNull;
-import org.apache.pdfbox.cos.COSObject;
-import org.apache.pdfbox.io.IOUtils;
-import org.apache.pdfbox.io.PushBackInputStream;
-import org.apache.pdfbox.io.RandomAccessBufferedFileInputStream;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.encryption.AccessPermission;
-import org.apache.pdfbox.pdmodel.encryption.DecryptionMaterial;
-import org.apache.pdfbox.pdmodel.encryption.PDEncryption;
-import org.apache.pdfbox.pdmodel.encryption.PublicKeyDecryptionMaterial;
-import org.apache.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDocument;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSNull;
+import com.tom_roush.pdfbox.cos.COSObject;
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.io.PushBackInputStream;
+import com.tom_roush.pdfbox.io.RandomAccessBufferedFileInputStream;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
+import com.tom_roush.pdfbox.pdmodel.encryption.DecryptionMaterial;
+import com.tom_roush.pdfbox.pdmodel.encryption.PDEncryption;
+import com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyDecryptionMaterial;
+import com.tom_roush.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
 
 import android.util.Log;
 

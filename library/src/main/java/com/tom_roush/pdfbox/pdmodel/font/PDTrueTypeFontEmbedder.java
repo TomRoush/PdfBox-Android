@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,14 +7,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.fontbox.ttf.HorizontalMetricsTable;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.common.COSArrayList;
-import org.apache.pdfbox.pdmodel.font.encoding.Encoding;
-import org.apache.pdfbox.pdmodel.font.encoding.GlyphList;
-import org.apache.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
+import com.tom_roush.fontbox.ttf.HorizontalMetricsTable;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.GlyphList;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
 
 /**
  * Embedded PDTrueTypeFont builder. Helper class to populate a PDTrueTypeFont from a TTF.

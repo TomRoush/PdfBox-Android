@@ -1,8 +1,8 @@
-package org.apache.pdfbox.contentstream.operator.graphics;
+package com.tom_roush.pdfbox.contentstream.operator.graphics;
 
-import org.apache.pdfbox.contentstream.PDFGraphicsStreamEngine;
-import org.apache.pdfbox.contentstream.PDFStreamEngine;
-import org.apache.pdfbox.contentstream.operator.OperatorProcessor;
+import com.tom_roush.pdfbox.contentstream.PDFGraphicsStreamEngine;
+import com.tom_roush.pdfbox.contentstream.PDFStreamEngine;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 
 /**
  * Base class for graphics operators.

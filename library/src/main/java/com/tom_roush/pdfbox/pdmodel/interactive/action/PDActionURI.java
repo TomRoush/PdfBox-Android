@@ -1,6 +1,6 @@
-package org.apache.pdfbox.pdmodel.interactive.action;
+package com.tom_roush.pdfbox.pdmodel.interactive.action;
 
-import org.apache.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * This represents a URI action that can be executed in a PDF document.

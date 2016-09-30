@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
 ext {
-	PUBLISH_GROUP_ID = 'org.apache'
+	PUBLISH_GROUP_ID = 'com.tom_roush'
 	PUBLISH_ARTIFACT_ID = 'pdfbox-android'
 	PUBLISH_VERSION = VERSION_NAME
 }

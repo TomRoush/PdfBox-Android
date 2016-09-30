@@ -1,48 +1,48 @@
-package org.apache.pdfbox.text;
+package com.tom_roush.pdfbox.text;
+
+import android.util.Log;
+
+import com.tom_roush.pdfbox.contentstream.PDFStreamEngine;
+import com.tom_roush.pdfbox.contentstream.operator.DrawObject;
+import com.tom_roush.pdfbox.contentstream.operator.state.Concatenate;
+import com.tom_roush.pdfbox.contentstream.operator.state.Restore;
+import com.tom_roush.pdfbox.contentstream.operator.state.Save;
+import com.tom_roush.pdfbox.contentstream.operator.state.SetGraphicsStateParameters;
+import com.tom_roush.pdfbox.contentstream.operator.state.SetMatrix;
+import com.tom_roush.pdfbox.contentstream.operator.text.BeginText;
+import com.tom_roush.pdfbox.contentstream.operator.text.EndText;
+import com.tom_roush.pdfbox.contentstream.operator.text.MoveText;
+import com.tom_roush.pdfbox.contentstream.operator.text.MoveTextSetLeading;
+import com.tom_roush.pdfbox.contentstream.operator.text.NextLine;
+import com.tom_roush.pdfbox.contentstream.operator.text.SetCharSpacing;
+import com.tom_roush.pdfbox.contentstream.operator.text.SetFontAndSize;
+import com.tom_roush.pdfbox.contentstream.operator.text.SetTextHorizontalScaling;
+import com.tom_roush.pdfbox.contentstream.operator.text.SetTextLeading;
+import com.tom_roush.pdfbox.contentstream.operator.text.SetTextRenderingMode;
+import com.tom_roush.pdfbox.contentstream.operator.text.SetTextRise;
+import com.tom_roush.pdfbox.contentstream.operator.text.SetWordSpacing;
+import com.tom_roush.pdfbox.contentstream.operator.text.ShowText;
+import com.tom_roush.pdfbox.contentstream.operator.text.ShowTextAdjusted;
+import com.tom_roush.pdfbox.contentstream.operator.text.ShowTextLine;
+import com.tom_roush.pdfbox.contentstream.operator.text.ShowTextLineAndSpace;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.font.PDFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDSimpleFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDType3Font;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.GlyphList;
+import com.tom_roush.pdfbox.pdmodel.graphics.state.PDGraphicsState;
+import com.tom_roush.pdfbox.util.Matrix;
+import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.util.Vector;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.pdfbox.contentstream.PDFStreamEngine;
-import org.apache.pdfbox.contentstream.operator.DrawObject;
-import org.apache.pdfbox.contentstream.operator.state.Concatenate;
-import org.apache.pdfbox.contentstream.operator.state.Restore;
-import org.apache.pdfbox.contentstream.operator.state.Save;
-import org.apache.pdfbox.contentstream.operator.state.SetGraphicsStateParameters;
-import org.apache.pdfbox.contentstream.operator.state.SetMatrix;
-import org.apache.pdfbox.contentstream.operator.text.BeginText;
-import org.apache.pdfbox.contentstream.operator.text.EndText;
-import org.apache.pdfbox.contentstream.operator.text.MoveText;
-import org.apache.pdfbox.contentstream.operator.text.MoveTextSetLeading;
-import org.apache.pdfbox.contentstream.operator.text.NextLine;
-import org.apache.pdfbox.contentstream.operator.text.SetCharSpacing;
-import org.apache.pdfbox.contentstream.operator.text.SetFontAndSize;
-import org.apache.pdfbox.contentstream.operator.text.SetTextHorizontalScaling;
-import org.apache.pdfbox.contentstream.operator.text.SetTextLeading;
-import org.apache.pdfbox.contentstream.operator.text.SetTextRenderingMode;
-import org.apache.pdfbox.contentstream.operator.text.SetTextRise;
-import org.apache.pdfbox.contentstream.operator.text.SetWordSpacing;
-import org.apache.pdfbox.contentstream.operator.text.ShowText;
-import org.apache.pdfbox.contentstream.operator.text.ShowTextAdjusted;
-import org.apache.pdfbox.contentstream.operator.text.ShowTextLine;
-import org.apache.pdfbox.contentstream.operator.text.ShowTextLineAndSpace;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDSimpleFont;
-import org.apache.pdfbox.pdmodel.font.PDType3Font;
-import org.apache.pdfbox.pdmodel.font.encoding.GlyphList;
-import org.apache.pdfbox.pdmodel.graphics.state.PDGraphicsState;
-import org.apache.pdfbox.util.Matrix;
-import org.apache.pdfbox.util.PDFBoxResourceLoader;
-import org.apache.pdfbox.util.Vector;
-
-import android.util.Log;
-
 /**
  * PDFStreamEngine subclass for advanced processing of text via TextPosition.
  *
- * @see org.apache.pdfbox.text.TextPosition
+ * @see com.tom_roush.pdfbox.text.TextPosition
  * @author Ben Litchfield
  * @author John Hewson
  */
@@ -82,7 +82,7 @@ class PDFTextStreamEngine extends PDFStreamEngine
 		addOperator(new ShowTextLineAndSpace());
 		
 		// load additional glyph list for Unicode mapping
-		String path = "org/apache/pdfbox/resources/glyphlist/additional.txt";
+		String path = "com/tom_roush/pdfbox/resources/glyphlist/additional.txt";
 		InputStream input;
 		if(PDFBoxResourceLoader.isReady()) {
 			input = GlyphList.class.getClassLoader().getResourceAsStream(path);

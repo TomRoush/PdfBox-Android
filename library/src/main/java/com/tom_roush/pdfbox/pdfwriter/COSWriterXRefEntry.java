@@ -1,7 +1,7 @@
-package org.apache.pdfbox.pdfwriter;
+package com.tom_roush.pdfbox.pdfwriter;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSObjectKey;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSObjectKey;
 
 /**
  * this is en entry in the xref section of the physical pdf document

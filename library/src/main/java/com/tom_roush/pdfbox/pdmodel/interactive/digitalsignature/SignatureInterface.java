@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.interactive.digitalsignature;
+package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature;
 
 import java.io.IOException;
 import java.io.InputStream;

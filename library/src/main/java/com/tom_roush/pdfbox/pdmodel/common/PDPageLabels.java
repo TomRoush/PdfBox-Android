@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.common;
+package com.tom_roush.pdfbox.pdmodel.common;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -9,12 +9,12 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSInteger;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSInteger;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 
 /**
  * Represents the page label dictionary of a document.
@@ -34,12 +34,12 @@ public class PDPageLabels implements COSObjectable
      * <p>
      * Note that the page label dictionary won't be automatically added to the
      * document; you will still need to do it manually (see
-     * {@link org.apache.pdfbox.pdmodel.PDDocumentCatalog#setPageLabels(PDPageLabels)}.
+     * {@link com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog#setPageLabels(PDPageLabels)}.
      * </p>
      * 
      * @param document
      *            The document the page label dictionary is created for.
-     * @see org.apache.pdfbox.pdmodel.PDDocumentCatalog#setPageLabels(PDPageLabels)
+     * @see com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog#setPageLabels(PDPageLabels)
      */
     public PDPageLabels(PDDocument document)
     {
@@ -57,14 +57,14 @@ public class PDPageLabels implements COSObjectable
      * <p>
      * Note that the page label dictionary won't be automatically added to the
      * document; you will still need to do it manually (see
-     * {@link org.apache.pdfbox.pdmodel.PDDocumentCatalog#setPageLabels(PDPageLabels)}.
+     * {@link com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog#setPageLabels(PDPageLabels)}.
      * </p>
      * 
      * @param document
      *            The document the page label dictionary is created for.
      * @param dict
      *            an existing page label dictionary
-     * @see org.apache.pdfbox.pdmodel.PDDocumentCatalog#setPageLabels(PDPageLabels)
+     * @see com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog#setPageLabels(PDPageLabels)
      * @throws IOException
      *             If something goes wrong during the number tree conversion.
      */

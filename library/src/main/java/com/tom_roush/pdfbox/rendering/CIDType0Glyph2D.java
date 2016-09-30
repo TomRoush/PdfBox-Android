@@ -1,11 +1,11 @@
-package org.apache.pdfbox.rendering;
+package com.tom_roush.pdfbox.rendering;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.fontbox.cff.Type2CharString;
-import org.apache.pdfbox.pdmodel.font.PDCIDFontType0;
+import com.tom_roush.fontbox.cff.Type2CharString;
+import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType0;
 
 import android.graphics.Path;
 import android.util.Log;

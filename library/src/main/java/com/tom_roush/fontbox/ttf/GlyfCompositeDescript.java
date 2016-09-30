@@ -16,7 +16,7 @@
    limitations under the License.
 
  */
-package org.apache.fontbox.ttf;
+package com.tom_roush.fontbox.ttf;
 
 import java.io.IOException;
 import java.util.ArrayList;

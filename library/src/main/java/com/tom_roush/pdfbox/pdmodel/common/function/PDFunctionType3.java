@@ -1,11 +1,11 @@
-package org.apache.pdfbox.pdmodel.common.function;
+package com.tom_roush.pdfbox.pdmodel.common.function;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.common.PDRange;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.common.PDRange;
 
 /**
  * This class represents a Type 3 (stitching) function in a PDF document.

@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdfparser;
+package com.tom_roush.pdfbox.pdfparser;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,19 +20,19 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSDocument;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSNull;
-import org.apache.pdfbox.cos.COSNumber;
-import org.apache.pdfbox.cos.COSObject;
-import org.apache.pdfbox.cos.COSObjectKey;
-import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.io.IOUtils;
-import org.apache.pdfbox.pdfparser.XrefTrailerResolver.XRefType;
-import org.apache.pdfbox.pdmodel.encryption.SecurityHandler;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDocument;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSNull;
+import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.cos.COSObject;
+import com.tom_roush.pdfbox.cos.COSObjectKey;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.pdfparser.XrefTrailerResolver.XRefType;
+import com.tom_roush.pdfbox.pdmodel.encryption.SecurityHandler;
 
 import android.util.Log;
 
@@ -66,14 +66,14 @@ public class COSParser extends BaseParser
 	 * Only parse the PDF file minimally allowing access to basic information.
 	 */
 	public static final String SYSPROP_PARSEMINIMAL = 
-			"org.apache.pdfbox.pdfparser.nonSequentialPDFParser.parseMinimal";
+			"com.tom_roush.pdfbox.pdfparser.nonSequentialPDFParser.parseMinimal";
 
 	/**
 	 * The range within the %%EOF marker will be searched.
 	 * Useful if there are additional characters after %%EOF within the PDF. 
 	 */
 	public static final String SYSPROP_EOFLOOKUPRANGE =
-			"org.apache.pdfbox.pdfparser.nonSequentialPDFParser.eofLookupRange";
+			"com.tom_roush.pdfbox.pdfparser.nonSequentialPDFParser.eofLookupRange";
 
 	/**
 	 * How many trailing bytes to read for EOF marker.

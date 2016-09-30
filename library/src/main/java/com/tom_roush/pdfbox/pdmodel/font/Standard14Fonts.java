@@ -1,4 +1,8 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
+
+import com.tom_roush.fontbox.afm.AFMParser;
+import com.tom_roush.fontbox.afm.FontMetrics;
+import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,10 +12,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.fontbox.afm.AFMParser;
-import org.apache.fontbox.afm.FontMetrics;
-import org.apache.pdfbox.util.PDFBoxResourceLoader;
 
 /**
  * The "Standard 14" PDF fonts, also known as the "base 14" fonts.
@@ -93,7 +93,7 @@ class Standard14Fonts
 			STANDARD14_AFM_MAP.put(fontName, STANDARD14_AFM_MAP.get(afmName));
 		}
 
-		String resourceName = "org/apache/pdfbox/resources/afm/" + afmName + ".afm";
+		String resourceName = "com/tom_roush/pdfbox/resources/afm/" + afmName + ".afm";
 		InputStream afmStream;
 		if(PDFBoxResourceLoader.isReady()) {
 			afmStream = PDFBoxResourceLoader.getStream(resourceName);

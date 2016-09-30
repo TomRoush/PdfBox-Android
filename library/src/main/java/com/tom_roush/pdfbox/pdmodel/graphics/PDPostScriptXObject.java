@@ -1,7 +1,7 @@
-package org.apache.pdfbox.pdmodel.graphics;
+package com.tom_roush.pdfbox.pdmodel.graphics;
 
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 /**
  * A PostScript XObject.

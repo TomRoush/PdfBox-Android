@@ -14,15 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.fontbox.cff;
+package com.tom_roush.fontbox.cff;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.fontbox.encoding.StandardEncoding;
-import org.apache.fontbox.type1.Type1CharStringReader;
-import org.apache.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.fontbox.encoding.StandardEncoding;
+import com.tom_roush.fontbox.type1.Type1CharStringReader;
+import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.Path;
 import android.graphics.PointF;

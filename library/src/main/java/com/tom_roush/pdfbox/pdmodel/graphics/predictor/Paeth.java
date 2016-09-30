@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.graphics.predictor;
+package com.tom_roush.pdfbox.pdmodel.graphics.predictor;
 
 /**
  * From http://www.w3.org/TR/PNG-Filters.html: The Paeth filter computes a

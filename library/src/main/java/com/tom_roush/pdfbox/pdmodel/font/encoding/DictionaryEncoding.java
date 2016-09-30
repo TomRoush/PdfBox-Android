@@ -1,13 +1,13 @@
-package org.apache.pdfbox.pdmodel.font.encoding;
+package com.tom_roush.pdfbox.pdmodel.font.encoding;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSNumber;
 
 import android.util.Log;
 

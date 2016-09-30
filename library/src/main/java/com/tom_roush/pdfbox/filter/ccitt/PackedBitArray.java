@@ -17,7 +17,7 @@
 
 /* $Id$ */
 
-package org.apache.pdfbox.filter.ccitt;
+package com.tom_roush.pdfbox.filter.ccitt;
 
 /**
  * Represents an array of bits packed in a byte array of fixed size.

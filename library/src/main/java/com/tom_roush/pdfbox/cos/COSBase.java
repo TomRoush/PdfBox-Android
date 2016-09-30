@@ -1,6 +1,6 @@
-package org.apache.pdfbox.cos;
+package com.tom_roush.pdfbox.cos;
 
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 import java.io.IOException;
 

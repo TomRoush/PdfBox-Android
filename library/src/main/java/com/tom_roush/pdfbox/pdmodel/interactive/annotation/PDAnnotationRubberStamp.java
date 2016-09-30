@@ -1,7 +1,7 @@
-package org.apache.pdfbox.pdmodel.interactive.annotation;
+package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * This is the class that represents a rubber stamp annotation.

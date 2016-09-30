@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.fontbox.util.autodetect;
+package com.tom_roush.fontbox.util.autodetect;
 
 import java.io.File;
 import java.util.List;
 
 /**
  * Native font finder base class. This class is based on a class provided by Apache FOP. see
- * org.apache.fop.fonts.autodetect.NativeFontDirFinder
+ * com.tom_roush.fop.fonts.autodetect.NativeFontDirFinder
  */
 public abstract class NativeFontDirFinder implements FontDirFinder
 {

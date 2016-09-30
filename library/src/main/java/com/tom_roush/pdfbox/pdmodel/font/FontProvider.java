@@ -1,12 +1,12 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.fontbox.cff.CFFFont;
-import org.apache.fontbox.ttf.TrueTypeFont;
-import org.apache.fontbox.type1.Type1Font;
+import com.tom_roush.fontbox.cff.CFFFont;
+import com.tom_roush.fontbox.ttf.TrueTypeFont;
+import com.tom_roush.fontbox.type1.Type1Font;
 
 /**
  * External font service provider interface. Implementations are expected to be thread safe.

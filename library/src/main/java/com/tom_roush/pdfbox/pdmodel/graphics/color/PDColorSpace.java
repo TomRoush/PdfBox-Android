@@ -1,12 +1,12 @@
-package org.apache.pdfbox.pdmodel.graphics.color;
+package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSObject;
-import org.apache.pdfbox.pdmodel.MissingResourceException;
-import org.apache.pdfbox.pdmodel.PDResources;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSObject;
+import com.tom_roush.pdfbox.pdmodel.MissingResourceException;
+import com.tom_roush.pdfbox.pdmodel.PDResources;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 import java.io.IOException;
 

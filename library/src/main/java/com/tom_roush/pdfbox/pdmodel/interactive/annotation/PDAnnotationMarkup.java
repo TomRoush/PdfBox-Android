@@ -1,11 +1,11 @@
-package org.apache.pdfbox.pdmodel.interactive.annotation;
+package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
 import java.io.IOException;
 import java.util.Calendar;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.pdmodel.common.PDTextStream;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.pdmodel.common.PDTextStream;
 
 /**
  * This class represents the additonal fields of a Markup type Annotation.  See

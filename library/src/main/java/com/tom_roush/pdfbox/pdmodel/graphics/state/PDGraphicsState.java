@@ -1,12 +1,12 @@
-package org.apache.pdfbox.pdmodel.graphics.state;
+package com.tom_roush.pdfbox.pdmodel.graphics.state;
 
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.graphics.PDLineDashPattern;
-import org.apache.pdfbox.pdmodel.graphics.blend.BlendMode;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
-import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray;
-import org.apache.pdfbox.util.Matrix;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.graphics.PDLineDashPattern;
+import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
+import com.tom_roush.pdfbox.util.Matrix;
 
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -413,7 +413,7 @@ public class PDGraphicsState implements Cloneable
     /**
      * This will get the rendering intent.
      *
-     * @see org.apache.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState
+     * @see com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState
      *
      * @return The rendering intent
      */

@@ -1,9 +1,9 @@
-package org.apache.pdfbox.util;
+package com.tom_roush.pdfbox.util;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
 
 /**
  * This class will extract one or more sequential pages and create a new document.

@@ -1,24 +1,24 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.fontbox.cmap.CMap;
-import org.apache.fontbox.ttf.CmapSubtable;
-import org.apache.fontbox.ttf.OTFParser;
-import org.apache.fontbox.ttf.OpenTypeFont;
-import org.apache.fontbox.ttf.TTFParser;
-import org.apache.fontbox.ttf.TrueTypeFont;
-import org.apache.fontbox.util.BoundingBox;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.io.IOUtils;
-import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.util.Matrix;
+import com.tom_roush.fontbox.cmap.CMap;
+import com.tom_roush.fontbox.ttf.CmapSubtable;
+import com.tom_roush.fontbox.ttf.OTFParser;
+import com.tom_roush.fontbox.ttf.OpenTypeFont;
+import com.tom_roush.fontbox.ttf.TTFParser;
+import com.tom_roush.fontbox.ttf.TrueTypeFont;
+import com.tom_roush.fontbox.util.BoundingBox;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.util.Matrix;
 
 import android.util.Log;
 

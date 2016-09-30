@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.fontbox.afm;
+package com.tom_roush.fontbox.afm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.fontbox.util.BoundingBox;
+import com.tom_roush.fontbox.util.BoundingBox;
 
 /**
  * This is the outermost AFM type.  This can be created by the afmparser with a valid AFM document.

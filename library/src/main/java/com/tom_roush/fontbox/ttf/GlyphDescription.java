@@ -16,7 +16,7 @@
    limitations under the License.
 
  */
-package org.apache.fontbox.ttf;
+package com.tom_roush.fontbox.ttf;
 
 /**
  * Specifies access to glyph description classes, simple and composite.

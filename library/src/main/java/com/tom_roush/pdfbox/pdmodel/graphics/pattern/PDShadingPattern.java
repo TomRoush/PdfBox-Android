@@ -1,11 +1,11 @@
-package org.apache.pdfbox.pdmodel.graphics.pattern;
+package com.tom_roush.pdfbox.pdmodel.graphics.pattern;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.graphics.shading.PDShading;
-import org.apache.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
+import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 
 /**
  * A shading pattern dictionary.

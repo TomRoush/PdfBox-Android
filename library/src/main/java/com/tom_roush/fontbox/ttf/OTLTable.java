@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.fontbox.ttf;
+package com.tom_roush.fontbox.ttf;
 
 /**
  * OpenType Layout (OTL) table. Uses the OpenType Layout Common Table Format.

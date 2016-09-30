@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.fontbox.util.autodetect;
+package com.tom_roush.fontbox.util.autodetect;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,7 +23,7 @@ import java.util.Map;
 
 /**
  * Unix font directory finder. This class is based on a class provided by Apache FOP. see
- * org.apache.fop.fonts.autodetect.UnixFontDirFinder
+ * com.tom_roush.fop.fonts.autodetect.UnixFontDirFinder
  */
 public class UnixFontDirFinder extends NativeFontDirFinder
 {

@@ -1,12 +1,12 @@
-package org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination;
+package com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSNumber;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageTree;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.PDPageTree;
 
 /**
  * This represents a destination to a page, see subclasses for specific parameters.
@@ -98,7 +98,7 @@ public abstract class PDPageDestination extends PDDestination
      * this is a page number or a reference to a page.
      *
      * @since Apache PDFBox 1.0.0
-     * @see org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem
+     * @see com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem
      * @return page number, or -1 if the destination type is unknown
      */
     public int findPageNumber()

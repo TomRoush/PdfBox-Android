@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.pdfbox.pdmodel.interactive.pagenavigation;
+package com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSInteger;
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSInteger;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * The direction in which the specified transition effect shall moves, expressed in degrees counterclockwise starting

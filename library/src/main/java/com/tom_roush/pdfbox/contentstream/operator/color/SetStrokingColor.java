@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.pdfbox.contentstream.operator.color;
+package com.tom_roush.pdfbox.contentstream.operator.color;
 
-import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
-import org.apache.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 /**
  * SC: Sets the colour to use for stroking stroking operations.

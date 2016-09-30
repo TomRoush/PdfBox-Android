@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.fontbox.afm;
+package com.tom_roush.fontbox.afm;
 
 /**
  * This class represents a piece of track kerning data.

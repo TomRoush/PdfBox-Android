@@ -1,11 +1,11 @@
-package org.apache.pdfbox.io;
+package com.tom_roush.pdfbox.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSObject;
-import org.apache.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSObject;
+import com.tom_roush.pdfbox.cos.COSNumber;
 
 /**
  * This will write to a RandomAccessFile in the filesystem and keep track

@@ -1,6 +1,6 @@
-package org.apache.pdfbox.filter;
+package com.tom_roush.pdfbox.filter;
 
-import org.apache.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * The result of a filter decode operation. Allows information such as color space to be

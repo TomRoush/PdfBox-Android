@@ -1,4 +1,4 @@
-package org.apache.pdfbox.contentstream.operator.state;
+package com.tom_roush.pdfbox.contentstream.operator.state;
 
 import java.io.IOException;
 

@@ -14,13 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline;
+package com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline;
 
 import java.util.Iterator;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.common.PDDictionaryWrapper;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.common.PDDictionaryWrapper;
 
 /**
  * Base class for a node in the outline of a PDF document.

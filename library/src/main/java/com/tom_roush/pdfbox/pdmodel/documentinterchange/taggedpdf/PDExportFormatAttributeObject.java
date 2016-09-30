@@ -1,6 +1,6 @@
-package org.apache.pdfbox.pdmodel.documentinterchange.taggedpdf;
+package com.tom_roush.pdfbox.pdmodel.documentinterchange.taggedpdf;
 
-import org.apache.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * An Export Format attribute object.
@@ -140,7 +140,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
     /**
      * Gets the headers (Headers). An array of byte strings, where each string
      * shall be the element identifier (see the
-     * {@link org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement#getElementIdentifier()}) for a TH structure
+     * {@link com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement#getElementIdentifier()}) for a TH structure
      * element that shall be used as a header associated with this cell.
      * 
      * @return the headers.
@@ -153,7 +153,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
     /**
      * Sets the headers (Headers). An array of byte strings, where each string
      * shall be the element identifier (see the
-     * {@link org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement#getElementIdentifier()}) for a TH structure
+     * {@link com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement#getElementIdentifier()}) for a TH structure
      * element that shall be used as a header associated with this cell.
      * 
      * @param headers the headers

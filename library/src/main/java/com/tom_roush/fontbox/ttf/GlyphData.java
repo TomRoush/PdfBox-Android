@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.fontbox.ttf;
+package com.tom_roush.fontbox.ttf;
 
 import java.io.IOException;
 
-import org.apache.fontbox.util.BoundingBox;
+import com.tom_roush.fontbox.util.BoundingBox;
 
 import android.graphics.Path;
 

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.fontbox.cff;
+package com.tom_roush.fontbox.cff;
 
 /**
  * This is specialized CFFCharset. It's used if the CharsetId of a font is set to 1.

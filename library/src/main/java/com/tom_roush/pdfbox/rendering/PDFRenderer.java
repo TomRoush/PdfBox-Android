@@ -1,10 +1,10 @@
-package org.apache.pdfbox.rendering;
+package com.tom_roush.pdfbox.rendering;
 
 import java.io.IOException;
 
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

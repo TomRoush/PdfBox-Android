@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.common.function.type4;
+package com.tom_roush.pdfbox.pdmodel.common.function.type4;
 
 import java.util.Map;
 

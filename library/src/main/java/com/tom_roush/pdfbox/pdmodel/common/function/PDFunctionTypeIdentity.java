@@ -1,7 +1,7 @@
-package org.apache.pdfbox.pdmodel.common.function;
+package com.tom_roush.pdfbox.pdmodel.common.function;
 
 import java.io.IOException;
-import org.apache.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSBase;
 
 /**
  * The identity function.

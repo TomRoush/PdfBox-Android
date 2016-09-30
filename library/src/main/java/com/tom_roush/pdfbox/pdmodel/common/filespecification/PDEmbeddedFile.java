@@ -1,14 +1,14 @@
-package org.apache.pdfbox.pdmodel.common.filespecification;
+package com.tom_roush.pdfbox.pdmodel.common.filespecification;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
 
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 /**
  * This represents an embedded file in a file specification.

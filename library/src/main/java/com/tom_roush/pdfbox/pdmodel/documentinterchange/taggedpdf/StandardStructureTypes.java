@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.documentinterchange.taggedpdf;
+package com.tom_roush.pdfbox.pdmodel.documentinterchange.taggedpdf;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

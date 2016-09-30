@@ -14,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.pdfbox.pdmodel.interactive.form;
+package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.interactive.form.PlainText.Line;
-import org.apache.pdfbox.pdmodel.interactive.form.PlainText.Paragraph;
-import org.apache.pdfbox.pdmodel.interactive.form.PlainText.TextAttribute;
-import org.apache.pdfbox.pdmodel.interactive.form.PlainText.Word;
+import com.tom_roush.pdfbox.pdmodel.font.PDFont;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PlainText.Line;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PlainText.Paragraph;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PlainText.TextAttribute;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PlainText.Word;
 
 /**
  * TextFormatter to handle plain text formatting.

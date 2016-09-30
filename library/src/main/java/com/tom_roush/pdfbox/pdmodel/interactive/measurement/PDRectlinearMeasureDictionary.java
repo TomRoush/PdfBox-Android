@@ -1,8 +1,8 @@
-package org.apache.pdfbox.pdmodel.interactive.measurement;
+package com.tom_roush.pdfbox.pdmodel.interactive.measurement;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * This class represents a rectlinear measure dictionary.

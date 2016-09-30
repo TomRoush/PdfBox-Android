@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.fontbox.afm;
+package com.tom_roush.fontbox.afm;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringTokenizer;
 
-import org.apache.fontbox.util.BoundingBox;
+import com.tom_roush.fontbox.util.BoundingBox;
 
 /**
  * This class is used to parse AFM(Adobe Font Metrics) documents.

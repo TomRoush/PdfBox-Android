@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -10,20 +10,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.fontbox.ttf.CmapSubtable;
-import org.apache.fontbox.ttf.HeaderTable;
-import org.apache.fontbox.ttf.HorizontalHeaderTable;
-import org.apache.fontbox.ttf.OS2WindowsMetricsTable;
-import org.apache.fontbox.ttf.PostScriptTable;
-import org.apache.fontbox.ttf.TTFParser;
-import org.apache.fontbox.ttf.TTFSubsetter;
-import org.apache.fontbox.ttf.TrueTypeFont;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.io.IOUtils;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.fontbox.ttf.CmapSubtable;
+import com.tom_roush.fontbox.ttf.HeaderTable;
+import com.tom_roush.fontbox.ttf.HorizontalHeaderTable;
+import com.tom_roush.fontbox.ttf.OS2WindowsMetricsTable;
+import com.tom_roush.fontbox.ttf.PostScriptTable;
+import com.tom_roush.fontbox.ttf.TTFParser;
+import com.tom_roush.fontbox.ttf.TTFSubsetter;
+import com.tom_roush.fontbox.ttf.TrueTypeFont;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 /**
  * Common functionality for embedding TrueType fonts.

@@ -1,9 +1,9 @@
-package org.apache.pdfbox.contentstream.operator;
+package com.tom_roush.pdfbox.contentstream.operator;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * An Operator in a PDF content stream.

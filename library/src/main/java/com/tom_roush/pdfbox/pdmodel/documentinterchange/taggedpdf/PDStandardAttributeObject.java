@@ -1,14 +1,14 @@
-package org.apache.pdfbox.pdmodel.documentinterchange.taggedpdf;
+package com.tom_roush.pdfbox.pdmodel.documentinterchange.taggedpdf;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSFloat;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSNumber;
-import org.apache.pdfbox.cos.COSString;
-import org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure.PDAttributeObject;
-import org.apache.pdfbox.pdmodel.graphics.color.PDGamma;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSFloat;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDAttributeObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDGamma;
 
 /**
  * A standard attribute object.

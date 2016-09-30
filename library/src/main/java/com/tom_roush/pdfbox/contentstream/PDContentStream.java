@@ -1,9 +1,9 @@
-package org.apache.pdfbox.contentstream;
+package com.tom_roush.pdfbox.contentstream;
 
-import org.apache.pdfbox.cos.COSStream;
-import org.apache.pdfbox.pdmodel.PDResources;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.util.Matrix;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.pdmodel.PDResources;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.util.Matrix;
 
 /**
  * A content stream.

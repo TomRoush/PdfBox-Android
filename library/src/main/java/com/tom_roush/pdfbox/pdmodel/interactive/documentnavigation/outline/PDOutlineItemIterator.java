@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.pdfbox.pdmodel.interactive.documentnavigation.outline;
+package com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline;
 
 import java.util.Iterator;
 

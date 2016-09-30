@@ -1,8 +1,8 @@
-package org.apache.pdfbox.cos;
+package com.tom_roush.pdfbox.cos;
 
 import java.util.Calendar;
 
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * An unmodifiable COSDictionary.

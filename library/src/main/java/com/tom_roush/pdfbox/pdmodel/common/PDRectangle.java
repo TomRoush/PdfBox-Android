@@ -1,11 +1,11 @@
-package org.apache.pdfbox.pdmodel.common;
+package com.tom_roush.pdfbox.pdmodel.common;
 
-import org.apache.fontbox.util.BoundingBox;
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSFloat;
-import org.apache.pdfbox.cos.COSNumber;
-import org.apache.pdfbox.util.Matrix;
+import com.tom_roush.fontbox.util.BoundingBox;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSFloat;
+import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.util.Matrix;
 
 import android.graphics.Path;
 import android.graphics.PointF;

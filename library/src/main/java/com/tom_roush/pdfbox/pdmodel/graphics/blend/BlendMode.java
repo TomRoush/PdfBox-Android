@@ -1,11 +1,11 @@
-package org.apache.pdfbox.pdmodel.graphics.blend;
+package com.tom_roush.pdfbox.pdmodel.graphics.blend;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * Blend mode.

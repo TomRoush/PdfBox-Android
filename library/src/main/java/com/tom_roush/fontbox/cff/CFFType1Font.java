@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.fontbox.cff;
+package com.tom_roush.fontbox.cff;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.fontbox.ttf.Type1Equivalent;
-import org.apache.fontbox.type1.Type1CharStringReader;
+import com.tom_roush.fontbox.ttf.Type1Equivalent;
+import com.tom_roush.fontbox.type1.Type1CharStringReader;
 
 import android.graphics.Path;
 

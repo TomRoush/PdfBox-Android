@@ -1,17 +1,17 @@
-package org.apache.pdfbox.pdmodel.documentinterchange.logicalstructure;
+package com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.pdfbox.cos.COSArray;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
-import org.apache.pdfbox.cos.COSInteger;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSObject;
-import org.apache.pdfbox.pdmodel.common.COSArrayList;
-import org.apache.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSInteger;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSObject;
+import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * A node in the structure tree.
@@ -352,8 +352,8 @@ public abstract class PDStructureNode implements COSObjectable
      * The type of object depends on the type of the kid. It can be
      * <ul>
      * <li>a {@link PDStructureElement},</li>
-     * <li>a {@link org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation PDAnnotation},</li>
-     * <li>a {@link org.apache.pdfbox.pdmodel.graphics.PDXObject PDXObject},</li>
+     * <li>a {@link com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation PDAnnotation},</li>
+     * <li>a {@link com.tom_roush.pdfbox.pdmodel.graphics.PDXObject PDXObject},</li>
      * <li>a {@link PDMarkedContentReference}</li>
      * <li>a {@link Integer}</li>
      * </ul>

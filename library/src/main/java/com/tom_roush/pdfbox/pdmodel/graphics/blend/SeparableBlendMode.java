@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.graphics.blend;
+package com.tom_roush.pdfbox.pdmodel.graphics.blend;
 
 /**
  * Separable blend mode (support blendChannel)

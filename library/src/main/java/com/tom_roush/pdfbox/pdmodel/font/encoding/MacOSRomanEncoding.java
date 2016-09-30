@@ -1,6 +1,6 @@
-package org.apache.pdfbox.pdmodel.font.encoding;
+package com.tom_roush.pdfbox.pdmodel.font.encoding;
 
-import org.apache.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSBase;
 
 /**
  * This is the Mac OS Roman encoding, which is similar to the

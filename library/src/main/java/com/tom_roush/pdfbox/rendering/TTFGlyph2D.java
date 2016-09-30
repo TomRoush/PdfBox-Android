@@ -1,17 +1,17 @@
-package org.apache.pdfbox.rendering;
+package com.tom_roush.pdfbox.rendering;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.fontbox.ttf.GlyphData;
-import org.apache.fontbox.ttf.HeaderTable;
-import org.apache.fontbox.ttf.TrueTypeFont;
-import org.apache.pdfbox.pdmodel.font.PDCIDFontType2;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
-import org.apache.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.fontbox.ttf.GlyphData;
+import com.tom_roush.fontbox.ttf.HeaderTable;
+import com.tom_roush.fontbox.ttf.TrueTypeFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType2;
+import com.tom_roush.pdfbox.pdmodel.font.PDFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDTrueTypeFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDType0Font;
+import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
 import android.graphics.Path;
 import android.util.Log;

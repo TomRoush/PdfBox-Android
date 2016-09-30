@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.common;
+package com.tom_roush.pdfbox.pdmodel.common;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -7,10 +7,10 @@ import java.io.OutputStream;
 
 import java.util.List;
 
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSStream;
 
-import org.apache.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
+import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
 
 /**
  * A PDStream represents a stream in a PDF document.  Streams are tied to a single

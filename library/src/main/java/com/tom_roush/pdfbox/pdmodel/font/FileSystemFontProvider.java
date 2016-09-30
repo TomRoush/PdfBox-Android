@@ -1,4 +1,4 @@
-package org.apache.pdfbox.pdmodel.font;
+package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,14 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.fontbox.cff.CFFFont;
-import org.apache.fontbox.cff.CFFParser;
-import org.apache.fontbox.ttf.NamingTable;
-import org.apache.fontbox.ttf.TTFParser;
-import org.apache.fontbox.ttf.TrueTypeFont;
-import org.apache.fontbox.type1.Type1Font;
-import org.apache.fontbox.util.autodetect.FontFileFinder;
-import org.apache.pdfbox.io.IOUtils;
+import com.tom_roush.fontbox.cff.CFFFont;
+import com.tom_roush.fontbox.cff.CFFParser;
+import com.tom_roush.fontbox.ttf.NamingTable;
+import com.tom_roush.fontbox.ttf.TTFParser;
+import com.tom_roush.fontbox.ttf.TrueTypeFont;
+import com.tom_roush.fontbox.type1.Type1Font;
+import com.tom_roush.fontbox.util.autodetect.FontFileFinder;
+import com.tom_roush.pdfbox.io.IOUtils;
 
 import android.util.Log;
 

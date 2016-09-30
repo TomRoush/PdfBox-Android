@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.fontbox.type1;
+package com.tom_roush.fontbox.type1;
 
 /**
  * A lexical token in an Adobe Type 1 font.

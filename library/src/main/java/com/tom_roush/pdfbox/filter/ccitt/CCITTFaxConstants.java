@@ -1,4 +1,4 @@
-package org.apache.pdfbox.filter.ccitt;
+package com.tom_roush.pdfbox.filter.ccitt;
 
 /**
  * Constants for CCITT Fax Filter.

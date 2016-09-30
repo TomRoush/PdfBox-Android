@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.fontbox.util.autodetect;
+package com.tom_roush.fontbox.util.autodetect;
 
 /**
  * Mac font directory finder. This class is based on a class provided by Apache FOP. see
- * org.apache.fop.fonts.autodetect.MacFontDirFinder
+ * com.tom_roush.fop.fonts.autodetect.MacFontDirFinder
  */
 public class MacFontDirFinder extends NativeFontDirFinder
 {

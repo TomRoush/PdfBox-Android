@@ -1,4 +1,4 @@
-package org.apache.pdfbox.exceptions;
+package com.tom_roush.pdfbox.exceptions;
 
 /**
  * An exception that that holds a sub exception.

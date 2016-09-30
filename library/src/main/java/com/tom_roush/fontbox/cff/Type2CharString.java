@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.fontbox.cff;
+package com.tom_roush.fontbox.cff;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.fontbox.type1.Type1CharStringReader;
+import com.tom_roush.fontbox.type1.Type1CharStringReader;
 
 /**
  * Represents a Type 2 CharString by converting it into an equivalent Type 1 CharString.
