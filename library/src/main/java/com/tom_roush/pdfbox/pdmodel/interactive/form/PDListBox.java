@@ -1,0 +1,61 @@
+package org.apache.pdfbox.pdmodel.interactive.form;
+
+import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.cos.COSName;
+
+/**
+ * A scrollable list box. Contains several text items, one or more of which shall be selected as the field value.
+ * 
+ * @author John Hewson
+ */
+public final class PDListBox extends PDChoice
+{
+	/**
+	 * @see PDFieldTreeNode#PDFieldTreeNode(PDAcroForm)
+	 *
+	 * @param theAcroForm The acroform.
+	 */
+	public PDListBox(PDAcroForm theAcroForm)
+	{
+		super( theAcroForm );
+	}
+	
+    /**
+     * Constructor.
+     * 
+     * @param acroForm The form that this field is part of.
+     * @param field the PDF object to represent as a field.
+     * @param parentNode the parent node of the node to be created
+     */
+    public PDListBox(PDAcroForm acroForm, COSDictionary field, PDFieldTreeNode parentNode)
+    {
+        super(acroForm, field, parentNode);
+    }
+
+    /**
+     * This will get the top index "TI" value.
+     *
+     * @return the top index, default value 0.
+     */
+    public int getTopIndex()
+    {
+        return getDictionary().getInt(COSName.TI, 0);
+    }
+
+    /**
+     * This will set top index "TI" value.
+     *
+     * @param topIndex the value for the top index, null will remove the value.
+     */
+    public void setTopIndex(Integer topIndex)
+    {
+        if (topIndex != null)
+        {
+            getDictionary().setInt(COSName.TI, topIndex);
+        }
+        else
+        {
+            getDictionary().removeItem(COSName.TI);
+        }
+    }
+}
