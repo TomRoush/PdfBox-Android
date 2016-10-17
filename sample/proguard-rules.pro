@@ -15,3 +15,7 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+# required to prevent errors from the spongycastle libraries
+-keep class org.spongycastle.** { *; }
+-dontwarn org.spongycastle.**
