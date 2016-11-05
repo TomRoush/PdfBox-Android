@@ -7,6 +7,9 @@ android:
     - android-21
     # - sys-img-x86-android-21
 
+jdk:
+  - oraclejdk8
+
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -rf $HOME/.gradle/caches/*/plugin-resolution
