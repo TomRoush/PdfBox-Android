@@ -1,6 +1,7 @@
 PdfBox-Android
 ==============
 [ ![Download](https://api.bintray.com/packages/birdbrain2/PdfBox-Android/PdfBox-Android/images/download.svg) ](https://bintray.com/birdbrain2/PdfBox-Android/PdfBox-Android/_latestVersion)
+[![Build Status](https://travis-ci.org/TomRoush/PdfBox-Android.svg?branch=master)](https://travis-ci.org/TomRoush/PdfBox-Android)
 
 A port of Apache's PdfBox library to be usable on Android. Most features should be implemented by now. Feature requests can be added to the issue tracker. Stable releases can be added as a Gradle dependency from jcenter.
 
