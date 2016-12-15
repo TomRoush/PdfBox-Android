@@ -1,5 +1,7 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
+import android.util.Log;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -116,7 +118,9 @@ public abstract class PDColorSpace implements COSObjectable {
 //                throw new IOException("Invalid color space kind: " + name);
 //            }
 
-            throw new IOException("Invalid color space kind: " + name);
+//            throw new IOException("Invalid color space kind: " + name);
+            Log.e("PdfBoxAndroid", "Invalid color space kind: " + name + ". Will try DeviceRGB instead");
+            return PDDeviceRGB.INSTANCE;
         } else {
             throw new IOException("Expected a name or array but got: " + colorSpace);
         }
