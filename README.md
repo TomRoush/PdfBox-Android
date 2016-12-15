@@ -14,7 +14,7 @@ Add the following to dependency to `build.gradle`:
 
 ```gradle
 dependencies {
-    compile 'com.tom_roush.pdfbox-android:1.8.9.1'
+    compile 'com.tom_roush:pdfbox-android:1.8.9.1'
 }
 ```
 
