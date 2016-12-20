@@ -35,4 +35,4 @@ Important notes
 
 Libraries
 ==============
-PDFBox-Android depends on the following libraries: SpongyCastle core, prov, and pkiv: https://github.com/rtyley/spongycastle/
+PDFBox-Android depends on the following libraries: SpongyCastle core, prov, and pkix: https://github.com/rtyley/spongycastle/
