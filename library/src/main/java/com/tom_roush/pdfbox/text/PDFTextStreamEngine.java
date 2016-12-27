@@ -85,7 +85,7 @@ class PDFTextStreamEngine extends PDFStreamEngine
 		String path = "com/tom_roush/pdfbox/resources/glyphlist/additional.txt";
 		InputStream input;
 		if(PDFBoxResourceLoader.isReady()) {
-			input = GlyphList.class.getClassLoader().getResourceAsStream(path);
+			input = PDFBoxResourceLoader.getStream(path);
 		} else {
 			// Fallback
 			input = GlyphList.class.getClassLoader().getResourceAsStream(path);

@@ -1,14 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import android.util.Log;
 
 import com.tom_roush.fontbox.cff.CFFFont;
 import com.tom_roush.fontbox.cff.CFFParser;
@@ -18,8 +10,17 @@ import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.fontbox.type1.Type1Font;
 import com.tom_roush.fontbox.util.autodetect.FontFileFinder;
 import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
-import android.util.Log;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * External font provider which searches for fonts on the local filesystem.
@@ -43,6 +44,24 @@ final class FileSystemFontProvider extends FontProvider
      */
     FileSystemFontProvider()
     {
+        // XXX: load in background?
+        if(PDFBoxResourceLoader.LOAD_FONTS == PDFBoxResourceLoader.FontLoadLevel.NONE) return;
+        if(PDFBoxResourceLoader.LOAD_FONTS == PDFBoxResourceLoader.FontLoadLevel.MINIMUM) {
+            // If MINIMUM, load only Droid fonts
+            try
+            {
+                addOpenTypeFont(new File("/system/fonts/DroidSans.ttf"));
+                addOpenTypeFont(new File("/system/fonts/DroidSans-Bold.ttf"));
+                addOpenTypeFont(new File("/system/fonts/DroidSansMono.ttf"));
+//                addOpenTypeFont(new File("/system/fonts/DroidSansFallback.ttf"));
+                // XXX: list may need to be expanded for other character sets
+                return;
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
     	Log.v("PdfBoxAndroid", "Will search the local system for fonts");
 
         int count = 0;

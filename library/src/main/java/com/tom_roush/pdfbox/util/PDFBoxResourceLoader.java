@@ -1,17 +1,42 @@
 package com.tom_roush.pdfbox.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class PDFBoxResourceLoader {
 	/**
 	 * The Context of the main app
 	 */
 	private static Context CONTEXT = null;
+
+    /**
+     * Enum to represent what fonts PDFBox should attempt to load
+     */
+    public enum FontLoadLevel {
+        /**
+         * Load and process all available fonts
+         */
+        FULL,
+
+        /**
+         * Load and process only the minimum fonts required to maintain functionality
+         */
+        MINIMUM,
+
+        /**
+         * Do not load any fonts (May cause crashes)
+         */
+        NONE
+    }
+
+    /**
+     * Option to disable searching the file system for fonts (Speeds up startup if fonts not needed)
+     */
+    public static FontLoadLevel LOAD_FONTS = FontLoadLevel.MINIMUM;
 	
 	/**
 	 * The AssetManager used to load the resources
