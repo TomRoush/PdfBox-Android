@@ -1,13 +1,13 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
-import java.io.IOException;
+import android.graphics.Bitmap;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
-import android.graphics.Bitmap;
+import java.io.IOException;
 
 /**
  * An image in a PDF document.
@@ -17,7 +17,8 @@ import android.graphics.Bitmap;
 public interface PDImage extends COSObjectable
 {
     /**
-     * Returns the content of this image as an AWT buffered image with an (A)RGB color space.
+     * Returns the content of this image as a Bitmap with ARGB_888.
+     * The size of the returned image is the larger of the size of the image itself or its mask.
      * @return content of this image as a buffered image.
      * @throws IOException
      */
@@ -30,7 +31,7 @@ public interface PDImage extends COSObjectable
      * @throws IOException if the image cannot be read
      * @throws IllegalStateException if the image is not a stencil.
      */
-//    BufferedImage getStencilImage(Paint paint) throws IOException;TODO
+//    BufferedImage getStencilImage(Paint paint) throws IOException;TODO: PdfBox-Android
 
     /**
      * Returns a stream containing this image's data.

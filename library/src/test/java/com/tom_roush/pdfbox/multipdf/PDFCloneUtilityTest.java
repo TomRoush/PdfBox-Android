@@ -15,11 +15,10 @@
  */
 package com.tom_roush.pdfbox.multipdf;
 
-import android.graphics.Color;
-
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
+import com.tom_roush.pdfbox.util.awt.AWTColor;
 
 import junit.framework.TestCase;
 
@@ -69,17 +68,17 @@ public class PDFCloneUtilityTest extends TestCase
         PDPage pdPage = new PDPage();
         srcDoc.addPage(pdPage);
         PDPageContentStream pdPageContentStream1 = new PDPageContentStream(srcDoc, pdPage, true, false);
-        pdPageContentStream1.setNonStrokingColor(Color.BLACK);
+        pdPageContentStream1.setNonStrokingColor(AWTColor.BLACK);
         pdPageContentStream1.addRect(100, 600, 300, 100);
         pdPageContentStream1.fill();
         pdPageContentStream1.close();
         PDPageContentStream pdPageContentStream2 = new PDPageContentStream(srcDoc, pdPage, true, false);
-        pdPageContentStream2.setNonStrokingColor(Color.RED);
+        pdPageContentStream2.setNonStrokingColor(AWTColor.RED);
         pdPageContentStream2.addRect(100, 500, 300, 100);
         pdPageContentStream2.fill();
         pdPageContentStream2.close();
         PDPageContentStream pdPageContentStream3 = new PDPageContentStream(srcDoc, pdPage, true, false);
-        pdPageContentStream3.setNonStrokingColor(Color.YELLOW);
+        pdPageContentStream3.setNonStrokingColor(AWTColor.YELLOW);
         pdPageContentStream3.addRect(100, 400, 300, 100);
         pdPageContentStream3.fill();
         pdPageContentStream3.close();

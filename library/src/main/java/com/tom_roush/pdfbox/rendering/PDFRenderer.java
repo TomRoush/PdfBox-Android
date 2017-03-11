@@ -1,15 +1,15 @@
 package com.tom_roush.pdfbox.rendering;
 
-import java.io.IOException;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
+import java.io.IOException;
 
 /**
  * Renders a PDF document to an AWT BufferedImage.
@@ -117,7 +117,17 @@ public class PDFRenderer
             canvas.rotate((float) Math.toRadians(rotationAngle));
         }
 
-        PageDrawer drawer = new PageDrawer(page);
+        // the end-user may provide a custom PageDrawer
+        PageDrawerParameters parameters = new PageDrawerParameters(this, page);
+        PageDrawer drawer = createPageDrawer(parameters);
         drawer.drawPage(paint, canvas, cropBox);
+    }
+
+    /**
+     * Returns a new PageDrawer instance, using the given parameters. May be overridden.
+     */
+    protected PageDrawer createPageDrawer(PageDrawerParameters parameters) throws IOException
+    {
+        return new PageDrawer(parameters);
     }
 }

@@ -1,10 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -20,9 +15,15 @@ import com.tom_roush.pdfbox.pdmodel.interactive.action.PDAction;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionFactory;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDAdditionalActions;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This represents an FDF field that is part of the FDF document.
@@ -122,7 +123,7 @@ public class FDFField implements COSObjectable
 		{
 			for (FDFField kid : kids)
 			{
-				((FDFField) kid).writeXML(output);
+				kid.writeXML(output);
 			}
 		}
 		output.write( "</field>\n");
@@ -133,6 +134,7 @@ public class FDFField implements COSObjectable
 	 *
 	 * @return The cos object that matches this Java object.
 	 */
+	@Override
 	public COSBase getCOSObject()
 	{
 		return field;
@@ -755,7 +757,7 @@ public class FDFField implements COSObjectable
 			default:
 				if (c > 0x7e)
 				{
-					escapedXML.append("&#" + ((int) c) + ";");
+					escapedXML.append("&#").append((int) c).append(";");
 				}
 				else
 				{

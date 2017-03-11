@@ -1,27 +1,23 @@
 package com.tom_roush.pdfbox.pdfparser;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSDocument;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.PushBackInputStream;
 import com.tom_roush.pdfbox.io.RandomAccessBufferedFileInputStream;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFDocument;
 
-import android.util.Log;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class FDFParser extends COSParser
 {
     private final RandomAccessBufferedFileInputStream raStream;
-
-    private static final InputStream EMPTY_INPUT_STREAM = new ByteArrayInputStream(new byte[0]);
 
     private File tempPDFFile;
 
@@ -47,7 +43,6 @@ public class FDFParser extends COSParser
      */
     public FDFParser(File file) throws IOException
     {
-        super(EMPTY_INPUT_STREAM);
         fileLen = file.length();
         raStream = new RandomAccessBufferedFileInputStream(file);
         init();
@@ -61,7 +56,6 @@ public class FDFParser extends COSParser
      */
     public FDFParser(InputStream input) throws IOException
     {
-        super(EMPTY_INPUT_STREAM);
         tempPDFFile = createTmpFile(input);
         fileLen = tempPDFFile.length();
         raStream = new RandomAccessBufferedFileInputStream(tempPDFFile);
@@ -108,25 +102,7 @@ public class FDFParser extends COSParser
             trailer = rebuildTrailer();
         }
     
-        // PDFBOX-1557 - ensure that all COSObject are loaded in the trailer
-        // PDFBOX-1606 - after securityHandler has been instantiated
-        for (COSBase trailerEntry : trailer.getValues())
-        {
-            if (trailerEntry instanceof COSObject)
-            {
-                COSObject tmpObj = (COSObject) trailerEntry;
-                parseObjectDynamically(tmpObj, false);
-            }
-        }
-        // parse catalog or root object
-        COSObject root = (COSObject)trailer.getItem(COSName.ROOT);
-    
-        if (root == null)
-        {
-            throw new IOException("Missing root object specification in trailer.");
-        }
-    
-        COSBase rootObject = parseObjectDynamically(root, false);
+        COSBase rootObject = parseTrailerValuesDynamically(trailer);
     
         // resolve all objects
         // A FDF doesn't have a catalog, all FDF fields are within the root object
@@ -165,14 +141,8 @@ public class FDFParser extends COSParser
     
             if (exceptionOccurred && document != null)
             {
-                try
-                {
-                    document.close();
-                    document = null;
-                }
-                catch (IOException ioe)
-                {
-                }
+                IOUtils.closeQuietly(document);
+                document = null;
             }
         }
     }

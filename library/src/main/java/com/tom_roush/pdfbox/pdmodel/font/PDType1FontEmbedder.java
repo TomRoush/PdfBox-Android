@@ -1,12 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import com.tom_roush.fontbox.afm.AFMParser;
 import com.tom_roush.fontbox.afm.CharMetric;
 import com.tom_roush.fontbox.afm.FontMetrics;
@@ -24,6 +17,13 @@ import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.DictionaryEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Type1Encoding;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Embedded PDType1Font builder. Helper class to populate a PDType1Font from a PFB and AFM.
@@ -45,7 +45,7 @@ class PDType1FontEmbedder
 	 * @param pfbStream The pfb input.
 	 * @throws IOException If there is an error loading the data.
 	 */
-	public PDType1FontEmbedder(PDDocument doc, COSDictionary dict, InputStream afmStream,
+	PDType1FontEmbedder(PDDocument doc, COSDictionary dict, InputStream afmStream,
 			InputStream pfbStream) throws IOException
 	{
 		dict.setItem(COSName.SUBTYPE, COSName.TYPE1);
@@ -81,7 +81,6 @@ class PDType1FontEmbedder
 
 		// widths
 		List<CharMetric> listmetric = metrics.getCharMetrics();
-		Encoding encoding = getFontEncoding();
 		int maxWidths = 256;
 		List<Integer> widths = new ArrayList<Integer>(maxWidths);
 		int zero = 250;

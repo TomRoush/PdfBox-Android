@@ -1,9 +1,6 @@
 package com.tom_roush.pdfbox.filter;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -12,7 +9,10 @@ import com.tom_roush.pdfbox.filter.ccitt.FillOrderChangeInputStream;
 import com.tom_roush.pdfbox.filter.ccitt.TIFFFaxDecoder;
 import com.tom_roush.pdfbox.io.IOUtils;
 
-import android.util.Log;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Decodes image data that has been encoded using either Group 3 or Group 4
@@ -98,7 +98,7 @@ final class CCITTFaxFilter extends Filter
         return new DecodeResult(parameters);
     }
 
-    private static void invertBitmap(byte[] bufferData)
+    private void invertBitmap(byte[] bufferData)
     {
         for (int i = 0, c = bufferData.length; i < c; i++)
         {

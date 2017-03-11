@@ -1,27 +1,6 @@
 package com.tom_roush.pdfbox.pdfwriter;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.SequenceInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -48,7 +27,28 @@ import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterf
 import com.tom_roush.pdfbox.util.Charsets;
 import com.tom_roush.pdfbox.util.Hex;
 
-import android.util.Log;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.SequenceInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class acts on a in-memory representation of a PDF document.
@@ -767,7 +767,7 @@ public class COSWriter implements ICOSVisitor, Closeable
 	  * @param xRefEntriesList list with the xRef entries that was written
 	  * @return a integer array with the ranges
 	  */
-	 protected static Long[] getXRefRanges(List<COSWriterXRefEntry> xRefEntriesList)
+	 protected Long[] getXRefRanges(List<COSWriterXRefEntry> xRefEntriesList)
 	 {
 		 long last = -2;
 		 long count = 1;

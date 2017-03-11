@@ -1,9 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -12,6 +8,10 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * A node in the structure tree.
@@ -45,7 +45,7 @@ public abstract class PDStructureNode implements COSObjectable
 
     private final COSDictionary dictionary;
 
-    protected COSDictionary getCOSDictionary()
+    public COSDictionary getCOSDictionary()
     {
         return dictionary;
     }

@@ -68,7 +68,7 @@ import java.util.Stack;
  * 
  * @author Ben Litchfield
  */
-public class PDFStreamEngine
+public abstract class PDFStreamEngine
 {
 	private final Map<String, OperatorProcessor> operators = new HashMap<String, OperatorProcessor>();
 
@@ -85,7 +85,7 @@ public class PDFStreamEngine
 	/**
 	 * Creates a new PDFStreamEngine.
 	 */
-	public PDFStreamEngine()
+	protected PDFStreamEngine()
 	{
 	}
 

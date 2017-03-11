@@ -1,12 +1,12 @@
 package com.tom_roush.pdfbox.pdmodel.encryption;
 
+import org.spongycastle.jce.provider.BouncyCastleProvider;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.spongycastle.jce.provider.BouncyCastleProvider;
 
 /**
  * Manages security handlers for the application.
@@ -114,7 +114,7 @@ public final class SecurityHandlerFactory
      * @return a new SecurityHandler instance, or null if none is available.
      * @throws RuntimeException
      */
-    private static SecurityHandler newSecurityHandler(Class<? extends SecurityHandler> handlerClass,
+    private SecurityHandler newSecurityHandler(Class<? extends SecurityHandler> handlerClass,
     		Class<?>[] argsClasses, Object[] args)
     {
     	try

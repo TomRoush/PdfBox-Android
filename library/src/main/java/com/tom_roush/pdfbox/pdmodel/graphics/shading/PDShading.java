@@ -1,7 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -11,12 +9,14 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.function.PDFunction;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
+import java.io.IOException;
+
 /**
  * A Shading Resource.
  */
 public abstract class PDShading implements COSObjectable
 {
-    private COSDictionary dictionary;
+    private final COSDictionary dictionary;
     private COSArray background = null;
     private PDRectangle bBox = null;
     private PDColorSpace colorSpace = null;
@@ -91,6 +91,7 @@ public abstract class PDShading implements COSObjectable
      *
      * @return the cos object that matches this Java object
      */
+    @Override
     public COSBase getCOSObject()
     {
         return dictionary;
@@ -212,15 +213,15 @@ public abstract class PDShading implements COSObjectable
      * @return the color space for the shading
      * @throws IOException if there is an error getting the color space
      */
-//    public PDColorSpace getColorSpace() throws IOException
-//    {
-//        if (colorSpace == null)
-//        {
-//            COSBase colorSpaceDictionary = dictionary.getDictionaryObject(COSName.CS, COSName.COLORSPACE);
-//            colorSpace = PDColorSpace.create(colorSpaceDictionary);
-//        }
-//        return colorSpace;
-//    }TODO
+    public PDColorSpace getColorSpace() throws IOException
+    {
+        if (colorSpace == null)
+        {
+            COSBase colorSpaceDictionary = dictionary.getDictionaryObject(COSName.CS, COSName.COLORSPACE);
+            colorSpace = PDColorSpace.create(colorSpaceDictionary);
+        }
+        return colorSpace;
+    }
 
     /**
      * This will set the color space for the shading.
@@ -322,7 +323,7 @@ public abstract class PDShading implements COSObjectable
      * This will return the function used to convert the color values.
      *
      * @return the function
-     * @exception IOException if we are unable to create the PDFunction object
+     * @throws java.io.IOException if we were not unable to create the function
      */
     public PDFunction getFunction() throws IOException
     {
@@ -390,7 +391,7 @@ public abstract class PDShading implements COSObjectable
     {
         PDFunction[] functions = getFunctionsArray();
         int numberOfFunctions = functions.length;
-        float[] returnValues = null;
+        float[] returnValues;
         if (numberOfFunctions == 1)
         {
             returnValues = functions[0].eval(input);

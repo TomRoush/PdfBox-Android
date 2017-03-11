@@ -16,9 +16,9 @@ public class PDMarkedContentReference implements COSObjectable
 
     public static final String TYPE = "MCR";
 
-    private COSDictionary dictionary;
+    private final COSDictionary dictionary;
 
-    protected COSDictionary getCOSDictionary()
+    public COSDictionary getCOSDictionary()
     {
         return this.dictionary;
     }

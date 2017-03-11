@@ -1,7 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -9,6 +7,8 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationUnknown;
+
+import java.io.IOException;
 
 /**
  * An object reference.
@@ -23,14 +23,14 @@ public class PDObjectReference implements COSObjectable
      */
     public static final String TYPE = "OBJR";
 
-    private COSDictionary dictionary;
+    private final COSDictionary dictionary;
 
     /**
      * Returns the underlying dictionary.
      * 
      * @return the dictionary
      */
-    protected COSDictionary getCOSDictionary()
+    public COSDictionary getCOSDictionary()
     {
         return this.dictionary;
     }

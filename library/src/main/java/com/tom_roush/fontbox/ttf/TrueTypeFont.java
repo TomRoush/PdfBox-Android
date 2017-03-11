@@ -16,24 +16,25 @@
  */
 package com.tom_roush.fontbox.ttf;
 
+import android.graphics.Path;
+
+import com.tom_roush.fontbox.encoding.Encoding;
+import com.tom_roush.fontbox.util.BoundingBox;
+import com.tom_roush.pdfbox.util.awt.AffineTransform;
+
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.tom_roush.fontbox.encoding.Encoding;
-import com.tom_roush.fontbox.util.BoundingBox;
-import com.tom_roush.pdfbox.util.awt.AffineTransform;
-
-import android.graphics.Path;
-
 /**
  * A TrueType font file.
  * 
  * @author Ben Litchfield
  */
-public class TrueTypeFont implements Type1Equivalent
+public class TrueTypeFont implements Type1Equivalent, Closeable
 {
 	private float version;
 	private int numberOfGlyphs = -1;
@@ -52,11 +53,7 @@ public class TrueTypeFont implements Type1Equivalent
 		data = fontData;
 	}
 
-	/**
-	 * Close the underlying resources.
-	 * 
-	 * @throws IOException If there is an error closing the resources.
-	 */
+	@Override
 	public void close() throws IOException
 	{
 		data.close();

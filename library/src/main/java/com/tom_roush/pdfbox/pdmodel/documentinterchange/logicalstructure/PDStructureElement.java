@@ -1,8 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure;
 
-import java.util.Iterator;
-import java.util.Map;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -11,6 +8,9 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDMarkedContent;
+
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * A structure element.
@@ -62,7 +62,7 @@ public class PDStructureElement extends PDStructureNode
      * 
      * @param structureType the structure type
      */
-    public void setStructureType(String structureType)
+    public final void setStructureType(String structureType)
     {
         this.getCOSDictionary().setName(COSName.S, structureType);
     }
@@ -88,7 +88,7 @@ public class PDStructureElement extends PDStructureNode
      * 
      * @param structureNode the parent in the structure hierarchy
      */
-    public void setParent(PDStructureNode structureNode)
+    public final void setParent(PDStructureNode structureNode)
     {
         this.getCOSDictionary().setItem(COSName.P, structureNode);
     }
@@ -223,7 +223,7 @@ public class PDStructureElement extends PDStructureNode
         COSName key = COSName.A;
         attributeObject.setStructureElement(this);
         COSBase a = this.getCOSDictionary().getDictionaryObject(key);
-        COSArray array = null;
+        COSArray array;
         if (a instanceof COSArray)
         {
             array = (COSArray) a;
@@ -392,7 +392,7 @@ public class PDStructureElement extends PDStructureNode
         }
         COSName key = COSName.C;
         COSBase c = this.getCOSDictionary().getDictionaryObject(key);
-        COSArray array = null;
+        COSArray array;
         if (c instanceof COSArray)
         {
             array = (COSArray) c;

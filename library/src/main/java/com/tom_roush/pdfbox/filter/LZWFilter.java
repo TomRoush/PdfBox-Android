@@ -15,6 +15,13 @@
  */
 package com.tom_roush.pdfbox.filter;
 
+import android.util.Log;
+
+import com.tom_roush.javax.imageio.stream.MemoryCacheImageInputStream;
+import com.tom_roush.javax.imageio.stream.MemoryCacheImageOutputStream;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
@@ -24,13 +31,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import com.tom_roush.javax.imageio.stream.MemoryCacheImageInputStream;
-import com.tom_roush.javax.imageio.stream.MemoryCacheImageOutputStream;
-import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.cos.COSName;
-
-import android.util.Log;
 
 /**
  *
@@ -94,7 +94,7 @@ public class LZWFilter extends Filter
         return new DecodeResult(parameters);
     }
 
-    private static void doLZWDecode(InputStream encoded, OutputStream decoded, int earlyChange) throws IOException
+    private void doLZWDecode(InputStream encoded, OutputStream decoded, int earlyChange) throws IOException
     {
         List<byte[]> codeTable = new ArrayList<byte[]>();
         int chunk = 9;
@@ -230,7 +230,7 @@ public class LZWFilter extends Filter
      * @return The index of the longest matching pattern or -1 if nothing is
      * found.
      */
-    private static int findPatternCode(List<byte[]> codeTable, byte[] pattern)
+    private int findPatternCode(List<byte[]> codeTable, byte[] pattern)
     {
         int foundCode = -1;
         int foundLen = 0;
@@ -264,7 +264,7 @@ public class LZWFilter extends Filter
      * Init the code table with 1 byte entries and the EOD and CLEAR_TABLE
      * markers.
      */
-    private static List<byte[]> createCodeTable()
+    private List<byte[]> createCodeTable()
     {
         List<byte[]> codeTable = new ArrayList<byte[]>(4096);
         for (int i = 0; i < 256; ++i)
@@ -284,7 +284,7 @@ public class LZWFilter extends Filter
      *
      * @return a value between 9 and 12
      */
-    private static int calculateChunk(int tabSize, int earlyChange)
+    private int calculateChunk(int tabSize, int earlyChange)
     {
         if (tabSize >= 2048 - earlyChange)
         {

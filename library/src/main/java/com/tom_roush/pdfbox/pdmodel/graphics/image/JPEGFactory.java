@@ -1,9 +1,10 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.IOUtils;
@@ -11,16 +12,16 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Factory for creating a PDImageXObject containing a JPEG compressed image.
  * @author John Hewson
  */
-public final class JPEGFactory extends ImageFactory
+public final class JPEGFactory
 {
 	private JPEGFactory()
 	{
@@ -240,5 +241,61 @@ public final class JPEGFactory extends ImageFactory
 //				imageWriter.dispose();
 //			}
 //		}
-//	} TODO
+//	} TODO: PdfBox-Android
+
+	// returns a PDColorSpace for a given BufferedImage
+//	private static PDColorSpace getColorSpaceFromAWT(Bitmap awtImage)
+//	{
+//		if (awtImage.getColorModel().getNumComponents() == 1)
+//		{
+//			// 256 color (gray) JPEG
+//			return PDDeviceGray.INSTANCE;
+//		}
+//
+//		ColorSpace awtColorSpace = awtImage.getColorModel().getColorSpace();
+//		if (awtColorSpace instanceof ICC_ColorSpace && !awtColorSpace.isCS_sRGB())
+//		{
+//			throw new UnsupportedOperationException("ICC color spaces not implemented");
+//		}
+//
+//		switch (awtColorSpace.getType())
+//		{
+//			case ColorSpace.TYPE_RGB:
+//				return PDDeviceRGB.INSTANCE;
+//			case ColorSpace.TYPE_GRAY:
+//				return PDDeviceGray.INSTANCE;
+//			case ColorSpace.TYPE_CMYK:
+//				return PDDeviceCMYK.INSTANCE;
+//			default:
+//				throw new UnsupportedOperationException("color space not implemented: "
+//						+ awtColorSpace.getType());
+//		}
+//	}
+
+	// returns the color channels of an image
+	private static Bitmap getColorImage(Bitmap image)
+	{
+		if (!image.hasAlpha())
+		{
+			return image;
+		}
+
+		if (!image.getConfig().name().contains("RGB"))
+		{
+			throw new UnsupportedOperationException("only RGB color spaces are implemented");
+		}
+
+		// create an RGB image without alpha
+		//BEWARE: the previous solution in the history
+		// g.setComposite(AlphaComposite.Src) and g.drawImage()
+		// didn't work properly for TYPE_4BYTE_ABGR.
+		// alpha values of 0 result in a black dest pixel!!!
+		Bitmap rgbImage = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
+//		return new ColorConvertOp(null).filter(image, rgbImage); TODO: PdfBox-Android
+		Paint alphaPaint = new Paint();
+		alphaPaint.setAlpha(0);
+		Canvas canvas = new Canvas(rgbImage);
+		canvas.drawBitmap(image, 0, 0, alphaPaint);
+		return rgbImage;
+	}
 }

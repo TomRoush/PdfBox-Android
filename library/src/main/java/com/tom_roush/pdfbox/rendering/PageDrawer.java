@@ -39,19 +39,27 @@ import android.graphics.Region;
 import android.util.Log;
 
 /**
- * Paints a page in a PDF document to a Graphics context.
+ * Paints a page in a PDF document to a Canvas context. May be subclassed to provide custom
+ * rendering.
+ *
+ * <p>If you want to do custom graphics processing rather than Canvas rendering, then you should
+ * subclass PDFGraphicsStreamEngine instead. Subclassing PageDrawer is only suitable for cases
+ * where the goal is to render onto a Canvas surface.
  *
  * @author Ben Litchfield
  */
-public final class PageDrawer extends PDFGraphicsStreamEngine
+public class PageDrawer extends PDFGraphicsStreamEngine
 {
+    // parent document renderer - note: this is needed for not-yet-implemented resource caching
+    private final PDFRenderer renderer;
+
 	// the graphics device to draw to, xform is the initial transform of the device (i.e. DPI)
 	Paint paint;
 	Canvas canvas;
 	private AffineTransform xform;
 
 	// the page box to draw (usually the crop box but may be another)
-	PDRectangle pageSize;
+	private PDRectangle pageSize;
 
 	// clipping winding rule used for the clipping path
     private Path.FillType clipWindingRule = null;
@@ -63,20 +71,46 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     // buffered clipping area for text being drawn
     private Region textClippingArea;
 
+    // glyph cache
     private final Map<PDFont, Glyph2D> fontGlyph2D = new HashMap<PDFont, Glyph2D>();
 
 	/**
 	 * Constructor.
 	 *
-	 * @param page the page that is to be rendered.
+	 * @param parameters Parameters for page drawing.
 	 * @throws IOException If there is an error loading properties from the file.
 	 */
-	public PageDrawer(PDPage page) throws IOException
+    public PageDrawer(PageDrawerParameters parameters) throws IOException
 	{
-		super(page);
+        super(parameters.getPage());
+        this.renderer = parameters.getRenderer();
 	}
 
-	/**
+    /**
+     * Returns the parent renderer.
+     */
+    public final PDFRenderer getRenderer()
+    {
+        return renderer;
+    }
+
+    /**
+     * Returns the underlying Canvas. May be null if drawPage has not yet been called.
+     */
+    protected final Canvas getCanvas()
+    {
+        return canvas;
+    }
+
+    /**
+     * Returns the current line path. This is reset to empty after each fill/stroke.
+     */
+    protected final Path getLinePath()
+    {
+        return linePath;
+    }
+
+    /**
      * Sets high-quality rendering hints on the current Graphics2D.
      */
     private void setRenderingHints()
@@ -135,7 +169,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
      * @param patternMatrix the pattern matrix
      * @throws IOException If there is an IO error while drawing the page.
      */
-//    public void drawTilingPattern(Graphics2D g, PDTilingPattern pattern, PDColorSpace colorSpace,
+//    void drawTilingPattern(Graphics2D g, PDTilingPattern pattern, PDColorSpace colorSpace,
 //                                  PDColor color, Matrix patternMatrix) throws IOException
 //    {
 //        Graphics2D oldGraphics = graphics;
@@ -158,7 +192,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
     /**
      * Returns an AWT paint for the given PDColor.
      */
-//    private Paint getPaint(PDColor color) throws IOException
+//    protected Paint getPaint(PDColor color) throws IOException
 //    {
 //        PDColorSpace colorSpace = color.getColorSpace();
 //        if (!(colorSpace instanceof PDPattern))
@@ -539,8 +573,12 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
 
         // disable anti-aliasing for rectangular paths, this is a workaround to avoid small stripes
         // which occur when solid fills are used to simulate piecewise gradients, see PDFBOX-2302
-//        boolean isRectangular = isRectangular(linePath);
-//        if (isRectangular)
+        // note that we ignore paths with a width/height under 1 as these are fills used as strokes,
+        // see PDFBOX-1658 for an example
+//        RectF bounds = new RectF(();
+//        linePath.computeBounds(bounds, true);
+//        boolean noAntiAlias = isRectangular(linePath) && bounds.width() > 1 && bounds.height() > 1;
+//        if (noAntiAlias)
         {
 //            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 //                                      RenderingHints.VALUE_ANTIALIAS_OFF);
@@ -550,7 +588,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         canvas.drawPath(linePath, paint);     
         linePath.reset();
 
-//        if (isRectangular)
+//        if (noAntiAlias)
         {
             // JDK 1.7 has a bug where rendering hints are reset by the above call to
             // the setRenderingHint method, so we re-set all hints, see PDFBOX-2302
@@ -706,8 +744,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         if (pdImage.isStencil())
         {
             // fill the image with paint
-            PDColor color = getGraphicsState().getNonStrokingColor();
-//            Bitmap image = pdImage.getStencilImage(getPaint(color));
+//            Bitmap image = pdImage.getStencilImage(getNonStrokingPaint());
 
             // draw the image
 //            drawBufferedImage(image, at);
@@ -726,7 +763,7 @@ public final class PageDrawer extends PDFGraphicsStreamEngine
         }
     }
 
-    public void drawBufferedImage(Bitmap image, AffineTransform at) throws IOException
+    private void drawBufferedImage(Bitmap image, AffineTransform at) throws IOException
     {
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
         setClip();

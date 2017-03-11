@@ -1,24 +1,6 @@
 package com.tom_roush.pdfbox.pdfparser;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.Vector;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -34,7 +16,28 @@ import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdfparser.XrefTrailerResolver.XRefType;
 import com.tom_roush.pdfbox.pdmodel.encryption.SecurityHandler;
 
-import android.util.Log;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.Vector;
+
+import static com.tom_roush.pdfbox.util.Charsets.ISO_8859_1;
 
 /**
  * PDF-Parser which first reads startxref and xref tables in order to know valid objects and parse only these objects.
@@ -139,6 +142,13 @@ public class COSParser extends BaseParser
 	public static final String TMP_FILE_PREFIX = "tmpPDF";
 
 	/**
+	 * Default constructor.
+	 */
+	public COSParser()
+	{
+	}
+
+	/**
 	 * Constructor.
 	 * 
 	 * @param input inputStream of the pdf to be read
@@ -192,7 +202,7 @@ public class COSParser extends BaseParser
 		document.setStartXref(startXrefOffset);
 		long prev = startXrefOffset;
 		// ---- parse whole chain of xref tables/object streams using PREV reference
-		while (prev > -1)
+		while (prev > 0)
 		{
 			// seek to xref table
 			pdfSource.seek(prev);
@@ -254,7 +264,7 @@ public class COSParser extends BaseParser
 					} 
 				}
 				prev = trailer.getInt(COSName.PREV);
-				if (prev > -1)
+				if (prev > 0)
 				{
 					// check the xref table reference
 					fixedOffset = checkXRefOffset(prev);
@@ -269,7 +279,7 @@ public class COSParser extends BaseParser
 			{
 				// parse xref stream
 				prev = parseXrefObjStream(prev, true);
-				if (prev > -1)
+				if (prev > 0)
 				{
 					// check the xref table reference
 					fixedOffset = checkXRefOffset(prev);
@@ -881,36 +891,7 @@ public class COSParser extends BaseParser
 		{
 			// read 'stream'; this was already tested in parseObjectsDynamically()
 			readString();
-			// skip whitespaces before start of data
-			// PDF Ref 1.7, chap. 3.2.7:
-			// 'stream' should be followed by either a CRLF (0x0d 0x0a) or LF
-			// but nothing else.
-			int whitespace = pdfSource.read();
-
-			// see brother_scan_cover.pdf, it adds whitespaces
-			// after the stream but before the start of the
-			// data, so just read those first
-			while (whitespace == 0x20)
-			{
-				whitespace = pdfSource.read();
-			}
-
-			if (whitespace == 0x0D)
-			{
-				whitespace = pdfSource.read();
-				if (whitespace != 0x0A)
-				{
-					// the spec says this is invalid but it happens in the
-					// real world so we must support it
-					pdfSource.unread(whitespace);
-				}
-			}
-			else if (whitespace != 0x0A)
-			{
-				// no whitespace after 'stream'; PDF ref. says 'should' so
-				// that is ok
-				pdfSource.unread(whitespace);
-			}
+			skipWhiteSpace();
 
 			/*
 			 * This needs to be dic.getItem because when we are parsing, the underlying object might still be null.
@@ -920,7 +901,8 @@ public class COSParser extends BaseParser
 			{
 				if(isLenient)
 				{
-					Log.w("PdfBoxAndroid", "The stream doesn't provide any stream length, using fallback readUntilEnd");
+					Log.w("PdfBox-Android", "The stream doesn't provide any stream length, using fallback readUntilEnd, at offset "
+											+ pdfSource.getOffset());
 				}
 				else
 				{
@@ -928,36 +910,13 @@ public class COSParser extends BaseParser
 				}
 			}
 
-			boolean useReadUntilEnd = false;
 			// get output stream to copy data to
 			if (streamLengthObj != null && validateStreamLength(streamLengthObj.longValue()))
 			{
 				out = stream.createFilteredStream(streamLengthObj);
-				long remainBytes = streamLengthObj.longValue();
-				int bytesRead = 0;
-				while (remainBytes > 0)
-				{
-					final int readBytes = pdfSource
-							.read(streamCopyBuf,
-									0,
-									(remainBytes > STREAMCOPYBUFLEN) ? STREAMCOPYBUFLEN : (int) remainBytes);
-					if (readBytes <= 0)
-					{
-						useReadUntilEnd = true;
-						out.close();
-						pdfSource.unread(bytesRead);
-						break;
-					}
-					out.write(streamCopyBuf, 0, readBytes);
-					remainBytes -= readBytes;
-					bytesRead += readBytes;
-				}
+				readValidStream(out, streamLengthObj);
 			}
 			else
-			{
-				useReadUntilEnd = true;
-			}
-			if (useReadUntilEnd)
 			{
 				out = stream.createFilteredStream();
 				readUntilEndStream(new EndstreamOutputStream(out));
@@ -992,6 +951,24 @@ public class COSParser extends BaseParser
 			}
 		}
 		return stream;
+	}
+
+	private void readValidStream(OutputStream out, COSNumber streamLengthObj) throws IOException
+	{
+		long remainBytes = streamLengthObj.longValue();
+		while (remainBytes > 0)
+		{
+			final int chunk = (remainBytes > STREAMCOPYBUFLEN) ? STREAMCOPYBUFLEN : (int) remainBytes;
+			final int readBytes = pdfSource.read(streamCopyBuf, 0, chunk);
+			if (readBytes <= 0)
+			{
+				// shouldn't happen, the stream length has already been validated
+				throw new IOException("read error at offset " + pdfSource.getOffset()
+						+ ": expected " + chunk + " bytes, but read() returns " + readBytes);
+			}
+			out.write(streamCopyBuf, 0, readBytes);
+			remainBytes -= readBytes;
+		}
 	}
 
 	private boolean validateStreamLength(long streamLength) throws IOException
@@ -1569,8 +1546,63 @@ public class COSParser extends BaseParser
 		}
 		return startXref;
 	}
-	
-	/**
+
+    /**
+     * Checks if the given string can be found at the current offset.
+     *
+     * @param string the bytes of the string to look for
+     * @return true if the bytes are in place, false if not
+     * @throws IOException if something went wrong
+     */
+    private boolean isString(byte[] string) throws IOException
+    {
+        boolean bytesMatching = false;
+        if (pdfSource.peek() == string[0])
+        {
+            int length = string.length;
+            byte[] bytesRead = new byte[length];
+            int numberOfBytes = pdfSource.read(bytesRead, 0, length);
+            while (numberOfBytes < length)
+            {
+                int readMore = pdfSource.read(bytesRead, numberOfBytes, length - numberOfBytes);
+                if (readMore < 0)
+                {
+                    break;
+                }
+                numberOfBytes += readMore;
+            }
+            if (Arrays.equals(string, bytesRead))
+            {
+                bytesMatching = true;
+            }
+            pdfSource.unread(bytesRead, 0, numberOfBytes);
+        }
+        return bytesMatching;
+    }
+
+    /**
+     * Checks if the given string can be found at the current offset.
+     *
+     * @param string the bytes of the string to look for
+     * @return true if the bytes are in place, false if not
+     * @throws IOException if something went wrong
+     */
+    private boolean isString(char[] string) throws IOException
+    {
+        boolean bytesMatching = true;
+        long originOffset = pdfSource.getOffset();
+        for (char c : string)
+        {
+            if (pdfSource.read() != c)
+            {
+                bytesMatching = false;
+            }
+        }
+        pdfSource.seek(originOffset);
+        return bytesMatching;
+    }
+
+    /**
 	 * This will parse the trailer from the stream and add it to the state.
 	 *
 	 * @return false on parsing error
@@ -1849,8 +1881,8 @@ public class COSParser extends BaseParser
 	}
 	
 	/**
-	 * Create a temporary file with the input stream. If the creation succeed, the {@linkplain #isTmpPDFFile} is set to
-	 * true. This Temporary file will be deleted at end of the parse method
+	 * Create a temporary file with the input stream. The caller must take care
+     * to delete this file at end of the parse method.
 	 *
 	 * @param input
 	 * @return the temporary file
@@ -1872,4 +1904,33 @@ public class COSParser extends BaseParser
 			IOUtils.closeQuietly(fos);
 		}
 	}
+
+    /**
+     * Parse the values of the trailer dictionary and return the root object
+     *
+     * @param trailer The trailer dictionary.
+     * @return The parsed root object
+     * @throws IOException If an IO error occurs or if the root object is
+     *                     missing in the trailer dictionary
+     */
+    protected COSBase parseTrailerValuesDynamically(COSDictionary trailer) throws IOException
+    {
+        // PDFBOX-1557 - ensure that all COSObject are loaded in the trailer
+        // PDFBOX-1606 - after securityHandler has been instantiated
+        for (COSBase trailerEntry : trailer.getValues())
+        {
+            if (trailerEntry instanceof COSObject)
+            {
+                COSObject tmpObj = (COSObject) trailerEntry;
+                parseObjectDynamically(tmpObj, false);
+            }
+        }
+        // parse catalog or root object
+        COSObject root = (COSObject) trailer.getItem(COSName.ROOT);
+        if (root == null)
+        {
+            throw new IOException("Missing root object specification in trailer.");
+        }
+        return parseObjectDynamically(root, false);
+    }
 }

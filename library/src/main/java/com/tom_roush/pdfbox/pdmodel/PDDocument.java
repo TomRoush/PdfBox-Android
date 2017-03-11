@@ -1,16 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -20,7 +10,6 @@ import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSStream;
-import com.tom_roush.pdfbox.cos.COSUpdateInfo;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.RandomAccessBufferedFileInputStream;
 import com.tom_roush.pdfbox.pdfparser.BaseParser;
@@ -45,7 +34,17 @@ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
 
-import android.util.Log;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This is the in-memory representation of the PDF document.
@@ -243,7 +242,7 @@ public class PDDocument implements Closeable
 		for (PDFieldTreeNode field : acroFormFields)
 		{
 			if (field instanceof PDSignatureField
-					&& ((PDSignatureField) field).getCOSObject().equals(signatureField.getCOSObject()))
+					&& field.getCOSObject().equals(signatureField.getCOSObject()))
 			{
 				checkFields = true;
 				signatureField.getDictionary().setNeedToBeUpdated(true);
@@ -352,7 +351,7 @@ public class PDDocument implements Closeable
 		{
 			annotations.add(signatureField.getWidget());
 		}
-		((COSUpdateInfo)page.getCOSObject()).setNeedToBeUpdated(true);
+		page.getCOSObject().setNeedToBeUpdated(true);
 	}
 
 	/**
@@ -367,7 +366,7 @@ public class PDDocument implements Closeable
 			SignatureOptions options) throws IOException
 	{
 		PDDocumentCatalog catalog = getDocumentCatalog();
-		((COSUpdateInfo) catalog.getCOSObject()).setNeedToBeUpdated(true);
+		catalog.getCOSObject().setNeedToBeUpdated(true);
 
 		PDAcroForm acroForm = catalog.getAcroForm();
 		if (acroForm == null)

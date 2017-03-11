@@ -1,10 +1,5 @@
 package com.tom_roush.pdfbox.pdfwriter;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.Map;
-
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -15,6 +10,11 @@ import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSString;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
+import java.util.Map;
+
 /**
  * A class that will take a list of tokens and write out a stream with them.
  *
@@ -22,7 +22,7 @@ import com.tom_roush.pdfbox.cos.COSString;
  */
 public class ContentStreamWriter
 {
-    private OutputStream output;
+    private final OutputStream output;
     /**
      * space character.
      */

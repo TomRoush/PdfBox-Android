@@ -16,13 +16,13 @@
  */
 package com.tom_roush.fontbox.afm;
 
+import com.tom_roush.fontbox.util.BoundingBox;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringTokenizer;
-
-import com.tom_roush.fontbox.util.BoundingBox;
 
 /**
  * This class is used to parse AFM(Adobe Font Metrics) documents.
@@ -674,7 +674,7 @@ public class AFMParser
      *
      * @throws IOException If the string is in an invalid format.
      */
-    private static String hexToString( String hexString ) throws IOException
+    private String hexToString( String hexString ) throws IOException
     {
         if( hexString.length() < 2 )
         {
@@ -917,7 +917,7 @@ public class AFMParser
      *
      * @throws IOException If the semicolon is missing.
      */
-    private static void verifySemicolon( StringTokenizer tokenizer ) throws IOException
+    private void verifySemicolon( StringTokenizer tokenizer ) throws IOException
     {
         if( tokenizer.hasMoreTokens() )
         {
@@ -1033,7 +1033,7 @@ public class AFMParser
      *
      * @return true If the character is whitespace as defined by the AFM spec.
      */
-    private static boolean isEOL( int character )
+    private boolean isEOL( int character )
     {
         return character == 0x0D ||
                character == 0x0A;
@@ -1046,7 +1046,7 @@ public class AFMParser
      *
      * @return true If the character is whitespace as defined by the AFM spec.
      */
-    private static boolean isWhitespace( int character )
+    private boolean isWhitespace( int character )
     {
         return character == ' ' ||
                character == '\t' ||

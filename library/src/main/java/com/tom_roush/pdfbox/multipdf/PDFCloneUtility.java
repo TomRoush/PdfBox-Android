@@ -1,10 +1,5 @@
 package com.tom_roush.pdfbox.multipdf;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -15,6 +10,11 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.COSStreamArray;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Utility class used to clone PDF objects. It keeps track of objects it has already cloned.
@@ -28,7 +28,7 @@ class PDFCloneUtility
      * Creates a new instance for the given target document.
      * @param dest the destination PDF document that will receive the clones
      */
-    public PDFCloneUtility(PDDocument dest)
+    PDFCloneUtility(PDDocument dest)
     {
         this.destination = dest;
     }
@@ -166,16 +166,6 @@ class PDFCloneUtility
               return;
               //we are done, it has already been converted. // ### Is that correct for cloneMerge???
           }
-          else if( base instanceof List )
-          {
-              COSArray array = new COSArray();
-              List<?> list = (List<?>)base;
-              for (Object obj : list)
-              {
-                  array.add(cloneForNewDocument(obj));
-              }
-              ((List<COSArray>)target).add(array);
-          }
           else if( base instanceof COSObjectable && !(base instanceof COSBase) )
           {
               cloneMerge(base.getCOSObject(), target.getCOSObject() );
@@ -215,7 +205,6 @@ class PDFCloneUtility
                           cloneForNewDocument(entry.getValue()));
               }
               retval = stream.getStream();
-              target = retval;
           }
           else if( base instanceof COSDictionary )
           {

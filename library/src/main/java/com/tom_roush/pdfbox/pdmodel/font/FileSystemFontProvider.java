@@ -6,6 +6,7 @@ import com.tom_roush.fontbox.cff.CFFFont;
 import com.tom_roush.fontbox.cff.CFFParser;
 import com.tom_roush.fontbox.ttf.NamingTable;
 import com.tom_roush.fontbox.ttf.TTFParser;
+import com.tom_roush.fontbox.ttf.TrueTypeCollection;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.fontbox.type1.Type1Font;
 import com.tom_roush.fontbox.util.autodetect.FontFileFinder;
@@ -50,10 +51,10 @@ final class FileSystemFontProvider extends FontProvider
             // If MINIMUM, load only Droid fonts
             try
             {
-                addOpenTypeFont(new File("/system/fonts/DroidSans.ttf"));
-                addOpenTypeFont(new File("/system/fonts/DroidSans-Bold.ttf"));
-                addOpenTypeFont(new File("/system/fonts/DroidSansMono.ttf"));
-//                addOpenTypeFont(new File("/system/fonts/DroidSansFallback.ttf"));
+                addTrueTypeFont(new File("/system/fonts/DroidSans.ttf"));
+                addTrueTypeFont(new File("/system/fonts/DroidSans-Bold.ttf"));
+                addTrueTypeFont(new File("/system/fonts/DroidSansMono.ttf"));
+//                addTrueTypeFont(new File("/system/fonts/DroidSansFallback.ttf"));
                 // XXX: list may need to be expanded for other character sets
                 return;
             } catch (IOException e)
@@ -76,7 +77,12 @@ final class FileSystemFontProvider extends FontProvider
                 if (fontFile.getPath().toLowerCase().endsWith(".ttf") ||
                     fontFile.getPath().toLowerCase().endsWith(".otf"))
                 {
-                    addOpenTypeFont(fontFile);
+                    addTrueTypeFont(fontFile);
+                }
+                else if (fontFile.getPath().toLowerCase().endsWith(".ttc") ||
+                        fontFile.getPath().toLowerCase().endsWith(".otc"))
+                {
+                    addTrueTypeCollection(fontFile);
                 }
                 else if (fontFile.getPath().toLowerCase().endsWith(".pfb"))
                 {
@@ -93,25 +99,62 @@ final class FileSystemFontProvider extends FontProvider
     }
 
     /**
-     * Adds an OTF or TTF font to the file cache. To reduce memory, the parsed font is not cached.
+     * Adds a TTC or OTC to the file cache. To reduce memory, the parsed font is not cached.
      */
-    private void addOpenTypeFont(File otfFile) throws IOException
+    private void addTrueTypeCollection(File ttcFile) throws IOException
     {
-        TTFParser ttfParser = new TTFParser(false, true);
-        TrueTypeFont ttf = null;
+        TrueTypeCollection ttc = null;
         try
         {
-            ttf = ttfParser.parse(otfFile);
+            ttc = new TrueTypeCollection(ttcFile);
+            for (TrueTypeFont ttf : ttc.getFonts())
+            {
+                addTrueTypeFontImpl(ttf, ttcFile);
+            }
         }
         catch (NullPointerException e) // TTF parser is buggy
         {
-        	Log.e("PdfBoxAndroid", "Could not load font file: " + otfFile, e);
+            Log.e("PdfBox-Android", "Could not load font file: " + ttcFile, e);
         }
         catch (IOException e)
         {
-        	Log.e("PdfBoxAndroid", "Could not load font file: " + otfFile, e);
+            Log.e("PdfBox-Android", "Could not load font file: " + ttcFile, e);
         }
+        finally
+        {
+            if (ttc != null)
+            {
+                ttc.close();
+            }
+        }
+    }
 
+    /**
+     * Adds an OTF or TTF font to the file cache. To reduce memory, the parsed font is not cached.
+     */
+    private void addTrueTypeFont(File ttfFile) throws IOException
+    {
+        TTFParser ttfParser = new TTFParser(false, true);
+        try
+        {
+            TrueTypeFont ttf = ttfParser.parse(ttfFile);
+            addTrueTypeFontImpl(ttf, ttfFile);
+        }
+        catch (NullPointerException e) // TTF parser is buggy
+        {
+            Log.e("PdfBoxAndroid", "Could not load font file: " + ttfFile, e);
+        }
+        catch (IOException e)
+        {
+            Log.e("PdfBoxAndroid", "Could not load font file: " + ttfFile, e);
+        }
+    }
+
+    /**
+     * Adds an OTF or TTf font to the file cache. To reduce memory, the parsed font is not cached.
+     */
+    private void addTrueTypeFontImpl(TrueTypeFont ttf, File file) throws IOException
+    {
         try
         {
         	// check for 'name' table
@@ -124,7 +167,7 @@ final class FileSystemFontProvider extends FontProvider
         	}
             if (nameTable == null)
             {
-            	Log.w("PdfBoxAndroid", "Missing 'name' table in font " + otfFile);
+            	Log.w("PdfBoxAndroid", "Missing 'name' table in font " + file);
             }
             else
             {
@@ -137,12 +180,12 @@ final class FileSystemFontProvider extends FontProvider
                     if (ttf.getTableMap().get("CFF ") != null)
                     {
                         format = "OTF";
-                        cffFontFiles.putAll(toMap(getNames(ttf), otfFile));
+                        cffFontFiles.putAll(toMap(getNames(ttf), file));
                     }
                     else
                     {
                         format = "TTF";
-                        ttfFontFiles.putAll(toMap(getNames(ttf), otfFile));
+                        ttfFontFiles.putAll(toMap(getNames(ttf), file));
                     }
 
                     Log.v("PdfBoxAndroid", format +": '" + psName + "' / '" + nameTable.getFontFamily() +
@@ -150,7 +193,7 @@ final class FileSystemFontProvider extends FontProvider
                 }
                 else
                 {
-                	Log.w("PdfBoxAndroid", "Missing 'name' entry for PostScript name in font " + otfFile);
+                	Log.w("PdfBoxAndroid", "Missing 'name' entry for PostScript name in font " + file);
                 }
             }
         }
@@ -197,10 +240,9 @@ final class FileSystemFontProvider extends FontProvider
         File file = ttfFontFiles.get(postScriptName);
         if (file != null)
         {
-            TTFParser ttfParser = new TTFParser(false, true);
             try
             {
-                ttf = ttfParser.parse(file);
+                ttf = readTrueTypeFont(postScriptName, file);
 
                 for (String name : getNames(ttf))
                 {
@@ -221,6 +263,27 @@ final class FileSystemFontProvider extends FontProvider
         return null;
     }
 
+    private TrueTypeFont readTrueTypeFont(String postScriptName, File file) throws IOException
+    {
+        if (file.getName().toLowerCase().endsWith(".ttc"))
+        {
+            TrueTypeCollection ttc = new TrueTypeCollection(file);
+            for (TrueTypeFont ttf : ttc.getFonts())
+            {
+                if (ttf.getName().equals(postScriptName))
+                {
+                    return ttf;
+                }
+            }
+            throw new IOException("Font " + postScriptName + " not found in " + file);
+        }
+        else
+        {
+            TTFParser ttfParser = new TTFParser(false, true);
+            return ttfParser.parse(file);
+        }
+    }
+
     @Override
     public synchronized CFFFont getCFFFont(String postScriptName)
     {
@@ -236,6 +299,7 @@ final class FileSystemFontProvider extends FontProvider
             InputStream input = null;
             try
             {
+                // todo JH: we don't yet support loading CFF fonts from OTC collections 
                 input = new FileInputStream(file);
                 byte[] bytes = IOUtils.toByteArray(input);
                 CFFParser cffParser = new CFFParser();

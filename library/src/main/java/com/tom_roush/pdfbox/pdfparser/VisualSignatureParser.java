@@ -1,7 +1,6 @@
 package com.tom_roush.pdfbox.pdfparser;
 
-import java.io.IOException;
-import java.io.InputStream;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -11,7 +10,10 @@ import com.tom_roush.pdfbox.cos.COSObjectKey;
 import com.tom_roush.pdfbox.cos.COSUpdateInfo;
 import com.tom_roush.pdfbox.pdfwriter.COSWriter;
 
-import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static com.tom_roush.pdfbox.util.Charsets.ISO_8859_1;
 
 public class VisualSignatureParser extends BaseParser 
 {

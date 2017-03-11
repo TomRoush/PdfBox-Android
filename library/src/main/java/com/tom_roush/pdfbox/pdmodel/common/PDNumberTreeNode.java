@@ -1,12 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel.common;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -14,7 +8,13 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
 
-import android.util.Log;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class represents a PDF Number tree. See the PDF Reference 1.7 section
@@ -244,7 +244,7 @@ public class PDNumberTreeNode implements COSObjectable
             for (Integer key : keys)
             {
                 array.add( COSInteger.get( key ) );
-                COSObjectable obj = (COSObjectable)numbers.get( key );
+                COSObjectable obj = numbers.get(key);
                 array.add( obj );
             }
             Integer lower = null;

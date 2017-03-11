@@ -16,14 +16,14 @@
  */
 package com.tom_roush.pdfbox.filter;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.io.IOUtils;
 
-import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Decompresses data encoded using a DCT (discrete cosine transform)
@@ -132,7 +132,7 @@ final class DCTFilter extends Filter
 //    } TODO
 
     // clamps value to 0-255 range
-    private static int clamp(float value)
+    private int clamp(float value)
     {
         return (int)((value < 0) ? 0 : ((value > 255) ? 255 : value));
     }

@@ -1,9 +1,5 @@
 package com.tom_roush.pdfbox.multipdf;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDAction;
@@ -12,6 +8,10 @@ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Split a document into several other documents.
@@ -218,11 +218,8 @@ public class Splitter
     				((PDPageDestination) destination).setPage(null);
     			}
     		}
-    		else
-    		{
-    			// TODO preserve links to pages within the splitted result
-    			annotation.setPage(null);
-    		}
+            // TODO preserve links to pages within the splitted result
+            annotation.setPage(null);
     	}
     }
 

@@ -1,8 +1,8 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -17,9 +17,9 @@ import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 /**
  * An Image XObject.
@@ -98,7 +98,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
     {
         super(repair(stream, decodeResult), COSName.IMAGE);
         this.resources = resources;
-//        this.colorSpace = decodeResult.getJPXColorSpace();TODO
+//        this.colorSpace = decodeResult.getJPXColorSpace();TODO: PdfBox-Android
     }
 
     // repairs parameters using decode result
@@ -196,7 +196,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
 //            throw new IllegalStateException("Image is not a stencil");
 //        }
 //        return SampledImageReader.getStencilImage(this, paint);
-//    }TODO
+//    }TODO: PdfBox-Android
 
     /**
      * Returns an RGB buffered image containing the opaque image stream without any masks applied.
@@ -221,6 +221,17 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
         int width = image.getWidth();
         int height = image.getHeight();
+
+        if (mask.getWidth() < width || mask.getHeight() < height)
+        {
+            mask = Bitmap.createScaledBitmap(mask, width, height, true);
+        }
+        else if (mask.getWidth() > width || mask.getHeight() > height)
+        {
+            width = mask.getWidth();
+            height = mask.getHeight();
+            image = Bitmap.createScaledBitmap(image, width, height, true);
+        }
 
         // compose to ARGB
         Bitmap masked = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);

@@ -1,14 +1,6 @@
 package com.tom_roush.pdfbox.pdfparser;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.regex.Pattern;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -26,7 +18,15 @@ import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.PushBackInputStream;
 
-import android.util.Log;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.regex.Pattern;
+
+import static com.tom_roush.pdfbox.util.Charsets.ISO_8859_1;
 
 /**
  * This class is used to contain parsing logic that will be used by both the
@@ -40,11 +40,6 @@ public abstract class BaseParser implements Closeable
 	private static final long OBJECT_NUMBER_THRESHOLD = 10000000000L;
 
 	private static final long GENERATION_NUMBER_THRESHOLD = 65535;
-	
-	/**
-	 * String constant for ISO-8859-1 charset.
-	 */
-	public static final String ISO_8859_1 = "ISO-8859-1";
 
 	/**
 	 * system property allowing to define size of push back buffer.
@@ -108,7 +103,7 @@ public abstract class BaseParser implements Closeable
 	 * This is a string constant that will be used for comparisons.
 	 */
 	private static final String NULL = "null";
-	
+
 	/**
 	 * ASCII code for line feed.
 	 */
@@ -152,9 +147,9 @@ public abstract class BaseParser implements Closeable
 		{
 			pushbacksize = Integer.getInteger(PROP_PUSHBACK_SIZE, 65536);
 		}
-		catch (SecurityException e) 
+		catch (SecurityException e)
 		{
-			// PDFBOX-1946 getInteger calls System.getProperties, 
+			// PDFBOX-1946 getInteger calls System.getProperties,
 			// which can get exception in an applet
 			// ignore and use default
 		}
@@ -163,19 +158,8 @@ public abstract class BaseParser implements Closeable
 	}
 
 	/**
-	 * Constructor.
-	 *
-	 * @param input The array to read the data from.
-	 * @throws IOException If there is an error reading the byte data.
-	 */
-	protected BaseParser(byte[] input) throws IOException 
-	{
-		this(new ByteArrayInputStream(input));
-	}
-
-	/**
 	 * Returns a new instance of a COSStream.
-	 * 
+	 *
 	 * @param dictionary the dictionary belonging to the stream
 	 * @return the new COSStream
 	 */
@@ -270,10 +254,10 @@ public abstract class BaseParser implements Closeable
 					{
 						// in addition to stopping when we find / or >, we also want
 						// to stop when we find endstream or endobj.
-						if(read==E) 
+						if(read==E)
 						{
 							read = pdfSource.read();
-							if(read==N) 
+							if(read==N)
 							{
 								read = pdfSource.read();
 								if(read==D)
@@ -352,40 +336,7 @@ public abstract class BaseParser implements Closeable
 		{
 			readExpectedString(STREAM_STRING);
 
-			//PDF Ref 3.2.7 A stream must be followed by either
-			//a CRLF or LF but nothing else.
-
-			int whitespace = pdfSource.read();
-
-			//see brother_scan_cover.pdf, it adds whitespaces
-			//after the stream but before the start of the
-			//data, so just read those first
-			while (ASCII_SPACE == whitespace)
-			{
-				whitespace = pdfSource.read();
-			}
-
-			if( ASCII_CR == whitespace )
-			{
-				whitespace = pdfSource.read();
-				if( ASCII_LF != whitespace )
-				{
-					pdfSource.unread( whitespace );
-					//The spec says this is invalid but it happens in the real
-					//world so we must support it.
-				}
-			}
-			else if (ASCII_LF == whitespace)
-			{
-				//that is fine
-			}
-			else
-			{
-				//we are in an error.
-				//but again we will do a lenient parsing and just assume that everything
-				//is fine
-				pdfSource.unread( whitespace );
-			}
+			skipWhiteSpace();
 
 			// This needs to be dic.getItem because when we are parsing, the underlying object
 			// might still be null.
@@ -434,7 +385,7 @@ public abstract class BaseParser implements Closeable
 					int     nextEndstreamCIdx = 0;
 					for ( int cIdx = 0; cIdx < readCount; cIdx++ )
 					{
-						final int ch = strmBuf[ cIdx ] & 0xff; 
+						final int ch = strmBuf[ cIdx ] & 0xff;
 						if ( ch == ENDSTREAM[ nextEndstreamCIdx ] )
 						{
 							if ( ++nextEndstreamCIdx >= ENDSTREAM.length )
@@ -456,7 +407,7 @@ public abstract class BaseParser implements Closeable
 					// if 'endstream' was not found fall back to scanning
 					if ( ! foundEndstream )
 					{
-						Log.w("PdfBoxAndroid", "Specified stream length " + length 
+						Log.w("PdfBoxAndroid", "Specified stream length " + length
 								+ " is wrong. Fall back to reading stream until 'endstream'.");
 
 						// push back all read stream bytes
@@ -535,18 +486,56 @@ public abstract class BaseParser implements Closeable
 		return stream;
 	}
 
+    protected void skipWhiteSpace() throws IOException
+    {
+        //PDF Ref 3.2.7 A stream must be followed by either
+        //a CRLF or LF but nothing else.
+
+        int whitespace = pdfSource.read();
+
+        //see brother_scan_cover.pdf, it adds whitespaces
+        //after the stream but before the start of the
+        //data, so just read those first
+        while (ASCII_SPACE == whitespace)
+        {
+            whitespace = pdfSource.read();
+        }
+
+        if (ASCII_CR == whitespace)
+        {
+            whitespace = pdfSource.read();
+            if (ASCII_LF != whitespace)
+            {
+                pdfSource.unread(whitespace);
+                //The spec says this is invalid but it happens in the real
+                //world so we must support it.
+            }
+        }
+        else if (ASCII_LF == whitespace)
+        {
+            //that is fine
+        }
+        else
+        {
+            //we are in an error.
+            //but again we will do a lenient parsing and just assume that everything
+            //is fine
+            pdfSource.unread(whitespace);
+        }
+    }
+
 	/**
 	 * This method will read through the current stream object until
 	 * we find the keyword "endstream" meaning we're at the end of this
 	 * object. Some pdf files, however, forget to write some endstream tags
 	 * and just close off objects with an "endobj" tag so we have to handle
 	 * this case as well.
-	 * 
+	 *
 	 * This method is optimized using buffered IO and reduced number of
 	 * byte compare operations.
-	 * 
+	 *
 	 * @param out  stream we write out to.
-	 * 
+	 *
 	 * @throws IOException if something went wrong
 	 */
 	protected void readUntilEndStream( final OutputStream out ) throws IOException
@@ -560,7 +549,7 @@ public abstract class BaseParser implements Closeable
 		final int quickTestOffset = 5;
 
 		// read next chunk into buffer; already matched chars are added to beginning of buffer
-		while ( ( bufSize = pdfSource.read( strmBuf, charMatchCount, STRMBUFLEN - charMatchCount ) ) > 0 ) 
+		while ( ( bufSize = pdfSource.read( strmBuf, charMatchCount, STRMBUFLEN - charMatchCount ) ) > 0 )
 		{
 			bufSize += charMatchCount;
 
@@ -568,7 +557,7 @@ public abstract class BaseParser implements Closeable
 			int quickTestIdx;
 
 			// iterate over buffer, trying to find keyword match
-			for ( int maxQuicktestIdx = bufSize - quickTestOffset; bIdx < bufSize; bIdx++ ) 
+			for ( int maxQuicktestIdx = bufSize - quickTestOffset; bIdx < bufSize; bIdx++ )
 			{
 				// reduce compare operations by first test last character we would have to
 				// match if current one matches; if it is not a character from keywords
@@ -576,11 +565,11 @@ public abstract class BaseParser implements Closeable
 				// this shortcut is inspired by the Boyer-Moore string search algorithm
 				// and can reduce parsing time by approx. 20%
 				if ( ( charMatchCount == 0 ) &&
-						( ( quickTestIdx = bIdx + quickTestOffset ) < maxQuicktestIdx ) ) 
+						( ( quickTestIdx = bIdx + quickTestOffset ) < maxQuicktestIdx ) )
 				{
 
 					final byte ch = strmBuf[quickTestIdx];
-					if ( ( ch > 't' ) || ( ch < 'a' ) ) 
+					if ( ( ch > 't' ) || ( ch < 'a' ) )
 					{
 						// last character we would have to match if current character would match
 						// is not a character from keywords -> jump behind and start over
@@ -592,36 +581,36 @@ public abstract class BaseParser implements Closeable
 				// could be negative - but we only compare to ASCII
 				final byte ch = strmBuf[bIdx];
 
-				if ( ch == keyw[ charMatchCount ] ) 
+				if ( ch == keyw[ charMatchCount ] )
 				{
-					if ( ++charMatchCount == keyw.length ) 
+					if ( ++charMatchCount == keyw.length )
 					{
 						// match found
 						bIdx++;
 						break;
 					}
-				} 
-				else 
+				}
+				else
 				{
-					if ( ( charMatchCount == 3 ) && ( ch == ENDOBJ[ charMatchCount ] ) ) 
+					if ( ( charMatchCount == 3 ) && ( ch == ENDOBJ[ charMatchCount ] ) )
 					{
 						// maybe ENDSTREAM is missing but we could have ENDOBJ
 						keyw = ENDOBJ;
 						charMatchCount++;
-					} 
-					else 
+					}
+					else
 					{
 						// no match; incrementing match start by 1 would be dumb since we already know matched chars
 						// depending on current char read we may already have beginning of a new match:
 						// 'e': first char matched;
 						// 'n': if we are at match position idx 7 we already read 'e' thus 2 chars matched
-						// for each other char we have to start matching first keyword char beginning with next 
+						// for each other char we have to start matching first keyword char beginning with next
 						// read position
 						charMatchCount = ( ch == E ) ? 1 : ( ( ch == N ) && ( charMatchCount == 7 ) ) ? 2 : 0;
 						// search again for 'endstream'
 						keyw = ENDSTREAM;
 					}
-				} 
+				}
 			}  // for
 
 			int contentBytes = Math.max( 0, bIdx - charMatchCount );
@@ -631,13 +620,13 @@ public abstract class BaseParser implements Closeable
 			{
 				out.write( strmBuf, 0, contentBytes );
 			}
-			if ( charMatchCount == keyw.length ) 
+			if ( charMatchCount == keyw.length )
 			{
 				// keyword matched; unread matched keyword (endstream/endobj) and following buffered content
 				pdfSource.unread( strmBuf, contentBytes, bufSize - contentBytes );
 				break;
-			} 
-			else 
+			}
+			else
 			{
 				// copy matched chars at start of buffer
 				System.arraycopy( keyw, 0, strmBuf, 0, charMatchCount );
@@ -733,7 +722,7 @@ public abstract class BaseParser implements Closeable
 			throw new IOException( "parseCOSString string should start with '(' or '<' and not '" +
 					nextChar + "' " + pdfSource );
 		}
-		
+
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		//This is the number of braces read
@@ -886,7 +875,7 @@ public abstract class BaseParser implements Closeable
 	 * be able to skip to next object start.
 	 *
 	 * We assume starting '&lt;' was already read.
-	 * 
+	 *
 	 * @return The parsed PDF string.
 	 *
 	 * @throws IOException If there is an error reading from the stream.
@@ -905,7 +894,7 @@ public abstract class BaseParser implements Closeable
 			{
 				break;
 			}
-			else if ( c < 0 ) 
+			else if ( c < 0 )
 			{
 				throw new IOException( "Missing closing bracket for hex string. Reached EOS." );
 			}
@@ -925,7 +914,7 @@ public abstract class BaseParser implements Closeable
 				}
 
 				// read till the closing bracket was found
-				do 
+				do
 				{
 					c = pdfSource.read();
 				}
@@ -934,7 +923,7 @@ public abstract class BaseParser implements Closeable
 				// might have reached EOF while looking for the closing bracket
 				// this can happen for malformed PDFs only. Make sure that there is
 				// no endless loop.
-				if ( c < 0 ) 
+				if ( c < 0 )
 				{
 					throw new IOException( "Missing closing bracket for hex string. Reached EOS." );
 				}
@@ -1257,7 +1246,7 @@ public abstract class BaseParser implements Closeable
 					int peek = pdfSource.peek();
 					// we can end up in an infinite loop otherwise
 					throw new IOException( "Unknown dir object c='" + c +
-							"' cInt=" + (int)c + " peek='" + (char)peek 
+							"' cInt=" + (int)c + " peek='" + (char)peek
 							+ "' peekInt=" + peek + " " + pdfSource.getOffset() );
 				}
 
@@ -1461,7 +1450,7 @@ public abstract class BaseParser implements Closeable
 	{
 		return isLF(c) || isCR(c);
 	}
-	
+
 	private boolean isLF(int c)
 	{
 		return ASCII_LF == c;
@@ -1540,61 +1529,6 @@ public abstract class BaseParser implements Closeable
 	protected boolean isDigit(int c)
 	{
 		return c >= ASCII_ZERO && c <= ASCII_NINE;
-	}
-
-	/**
-	 * Checks if the given string can be found at the current offset.
-	 *
-	 * @param string the bytes of the string to look for
-	 * @return true if the bytes are in place, false if not
-	 * @throws IOException if something went wrong
-	 */
-	protected boolean isString(byte[] string) throws IOException
-	{
-		boolean bytesMatching = false;
-		if (pdfSource.peek() == string[0])
-		{
-			int length = string.length;
-			byte[] bytesRead = new byte[length];
-			int numberOfBytes = pdfSource.read(bytesRead, 0, length);
-			while (numberOfBytes < length)
-			{
-				int readMore = pdfSource.read(bytesRead, numberOfBytes, length - numberOfBytes);
-				if (readMore < 0)
-				{
-					break;
-				}
-				numberOfBytes += readMore;
-			}
-			if (Arrays.equals(string, bytesRead))
-			{
-				bytesMatching = true;
-			}
-			pdfSource.unread(bytesRead, 0, numberOfBytes);
-		}
-		return bytesMatching;
-	}
-
-	/**
-	 * Checks if the given string can be found at the current offset.
-	 *
-	 * @param string the bytes of the string to look for
-	 * @return true if the bytes are in place, false if not
-	 * @throws IOException if something went wrong
-	 */
-	protected boolean isString(char[] string) throws IOException
-	{
-		boolean bytesMatching = true;
-		long originOffset = pdfSource.getOffset();
-		for (char c : string)
-		{
-			if (pdfSource.read() != c)
-			{
-				bytesMatching = false;
-			}
-		}
-		pdfSource.seek(originOffset);
-		return bytesMatching;
 	}
 
 	/**
@@ -1744,7 +1678,7 @@ public abstract class BaseParser implements Closeable
 		}
 		return buffer;
 	}
-	
+
 	/**
 	 * Skip to the start of the next object. This is used to recover from a
 	 * corrupt object. This should handle all cases that parseObject supports.
@@ -1793,7 +1727,7 @@ public abstract class BaseParser implements Closeable
 			pdfSource.close();
 		}
 	}
-	
+
 	/**
 	 * Parse object key (number and generation).
 	 *

@@ -1,5 +1,7 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import com.tom_roush.pdfbox.util.Charsets;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,8 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import com.tom_roush.pdfbox.util.Charsets;
 
 /**
  * Writes ToUnicode Mapping Files.
@@ -24,7 +24,7 @@ final class ToUnicodeWriter
     /**
      * Creates a new ToUnicode CMap writer.
      */
-    public ToUnicodeWriter()
+    ToUnicodeWriter()
     {
         this.wMode = 0;
     }

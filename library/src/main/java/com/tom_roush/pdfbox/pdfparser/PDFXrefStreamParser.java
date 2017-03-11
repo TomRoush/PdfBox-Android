@@ -1,9 +1,5 @@
 package com.tom_roush.pdfbox.pdfparser;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDocument;
@@ -11,6 +7,10 @@ import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSObjectKey;
 import com.tom_roush.pdfbox.cos.COSStream;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * This will parse a PDF 1.5 (or better) Xref stream and
@@ -20,8 +20,8 @@ import com.tom_roush.pdfbox.cos.COSStream;
  */
 public class PDFXrefStreamParser extends BaseParser
 {
-    private COSStream stream;
-    private XrefTrailerResolver xrefTrailerResolver;
+    private final COSStream stream;
+    private final XrefTrailerResolver xrefTrailerResolver;
 
     /**
      * Constructor.

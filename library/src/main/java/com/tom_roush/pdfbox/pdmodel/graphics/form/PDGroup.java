@@ -6,6 +6,8 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
+import java.io.IOException;
+
 /**
  * Transparency group.
  * 
@@ -13,7 +15,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
  */
 public final class PDGroup implements COSObjectable
 {
-    private COSDictionary dictionary;
+    private final COSDictionary dictionary;
     private COSName subType;
     private PDColorSpace colorSpace;
 
@@ -26,6 +28,7 @@ public final class PDGroup implements COSObjectable
         dictionary = dic;
     }
 
+    @Override
     public COSBase getCOSObject()
     {
         return dictionary;
@@ -50,18 +53,19 @@ public final class PDGroup implements COSObjectable
 
     /**
      * Returns the blending color space
+     *
      * @return color space
      * @throws IOException
      */
-//    public PDColorSpace getColorSpace() throws IOException
-//    {
-//        if (colorSpace == null)
-//        {
-//            colorSpace = PDColorSpace.create(getCOSDictionary().getDictionaryObject(
-//                    COSName.COLORSPACE));
-//        }
-//        return colorSpace;
-//    }
+    public PDColorSpace getColorSpace() throws IOException
+    {
+        if (colorSpace == null)
+        {
+            colorSpace = PDColorSpace.create(getCOSDictionary().getDictionaryObject(
+                    COSName.COLORSPACE));
+        }
+        return colorSpace;
+    }
 
     /**
      * Returns true if this group is isolated. Isolated groups begin with the fully transparent
