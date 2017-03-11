@@ -14,6 +14,8 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
+import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
+import com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.JPEGFactory;
@@ -29,10 +31,13 @@ import com.tom_roush.pdfbox.rendering.PDFRenderer;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
+import org.spongycastle.jce.provider.BouncyCastleProvider;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -230,6 +235,59 @@ public class MainActivity extends Activity {
 			}
 		}
 		tv.setText(parsedText);
+	}
+
+	/**
+	 * Creates a simple pdf and encrypts
+	 */
+	public void createEncryptedPdf()
+	{
+		String path = root.getAbsolutePath() + "/Download/crypt.pdf";
+
+		int keyLength = 128; // 128 bit is the highest currently supported
+
+		// Limit permissions of those without the password
+		AccessPermission ap = new AccessPermission();
+		ap.setCanPrint(false);
+
+		// Sets the owner password and user password
+		StandardProtectionPolicy spp = new StandardProtectionPolicy("12345", "hi", ap);
+
+		// Setups up the encryption parameters
+		spp.setEncryptionKeyLength(keyLength);
+		spp.setPermissions(ap);
+		BouncyCastleProvider provider = new BouncyCastleProvider();
+		Security.addProvider(provider);
+
+		PDFont font = PDType1Font.HELVETICA;
+		PDDocument document = new PDDocument();
+		PDPage page = new PDPage();
+
+		document.addPage(page);
+
+		try
+		{
+			PDPageContentStream contentStream = new PDPageContentStream(document, page);
+
+			// Write Hello World in blue text
+			contentStream.beginText();
+			contentStream.setNonStrokingColor(15, 38, 192);
+			contentStream.setFont(font, 12);
+			contentStream.newLineAtOffset(100, 700);
+			contentStream.showText("Hello World");
+			contentStream.endText();
+			contentStream.close();
+
+			// Save the final pdf document to a file
+			document.protect(spp); // Apply the protections to the PDF
+			document.save(path);
+			document.close();
+
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	/**
