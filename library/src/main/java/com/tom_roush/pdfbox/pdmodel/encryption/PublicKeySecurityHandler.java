@@ -1,32 +1,9 @@
 package com.tom_roush.pdfbox.pdmodel.encryption;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.AlgorithmParameterGenerator;
-import java.security.AlgorithmParameters;
-import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.Iterator;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
+
 import org.spongycastle.asn1.ASN1InputStream;
 import org.spongycastle.asn1.ASN1ObjectIdentifier;
 import org.spongycastle.asn1.ASN1Primitive;
@@ -52,6 +29,30 @@ import org.spongycastle.cms.RecipientId;
 import org.spongycastle.cms.RecipientInformation;
 import org.spongycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.AlgorithmParameterGenerator;
+import java.security.AlgorithmParameters;
+import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.Iterator;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
 
 /**
  * This class implements the public key security handler described in the PDF specification.
@@ -228,7 +229,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 			throw new IOException(e);
 		}
 	}
-	
+
 	private void appendCertInfo(StringBuilder extraInfo, KeyTransRecipientId ktRid,
 			X509Certificate certificate, X509CertificateHolder materialCert)
 	{
@@ -272,7 +273,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 			Security.addProvider(new BouncyCastleProvider());
 
 			PDEncryption dictionary = doc.getEncryption();
-			if (dictionary == null) 
+			if (dictionary == null)
 			{
 				dictionary = new PDEncryption();
 			}
@@ -280,6 +281,10 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 			dictionary.setFilter(FILTER);
 			dictionary.setLength(this.keyLength);
 			dictionary.setVersion(2);
+
+			// remove CF, StmF, and StrF entries that may be left from a previous encryption
+			dictionary.removeV45filters();
+
 			dictionary.setSubFilter(SUBFILTER);
 
 			// create the 20 bytes seed
@@ -343,7 +348,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 			throw new IOException(e);
 		}
 	}
-	
+
 	private byte[][] computeRecipientsField(byte[] seed) throws GeneralSecurityException, IOException
 	{
 		byte[][] recipientsField = new byte[policy.getNumberOfRecipients()][];
@@ -424,7 +429,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 		DERSet set = new DERSet(new RecipientInfo(recipientInfo));
 
 		AlgorithmIdentifier algorithmId = new AlgorithmIdentifier(new ASN1ObjectIdentifier(algorithm), object);
-		EncryptedContentInfo encryptedInfo = 
+		EncryptedContentInfo encryptedInfo =
 				new EncryptedContentInfo(PKCSObjectIdentifiers.data, algorithmId, new DEROctetString(bytes));
 		EnvelopedData enveloped = new EnvelopedData(null, set, encryptedInfo, (ASN1Set) null);
 
@@ -467,5 +472,14 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 		DEROctetString octets = new DEROctetString(cipher.doFinal(abyte0));
 		RecipientIdentifier recipientId = new RecipientIdentifier(serial);
 		return new KeyTransRecipientInfo(recipientId, algorithmId, octets);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean hasProtectionPolicy()
+	{
+		return policy != null;
 	}
 }

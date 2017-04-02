@@ -1,13 +1,6 @@
 package com.tom_roush.pdfbox.pdfparser;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PushbackInputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -20,7 +13,14 @@ import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
-import android.util.Log;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PushbackInputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * This will parse a PDF byte stream and extract operands and such.
@@ -40,7 +40,7 @@ public class PDFStreamParser extends BaseParser
 	 * @param stream The stream to read data from.
 	 * @throws IOException If there is an error reading from the stream.
 	 */
-	public PDFStreamParser(InputStream stream) throws IOException 
+	public PDFStreamParser(InputStream stream) throws IOException
 	{
 		super(stream);
 	}
@@ -138,7 +138,7 @@ public class PDFStreamParser extends BaseParser
 
 			/** {@inheritDoc} */
 			@Override
-			public Object next() 
+			public Object next()
 			{
 				tryNext();
 				Object tmp = token;
@@ -183,25 +183,16 @@ public class PDFStreamParser extends BaseParser
 		{
 			//pull off first left bracket
 			int leftBracket = pdfSource.read();
-			
+
 			//check for second left bracket
 			c = (char)pdfSource.peek();
-			
+
 			//put back first bracket
 			pdfSource.unread(leftBracket);
-			
-			if(c == '<')
-			{
-				COSDictionary pod = parseCOSDictionary();
-				skipSpaces();
-				if((char)pdfSource.peek() == 's')
-				{
-					retval = parseCOSStream( pod );
-				}
-				else
-				{
-					retval = pod;
-				}
+
+            if (c == '<')
+            {
+				retval = parseCOSDictionary();
 			}
 			else
 			{
@@ -365,7 +356,7 @@ public class PDFStreamParser extends BaseParser
 			// some ']' around without its previous '['
 			// this means a PDF is somewhat corrupt but we will continue to parse.
 			pdfSource.read();
-			
+
 			// must be a better solution than null...
 			retval = COSNull.NULL;
 			break;
@@ -396,7 +387,7 @@ public class PDFStreamParser extends BaseParser
 	 * @return <code>true</code> if next bytes are probably printable ASCII
 	 * characters starting with a PDF operator, otherwise <code>false</code>
 	 */
-	private boolean hasNoFollowingBinData(final PushbackInputStream pdfSource) 
+	private boolean hasNoFollowingBinData(final PushbackInputStream pdfSource)
 			throws IOException
 	{
 		// as suggested in PDFBOX-1164
@@ -426,7 +417,7 @@ public class PDFStreamParser extends BaseParser
 					endOpIdx = bIdx;
 				}
 			}
-			
+
 			// only if not close to eof
 			if (readBytes == MAX_BIN_CHAR_TEST_LENGTH)
 			{
@@ -507,7 +498,7 @@ public class PDFStreamParser extends BaseParser
 			nextChar = pdfSource.peek();
 			buffer.append( currentChar );
 			// Type3 Glyph description has operators with a number in the name
-			if (currentChar == 'd' && (nextChar == '0' || nextChar == '1') ) 
+			if (currentChar == 'd' && (nextChar == '0' || nextChar == '1') )
 			{
 				buffer.append( (char)pdfSource.read() );
 				nextChar = pdfSource.peek();
@@ -524,7 +515,7 @@ public class PDFStreamParser extends BaseParser
 
 	/**
 	 * Checks if the next char is a space or a return.
-	 * 
+	 *
 	 * @return true if the next char is a space or a return
 	 * @throws IOException if something went wrong
 	 */

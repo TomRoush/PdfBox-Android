@@ -18,6 +18,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
+import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import com.tom_roush.pdfbox.util.Charsets;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.awt.AWTColor;
@@ -1985,7 +1986,19 @@ public final class PDPageContentStream implements Closeable
     {
         name.writePDF(output);
     }
-    
+
+    /**
+     * Set an extended graphics state,
+     *
+     * @param state The extended graphics state.
+     * @throws IOException If the content stream could not be written.
+     */
+    public void setGraphicsStateParameters(PDExtendedGraphicsState state) throws IOException
+    {
+        writeOperand(resources.add(state));
+        writeOperator("gs");
+    }
+
     /**
      * Writes a real real to the content stream.
      */

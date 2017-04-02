@@ -1,10 +1,8 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import android.graphics.Path;
+import android.graphics.PointF;
+import android.util.Log;
 
 import com.tom_roush.fontbox.cff.CFFParser;
 import com.tom_roush.fontbox.cff.CFFType1Font;
@@ -19,9 +17,11 @@ import com.tom_roush.pdfbox.pdmodel.font.encoding.Type1Encoding;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
-import android.graphics.Path;
-import android.graphics.PointF;
-import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Type 1-equivalent CFF font.
@@ -197,11 +197,6 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 	@Override
 	public float getWidthFromFont(int code) throws IOException
 	{
-		if (getStandard14AFM() != null)
-		{
-			return getStandard14Width(code);
-		}
-
 		String name = codeToName(code);
 		float width = type1Equivalent.getWidth(name);
 

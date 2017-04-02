@@ -882,10 +882,9 @@ public class COSParser extends BaseParser
 	 * @throws IOException if an error occurred reading the stream, like problems with reading length attribute, stream
 	 * does not end with 'endstream' after data read, stream too short etc.
 	 */
-	@Override
 	protected COSStream parseCOSStream(COSDictionary dic) throws IOException
 	{
-		final COSStream stream = createCOSStream(dic);
+		final COSStream stream = document.createCOSStream(dic);
 		OutputStream out = null;
 		try
 		{

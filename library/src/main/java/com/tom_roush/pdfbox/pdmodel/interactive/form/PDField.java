@@ -1,11 +1,11 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
+
+import java.io.IOException;
 
 /**
  * A field in an interactive form.
@@ -17,7 +17,7 @@ public abstract class PDField extends PDFieldTreeNode
 {
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param theAcroForm The form that this field is part of.
 	 */
 	protected PDField(PDAcroForm theAcroForm)
@@ -27,7 +27,7 @@ public abstract class PDField extends PDFieldTreeNode
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param theAcroForm The form that this field is part of.
 	 * @param field the PDF object to represent as a field.
 	 * @param parentNode the parent node of the node to be created
@@ -38,19 +38,8 @@ public abstract class PDField extends PDFieldTreeNode
 	}
 
 	/**
-	 * This will return a string representation of this field.
-	 * 
-	 * @return A string representation of this field.
-	 */
-	@Override
-	public String toString()
-	{
-		return "" + getDictionary().getDictionaryObject(COSName.V);
-	}
-
-	/**
 	 * Set the actions of the field.
-	 * 
+	 *
 	 * @param actions The field actions.
 	 */
 	public void setActions(PDFormFieldAdditionalActions actions)

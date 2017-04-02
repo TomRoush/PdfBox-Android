@@ -61,7 +61,7 @@ public class PDPageXYZDestination extends PDPageDestination
         array.growToSize( 3 );
         if( x == -1 )
         {
-            array.set( 2, (COSBase)null );
+            array.set(2, null);
         }
         else
         {
@@ -90,7 +90,7 @@ public class PDPageXYZDestination extends PDPageDestination
         array.growToSize( 4 );
         if( y == -1 )
         {
-            array.set( 3, (COSBase)null );
+            array.set(3, null);
         }
         else
         {
@@ -124,7 +124,7 @@ public class PDPageXYZDestination extends PDPageDestination
         array.growToSize( 5 );
         if( zoom == -1 )
         {
-            array.set( 4, (COSBase)null );
+            array.set(4, null);
         }
         else
         {

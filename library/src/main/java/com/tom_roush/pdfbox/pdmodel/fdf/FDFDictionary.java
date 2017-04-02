@@ -1,9 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -15,9 +12,15 @@ import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDSimpleFileSpecification;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This represents an FDF dictionary that is part of the FDF document.
@@ -94,20 +97,87 @@ public class FDFDictionary implements COSObjectable
                 else if( child.getTagName().equals( "annots" ) )
                 {
                     NodeList annots = child.getChildNodes();
-                    List<FDFAnnotationText> annotList = new ArrayList<FDFAnnotationText>();
+                    List<FDFAnnotation> annotList = new ArrayList<FDFAnnotation>();
                     for( int j=0; j<annots.getLength(); j++ )
                     {
-                        Node annotNode = annots.item( i );
+                        Node annotNode = annots.item(j);
                         if( annotNode instanceof Element )
                         {
-                            Element annot = (Element)annotNode;
-                            if( annot.getNodeName().equals( "text" ) )
+                            // the node name defines the annotation type
+                            Element annot = (Element) annotNode;
+                            String annotationName = annot.getNodeName();
+
+                            if (annotationName.equals("text"))
                             {
-                                annotList.add( new FDFAnnotationText( annot ) );
+                                annotList.add(new FDFAnnotationText(annot));
+                            }
+                            else if (annotationName.equals("caret"))
+                            {
+                                annotList.add(new FDFAnnotationCaret(annot));
+                            }
+                            else if (annotationName.equals("freetext"))
+                            {
+                                annotList.add(new FDFAnnotationFreeText(annot));
+                            }
+                            else if (annotationName.equals("fileattachment"))
+                            {
+                                annotList.add(new FDFAnnotationFileAttachment(annot));
+                            }
+                            else if (annotationName.equals("highlight"))
+                            {
+                                annotList.add(new FDFAnnotationHighlight(annot));
+                            }
+                            else if (annotationName.equals("ink"))
+                            {
+                                annotList.add(new FDFAnnotationInk(annot));
+                            }
+                            else if (annotationName.equals("line"))
+                            {
+                                annotList.add(new FDFAnnotationLine(annot));
+                            }
+                            else if (annotationName.equals("link"))
+                            {
+                                annotList.add(new FDFAnnotationLink(annot));
+                            }
+                            else if (annotationName.equals("circle"))
+                            {
+                                annotList.add(new FDFAnnotationCircle(annot));
+                            }
+                            else if (annotationName.equals("square"))
+                            {
+                                annotList.add(new FDFAnnotationSquare(annot));
+                            }
+                            else if (annotationName.equals("polygon"))
+                            {
+                                annotList.add(new FDFAnnotationPolygon(annot));
+                            }
+                            else if (annotationName.equals("polyline"))
+                            {
+                                annotList.add(new FDFAnnotationPolyline(annot));
+                            }
+                            else if (annotationName.equals("sound"))
+                            {
+                                annotList.add(new FDFAnnotationSound(annot));
+                            }
+                            else if (annotationName.equals("squiggly"))
+                            {
+                                annotList.add(new FDFAnnotationSquiggly(annot));
+                            }
+                            else if (annotationName.equals("stamp"))
+                            {
+                                annotList.add(new FDFAnnotationStamp(annot));
+                            }
+                            else if (annotationName.equals("strikeout"))
+                            {
+                                annotList.add(new FDFAnnotationStrikeOut(annot));
+                            }
+                            else if (annotationName.equals("underline"))
+                            {
+                                annotList.add(new FDFAnnotationUnderline(annot));
                             }
                             else
                             {
-                                throw new IOException( "Error: Unknown annotation type '" + annot.getNodeName() );
+                                Log.w("PdfBox-Android", "Unknown or unsupported annotation type '" + annotationName + "'");
                             }
                         }
                     }
@@ -357,7 +427,7 @@ public class FDFDictionary implements COSObjectable
      *
      * @param annots The list of annotations.
      */
-    public void setAnnotations( List<FDFAnnotationText> annots )
+    public void setAnnotations( List<FDFAnnotation> annots )
     {
         fdf.setItem( COSName.ANNOTS, COSArrayList.converterToCOSArray( annots ) );
     }

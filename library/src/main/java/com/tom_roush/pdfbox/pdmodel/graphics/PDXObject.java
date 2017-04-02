@@ -1,7 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.graphics;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
@@ -12,6 +10,8 @@ import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
+import java.io.IOException;
+
 /**
  * An external object, or "XObject".
  *
@@ -20,12 +20,14 @@ import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
  */
 public class PDXObject implements COSObjectable
 {
-    private PDStream stream;
+    private final PDStream stream;
 
     /**
      * Creates a new XObject instance of the appropriate type for the COS stream.
+     *
      * @param base The stream which is wrapped by this XObject.
      * @return A new XObject instance.
+     * @throws java.io.IOException if there is an error creating the XObject.
      */
     public static PDXObject createXObject(COSBase base, String name, PDResources resources)
             throws IOException
@@ -90,6 +92,7 @@ public class PDXObject implements COSObjectable
      * Returns the stream.
      * {@inheritDoc}
      */
+    @Override
     public final COSBase getCOSObject()
     {
         return stream.getCOSObject();

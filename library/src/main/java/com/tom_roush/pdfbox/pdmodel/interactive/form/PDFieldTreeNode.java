@@ -1,9 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -14,6 +10,10 @@ import com.tom_roush.pdfbox.pdmodel.common.PDTextStream;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFField;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A field in an interactive form.
@@ -637,7 +637,8 @@ public abstract class PDFieldTreeNode implements COSObjectable
 	@Override
 	public String toString()
 	{
-		return "" + getDictionary().getDictionaryObject(COSName.V);
+		return getFullyQualifiedName() + "{type: " + getClass().getSimpleName() + " value: " +
+			getInheritableAttribute(COSName.V) + "}";
 	}
 
 	/**
@@ -708,7 +709,7 @@ public abstract class PDFieldTreeNode implements COSObjectable
 	 * 
 	 * @throws IOException If there is an error generating the fully qualified name.
 	 */
-	public String getFullyQualifiedName() throws IOException
+	public String getFullyQualifiedName()
 	{
 		String finalName = getPartialName();
 		String parentName = getParent() != null ? getParent().getFullyQualifiedName() : null;

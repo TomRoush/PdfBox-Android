@@ -1,8 +1,7 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
+import android.graphics.Bitmap;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -13,8 +12,8 @@ import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.JPEGFactory;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
@@ -23,8 +22,9 @@ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
-import android.util.Log;
-import android.graphics.Bitmap;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
 
 /**
  * Implementation of PDFTemplateBuilder.
@@ -33,7 +33,7 @@ import android.graphics.Bitmap;
  */
 public class PDVisibleSigBuilder implements PDFTemplateBuilder
 {
-    private PDFTemplateStructure pdfStructure;
+    private final PDFTemplateStructure pdfStructure;
 
     @Override
     public void createPage(PDVisibleSignDesigner properties)
@@ -92,7 +92,7 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
         pdSignature.setByteRange(new int[] { 0, 0, 0, 0 });
         pdSignature.setContents(new byte[4096]);
         pdfStructure.setPdSignature(pdSignature);
-        Log.i("PdfBoxAndroid", "PDSignatur has been created");
+        Log.i("PdfBoxAndroid", "PDSignature has been created");
     }
 
     @Override

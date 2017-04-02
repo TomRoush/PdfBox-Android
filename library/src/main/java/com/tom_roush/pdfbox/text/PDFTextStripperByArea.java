@@ -1,5 +1,10 @@
 package com.tom_roush.pdfbox.text;
 
+import android.graphics.RectF;
+
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -8,11 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-
-import com.tom_roush.pdfbox.pdmodel.PDPage;
-import com.tom_roush.pdfbox.pdmodel.common.PDStream;
-
-import android.graphics.RectF;
 
 /**
  * This will extract text from a specified region in the PDF.
@@ -34,9 +34,19 @@ public class PDFTextStripperByArea extends PDFTextStripper
     public PDFTextStripperByArea() throws IOException
     {
         super();
+        super.setShouldSeparateByBeads(false);
     }
-    
-   /**
+
+    /**
+     * This method does nothing in this derived class, because beads and regions are incompatible. Beads are
+     * ignored when stripping by area.
+     */
+    @Override
+    public void setShouldSeparateByBeads(boolean aShouldSeparateByBeads)
+    {
+    }
+
+    /**
      * Add a new region to group text by.
      *
      * @param regionName The name of the region.

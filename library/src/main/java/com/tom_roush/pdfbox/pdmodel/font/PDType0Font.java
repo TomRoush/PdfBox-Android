@@ -1,9 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import android.util.Log;
 
 import com.tom_roush.fontbox.cmap.CMap;
 import com.tom_roush.fontbox.util.BoundingBox;
@@ -15,7 +12,10 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
 
-import android.util.Log;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * A Composite (Type 0) font.
@@ -297,6 +297,12 @@ public class PDType0Font extends PDFont
 	public float getWidth(int code) throws IOException
 	{
 		return descendantFont.getWidth(code);
+	}
+
+	@Override
+	protected float getStandard14Width(int code)
+	{
+		throw new UnsupportedOperationException("not suppported");
 	}
 
 	@Override

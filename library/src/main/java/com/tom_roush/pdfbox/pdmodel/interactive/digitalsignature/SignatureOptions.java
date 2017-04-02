@@ -1,12 +1,13 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature;
 
+import com.tom_roush.pdfbox.cos.COSDocument;
+import com.tom_roush.pdfbox.pdfparser.PDFParser;
+import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSigProperties;
+
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
-import com.tom_roush.pdfbox.cos.COSDocument;
-import com.tom_roush.pdfbox.pdfparser.VisualSignatureParser;
-import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSigProperties;
 
 /**
  * TODO description needed
@@ -44,18 +45,31 @@ public class SignatureOptions implements Closeable
     {
         return pageNo;
     }
-  
+
+    /**
+     * Reads the visual signature from the given file.
+     *
+     * @param file the file containing the visual signature
+     * @throws IOException when something went wrong during parsing
+     */
+    public void setVisualSignature(File file) throws IOException
+    {
+        PDFParser parser = new PDFParser(file);
+        parser.parse();
+        visualSignature = parser.getDocument();
+    }
+
     /**
      * Reads the visual signature from the given input stream.
-     *  
+     *
      * @param is the input stream containing the visual signature
-     * @throws IOException when something went wrong during parsing 
+     * @throws IOException when something went wrong during parsing
      */
     public void setVisualSignature(InputStream is) throws IOException
-    { 
-        VisualSignatureParser visParser = new VisualSignatureParser(is);
-        visParser.parse();
-        visualSignature = visParser.getDocument();
+    {
+        PDFParser parser = new PDFParser(is);
+        parser.parse();
+        visualSignature = parser.getDocument();
     }
     
     /**

@@ -1,11 +1,5 @@
 package com.tom_roush.pdfbox.multipdf;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
-
 import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -25,6 +19,12 @@ import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentPr
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * This class allows to import pages as Form XObjects into a PDF file and use them to create
  * layers (optional content groups).
@@ -33,8 +33,8 @@ public class LayerUtility
 {
 	private static final boolean DEBUG = true;
 
-	private PDDocument targetDoc;
-	private PDFCloneUtility cloner;
+	private final PDDocument targetDoc;
+	private final PDFCloneUtility cloner;
 
 	/**
 	 * Creates a new instance.

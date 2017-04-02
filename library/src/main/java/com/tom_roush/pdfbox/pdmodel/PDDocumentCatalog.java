@@ -1,13 +1,10 @@
 package com.tom_roush.pdfbox.pdmodel;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
@@ -26,6 +23,10 @@ import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDoc
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDThread;
 import com.tom_roush.pdfbox.pdmodel.interactive.viewerpreferences.PDViewerPreferences;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The Document Catalog of a PDF.
@@ -321,7 +322,11 @@ public class PDDocumentCatalog implements COSObjectable
 		{
 			for (COSBase cosBase : array)
 			{
-				PDOutputIntent oi = new PDOutputIntent((COSDictionary)cosBase);
+				if (cosBase instanceof COSObject)
+				{
+					cosBase = ((COSObject)cosBase).getObject();
+				}
+				PDOutputIntent oi = new PDOutputIntent((COSDictionary) cosBase);
 				retval.add(oi);
 			}
 		}

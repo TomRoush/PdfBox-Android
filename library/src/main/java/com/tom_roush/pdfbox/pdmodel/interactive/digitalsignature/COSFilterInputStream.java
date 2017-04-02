@@ -1,4 +1,4 @@
-package com.tom_roush.pdfbox.pdfwriter;
+package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

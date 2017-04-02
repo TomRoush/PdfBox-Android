@@ -1,11 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
+import android.util.Log;
 
 import com.tom_roush.fontbox.afm.FontMetrics;
 import com.tom_roush.fontbox.cmap.CMap;
@@ -23,7 +18,12 @@ import com.tom_roush.pdfbox.pdmodel.font.encoding.GlyphList;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
 
-import android.util.Log;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * This is the base class for all PDF fonts.
@@ -218,18 +218,33 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 				return fd.getMissingWidth(); // default is 0
 			}
 		}
+
+		// standard 14 font widths are specified by an AFM
+		if (isStandard14())
+		{
+			return getStandard14Width(code);
+		}
+
 		// if there's nothing to override with, then obviously we fall back to the font
 		return getWidthFromFont(code);
 	}
 
-	//    @Override TODO
-	//    public abstract float getWidthFromFont(int code) throws IOException;
+	/**
+	 * Returns the glyph width from the AFM if this is a Standard 14 font.
+	 *
+	 * @param code character code
+	 * @return width in 1/1000 text space
+	 */
+	protected abstract float getStandard14Width(int code);
+
+	@Override
+	public abstract float getWidthFromFont(int code) throws IOException;
 
 	@Override
 	public abstract boolean isEmbedded();
 
-	//    @Override TODO
-	//    public abstract float getHeight(int code) throws IOException;
+	@Override
+	public abstract float getHeight(int code) throws IOException;
 
 	/**
 	 * Encodes the given string for use in a PDF content stream.

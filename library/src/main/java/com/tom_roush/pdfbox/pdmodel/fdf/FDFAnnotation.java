@@ -1,7 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
-import java.io.IOException;
-import java.util.Calendar;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -12,7 +11,11 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.util.DateConverter;
+
 import org.w3c.dom.Element;
+
+import java.io.IOException;
+import java.util.Calendar;
 
 /**
  * This represents an FDF annotation that is part of the FDF document.
@@ -66,7 +69,7 @@ public abstract class FDFAnnotation implements COSObjectable
 		if( color != null && color.length() == 7 && color.charAt( 0 ) == '#' )
 		{
 			int colorValue = Integer.parseInt(color.substring(1,7), 16);
-			//                setColor( new Color(colorValue) );TODO
+			//                setColor( new Color(colorValue) );TODO: PdfBox-Android
 		}
 
 		setDate( element.getAttribute( "date" ) );
@@ -114,7 +117,6 @@ public abstract class FDFAnnotation implements COSObjectable
 					setToggleNoView( true );
 				}
 			}
-
 		}
 
 		setName( element.getAttribute( "name" ) );
@@ -133,8 +135,8 @@ public abstract class FDFAnnotation implements COSObjectable
 			setRectangle( new PDRectangle( array ) );
 		}
 
-		setName( element.getAttribute( "title" ) );
-		setCreationDate( DateConverter.toCalendar( element.getAttribute( "creationdate" ) ) );
+        setTitle(element.getAttribute("title"));
+        setCreationDate( DateConverter.toCalendar( element.getAttribute( "creationdate" ) ) );
 		String opac = element.getAttribute( "opacity" );
 		if( opac != null )
 		{
@@ -155,16 +157,80 @@ public abstract class FDFAnnotation implements COSObjectable
 	public static FDFAnnotation create( COSDictionary fdfDic ) throws IOException
 	{
 		FDFAnnotation retval = null;
-		if( fdfDic != null )
-		{
-			if( FDFAnnotationText.SUBTYPE.equals( fdfDic.getNameAsString( COSName.SUBTYPE ) ) )
-			{
+        if (fdfDic != null)
+        {
+            if (FDFAnnotationText.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
 				retval = new FDFAnnotationText( fdfDic );
 			}
-			else
+            else if (FDFAnnotationCaret.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationCaret(fdfDic);
+            }
+            else if (FDFAnnotationFreeText.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationFreeText(fdfDic);
+            }
+            else if (FDFAnnotationFileAttachment.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationFileAttachment(fdfDic);
+            }
+            else if (FDFAnnotationHighlight.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationHighlight(fdfDic);
+            }
+            else if (FDFAnnotationInk.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationInk(fdfDic);
+            }
+            else if (FDFAnnotationLine.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationLine(fdfDic);
+            }
+			else if (FDFAnnotationLink.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
 			{
-				throw new IOException( "Unknown annotation type '" + fdfDic.getNameAsString( COSName.SUBTYPE ) + "'" );
+				retval = new FDFAnnotationLink(fdfDic);
 			}
+			else if (FDFAnnotationCircle.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationCircle(fdfDic);
+            }
+            else if (FDFAnnotationSquare.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationSquare(fdfDic);
+            }
+            else if (FDFAnnotationPolygon.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationPolygon(fdfDic);
+            }
+            else if (FDFAnnotationPolyline.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationPolyline(fdfDic);
+            }
+            else if (FDFAnnotationSound.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationSound(fdfDic);
+            }
+            else if (FDFAnnotationSquiggly.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationSquiggly(fdfDic);
+            }
+            else if (FDFAnnotationStamp.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationStamp(fdfDic);
+            }
+            else if (FDFAnnotationStrikeOut.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationStrikeOut(fdfDic);
+            }
+            else if (FDFAnnotationUnderline.SUBTYPE.equals(fdfDic.getNameAsString(COSName.SUBTYPE)))
+            {
+                retval = new FDFAnnotationUnderline(fdfDic);
+            }
+            else
+			{
+                Log.w("PdfBox-Android", "Unknown or unsupported annotation type '" + fdfDic.getNameAsString(COSName.SUBTYPE) + "'");
+            }
 		}
 		return retval;
 	}
@@ -233,7 +299,7 @@ public abstract class FDFAnnotation implements COSObjectable
 	//            }
 	//        }
 	//        return retval;
-	//    }TODO
+	//    }TODO: PdfBox-Android
 
 	/**
 	 * Set the annotation color.
@@ -250,7 +316,7 @@ public abstract class FDFAnnotation implements COSObjectable
 	//            color.setFloatArray( colors );
 	//        }
 	//        annot.setItem( "color", color );
-	//    }TODO
+	//    }TODO: PdfBox-Android
 
 	/**
 	 * Modification date.

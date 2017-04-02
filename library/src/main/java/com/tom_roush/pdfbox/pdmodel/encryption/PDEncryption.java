@@ -17,14 +17,14 @@
 
 package com.tom_roush.pdfbox.pdmodel.encryption;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSBoolean;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSString;
+
+import java.io.IOException;
 
 /**
  * This class is a specialized view of the encryption dictionary of a PDF document.
@@ -589,5 +589,15 @@ public class PDEncryption
             perms = permsCosString.getBytes();
         }
         return perms;
+    }
+
+    /**
+     * Remove CF, StmF, and StrF entries. This is to be called if V is not 4 or 5.
+     */
+    public void removeV45filters()
+    {
+        dictionary.setItem(COSName.CF, null);
+        dictionary.setItem(COSName.STM_F, null);
+        dictionary.setItem(COSName.STR_F, null);
     }
 }

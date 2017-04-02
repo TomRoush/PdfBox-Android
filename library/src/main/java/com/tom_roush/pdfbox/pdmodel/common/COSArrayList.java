@@ -3,19 +3,19 @@ package com.tom_roush.pdfbox.pdmodel.common;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSFloat;
-import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNull;
 import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.cos.COSObject;
+import com.tom_roush.pdfbox.cos.COSString;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import com.tom_roush.pdfbox.cos.COSObject;
 
 /**
  * This is an implementation of a List that will sync its contents to a COSArray.
@@ -499,7 +499,7 @@ public class COSArrayList<E> implements List<E>
         //in the dictionary from a single item to an array.
         if( parentDict != null )
         {
-            parentDict.setItem( dictKey, (COSBase)null );
+            parentDict.setItem(dictKey, null);
         }
         actual.clear();
         array.clear();

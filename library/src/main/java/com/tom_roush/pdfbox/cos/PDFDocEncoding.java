@@ -119,7 +119,7 @@ final class PDFDocEncoding
             }
             else
             {
-                out.write(c);
+                out.write(code);
             }
         }
         return out.toByteArray();

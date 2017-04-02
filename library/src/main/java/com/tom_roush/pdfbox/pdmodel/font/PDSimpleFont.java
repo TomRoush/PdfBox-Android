@@ -1,8 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -14,7 +28,11 @@ import com.tom_roush.pdfbox.pdmodel.font.encoding.MacRomanEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.StandardEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
 
-import android.util.Log;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A simple font. Simple fonts use a PostScript encoding vector.
@@ -27,9 +45,10 @@ public abstract class PDSimpleFont extends PDFont
 	protected GlyphList glyphList;
 	private Boolean isSymbolic;
 	private final Set<Integer> noUnicode = new HashSet<Integer>(); // for logging
+	private Map<String, Integer> invertedEncoding; // for writing
 
 	/**
-	 * Constructor for embedding
+	 * Constructor for embedding.
 	 */
 	PDSimpleFont()
 	{
@@ -83,8 +102,8 @@ public abstract class PDSimpleFont extends PDFont
 				this.encoding = Encoding.getInstance(encodingName);
 				if (this.encoding == null)
 				{
-					Log.w("PdfBoxAndroid", "Unknown encoding: " + encodingName.getName());
-					this.encoding = readEncodingFromFont(); // fallback
+					Log.w("PdfBox-Android", "Unknown encoding: " + encodingName.getName());
+					this.encoding = readEncodingFromFont();
 				}
 			}
 			else if (encoding instanceof COSDictionary)
@@ -97,12 +116,10 @@ public abstract class PDSimpleFont extends PDFont
 				{
 					builtIn = readEncodingFromFont();
 				}
-				
 				if (symbolic == null)
 				{
 					symbolic = false;
 				}
-
 				if (builtIn == null && !encodingDict.containsKey(COSName.BASE_ENCODING) && symbolic)
 				{
 					// TTF built-in encoding is handled by PDTrueTypeFont#codeToGID
@@ -127,8 +144,8 @@ public abstract class PDSimpleFont extends PDFont
 
 		// TTFs may have null encoding, but if it's standard 14 then we know it's Standard Encoding
 		if (this.encoding == null && isStandard14() &&
-				!getName().equals("Symbol") &&
-				!getName().equals("ZapfDingbats"))
+			!getName().equals("Symbol") &&
+			!getName().equals("ZapfDingbats"))
 		{
 			this.encoding = StandardEncoding.INSTANCE;
 		}
@@ -145,10 +162,26 @@ public abstract class PDSimpleFont extends PDFont
 		}
 	}
 
+	private void readEncodingFromDictionary(COSDictionary encodingDict) throws IOException
+	{
+
+	}
+
+	private void readEncodingFromName(COSName encodingName) throws IOException
+	{
+		this.encoding = Encoding.getInstance(encodingName);
+		if (this.encoding == null)
+		{
+			Log.w("PdfBox-Android", "Unknown encoding: " + encodingName.getName());
+			// fallback
+			this.encoding = readEncodingFromFont();
+		}
+	}
+
 	/**
 	 * Called by readEncoding() if the encoding needs to be extracted from the font file.
 	 *
-	 * @throws IOException if the font file could not be read
+	 * @throws IOException if the font file could not be read.
 	 */
 	protected abstract Encoding readEncodingFromFont() throws IOException;
 
@@ -166,6 +199,28 @@ public abstract class PDSimpleFont extends PDFont
 	public GlyphList getGlyphList()
 	{
 		return glyphList;
+	}
+
+	/**
+	 * Inverts the font's Encoding. Any duplicate (Name -> Code) mappings will be lost.
+	 */
+	protected Map<String, Integer> getInvertedEncoding()
+	{
+		if (invertedEncoding != null)
+		{
+			return invertedEncoding;
+		}
+
+		invertedEncoding = new HashMap<String, Integer>();
+		Map<Integer, String> codeToName = encoding.getCodeToNameMap();
+		for (Map.Entry<Integer, String> entry : codeToName.entrySet())
+		{
+			if (!invertedEncoding.containsKey(entry.getValue()))
+			{
+				invertedEncoding.put(entry.getValue(), entry.getKey());
+			}
+		}
+		return invertedEncoding;
 	}
 
 	/**
@@ -219,8 +274,8 @@ public abstract class PDSimpleFont extends PDFont
 				return true;
 			}
 			else if (encoding instanceof WinAnsiEncoding ||
-					encoding instanceof MacRomanEncoding ||
-					encoding instanceof StandardEncoding)
+				encoding instanceof MacRomanEncoding ||
+				encoding instanceof StandardEncoding)
 			{
 				return false;
 			}
@@ -234,8 +289,8 @@ public abstract class PDSimpleFont extends PDFont
 						// skip
 					}
 					else if (!(WinAnsiEncoding.INSTANCE.contains(name) &&
-							MacRomanEncoding.INSTANCE.contains(name) &&
-							StandardEncoding.INSTANCE.contains(name)))
+						MacRomanEncoding.INSTANCE.contains(name) &&
+						StandardEncoding.INSTANCE.contains(name)))
 					{
 						return true;
 					}
@@ -252,7 +307,7 @@ public abstract class PDSimpleFont extends PDFont
 	}
 
 	/**
-	 * Returns the value of the symbolic flag, allowing for the fact that the result may be
+	 * Returns the value of the symbolic flag,  allowing for the fact that the result may be
 	 * indeterminate.
 	 */
 	protected final Boolean getSymbolicFlag()
@@ -317,13 +372,13 @@ public abstract class PDSimpleFont extends PDFont
 			noUnicode.add(code);
 			if (name != null)
 			{
-				Log.w("PdfBoxAndroid", "No Unicode mapping for " + name + " (" + code + ") in font " +
-						getName());
+				Log.w("PdfBox-Android", "No Unicode mapping for " + name + " (" + code + ") in font " +
+					getName());
 			}
 			else
 			{
-				Log.w("PdfBoxAndroid", "No Unicode mapping for character code " + code + " in font " +
-						getName());
+				Log.w("PdfBox-Android", "No Unicode mapping for character code " + code + " in font " +
+					getName());
 			}
 		}
 
@@ -346,16 +401,18 @@ public abstract class PDSimpleFont extends PDFont
 		if (getStandard14AFM() != null)
 		{
 			String nameInAFM = getEncoding().getName(code);
+
 			// the Adobe AFMs don't include .notdef, but Acrobat uses 250, test with PDFBOX-2334
 			if (nameInAFM.equals(".notdef"))
 			{
 				return 250f;
 			}
+
 			return getStandard14AFM().getCharacterWidth(nameInAFM);
 		}
 		throw new IllegalStateException("No AFM");
 	}
-	
+
 	@Override
 	public boolean isStandard14()
 	{
@@ -366,8 +423,16 @@ public abstract class PDSimpleFont extends PDFont
 			DictionaryEncoding dictionary = (DictionaryEncoding)getEncoding();
 			if (dictionary.getDifferences().size() > 0)
 			{
-				// todo: do we need to check if entries actually differ from the base encoding?
-				return false;
+				// we also require that the differences are actually different, see PDFBOX-1900 with
+				// the file from PDFBOX-2192 on Windows
+				Encoding baseEncoding = dictionary.getBaseEncoding();
+				for (Map.Entry<Integer, String> entry : dictionary.getDifferences().entrySet())
+				{
+					if (!entry.getValue().equals(baseEncoding.getName(entry.getKey())))
+					{
+						return false;
+					}
+				}
 			}
 		}
 		return super.isStandard14();
@@ -385,7 +450,7 @@ public abstract class PDSimpleFont extends PDFont
 		// only TTF subsetting via PDType0Font is currently supported
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
 	public boolean willBeSubset()
 	{

@@ -1,9 +1,7 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import android.graphics.PointF;
+import android.util.Log;
 
 import com.tom_roush.fontbox.cff.CFFCIDFont;
 import com.tom_roush.fontbox.cff.CFFFont;
@@ -18,8 +16,10 @@ import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
-import android.graphics.PointF;
-import android.util.Log;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Type 0 CIDFont (CFF).
@@ -38,7 +38,7 @@ public class PDCIDFontType0 extends PDCIDFont
 
 	private Float avgWidth = null;
 	private Matrix fontMatrix;
-	private AffineTransform fontMatrixTransform;
+	private final AffineTransform fontMatrixTransform;
 
 	/**
 	 * Constructor.
@@ -229,6 +229,7 @@ public class PDCIDFontType0 extends PDCIDFont
 	 * @param code character code
 	 * @return CID
 	 */
+	@Override
 	public int codeToCID(int code)
 	{
 		return parent.getCMap().toCID(code);

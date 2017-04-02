@@ -9,6 +9,7 @@ import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.util.Charsets;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -119,7 +120,7 @@ public class ContentStreamWriter
             Operator op = (Operator)o;
             if( op.getName().equals( "BI" ) )
             {
-                output.write( "BI".getBytes("ISO-8859-1") );
+                output.write( "BI".getBytes(Charsets.ISO_8859_1) );
                 COSDictionary dic = op.getImageParameters();
                 for( COSName key : dic.keySet() )
                 {
@@ -129,13 +130,16 @@ public class ContentStreamWriter
                     writeObject( value );
                     output.write( EOL );
                 }
-                output.write( "ID".getBytes("ISO-8859-1") );
+                output.write( "ID".getBytes(Charsets.ISO_8859_1) );
                 output.write( EOL );
                 output.write( op.getImageData() );
+                output.write(EOL);
+                output.write("EI".getBytes(Charsets.ISO_8859_1));
+                output.write(EOL);
             }
             else
             {
-                output.write( op.getName().getBytes("ISO-8859-1") );
+                output.write( op.getName().getBytes(Charsets.ISO_8859_1) );
                 output.write( EOL );
             }
         }

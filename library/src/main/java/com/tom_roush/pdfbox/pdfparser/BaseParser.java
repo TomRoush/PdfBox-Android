@@ -13,9 +13,7 @@ import com.tom_roush.pdfbox.cos.COSNull;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSObjectKey;
-import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.cos.COSString;
-import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.PushBackInputStream;
 
 import java.io.BufferedInputStream;
@@ -24,7 +22,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.regex.Pattern;
 
 import static com.tom_roush.pdfbox.util.Charsets.ISO_8859_1;
 
@@ -157,24 +154,6 @@ public abstract class BaseParser implements Closeable
 				new BufferedInputStream(input, 16384), pushbacksize);
 	}
 
-	/**
-	 * Returns a new instance of a COSStream.
-	 *
-	 * @param dictionary the dictionary belonging to the stream
-	 * @return the new COSStream
-	 */
-	protected final COSStream createCOSStream(COSDictionary dictionary)
-	{
-		if (document != null)
-		{
-			return document.createCOSStream(dictionary);
-		}
-		else
-		{
-			return null;
-		}
-	}
-
 	private static boolean isHexDigit(char ch)
 	{
 		return (ch >= ASCII_ZERO && ch <= ASCII_NINE) ||
@@ -212,7 +191,7 @@ public abstract class BaseParser implements Closeable
 			}
 			COSObjectKey key = new COSObjectKey(((COSInteger) number).longValue(),
 					((COSInteger) generationNumber).intValue());
-			retval = document.getObjectFromPool(key);
+			retval = getObjectFromPool(key);
 		}
 		else
 		{
@@ -221,12 +200,21 @@ public abstract class BaseParser implements Closeable
 		return retval;
 	}
 
+	private COSBase getObjectFromPool(COSObjectKey key) throws IOException
+	{
+		if (document == null)
+		{
+			throw new IOException("object reference " + key + " at offset " + pdfSource.getOffset() + " in content stream");
+		}
+		return document.getObjectFromPool(key);
+	}
+
 	/**
 	 * This will parse a PDF dictionary.
 	 *
 	 * @return The parsed dictionary.
 	 *
-	 * @throws IOException IF there is an error reading the stream.
+	 * @throws IOException If there is an error reading the stream.
 	 */
 	protected COSDictionary parseCOSDictionary() throws IOException
 	{
@@ -319,173 +307,6 @@ public abstract class BaseParser implements Closeable
 		return obj;
 	}
 
-	/**
-	 * This will read a COSStream from the input stream.
-	 *
-	 * @param dic The dictionary that goes with this stream.
-	 *
-	 * @return The parsed pdf stream.
-	 *
-	 * @throws IOException If there is an error reading the stream.
-	 */
-	protected COSStream parseCOSStream( COSDictionary dic ) throws IOException
-	{
-		COSStream stream = createCOSStream( dic );
-		OutputStream out = null;
-		try
-		{
-			readExpectedString(STREAM_STRING);
-
-			skipWhiteSpace();
-
-			// This needs to be dic.getItem because when we are parsing, the underlying object
-			// might still be null.
-			COSBase streamLength = dic.getItem(COSName.LENGTH);
-
-			//Need to keep track of the
-			out = stream.createFilteredStream( streamLength );
-
-			// try to read stream length - even if it is an indirect object
-			int length = -1;
-			if ( streamLength instanceof COSNumber )
-			{
-				length = ( (COSNumber) streamLength).intValue();
-			}
-
-			if ( length == -1 )
-			{
-				// Couldn't determine length from dict: just
-				// scan until we find endstream:
-				readUntilEndStream( new EndstreamOutputStream(out) );
-			}
-			else
-			{
-				// Copy length bytes over:
-				int left = length;
-				while ( left > 0 )
-				{
-					final int chunk = Math.min( left, STRMBUFLEN );
-					final int readCount = pdfSource.read( strmBuf, 0, chunk );
-					if ( readCount == -1 )
-					{
-						break;
-					}
-					out.write( strmBuf, 0, readCount );
-					left -= readCount;
-				}
-
-				// in order to handle broken documents we test if 'endstream' is reached
-				// if not, length value possibly was wrong, fall back to scanning for endstream
-
-				// fill buffer with next bytes and test for 'endstream' (with leading whitespaces)
-				int readCount = pdfSource.read( strmBuf, 0, 20 );
-				if ( readCount > 0 )
-				{
-					boolean foundEndstream    = false;
-					int     nextEndstreamCIdx = 0;
-					for ( int cIdx = 0; cIdx < readCount; cIdx++ )
-					{
-						final int ch = strmBuf[ cIdx ] & 0xff;
-						if ( ch == ENDSTREAM[ nextEndstreamCIdx ] )
-						{
-							if ( ++nextEndstreamCIdx >= ENDSTREAM.length )
-							{
-								foundEndstream = true;
-								break;
-							}
-						}
-						else if ( ( nextEndstreamCIdx > 0 ) || ( ! isWhitespace( ch ) ) )
-						{
-							// not found
-							break;
-						}
-					}
-
-					// push back test bytes
-					pdfSource.unread( strmBuf, 0, readCount );
-
-					// if 'endstream' was not found fall back to scanning
-					if ( ! foundEndstream )
-					{
-						Log.w("PdfBoxAndroid", "Specified stream length " + length
-								+ " is wrong. Fall back to reading stream until 'endstream'.");
-
-						// push back all read stream bytes
-						// we got a buffered stream wrapper around filteredStream thus first flush to underlying stream
-						out.flush();
-						InputStream writtenStreamBytes = stream.getFilteredStream();
-						ByteArrayOutputStream bout = new ByteArrayOutputStream( length );
-
-						IOUtils.copy(writtenStreamBytes, bout);
-						IOUtils.closeQuietly(writtenStreamBytes);
-						try
-						{
-							pdfSource.unread( bout.toByteArray() );
-						}
-						catch ( IOException ioe )
-						{
-							throw new IOException( "Could not push back " + bout.size() +
-									" bytes in order to reparse stream. " +
-									"Try increasing push back buffer using system property " +
-									PROP_PUSHBACK_SIZE, ioe );
-						}
-						// close and create new filtered stream
-						IOUtils.closeQuietly(out);
-						out = stream.createFilteredStream();
-						// scan until we find endstream:
-						readUntilEndStream( new EndstreamOutputStream(out) );
-					}
-				}
-			}
-
-			skipSpaces();
-			String endStream = readString();
-
-			if (!endStream.equals(ENDSTREAM_STRING))
-			{
-				/*
-				 * Sometimes stream objects don't have an endstream tag so readUntilEndStream(out)
-				 * also can stop on endobj tags. If that's the case we need to make sure to unread
-				 * the endobj so parseObject() can handle that case normally.
-				 */
-				if (endStream.startsWith(ENDOBJ_STRING))
-				{
-					byte[] endobjarray = endStream.getBytes(ISO_8859_1);
-					pdfSource.unread(endobjarray);
-				}
-				/*
-				 * Some PDF files don't contain a new line after endstream so we
-				 * need to make sure that the next object number is getting read separately
-				 * and not part of the endstream keyword. Ex. Some files would have "endstream8"
-				 * instead of "endstream"
-				 */
-				else if(endStream.startsWith(ENDSTREAM_STRING))
-				{
-					String extra = endStream.substring(9, endStream.length());
-					byte[] array = extra.getBytes(ISO_8859_1);
-					pdfSource.unread(array);
-				}
-				else
-				{
-					/*
-					 * If for some reason we get something else here, Read until we find the next
-					 * "endstream"
-					 */
-					readUntilEndStream( new EndstreamOutputStream(out) );
-					readExpectedString(ENDSTREAM_STRING);
-				}
-			}
-		}
-		finally
-		{
-			if( out != null )
-			{
-				out.close();
-			}
-		}
-		return stream;
-	}
-
     protected void skipWhiteSpace() throws IOException
     {
         //PDF Ref 3.2.7 A stream must be followed by either
@@ -540,7 +361,6 @@ public abstract class BaseParser implements Closeable
 	 */
 	protected void readUntilEndStream( final OutputStream out ) throws IOException
 	{
-
 		int bufSize;
 		int charMatchCount = 0;
 		byte[] keyw = ENDSTREAM;
@@ -962,7 +782,7 @@ public abstract class BaseParser implements Closeable
 					{
 						COSInteger number = (COSInteger)po.remove( po.size() -1 );
 						COSObjectKey key = new COSObjectKey(number.longValue(), genNumber.intValue());
-						pbo = document.getObjectFromPool(key);
+						pbo = getObjectFromPool(key);
 					}
 					else
 					{
@@ -1679,46 +1499,6 @@ public abstract class BaseParser implements Closeable
 		return buffer;
 	}
 
-	/**
-	 * Skip to the start of the next object. This is used to recover from a
-	 * corrupt object. This should handle all cases that parseObject supports.
-	 * This assumes that the next object will start on its own line.
-	 *
-	 * @throws IOException if something went wrong.
-	 */
-	protected void skipToNextObj() throws IOException
-	{
-		byte[] b = new byte[16];
-		Pattern p = Pattern.compile("\\d+\\s+\\d+\\s+obj.*", Pattern.DOTALL);
-		/* Read a buffer of data each time to see if it starts with a
-		 * known keyword. This is not the most efficient design, but we should
-		 * rarely be needing this function. We could update this to use the
-		 * circular buffer, like in readUntilEndStream().
-		 */
-		while (!pdfSource.isEOF())
-		{
-			int l = pdfSource.read(b);
-			if (l < 1)
-			{
-				break;
-			}
-			String s = new String(b, "US-ASCII");
-			if (s.startsWith("trailer")
-					|| s.startsWith("xref")
-					|| s.startsWith("startxref")
-					|| s.startsWith(STREAM_STRING)
-					|| p.matcher(s).matches())
-			{
-				pdfSource.unread(b);
-				break;
-			}
-			else
-			{
-				pdfSource.unread(b, 1, l - 1);
-			}
-		}
-	}
-
 	@Override
 	public void close() throws IOException
 	{
@@ -1726,58 +1506,5 @@ public abstract class BaseParser implements Closeable
 		{
 			pdfSource.close();
 		}
-	}
-
-	/**
-	 * Parse object key (number and generation).
-	 *
-	 * @param continueOnError true to continue on error, false if not.
-	 * @return a new object key.
-	 * @throws IOException if something goes wrong.
-	 */
-	protected COSObjectKey parseObjectKey(boolean continueOnError) throws IOException
-	{
-		//we are going to parse a normal object
-		long number = -1;
-		int genNum;
-		boolean missingObjectNumber = false;
-		try
-		{
-			char peeked = (char) pdfSource.peek();
-			if (peeked == '<')
-			{
-				missingObjectNumber = true;
-			}
-			else
-			{
-				number = readObjectNumber();
-			}
-		}
-		catch (IOException e)
-		{
-			//ok for some reason "GNU Ghostscript 5.10" puts two endobj
-			//statements after an object, of course this is nonsense
-			//but because we want to support as many PDFs as possible
-			//we will simply try again
-			number = readObjectNumber();
-		}
-		if (!missingObjectNumber)
-		{
-			skipSpaces();
-			genNum = readGenerationNumber();
-			String objectKey = readString(3);
-			if (!objectKey.equals("obj") && continueOnError && objectKey.equals("o"))
-			{
-				throw new IOException("expected='obj' actual='" + objectKey + "' " + pdfSource);
-			}
-			//assume that "o" was meant to be "obj" (this is a workaround for
-			// PDFBOX-773 attached PDF Andersens_Fairy_Tales.pdf).
-		}
-		else
-		{
-			number = -1;
-			genNum = -1;
-		}
-		return new COSObjectKey(number, genNum);
 	}
 }

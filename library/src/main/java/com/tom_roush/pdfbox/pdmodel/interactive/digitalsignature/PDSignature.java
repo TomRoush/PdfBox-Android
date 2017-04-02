@@ -1,18 +1,17 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Calendar;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSString;
-import com.tom_roush.pdfbox.pdfwriter.COSFilterInputStream;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Calendar;
 
 /**
  * This represents a digital signature that can be attached to a document.

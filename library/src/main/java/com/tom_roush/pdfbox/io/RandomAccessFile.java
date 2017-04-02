@@ -42,6 +42,16 @@ public class RandomAccessFile implements RandomAccess, Closeable
      * {@inheritDoc}
      */
     @Override
+    public void clear() throws IOException
+    {
+        ras.seek(0);
+        ras.setLength(0);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void seek(long position) throws IOException
     {
         ras.seek(position);
@@ -55,7 +65,7 @@ public class RandomAccessFile implements RandomAccess, Closeable
     {
         return ras.getFilePointer();
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -86,7 +96,7 @@ public class RandomAccessFile implements RandomAccess, Closeable
     @Override
     public boolean isClosed()
     {
-    	return isClosed;
+        return isClosed;
     }
 
     /**

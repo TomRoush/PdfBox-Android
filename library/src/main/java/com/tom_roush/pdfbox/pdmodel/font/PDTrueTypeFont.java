@@ -1,11 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import android.util.Log;
 
 import com.tom_roush.fontbox.ttf.CmapSubtable;
 import com.tom_roush.fontbox.ttf.CmapTable;
@@ -21,11 +32,16 @@ import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.GlyphList;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.MacOSRomanEncoding;
 
-import android.util.Log;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * TrueType font.
- * 
+ *
  * @author Ben Litchfield
  */
 public class PDTrueTypeFont extends PDSimpleFont
@@ -54,7 +70,7 @@ public class PDTrueTypeFont extends PDSimpleFont
 	 * @param file a ttf file.
 	 * @return a PDTrueTypeFont instance.
 	 * @throws IOException If there is an error loading the data.
-	 * 
+	 *
 	 * @deprecated Use {@link PDType0Font#load(PDDocument, File)} instead.
 	 */
 	@Deprecated
@@ -70,7 +86,7 @@ public class PDTrueTypeFont extends PDSimpleFont
 	 * @param input a ttf file stream
 	 * @return a PDTrueTypeFont instance.
 	 * @throws IOException If there is an error loading the data.
-	 * 
+	 *
 	 * @deprecated Use {@link PDType0Font#load(PDDocument, InputStream)} instead.
 	 */
 	@Deprecated
@@ -113,12 +129,12 @@ public class PDTrueTypeFont extends PDSimpleFont
 				}
 				catch (NullPointerException e) // TTF parser is buggy
 				{
-					Log.w("PdfBoxAndroid", "Could not read embedded TTF for font " + getBaseFont(), e);
+					Log.w("PdfBox-Android", "Could not read embedded TTF for font " + getBaseFont(), e);
 					fontIsDamaged = true;
 				}
 				catch (IOException e)
 				{
-					Log.w("PdfBoxAndroid", "Could not read embedded TTF for font " + getBaseFont(), e);
+					Log.w("PdfBox-Android", "Could not read embedded TTF for font " + getBaseFont(), e);
 					fontIsDamaged = true;
 				}
 			}
@@ -135,7 +151,7 @@ public class PDTrueTypeFont extends PDSimpleFont
 			if (ttfFont == null)
 			{
 				ttfFont = ExternalFonts.getTrueTypeFallbackFont(getFontDescriptor());
-				Log.w("PdfBoxAndroid", "Using fallback font '" + ttfFont + "' for '" + getBaseFont() + "'");
+				Log.w("PdfBox-Android", "Using fallback font '" + ttfFont + "' for '" + getBaseFont() + "'");
 			}
 		}
 		ttf = ttfFont;
@@ -204,14 +220,9 @@ public class PDTrueTypeFont extends PDSimpleFont
 		return ttf;
 	}
 
-	//    @Override TODO
+	@Override
 	public float getWidthFromFont(int code) throws IOException
 	{
-		if (getStandard14AFM() != null && getEncoding() != null)
-		{
-			return getStandard14Width(code);
-		}
-
 		int gid = codeToGID(code);
 		float width = ttf.getAdvanceWidth(gid);
 		float unitsPerEM = ttf.getUnitsPerEm();
@@ -222,7 +233,7 @@ public class PDTrueTypeFont extends PDSimpleFont
 		return width;
 	}
 
-	//    @Override TODO
+	@Override
 	public float getHeight(int code) throws IOException
 	{
 		int gid = codeToGID(code);
@@ -239,17 +250,22 @@ public class PDTrueTypeFont extends PDSimpleFont
 	{
 		if (!getEncoding().contains(getGlyphList().codePointToName(unicode)))
 		{
-			throw new IllegalArgumentException("This font type only supports 8-bit code points");
+			throw new IllegalArgumentException(
+				String.format("U+%04X is not available in this font's Encoding", unicode));
 		}
 
-		int gid = codeToGID(unicode);
+		String name = getGlyphList().codePointToName(unicode);
+		Map<String, Integer> inverted = getInvertedEncoding();
+
+		int gid = ttf.getUnicodeCmap().getGlyphId(unicode);
 		if (gid == 0)
 		{
 			throw new IllegalArgumentException(
-					String.format("U+%04X is not available in this font's Encoding", unicode));
+				String.format("No glyph for U+%04X in font %s", unicode, getName()));
 		}
 
-		return new byte[] { (byte)unicode };
+		int code = inverted.get(name);
+		return new byte[] { (byte)code };
 	}
 
 	@Override
@@ -344,7 +360,7 @@ public class PDTrueTypeFont extends PDSimpleFont
 
 		if (gid == 0)
 		{
-			Log.w("PdfBoxAndroid", "Can't map code " + code + " in font " + getBaseFont());
+			Log.w("PdfBox-Android", "Can't map code " + code + " in font " + getBaseFont());
 		}
 
 		return gid;
@@ -379,7 +395,7 @@ public class PDTrueTypeFont extends PDSimpleFont
 					}
 				}
 				else if (CmapTable.PLATFORM_MACINTOSH == cmap.getPlatformId()
-						&& CmapTable.ENCODING_MAC_ROMAN == cmap.getPlatformEncodingId())
+					&& CmapTable.ENCODING_MAC_ROMAN == cmap.getPlatformEncodingId())
 				{
 					cmapMacRoman = cmap;
 				}
