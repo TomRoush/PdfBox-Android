@@ -45,7 +45,11 @@ public abstract class PDStructureNode implements COSObjectable
 
     private final COSDictionary dictionary;
 
-    public COSDictionary getCOSDictionary()
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public COSDictionary getCOSObject()
     {
         return dictionary;
     }
@@ -72,22 +76,13 @@ public abstract class PDStructureNode implements COSObjectable
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public COSBase getCOSObject()
-    {
-        return this.dictionary;
-    }
-
-    /**
      * Returns the type.
      * 
      * @return the type
      */
     public String getType()
     {
-        return this.getCOSDictionary().getNameAsString(COSName.TYPE);
+        return this.getCOSObject().getNameAsString(COSName.TYPE);
     }
 
     /**
@@ -98,7 +93,7 @@ public abstract class PDStructureNode implements COSObjectable
     public List<Object> getKids()
     {
         List<Object> kidObjects = new ArrayList<Object>();
-        COSBase k = this.getCOSDictionary().getDictionaryObject(COSName.K);
+        COSBase k = this.getCOSObject().getDictionaryObject(COSName.K);
         if (k instanceof COSArray)
         {
             Iterator<COSBase> kids = ((COSArray) k).iterator();
@@ -130,7 +125,7 @@ public abstract class PDStructureNode implements COSObjectable
      */
     public void setKids(List<Object> kids)
     {
-        this.getCOSDictionary().setItem(COSName.K,
+        this.getCOSObject().setItem(COSName.K,
             COSArrayList.converterToCOSArray(kids));
     }
 
@@ -170,11 +165,11 @@ public abstract class PDStructureNode implements COSObjectable
         {
             return;
         }
-        COSBase k = this.getCOSDictionary().getDictionaryObject(COSName.K);
+        COSBase k = this.getCOSObject().getDictionaryObject(COSName.K);
         if (k == null)
         {
             // currently no kid: set new kid as kids
-            this.getCOSDictionary().setItem(COSName.K, object);
+            this.getCOSObject().setItem(COSName.K, object);
         }
         else if (k instanceof COSArray)
         {
@@ -188,7 +183,7 @@ public abstract class PDStructureNode implements COSObjectable
             COSArray array = new COSArray();
             array.add(k);
             array.add(object);
-            this.getCOSDictionary().setItem(COSName.K, array);
+            this.getCOSObject().setItem(COSName.K, array);
         }
     }
 
@@ -230,7 +225,7 @@ public abstract class PDStructureNode implements COSObjectable
         {
             return;
         }
-        COSBase k = this.getCOSDictionary().getDictionaryObject(COSName.K);
+        COSBase k = this.getCOSObject().getDictionaryObject(COSName.K);
         if (k == null)
         {
             return;
@@ -263,7 +258,7 @@ public abstract class PDStructureNode implements COSObjectable
                 COSArray array = new COSArray();
                 array.add(newKid);
                 array.add(refKidBase);
-                this.getCOSDictionary().setItem(COSName.K, array);
+                this.getCOSObject().setItem(COSName.K, array);
             }
         }
     }
@@ -311,7 +306,7 @@ public abstract class PDStructureNode implements COSObjectable
         {
             return false;
         }
-        COSBase k = this.getCOSDictionary().getDictionaryObject(COSName.K);
+        COSBase k = this.getCOSObject().getDictionaryObject(COSName.K);
         if (k == null)
         {
             // no kids: objectable is not a kid
@@ -325,7 +320,7 @@ public abstract class PDStructureNode implements COSObjectable
             // if now only one kid: set remaining kid as kids
             if (array.size() == 1)
             {
-                this.getCOSDictionary().setItem(COSName.K, array.getObject(0));
+                this.getCOSObject().setItem(COSName.K, array.getObject(0));
             }
             return removed;
         }
@@ -340,7 +335,7 @@ public abstract class PDStructureNode implements COSObjectable
             }
             if (onlyKid)
             {
-                this.getCOSDictionary().setItem(COSName.K, null);
+                this.getCOSObject().setItem(COSName.K, null);
                 return true;
             }
             return false;

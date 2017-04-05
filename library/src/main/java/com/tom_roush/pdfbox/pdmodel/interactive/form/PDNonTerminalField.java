@@ -45,7 +45,7 @@ public class PDNonTerminalField extends PDFieldTreeNode
     public int getFieldFlags()
     {
         int retval = 0;
-        COSInteger ff = (COSInteger) getDictionary().getDictionaryObject(COSName.FF);
+        COSInteger ff = (COSInteger) getCOSObject().getDictionaryObject(COSName.FF);
         if (ff != null)
         {
             retval = ff.intValue();
@@ -61,7 +61,7 @@ public class PDNonTerminalField extends PDFieldTreeNode
     public String getFieldType()
     {
         // There is no need to look up the parent hierarchy within a non terminal field
-        return getDictionary().getNameAsString(COSName.FT);
+        return getCOSObject().getNameAsString(COSName.FT);
     }
 
     /**
@@ -71,7 +71,7 @@ public class PDNonTerminalField extends PDFieldTreeNode
     public Object getValue()
     {
     	// There is no need to look up the parent hierarchy within a non terminal field
-    	return getDictionary().getNameAsString(COSName.V);
+    	return getCOSObject().getNameAsString(COSName.V);
     }
     
     /**
@@ -81,7 +81,7 @@ public class PDNonTerminalField extends PDFieldTreeNode
     public void setValue(String fieldValue)
     {
     	// There is no need to look up the parent hierarchy within a non terminal field
-    	getDictionary().setString(COSName.V, fieldValue);
+    	getCOSObject().setString(COSName.V, fieldValue);
     }
     
     /**
@@ -91,7 +91,7 @@ public class PDNonTerminalField extends PDFieldTreeNode
     public Object getDefaultValue()
     {
     	// There is no need to look up the parent hierarchy within a non terminal field
-    	return getDictionary().getNameAsString(COSName.V);
+    	return getCOSObject().getNameAsString(COSName.V);
     }
     
     /**
@@ -100,6 +100,6 @@ public class PDNonTerminalField extends PDFieldTreeNode
     public void setDefaultValue(String defaultValue)
     {
     	// There is no need to look up the parent hierarchy within a non terminal field
-    	getDictionary().setString(COSName.V, defaultValue);
+    	getCOSObject().setString(COSName.V, defaultValue);
     }
 }

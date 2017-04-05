@@ -54,7 +54,7 @@ final class CCITTFaxFilter extends Filter
         int arraySize = (cols + 7) / 8 * rows;
         // TODO possible options??
         long tiffOptions = 0;
-        byte[] decompressed = null;
+        byte[] decompressed;
         if (k == 0)
         {
             InputStream in = new CCITTFaxG31DDecodeInputStream(encoded, cols, rows, encodedByteAlign);

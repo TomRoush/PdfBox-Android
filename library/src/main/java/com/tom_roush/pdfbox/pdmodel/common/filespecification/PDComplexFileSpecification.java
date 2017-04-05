@@ -12,7 +12,7 @@ import com.tom_roush.pdfbox.cos.COSStream;
  */
 public class PDComplexFileSpecification extends PDFileSpecification
 {
-    private COSDictionary fs;
+    private final COSDictionary fs;
     private COSDictionary efDictionary;
 
     /**
@@ -47,17 +47,8 @@ public class PDComplexFileSpecification extends PDFileSpecification
      *
      * @return The cos object that matches this Java object.
      */
-    public COSBase getCOSObject()
-    {
-        return fs;
-    }
-
-    /**
-     * Convert this standard java object to a COS object.
-     *
-     * @return The cos object that matches this Java object.
-     */
-    public COSDictionary getCOSDictionary()
+    @Override
+    public COSDictionary getCOSObject()
     {
         return fs;
     }
@@ -66,7 +57,7 @@ public class PDComplexFileSpecification extends PDFileSpecification
     {
         if (efDictionary == null && fs != null)
         {
-            efDictionary = (COSDictionary)fs.getDictionaryObject( COSName.EF );            
+            efDictionary = (COSDictionary)fs.getDictionaryObject( COSName.EF );
         }
         return efDictionary;
     }
@@ -80,7 +71,7 @@ public class PDComplexFileSpecification extends PDFileSpecification
         }
         return null;
     }
-    
+
     /**
      * <p>Preferred method for getting the filename.
      * It will determinate the recommended file name.</p>
@@ -137,6 +128,7 @@ public class PDComplexFileSpecification extends PDFileSpecification
      *
      * @return The file name.
      */
+    @Override
     public String getFile()
     {
         return fs.getString( COSName.F );
@@ -147,6 +139,7 @@ public class PDComplexFileSpecification extends PDFileSpecification
      *
      * @param file The name of the file.
      */
+    @Override
     public void setFile( String file )
     {
         fs.setString( COSName.F, file );
@@ -372,7 +365,7 @@ public class PDComplexFileSpecification extends PDFileSpecification
             ef.setItem( COSName.UNIX, file );
         }
     }
-    
+
     /**
      * Get the embedded unicode file.
      *
@@ -407,10 +400,10 @@ public class PDComplexFileSpecification extends PDFileSpecification
             ef.setItem( COSName.UF, file );
         }
     }
-    
+
     /**
      * Set the file description.
-     * 
+     *
      * @param description The file description
      */
     public void setFileDescription( String description )

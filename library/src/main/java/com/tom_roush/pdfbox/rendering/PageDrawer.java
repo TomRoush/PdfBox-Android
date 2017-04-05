@@ -437,10 +437,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     {
         // to ensure that the path is created in the right direction, we have to create
         // it by combining single lines instead of creating a simple rectangle
-        linePath.moveTo((float) p0.x, (float) p0.y);
-        linePath.lineTo((float) p1.x, (float) p1.y);
-        linePath.lineTo((float) p2.x, (float) p2.y);
-        linePath.lineTo((float) p3.x, (float) p3.y);
+        linePath.moveTo(p0.x, p0.y);
+        linePath.lineTo(p1.x, p1.y);
+        linePath.lineTo(p2.x, p2.y);
+        linePath.lineTo(p3.x, p3.y);
 
         // close the subpath instead of adding the last line so that a possible set line
         // cap style isn't taken into account at the "beginning" of the rectangle

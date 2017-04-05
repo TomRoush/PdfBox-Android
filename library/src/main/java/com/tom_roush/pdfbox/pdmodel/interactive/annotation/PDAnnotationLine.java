@@ -95,7 +95,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
     public PDAnnotationLine()
     {
         super();
-        getDictionary().setItem( COSName.SUBTYPE, COSName.getPDFName( SUB_TYPE ) );
+        getCOSObject().setItem(COSName.SUBTYPE, COSName.getPDFName(SUB_TYPE));
         // Dictionary value L is mandatory, fill in with arbitary value
         setLine( new float[] { 0, 0, 0, 0 } );
 
@@ -125,7 +125,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
     {
         COSArray newL = new COSArray();
         newL.setFloatArray( l );
-        getDictionary().setItem( "L", newL );
+        getCOSObject().setItem("L", newL);
     }
 
     /**
@@ -137,7 +137,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public float[] getLine()
     {
-        COSArray l = (COSArray) getDictionary().getDictionaryObject( "L" );
+        COSArray l = (COSArray) getCOSObject().getDictionaryObject( "L" );
         return l.toFloatArray();
     }
 
@@ -153,13 +153,13 @@ public class PDAnnotationLine extends PDAnnotationMarkup
         {
             style = LE_NONE;
         }
-        COSArray array = (COSArray)getDictionary().getDictionaryObject( "LE" );
+        COSArray array = (COSArray) getCOSObject().getDictionaryObject("LE");
         if( array == null )
         {
             array = new COSArray();
             array.add( COSName.getPDFName( style ) );
             array.add( COSName.getPDFName( LE_NONE ) );
-            getDictionary().setItem( "LE", array );
+            getCOSObject().setItem("LE", array);
         }
         else
         {
@@ -176,7 +176,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
     public String getStartPointEndingStyle()
     {
         String retval = LE_NONE;
-        COSArray array = (COSArray)getDictionary().getDictionaryObject( "LE" );
+        COSArray array = (COSArray) getCOSObject().getDictionaryObject("LE");
         if( array != null )
         {
             retval = array.getName( 0 );
@@ -197,13 +197,13 @@ public class PDAnnotationLine extends PDAnnotationMarkup
         {
             style = LE_NONE;
         }
-        COSArray array = (COSArray)getDictionary().getDictionaryObject( "LE" );
+        COSArray array = (COSArray) getCOSObject().getDictionaryObject("LE");
         if( array == null )
         {
             array = new COSArray();
             array.add( COSName.getPDFName( LE_NONE ) );
             array.add( COSName.getPDFName( style ) );
-            getDictionary().setItem( "LE", array );
+            getCOSObject().setItem("LE", array);
         }
         else
         {
@@ -220,7 +220,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
     public String getEndPointEndingStyle()
     {
         String retval = LE_NONE;
-        COSArray array = (COSArray)getDictionary().getDictionaryObject( "LE" );
+        COSArray array = (COSArray) getCOSObject().getDictionaryObject("LE");
         if( array != null )
         {
             retval = array.getName( 1 );
@@ -237,7 +237,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public void setInteriorColor( PDColor ic )
     {
-    	getDictionary().setItem(COSName.IC, ic.toCOSArray() );
+        getCOSObject().setItem(COSName.IC, ic.toCOSArray());
     }
 
     /**
@@ -259,7 +259,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public void setCaption( boolean cap )
     {
-        getDictionary().setBoolean( "Cap", cap );
+        getCOSObject().setBoolean("Cap", cap);
     }
 
     /**
@@ -269,7 +269,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public boolean getCaption()
     {
-        return getDictionary().getBoolean( "Cap", false );
+        return getCOSObject().getBoolean("Cap", false);
     }
 
     /**
@@ -281,7 +281,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public void setBorderStyle( PDBorderStyleDictionary bs )
     {
-        this.getDictionary().setItem( "BS", bs);
+        this.getCOSObject().setItem("BS", bs);
     }
 
     /**
@@ -292,7 +292,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public PDBorderStyleDictionary getBorderStyle()
     {
-    	COSDictionary bs = (COSDictionary) this.getDictionary().getItem(COSName.BS);
+        COSDictionary bs = (COSDictionary) this.getCOSObject().getItem(COSName.BS);
         if (bs != null)
         {
             return new PDBorderStyleDictionary( bs );
@@ -310,7 +310,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public float getLeaderLineLength()
     {
-        return this.getDictionary().getFloat("LL");
+        return this.getCOSObject().getFloat("LL");
     }
 
     /**
@@ -320,7 +320,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public void setLeaderLineLength(float leaderLineLength)
     {
-        this.getDictionary().setFloat("LL", leaderLineLength);
+        this.getCOSObject().setFloat("LL", leaderLineLength);
     }
 
     /**
@@ -330,7 +330,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public float getLeaderLineExtensionLength()
     {
-        return this.getDictionary().getFloat("LLE");
+        return this.getCOSObject().getFloat("LLE");
     }
 
     /**
@@ -340,7 +340,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public void setLeaderLineExtensionLength(float leaderLineExtensionLength)
     {
-        this.getDictionary().setFloat("LLE", leaderLineExtensionLength);
+        this.getCOSObject().setFloat("LLE", leaderLineExtensionLength);
     }
 
     /**
@@ -350,7 +350,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public float getLeaderLineOffsetLength()
     {
-        return this.getDictionary().getFloat("LLO");
+        return this.getCOSObject().getFloat("LLO");
     }
 
     /**
@@ -360,7 +360,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public void setLeaderLineOffsetLength(float leaderLineOffsetLength)
     {
-        this.getDictionary().setFloat("LLO", leaderLineOffsetLength);
+        this.getCOSObject().setFloat("LLO", leaderLineOffsetLength);
     }
 
     /**
@@ -370,7 +370,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public String getCaptionPositioning()
     {
-        return this.getDictionary().getString("CP");
+        return this.getCOSObject().getString("CP");
     }
 
     /**
@@ -381,7 +381,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public void setCaptionPositioning(String captionPositioning)
     {
-        this.getDictionary().setString("CP", captionPositioning);
+        this.getCOSObject().setString("CP", captionPositioning);
     }
 
     /**
@@ -391,12 +391,12 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public void setCaptionHorizontalOffset( float offset )
     {
-        COSArray array = (COSArray)this.getDictionary().getDictionaryObject( "CO" );
+        COSArray array = (COSArray) this.getCOSObject().getDictionaryObject("CO");
         if( array == null )
         {
             array = new COSArray();
             array.setFloatArray(new float[] {offset, 0.f});
-            this.getDictionary().setItem( "CO", array );
+            this.getCOSObject().setItem("CO", array);
         }
         else
         {
@@ -412,7 +412,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
     public float getCaptionHorizontalOffset()
     {
         float retval = 0.f;
-        COSArray array = (COSArray)this.getDictionary().getDictionaryObject( "CO" );
+        COSArray array = (COSArray) this.getCOSObject().getDictionaryObject("CO");
         if( array != null )
         {
             retval = array.toFloatArray()[0];
@@ -428,12 +428,12 @@ public class PDAnnotationLine extends PDAnnotationMarkup
      */
     public void setCaptionVerticalOffset( float offset )
     {
-        COSArray array = (COSArray)this.getDictionary().getDictionaryObject( "CO" );
+        COSArray array = (COSArray) this.getCOSObject().getDictionaryObject("CO");
         if( array == null )
         {
             array = new COSArray();
             array.setFloatArray(new float[] {0.f, offset});
-            this.getDictionary().setItem( "CO", array );
+            this.getCOSObject().setItem("CO", array);
         }
         else
         {
@@ -449,7 +449,7 @@ public class PDAnnotationLine extends PDAnnotationMarkup
     public float getCaptionVerticalOffset()
     {
         float retval = 0.f;
-        COSArray array = (COSArray)this.getDictionary().getDictionaryObject( "CO" );
+        COSArray array = (COSArray) this.getCOSObject().getDictionaryObject("CO");
         if( array != null )
         {
             retval = array.toFloatArray()[1];

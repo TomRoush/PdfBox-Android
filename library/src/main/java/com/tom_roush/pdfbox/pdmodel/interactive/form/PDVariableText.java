@@ -43,7 +43,7 @@ public abstract class PDVariableText extends PDField
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * @param theAcroForm The form that this field is part of.
 	 * @param field the PDF object to represent as a field.
 	 * @param parentNode the parent node of the node to be created
@@ -55,12 +55,12 @@ public abstract class PDVariableText extends PDField
 
 	/**
 	 * Get the default appearance.
-	 * 
+	 *
 	 * This is an inheritable attribute.
-	 * 
+	 *
 	 * The default appearance contains a set of default graphics and text operators
 	 * to define the field's text size and color.
-	 * 
+	 *
 	 * @return the DA element of the dictionary object
 	 */
 	public String getDefaultAppearance()
@@ -71,12 +71,12 @@ public abstract class PDVariableText extends PDField
 
 	/**
 	 * Set the default appearance.
-	 * 
-	 * This will set the local default appearance for the variable text field only not 
+	 *
+	 * This will set the local default appearance for the variable text field only not
 	 * affecting a default appearance in the parent hierarchy.
-	 * 
+	 *
 	 * Providing null as the value will remove the local default appearance.
-	 * 
+	 *
 	 * @param daValue a string describing the default appearance
 	 */
 	public void setDefaultAppearance(String daValue)
@@ -101,7 +101,7 @@ public abstract class PDVariableText extends PDField
 	 */
 	public String getDefaultStyleString()
 	{
-		COSString defaultStyleString = (COSString)getDictionary().getDictionaryObject(COSName.DS);
+		COSString defaultStyleString = (COSString)getCOSObject().getDictionaryObject(COSName.DS);
 		return defaultStyleString.getString();
 	}
 
@@ -116,19 +116,19 @@ public abstract class PDVariableText extends PDField
 	{
 		if (defaultStyleString != null)
 		{
-			getDictionary().setItem(COSName.DS, new COSString(defaultStyleString));
+			getCOSObject().setItem(COSName.DS, new COSString(defaultStyleString));
 		}
 		else
 		{
-			getDictionary().removeItem(COSName.DS);
+			getCOSObject().removeItem(COSName.DS);
 		}
 	}
 
 	/**
 	 * This will get the 'quadding' or justification of the text to be displayed.
-	 * 
+	 *
 	 * This is an inheritable attribute.
-	 * 
+	 *
 	 * 0 - Left(default)<br/>
 	 * 1 - Centered<br />
 	 * 2 - Right<br />
@@ -141,7 +141,7 @@ public abstract class PDVariableText extends PDField
 		int retval = 0;
 
 		COSNumber number = (COSNumber)getInheritableAttribute(COSName.Q );
-		
+
 		if( number != null )
 		{
 			retval = number.intValue();
@@ -156,7 +156,7 @@ public abstract class PDVariableText extends PDField
 	 */
 	public void setQ( int q )
 	{
-		getDictionary().setInt( COSName.Q, q );
+		getCOSObject().setInt( COSName.Q, q );
 	}
 
 	/**
@@ -172,10 +172,10 @@ public abstract class PDVariableText extends PDField
 		{
 			return textStream.getAsString();
 		}
-		
+
 		return "";
 	}
-	
+
 	/**
 	 * Get the fields rich text value.
 	 *
@@ -205,7 +205,7 @@ public abstract class PDVariableText extends PDField
 	 * For long text it's more efficient to provide the text content as a
 	 * text stream {@link #setRichTextValue(PDTextStream)}
 	 * </p>
-	 * 
+	 *
 	 * Providing null as the value will remove the default style string.
 	 *
 	 * @param richTextValue a rich text string
@@ -215,14 +215,14 @@ public abstract class PDVariableText extends PDField
 		// TODO stream instead of string
 		if (richTextValue != null)
 		{
-			getDictionary().setItem(COSName.RV, new COSString(richTextValue));
+			getCOSObject().setItem(COSName.RV, new COSString(richTextValue));
 		}
 		else
 		{
-			getDictionary().removeItem(COSName.RV);
+			getCOSObject().removeItem(COSName.RV);
 		}
 	}
-	
+
 	/**
 	 * Set the fields rich text value.
 	 *
@@ -240,11 +240,11 @@ public abstract class PDVariableText extends PDField
 	{
 		if (richTextValue != null)
 		{
-			getDictionary().setItem(COSName.RV, richTextValue.getCOSObject());
+			getCOSObject().setItem(COSName.RV, richTextValue.getCOSObject());
 		}
 		else
 		{
-			getDictionary().removeItem(COSName.RV);
+			getCOSObject().removeItem(COSName.RV);
 		}
 	}
 }

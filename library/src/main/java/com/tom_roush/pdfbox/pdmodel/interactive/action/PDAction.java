@@ -1,15 +1,14 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.action;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-
 import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
 import com.tom_roush.pdfbox.pdmodel.common.PDDestinationOrAction;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This represents an action that can be executed in a PDF document.
@@ -54,17 +53,7 @@ public abstract class PDAction implements PDDestinationOrAction
      * @return The cos object that matches this Java object.
      */
     @Override
-    public COSBase getCOSObject()
-    {
-        return action;
-    }
-
-    /**
-     * Convert this standard java object to a COS object.
-     *
-     * @return The cos object that matches this Java object.
-     */
-    public COSDictionary getCOSDictionary()
+    public COSDictionary getCOSObject()
     {
         return action;
     }
@@ -99,7 +88,7 @@ public abstract class PDAction implements PDDestinationOrAction
      */
     public String getSubType()
     {
-       return action.getNameAsString( "S" );
+        return action.getNameAsString(COSName.S);
     }
 
     /**
@@ -110,7 +99,7 @@ public abstract class PDAction implements PDDestinationOrAction
      */
     public void setSubType( String s )
     {
-       action.setName( "S", s );
+        action.setName(COSName.S, s);
     }
 
     /**

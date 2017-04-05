@@ -1,11 +1,11 @@
 package com.tom_roush.pdfbox.pdmodel.common.function;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.PDRange;
+
+import java.io.IOException;
 
 /**
  * This class represents a Type 3 (stitching) function in a PDF document.
@@ -106,7 +106,7 @@ public class PDFunctionType3 extends PDFunction
     {
         if (functions == null)
         {
-            functions = (COSArray)(getDictionary().getDictionaryObject( COSName.FUNCTIONS ));
+            functions = (COSArray) (getCOSObject().getDictionaryObject(COSName.FUNCTIONS));
         }
         return functions;
     }
@@ -120,7 +120,7 @@ public class PDFunctionType3 extends PDFunction
     {
         if (bounds == null) 
         {
-            bounds = (COSArray)(getDictionary().getDictionaryObject( COSName.BOUNDS ));
+            bounds = (COSArray) (getCOSObject().getDictionaryObject(COSName.BOUNDS));
         }
         return bounds;
     }
@@ -134,7 +134,7 @@ public class PDFunctionType3 extends PDFunction
     {
         if (encode == null)
         {
-            encode = (COSArray)(getDictionary().getDictionaryObject( COSName.ENCODE ));
+            encode = (COSArray) (getCOSObject().getDictionaryObject(COSName.ENCODE));
         }
         return encode;
     }
@@ -142,7 +142,7 @@ public class PDFunctionType3 extends PDFunction
     /**
      * Get the encode for the input parameter.
      *
-     * @param paramNum The function parameter number.
+     * @param n The function parameter number.
      *
      * @return The encode parameter range or null if none is set.
      */

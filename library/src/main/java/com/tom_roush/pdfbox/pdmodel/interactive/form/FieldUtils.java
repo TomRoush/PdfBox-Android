@@ -169,7 +169,7 @@ public final class FieldUtils
     			return getItemsFromPair(items, pairIdx);
     		}
     	}
-    	return Collections.<String>emptyList();
+    	return Collections.emptyList();
     }
     
     /**

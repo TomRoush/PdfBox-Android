@@ -19,6 +19,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import com.tom_roush.pdfbox.util.Charsets;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.awt.AWTColor;
@@ -183,6 +184,44 @@ public final class PDPageContentStream implements Closeable
             resources = new PDResources();
             sourcePage.setResources(resources);
         }
+    }
+
+    /**
+     * Create a new appearance stream. Note that this is not actually a "page" content stream.
+     *
+     * @param doc The document the page is part of.
+     * @param appearance The appearance stream to write to.
+     * @throws IOException If there is an error writing to the page contents.
+     */
+    public PDPageContentStream(PDDocument doc, PDAppearanceStream appearance) throws IOException
+    {
+        this.document = doc;
+
+        output = appearance.getPDStream().createOutputStream();
+        this.resources = appearance.getResources();
+
+        formatDecimal.setMaximumFractionDigits(4);
+        formatDecimal.setGroupingUsed(false);
+    }
+
+    /**
+     * Create a new appearance stream. Note that this is not actually a "page" content stream.
+     *
+     * @param doc The document the appearance is part of.
+     * @param doc The document the appearance is part of.
+     * @param outputStream The appearances output stream to write to.
+     * @throws IOException If there is an error writing to the page contents.
+     */
+    public PDPageContentStream(PDDocument doc, PDAppearanceStream appearance, OutputStream outputStream)
+        throws IOException
+    {
+        this.document = doc;
+
+        output = outputStream;
+        this.resources = appearance.getResources();
+
+        formatDecimal.setMaximumFractionDigits(4);
+        formatDecimal.setGroupingUsed(false);
     }
 
     /**

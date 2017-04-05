@@ -1,13 +1,12 @@
 package com.tom_roush.pdfbox.pdmodel;
 
-import java.util.Calendar;
-import java.util.Set;
-import java.util.TreeSet;
-
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+
+import java.util.Calendar;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * This is the document metadata.  Each getXXX method will return the entry if
@@ -44,18 +43,8 @@ public final class PDDocumentInformation implements COSObjectable
      *
      * @return The underlying info dictionary.
      */
-    public COSDictionary getDictionary()
-    {
-        return info;
-    }
-
-    /**
-     * Convert this standard java object to a COS object.
-     *
-     * @return The cos object that matches this Java object.
-     */
     @Override
-    public COSBase getCOSObject()
+    public COSDictionary getCOSObject()
     {
         return info;
     }

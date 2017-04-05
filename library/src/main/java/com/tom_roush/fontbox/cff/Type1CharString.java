@@ -342,8 +342,8 @@ public class Type1CharString
 	 */
 	private void rmoveTo(Number dx, Number dy)
 	{
-		float x = (float)current.x + dx.floatValue();
-		float y = (float)current.y + dy.floatValue();
+		float x = current.x + dx.floatValue();
+		float y = current.y + dy.floatValue();
 		path.moveTo(x, y);
 		current.set(x, y);
 	}
@@ -353,8 +353,8 @@ public class Type1CharString
 	 */
 	private void rlineTo(Number dx, Number dy)
 	{
-		float x = (float)current.x + dx.floatValue();
-		float y = (float)current.y + dy.floatValue();
+		float x = current.x + dx.floatValue();
+		float y = current.y + dy.floatValue();
 		//        if (path.getCurrentPoint() == null) TODO: Patch for now
 		if(path.isEmpty())
 		{
@@ -374,8 +374,8 @@ public class Type1CharString
 	private void rrcurveTo(Number dx1, Number dy1, Number dx2, Number dy2,
 			Number dx3, Number dy3)
 	{
-		float x1 = (float) current.x + dx1.floatValue();
-		float y1 = (float) current.y + dy1.floatValue();
+		float x1 = current.x + dx1.floatValue();
+		float y1 = current.y + dy1.floatValue();
 		float x2 = x1 + dx2.floatValue();
 		float y2 = y1 + dy2.floatValue();
 		float x3 = x2 + dx3.floatValue();

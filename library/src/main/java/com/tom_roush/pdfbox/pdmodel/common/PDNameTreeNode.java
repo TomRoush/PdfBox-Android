@@ -1,11 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel.common;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -13,7 +8,12 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSString;
 
-import android.util.Log;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class represents a PDF Name tree.  See the PDF Reference 1.5 section 3.8.5
@@ -56,17 +56,7 @@ public class PDNameTreeNode implements COSObjectable
      * @return The cos object that matches this Java object.
      */
     @Override
-    public COSBase getCOSObject()
-    {
-        return node;
-    }
-
-    /**
-     * Convert this standard java object to a COS object.
-     *
-     * @return The cos object that matches this Java object.
-     */
-    public COSDictionary getCOSDictionary()
+    public COSDictionary getCOSObject()
     {
         return node;
     }

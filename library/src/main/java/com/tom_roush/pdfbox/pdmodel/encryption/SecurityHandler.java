@@ -50,23 +50,17 @@ public abstract class SecurityHandler
 	// see 7.6.2, page 58, PDF 32000-1:2008
 	private static final byte[] AES_SALT = { (byte) 0x73, (byte) 0x41, (byte) 0x6c, (byte) 0x54 };
 
-	/** The value of V field of the Encryption dictionary. */
-	protected int version;
-
 	/** The length of the secret key used to encrypt the document. */
 	protected int keyLength = DEFAULT_KEY_LENGTH;
 
 	/** The encryption key that will used to encrypt / decrypt.*/
 	protected byte[] encryptionKey;
 
-	/** The document whose security is handled by this security handler.*/
-	protected PDDocument document;
-
 	/** The RC4 implementation used for cryptographic functions. */
-	protected RC4Cipher rc4 = new RC4Cipher();
+	private final RC4Cipher rc4 = new RC4Cipher();
 
 	/** indicates if the Metadata have to be decrypted of not. */ 
-	protected boolean decryptMetadata; 
+	private boolean decryptMetadata;
 
 	private final Set<COSBase> objects = new HashSet<COSBase>();
 
@@ -76,7 +70,17 @@ public abstract class SecurityHandler
 	 * The access permission granted to the current user for the document. These
 	 * permissions are computed during decryption and are in read only mode.
 	 */
-	protected AccessPermission currentAccessPermission = null;
+	private AccessPermission currentAccessPermission = null;
+
+	/**
+	 * Set wether to decrypt meta data.
+	 *
+	 * @param decryptMetadata true if meta data has to be decrypted.
+	 */
+	protected void setDecryptMetadata(boolean decryptMetadata)
+	{
+		this.decryptMetadata = decryptMetadata;
+	}
 
 	/**
 	 * Prepare the document for encryption.
@@ -133,8 +137,7 @@ public abstract class SecurityHandler
 			}
 			else
 			{
-				rc4.setKey(finalKey);
-				rc4.write(data, output);
+				encryptDataRC4(finalKey, data, output);
 			}
 		}
 		output.flush();
@@ -174,8 +177,38 @@ public abstract class SecurityHandler
         System.arraycopy(digestedKey, 0, finalKey, 0, length);
         return finalKey;
     }
-    
-    /**
+
+	/**
+	 * Encrypt or decrypt data with RC4.
+	 *
+	 * @param finalKey The final key obtained with via {@link #calcFinalKey()}.
+	 * @param input The data to encrypt.
+	 * @param output The output to write the encrypted data to.
+	 * @throws IOException If there is an error reading the data.
+	 */
+	protected void encryptDataRC4(byte[] finalKey, InputStream input, OutputStream output)
+		throws IOException
+	{
+		rc4.setKey(finalKey);
+		rc4.write(input, output);
+	}
+
+	/**
+	 * Encrypt or decrypt data with RC4.
+	 *
+	 * @param finalKey The final key obtained with via {@link #calcFinalKey()}.
+	 * @param input The data to encrypt.
+	 * @param output The output to write the encrypted data to.
+	 * @throws IOException If there is an error reading the data.
+	 */
+	protected void encryptDataRC4(byte[] finalKey, byte[] input, OutputStream output)
+		throws IOException
+	{
+		rc4.setKey(finalKey);
+		rc4.write(input, output);
+	}
+
+	/**
      * Encrypt or decrypt data with AES with key length other than 256 bits.
      *
      * @param finalKey The final key obtained with via {@link #calcFinalKey()}.
@@ -481,6 +514,16 @@ public abstract class SecurityHandler
 	public void setKeyLength(int keyLen)
 	{
 		this.keyLength = keyLen;
+	}
+
+	/**
+	 * Sets the access permissions.
+	 *
+	 * @param currentAccessPermission The access permissions to be set.
+	 */
+	public void setCurrentAccessPermission(AccessPermission currentAccessPermission)
+	{
+		this.currentAccessPermission = currentAccessPermission;
 	}
 
 	/**

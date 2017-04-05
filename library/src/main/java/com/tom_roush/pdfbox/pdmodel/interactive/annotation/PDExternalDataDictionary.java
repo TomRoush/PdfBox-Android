@@ -1,6 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
@@ -11,7 +10,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 public class PDExternalDataDictionary implements COSObjectable
 {
 
-    private COSDictionary dataDictionary;
+    private final COSDictionary dataDictionary;
 
     /**
      * Constructor.
@@ -33,19 +32,12 @@ public class PDExternalDataDictionary implements COSObjectable
     }
 
     /**
-     * {@inheritDoc}
-     */
-    public COSBase getCOSObject()
-    {
-        return this.dataDictionary;
-    }
-
-    /**
      * returns the dictionary.
      *
      * @return the dictionary
      */
-    public COSDictionary getDictionary()
+    @Override
+    public COSDictionary getCOSObject()
     {
         return this.dataDictionary;
     }
@@ -57,7 +49,7 @@ public class PDExternalDataDictionary implements COSObjectable
      */
     public String getType()
     {
-        return this.getDictionary().getNameAsString(COSName.TYPE, "ExData");
+        return this.getCOSObject().getNameAsString(COSName.TYPE, "ExData");
     }
 
     /**
@@ -66,7 +58,7 @@ public class PDExternalDataDictionary implements COSObjectable
      */
     public String getSubtype()
     {
-        return this.getDictionary().getNameAsString(COSName.SUBTYPE);
+        return this.getCOSObject().getNameAsString(COSName.SUBTYPE);
     }
 
     /**
@@ -75,7 +67,7 @@ public class PDExternalDataDictionary implements COSObjectable
      */
     public void setSubtype(String subtype)
     {
-        this.getDictionary().setName(COSName.SUBTYPE, subtype);
+        this.getCOSObject().setName(COSName.SUBTYPE, subtype);
     }
 
 }

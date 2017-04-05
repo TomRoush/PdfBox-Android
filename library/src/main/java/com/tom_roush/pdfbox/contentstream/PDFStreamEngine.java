@@ -281,10 +281,10 @@ public abstract class PDFStreamEngine
 			// compute a matrix which scales and translates the transformed appearance box to align
 			// with the edges of the annotation's rectangle
 			Matrix a = Matrix.getTranslateInstance(rect.getLowerLeftX(), rect.getLowerLeftY());
-			a.concatenate(Matrix.getScaleInstance((float)(rect.getWidth() / transformedBox.width()),
-					(float)(rect.getHeight() / transformedBox.height())));
-			a.concatenate(Matrix.getTranslateInstance((float) -transformedBox.left,
-					(float) -transformedBox.top));
+			a.concatenate(Matrix.getScaleInstance(rect.getWidth() / transformedBox.width(),
+                rect.getHeight() / transformedBox.height()));
+			a.concatenate(Matrix.getTranslateInstance(-transformedBox.left,
+                -transformedBox.top));
 
 			// Matrix shall be concatenated with A to form a matrix AA that maps from the appearance's
 			// coordinate system to the annotation's rectangle in default user space
@@ -341,8 +341,8 @@ public abstract class PDFStreamEngine
 		// save a clean state (new clipping path, line path, etc.)
 		RectF bbox = new RectF();
 		tilingPattern.getBBox().transform(patternMatrix).computeBounds(bbox, true);
-		PDRectangle rect = new PDRectangle((float)bbox.left, (float)bbox.top,
-				(float)bbox.width(), (float)bbox.height());
+		PDRectangle rect = new PDRectangle(bbox.left, bbox.top,
+            bbox.width(), bbox.height());
 		graphicsStack.push(new PDGraphicsState(rect));
 
 		// non-colored patterns have to be given a color

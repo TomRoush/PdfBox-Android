@@ -45,7 +45,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     public boolean isSpecified(String name)
     {
-        return this.getCOSDictionary().getDictionaryObject(name) != null;
+        return this.getCOSObject().getDictionaryObject(name) != null;
     }
 
 
@@ -57,7 +57,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected String getString(String name)
     {
-        return this.getCOSDictionary().getString(name);
+        return this.getCOSObject().getString(name);
     }
 
     /**
@@ -68,9 +68,9 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected void setString(String name, String value)
     {
-        COSBase oldBase = this.getCOSDictionary().getDictionaryObject(name);
-        this.getCOSDictionary().setString(name, value);
-        COSBase newBase = this.getCOSDictionary().getDictionaryObject(name);
+        COSBase oldBase = this.getCOSObject().getDictionaryObject(name);
+        this.getCOSObject().setString(name, value);
+        COSBase newBase = this.getCOSObject().getDictionaryObject(name);
         this.potentiallyNotifyChanged(oldBase, newBase);
     }
 
@@ -82,7 +82,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected String[] getArrayOfString(String name)
     {
-        COSBase v = this.getCOSDictionary().getDictionaryObject(name);
+        COSBase v = this.getCOSObject().getDictionaryObject(name);
         if (v instanceof COSArray)
         {
             COSArray array = (COSArray) v;
@@ -104,14 +104,14 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected void setArrayOfString(String name, String[] values)
     {
-        COSBase oldBase = this.getCOSDictionary().getDictionaryObject(name);
+        COSBase oldBase = this.getCOSObject().getDictionaryObject(name);
         COSArray array = new COSArray();
         for (String value : values)
         {
             array.add(new COSString(value));
         }
-        this.getCOSDictionary().setItem(name, array);
-        COSBase newBase = this.getCOSDictionary().getDictionaryObject(name);
+        this.getCOSObject().setItem(name, array);
+        COSBase newBase = this.getCOSObject().getDictionaryObject(name);
         this.potentiallyNotifyChanged(oldBase, newBase);
     }
 
@@ -123,7 +123,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected String getName(String name)
     {
-        return this.getCOSDictionary().getNameAsString(name);
+        return this.getCOSObject().getNameAsString(name);
     }
 
     /**
@@ -135,7 +135,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected String getName(String name, String defaultValue)
     {
-        return this.getCOSDictionary().getNameAsString(name, defaultValue);
+        return this.getCOSObject().getNameAsString(name, defaultValue);
     }
 
     /**
@@ -147,7 +147,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected Object getNameOrArrayOfName(String name, String defaultValue)
     {
-        COSBase v = this.getCOSDictionary().getDictionaryObject(name);
+        COSBase v = this.getCOSObject().getDictionaryObject(name);
         if (v instanceof COSArray)
         {
             COSArray array = (COSArray) v;
@@ -177,9 +177,9 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected void setName(String name, String value)
     {
-        COSBase oldBase = this.getCOSDictionary().getDictionaryObject(name);
-        this.getCOSDictionary().setName(name, value);
-        COSBase newBase = this.getCOSDictionary().getDictionaryObject(name);
+        COSBase oldBase = this.getCOSObject().getDictionaryObject(name);
+        this.getCOSObject().setName(name, value);
+        COSBase newBase = this.getCOSObject().getDictionaryObject(name);
         this.potentiallyNotifyChanged(oldBase, newBase);
     }
 
@@ -191,14 +191,14 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected void setArrayOfName(String name, String[] values)
     {
-        COSBase oldBase = this.getCOSDictionary().getDictionaryObject(name);
+        COSBase oldBase = this.getCOSObject().getDictionaryObject(name);
         COSArray array = new COSArray();
         for (String value : values)
         {
             array.add(COSName.getPDFName(value));
         }
-        this.getCOSDictionary().setItem(name, array);
-        COSBase newBase = this.getCOSDictionary().getDictionaryObject(name);
+        this.getCOSObject().setItem(name, array);
+        COSBase newBase = this.getCOSObject().getDictionaryObject(name);
         this.potentiallyNotifyChanged(oldBase, newBase);
     }
 
@@ -211,7 +211,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected Object getNumberOrName(String name, String defaultValue)
     {
-        COSBase value = this.getCOSDictionary().getDictionaryObject(name);
+        COSBase value = this.getCOSObject().getDictionaryObject(name);
         if (value instanceof COSNumber)
         {
             return ((COSNumber) value).floatValue();
@@ -232,7 +232,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected int getInteger(String name, int defaultValue)
     {
-        return this.getCOSDictionary().getInt(name, defaultValue);
+        return this.getCOSObject().getInt(name, defaultValue);
     }
 
     /**
@@ -243,9 +243,9 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected void setInteger(String name, int value)
     {
-        COSBase oldBase = this.getCOSDictionary().getDictionaryObject(name);
-        this.getCOSDictionary().setInt(name, value);
-        COSBase newBase = this.getCOSDictionary().getDictionaryObject(name);
+        COSBase oldBase = this.getCOSObject().getDictionaryObject(name);
+        this.getCOSObject().setInt(name, value);
+        COSBase newBase = this.getCOSObject().getDictionaryObject(name);
         this.potentiallyNotifyChanged(oldBase, newBase);
     }
 
@@ -258,7 +258,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected float getNumber(String name, float defaultValue)
     {
-        return this.getCOSDictionary().getFloat(name, defaultValue);
+        return this.getCOSObject().getFloat(name, defaultValue);
     }
 
     /**
@@ -269,7 +269,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected float getNumber(String name)
     {
-        return this.getCOSDictionary().getFloat(name);
+        return this.getCOSObject().getFloat(name);
     }
 
     /**
@@ -286,7 +286,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected Object getNumberOrArrayOfNumber(String name, float defaultValue)
     {
-        COSBase v = this.getCOSDictionary().getDictionaryObject(name);
+        COSBase v = this.getCOSObject().getDictionaryObject(name);
         if (v instanceof COSArray)
         {
             COSArray array = (COSArray) v;
@@ -320,9 +320,9 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected void setNumber(String name, float value)
     {
-        COSBase oldBase = this.getCOSDictionary().getDictionaryObject(name);
-        this.getCOSDictionary().setFloat(name, value);
-        COSBase newBase = this.getCOSDictionary().getDictionaryObject(name);
+        COSBase oldBase = this.getCOSObject().getDictionaryObject(name);
+        this.getCOSObject().setFloat(name, value);
+        COSBase newBase = this.getCOSObject().getDictionaryObject(name);
         this.potentiallyNotifyChanged(oldBase, newBase);
     }
 
@@ -334,9 +334,9 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected void setNumber(String name, int value)
     {
-        COSBase oldBase = this.getCOSDictionary().getDictionaryObject(name);
-        this.getCOSDictionary().setInt(name, value);
-        COSBase newBase = this.getCOSDictionary().getDictionaryObject(name);
+        COSBase oldBase = this.getCOSObject().getDictionaryObject(name);
+        this.getCOSObject().setInt(name, value);
+        COSBase newBase = this.getCOSObject().getDictionaryObject(name);
         this.potentiallyNotifyChanged(oldBase, newBase);
     }
 
@@ -353,9 +353,9 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
         {
             array.add(new COSFloat(values[i]));
         }
-        COSBase oldBase = this.getCOSDictionary().getDictionaryObject(name);
-        this.getCOSDictionary().setItem(name, array);
-        COSBase newBase = this.getCOSDictionary().getDictionaryObject(name);
+        COSBase oldBase = this.getCOSObject().getDictionaryObject(name);
+        this.getCOSObject().setItem(name, array);
+        COSBase newBase = this.getCOSObject().getDictionaryObject(name);
         this.potentiallyNotifyChanged(oldBase, newBase);
     }
 
@@ -367,7 +367,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected PDGamma getColor(String name)
     {
-        COSArray c = (COSArray) this.getCOSDictionary().getDictionaryObject(name);
+        COSArray c = (COSArray) this.getCOSObject().getDictionaryObject(name);
         if (c != null)
         {
             return new PDGamma(c);
@@ -384,7 +384,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
     protected Object getColorOrFourColors(String name)
     {
         COSArray array =
-            (COSArray) this.getCOSDictionary().getDictionaryObject(name);
+            (COSArray) this.getCOSObject().getDictionaryObject(name);
         if (array == null)
         {
             return null;
@@ -409,8 +409,8 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected void setColor(String name, PDGamma value)
     {
-        COSBase oldValue = this.getCOSDictionary().getDictionaryObject(name);
-        this.getCOSDictionary().setItem(name, value);
+        COSBase oldValue = this.getCOSObject().getDictionaryObject(name);
+        this.getCOSObject().setItem(name, value);
         COSBase newValue = value == null ? null : value.getCOSObject();
         this.potentiallyNotifyChanged(oldValue, newValue);
     }
@@ -423,8 +423,8 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
      */
     protected void setFourColors(String name, PDFourColours value)
     {
-        COSBase oldValue = this.getCOSDictionary().getDictionaryObject(name);
-        this.getCOSDictionary().setItem(name, value);
+        COSBase oldValue = this.getCOSObject().getDictionaryObject(name);
+        this.getCOSObject().setItem(name, value);
         COSBase newValue = value == null ? null : value.getCOSObject();
         this.potentiallyNotifyChanged(oldValue, newValue);
     }

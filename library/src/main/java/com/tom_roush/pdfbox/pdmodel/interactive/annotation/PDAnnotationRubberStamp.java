@@ -85,7 +85,7 @@ public class PDAnnotationRubberStamp extends PDAnnotationMarkup
     public PDAnnotationRubberStamp()
     {
         super();
-        getDictionary().setItem( COSName.SUBTYPE, COSName.getPDFName( SUB_TYPE ) );
+        getCOSObject().setItem(COSName.SUBTYPE, COSName.getPDFName(SUB_TYPE));
     }
 
     /**
@@ -107,7 +107,7 @@ public class PDAnnotationRubberStamp extends PDAnnotationMarkup
      */
     public void setName( String name )
     {
-        getDictionary().setName(COSName.NAME, name);
+        getCOSObject().setName(COSName.NAME, name);
     }
 
     /**
@@ -118,6 +118,6 @@ public class PDAnnotationRubberStamp extends PDAnnotationMarkup
      */
     public String getName()
     {
-        return getDictionary().getNameAsString(COSName.NAME, NAME_DRAFT);
+        return getCOSObject().getNameAsString(COSName.NAME, NAME_DRAFT);
     }
 }

@@ -1,11 +1,11 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
-import java.io.IOException;
-import java.util.Calendar;
-
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.pdmodel.common.PDTextStream;
+
+import java.io.IOException;
+import java.util.Calendar;
 
 /**
  * This class represents the additonal fields of a Markup type Annotation.  See
@@ -83,7 +83,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public String getTitlePopup()
     {
-        return getDictionary().getString( "T" );
+        return getCOSObject().getString("T");
     }
 
     /**
@@ -95,7 +95,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setTitlePopup( String t )
     {
-        getDictionary().setString( "T", t );
+        getCOSObject().setString("T", t);
     }
 
     /**
@@ -106,7 +106,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public PDAnnotationPopup getPopup()
     {
-        COSDictionary popup = (COSDictionary) getDictionary().getDictionaryObject( "Popup" );
+        COSDictionary popup = (COSDictionary) getCOSObject().getDictionaryObject("Popup");
         if (popup != null)
         {
             return new PDAnnotationPopup( popup );
@@ -126,7 +126,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setPopup( PDAnnotationPopup popup )
     {
-        getDictionary().setItem( "Popup", popup );
+        getCOSObject().setItem("Popup", popup);
     }
 
     /**
@@ -137,7 +137,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public float getConstantOpacity()
     {
-        return getDictionary().getFloat( "CA", 1 );
+        return getCOSObject().getFloat("CA", 1);
     }
 
     /**
@@ -149,7 +149,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setConstantOpacity( float ca )
     {
-        getDictionary().setFloat( "CA", ca );
+        getCOSObject().setFloat("CA", ca);
     }
 
     /**
@@ -160,7 +160,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public PDTextStream getRichContents()
     {
-        COSBase rc = getDictionary().getDictionaryObject( "RC" );
+        COSBase rc = getCOSObject().getDictionaryObject("RC");
         if (rc != null)
         {
             return PDTextStream.createTextStream( rc );
@@ -179,7 +179,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setRichContents( PDTextStream rc )
     {
-        getDictionary().setItem( "RC", rc);
+        getCOSObject().setItem("RC", rc);
     }
 
     /**
@@ -191,7 +191,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public Calendar getCreationDate() throws IOException
     {
-        return getDictionary().getDate( "CreationDate" );
+        return getCOSObject().getDate("CreationDate");
     }
 
     /**
@@ -202,7 +202,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setCreationDate( Calendar creationDate )
     {
-        getDictionary().setDate( "CreationDate", creationDate );
+        getCOSObject().setDate("CreationDate", creationDate);
     }
 
     /**
@@ -215,7 +215,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public PDAnnotation getInReplyTo() throws IOException
     {
-        COSBase irt = getDictionary().getDictionaryObject( "IRT" );
+        COSBase irt = getCOSObject().getDictionaryObject("IRT");
         return PDAnnotation.createAnnotation( irt );
     }
 
@@ -227,7 +227,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setInReplyTo( PDAnnotation irt )
     {
-        getDictionary().setItem( "IRT", irt );
+        getCOSObject().setItem("IRT", irt);
     }
 
     /**
@@ -237,7 +237,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public String getSubject()
     {
-        return getDictionary().getString( "Subj" );
+        return getCOSObject().getString("Subj");
     }
 
     /**
@@ -247,7 +247,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setSubject( String subj )
     {
-        getDictionary().setString( "Subj", subj );
+        getCOSObject().setString("Subj", subj);
     }
 
     /**
@@ -258,7 +258,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public String getReplyType()
     {
-        return getDictionary().getNameAsString( "RT", RT_REPLY );
+        return getCOSObject().getNameAsString("RT", RT_REPLY);
     }
 
     /**
@@ -269,7 +269,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setReplyType( String rt )
     {
-        getDictionary().setName( "RT", rt );
+        getCOSObject().setName("RT", rt);
     }
 
     /**
@@ -281,7 +281,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public String getIntent()
     {
-        return getDictionary().getNameAsString( "IT" );
+        return getCOSObject().getNameAsString("IT");
     }
 
     /**
@@ -293,7 +293,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setIntent( String it )
     {
-        getDictionary().setName( "IT", it );
+        getCOSObject().setName("IT", it);
     }
 
     /**
@@ -303,7 +303,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public PDExternalDataDictionary getExternalData()
     {
-        COSBase exData = this.getDictionary().getDictionaryObject("ExData");
+        COSBase exData = this.getCOSObject().getDictionaryObject("ExData");
         if (exData instanceof COSDictionary)
         {
             return new PDExternalDataDictionary((COSDictionary) exData);
@@ -318,7 +318,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setExternalData(PDExternalDataDictionary externalData)
     {
-        this.getDictionary().setItem("ExData", externalData);
+        this.getCOSObject().setItem("ExData", externalData);
     }
 
 }

@@ -1,7 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.common.function;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -11,6 +9,8 @@ import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDRange;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+
+import java.io.IOException;
 
 /**
  * This class represents a function in a PDF document.
@@ -59,30 +59,13 @@ public abstract class PDFunction implements COSObjectable
      * @return the function type.
      */
     public abstract int getFunctionType();
-    
-    /**
-     * Returns the COSObject.
-     *
-     * {@inheritDoc}
-     */
-    @Override
-    public COSBase getCOSObject()
-    {
-        if (functionStream != null)
-        {
-            return functionStream.getCOSObject();
-        }
-        else 
-        {
-            return functionDictionary;
-        }
-    }
 
     /**
      * Returns the stream.
      * @return The stream for this object.
      */
-    public COSDictionary getDictionary()
+    @Override
+    public COSDictionary getCOSObject()
     {
         if (functionStream != null)
         {
@@ -191,7 +174,7 @@ public abstract class PDFunction implements COSObjectable
     public void setRangeValues(COSArray rangeValues)
     {
         range = rangeValues;
-        getDictionary().setItem(COSName.RANGE, rangeValues);
+        getCOSObject().setItem(COSName.RANGE, rangeValues);
     }
 
     /**
@@ -234,7 +217,7 @@ public abstract class PDFunction implements COSObjectable
     public void setDomainValues(COSArray domainValues)
     {
         domain = domainValues;
-        getDictionary().setItem(COSName.DOMAIN, domainValues);
+        getCOSObject().setItem(COSName.DOMAIN, domainValues);
     }
 
     /**
@@ -271,7 +254,7 @@ public abstract class PDFunction implements COSObjectable
     {
         if (range == null) 
         {
-            range = (COSArray)getDictionary().getDictionaryObject( COSName.RANGE );
+            range = (COSArray) getCOSObject().getDictionaryObject(COSName.RANGE);
         }
         return range;
     }
@@ -283,9 +266,9 @@ public abstract class PDFunction implements COSObjectable
      */
     private COSArray getDomainValues()
     {
-        if (domain == null) 
+        if (domain == null)
         {
-            domain = (COSArray)getDictionary().getDictionaryObject( COSName.DOMAIN );
+            domain = (COSArray) getCOSObject().getDictionaryObject(COSName.DOMAIN);
         }
         return domain;
     }

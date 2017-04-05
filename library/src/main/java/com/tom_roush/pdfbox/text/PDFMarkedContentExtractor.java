@@ -135,7 +135,7 @@ public class PDFMarkedContentExtractor extends PDFTextStreamEngine
             float tolerance = (text.getWidth()/textCharacter.length())/3.0f;
             for (TextPosition sameTextCharacter : sameTextCharacters)
             {
-                TextPosition character = (TextPosition) sameTextCharacter;
+                TextPosition character = sameTextCharacter;
                 String charCharacter = character.getUnicode();
                 float charX = character.getX();
                 float charY = character.getY();
@@ -178,7 +178,7 @@ public class PDFMarkedContentExtractor extends PDFTextStreamEngine
                  * Note that we are making an assumption that we need to only look back
                  * one TextPosition to find what we are overlapping.  
                  * This may not always be true. */
-                TextPosition previousTextPosition = (TextPosition)textList.get(textList.size()-1);
+                TextPosition previousTextPosition = textList.get(textList.size()-1);
                 if(text.isDiacritic() && previousTextPosition.contains(text))
                 {
                     previousTextPosition.mergeDiacritic(text);

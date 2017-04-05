@@ -31,6 +31,7 @@ import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.GlyphList;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.MacOSRomanEncoding;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.Type1Encoding;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -99,6 +100,7 @@ public class PDTrueTypeFont extends PDSimpleFont
 	private CmapSubtable cmapWinSymbol = null;
 	private CmapSubtable cmapMacRoman = null;
 	private boolean cmapInitialized = false;
+	private Map<Integer, Integer> gidToCode; // for embedding
 
 	private final TrueTypeFont ttf;
 	private final boolean isEmbedded;
@@ -169,9 +171,17 @@ public class PDTrueTypeFont extends PDSimpleFont
 	@Override
 	protected Encoding readEncodingFromFont() throws IOException
 	{
-		// for symbolic fonts the (3, 0) (Windows, Symbol) cmap is the font's built-in encoding
-		// but this is handled by codeToGID
-		return null;
+		if (getStandard14AFM() != null)
+		{
+			// read from AFM
+			return new Type1Encoding(getStandard14AFM());
+		}
+		else
+		{
+			// for symbolic fonts the (3, 0) (Windows, Symbol) cmap is the font's built-in encoding
+			// but this is handled by codeToGID
+			return null;
+		}
 	}
 
 	/**
@@ -248,24 +258,69 @@ public class PDTrueTypeFont extends PDSimpleFont
 	@Override
 	protected byte[] encode(int unicode) throws IOException
 	{
-		if (!getEncoding().contains(getGlyphList().codePointToName(unicode)))
+		if (getEncoding() != null)
 		{
-			throw new IllegalArgumentException(
-				String.format("U+%04X is not available in this font's Encoding", unicode));
+			if (!getEncoding().contains(getGlyphList().codePointToName(unicode)))
+			{
+				throw new IllegalArgumentException(
+					String.format("U+%04X is not available in this font's Encoding", unicode));
+			}
+
+			String name = getGlyphList().codePointToName(unicode);
+			Map<String, Integer> inverted = getInvertedEncoding();
+
+			if (!ttf.hasGlyph(name))
+			{
+				throw new IllegalArgumentException(
+					String.format("No glyph for U+%04X in font %s", unicode, getName()));
+			}
+
+			int code = inverted.get(name);
+			return new byte[]{(byte) code};
+		}
+		else
+		{
+			// use TTF font's built-in encoding
+			String name = getGlyphList().codePointToName(unicode);
+
+			if (!ttf.hasGlyph(name))
+			{
+				throw new IllegalArgumentException(
+					String.format("No glyph for U+%04X in font %s", unicode, getName()));
+			}
+
+			int gid = ttf.nameToGID(name);
+			Integer code = getGIDToCode().get(gid);
+			if (code == null)
+			{
+				throw new IllegalArgumentException(
+					String.format("U+%04X is not available in this font's Encoding", unicode));
+			}
+
+			return new byte[]{(byte) (int) code};
+		}
+	}
+
+	/**
+	 * Inverts the font's code -> GID mapping. Any duplicate (GID -> code) mappings will be lost.
+	 */
+	protected Map<Integer, Integer> getGIDToCode() throws IOException
+	{
+		if (gidToCode != null)
+		{
+			return gidToCode;
 		}
 
-		String name = getGlyphList().codePointToName(unicode);
-		Map<String, Integer> inverted = getInvertedEncoding();
-
-		int gid = ttf.getUnicodeCmap().getGlyphId(unicode);
-		if (gid == 0)
+		gidToCode = new HashMap<Integer, Integer>();
+		for (int code = 0; code <= 255; code++)
 		{
-			throw new IllegalArgumentException(
-				String.format("No glyph for U+%04X in font %s", unicode, getName()));
+			int gid = codeToGID(code);
+			if (!gidToCode.containsKey(gid))
+			{
+				gidToCode.put(gid, code);
+			}
 		}
-
-		int code = inverted.get(name);
-		return new byte[] { (byte)code };
+		return gidToCode;
 	}
 
 	@Override

@@ -1,17 +1,5 @@
 package com.tom_roush.pdfbox.multipdf;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -37,6 +25,18 @@ import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDoc
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class will take a list of pdf documents and merge them, saving the
@@ -226,7 +226,7 @@ public class PDFMergerUtility
 		
 		PDDocumentInformation destInfo = destination.getDocumentInformation();
 		PDDocumentInformation srcInfo = source.getDocumentInformation();
-		destInfo.getDictionary().mergeInto(srcInfo.getDictionary());
+		destInfo.getCOSObject().mergeInto(srcInfo.getCOSObject());
 
 		// use the highest version number for the resulting pdf
 		float destVersion = destination.getVersion();
@@ -252,7 +252,7 @@ public class PDFMergerUtility
 			if (destAcroForm == null && srcAcroForm != null)
 			{
 				destCatalog.getCOSObject().setItem(COSName.ACRO_FORM,
-						cloner.cloneForNewDocument(srcAcroForm.getDictionary()));
+						cloner.cloneForNewDocument(srcAcroForm.getCOSObject()));
 			}
 			else
 			{
@@ -388,7 +388,7 @@ public class PDFMergerUtility
 			destParentTreeNextKey = destStructTree.getParentTreeNextKey();
 			if (destParentTree != null)
 			{
-				destParentTreeDict = destParentTree.getCOSDictionary();
+				destParentTreeDict = destParentTree.getCOSObject();
 				destNumbersArray = (COSArray) destParentTreeDict.getDictionaryObject(COSName.NUMS);
 				if (destNumbersArray != null)
 				{
@@ -401,7 +401,7 @@ public class PDFMergerUtility
 						PDNumberTreeNode srcParentTree = srcStructTree.getParentTree();
 						if (srcParentTree != null)
 						{
-							srcParentTreeDict = srcParentTree.getCOSDictionary();
+							srcParentTreeDict = srcParentTree.getCOSObject();
 							srcNumbersArray = (COSArray) srcParentTreeDict.getDictionaryObject(COSName.NUMS);
 							if (srcNumbersArray != null)
 							{
@@ -438,7 +438,7 @@ public class PDFMergerUtility
 				List<PDAnnotation> newAnnots = newPage.getAnnotations();
 				for (int i = 0; i < oldAnnots.size(); i++)
 				{
-					objMapping.put(oldAnnots.get(i).getDictionary(), newAnnots.get(i).getDictionary());
+					objMapping.put(oldAnnots.get(i).getCOSObject(), newAnnots.get(i).getCOSObject());
 				}
 				// TODO update mapping for XObjects
 			}
@@ -507,7 +507,7 @@ public class PDFMergerUtility
 			{
 				PDFieldTreeNode srcField = srcFieldsIterator.next();
 				PDFieldTreeNode destFieldNode = PDFieldTreeNode.createField(destAcroForm,
-						(COSDictionary) cloner.cloneForNewDocument(srcField.getDictionary()), null);
+						(COSDictionary) cloner.cloneForNewDocument(srcField.getCOSObject()), null);
 				// if the form already has a field with this name then we need to rename this field
 				// to prevent merge conflicts.
 				if (destAcroForm.getField(destFieldNode.getFullyQualifiedName()) != null)

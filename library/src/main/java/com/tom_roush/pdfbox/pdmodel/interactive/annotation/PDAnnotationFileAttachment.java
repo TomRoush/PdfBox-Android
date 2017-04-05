@@ -1,10 +1,10 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
+
+import java.io.IOException;
 
 /**
  * This is the class that represents a file attachement.
@@ -41,7 +41,7 @@ public class PDAnnotationFileAttachment extends PDAnnotationMarkup
     public PDAnnotationFileAttachment()
     {
         super();
-        getDictionary().setItem( COSName.SUBTYPE, COSName.getPDFName( SUB_TYPE ) );
+        getCOSObject().setItem(COSName.SUBTYPE, COSName.getPDFName(SUB_TYPE));
     }
 
     /**
@@ -64,7 +64,7 @@ public class PDAnnotationFileAttachment extends PDAnnotationMarkup
      */
     public PDFileSpecification getFile() throws IOException
     {
-        return PDFileSpecification.createFS( getDictionary().getDictionaryObject( "FS" ) );
+        return PDFileSpecification.createFS(getCOSObject().getDictionaryObject("FS"));
     }
 
     /**
@@ -74,7 +74,7 @@ public class PDAnnotationFileAttachment extends PDAnnotationMarkup
      */
     public void setFile( PDFileSpecification file )
     {
-        getDictionary().setItem( "FS", file );
+        getCOSObject().setItem("FS", file);
     }
 
     /**
@@ -85,7 +85,7 @@ public class PDAnnotationFileAttachment extends PDAnnotationMarkup
      */
     public String getAttachmentName()
     {
-        return getDictionary().getNameAsString( "Name", ATTACHMENT_NAME_PUSH_PIN );
+        return getCOSObject().getNameAsString("Name", ATTACHMENT_NAME_PUSH_PIN);
     }
 
     /**
@@ -96,6 +96,6 @@ public class PDAnnotationFileAttachment extends PDAnnotationMarkup
      */
     public void setAttachementName( String name )
     {
-        getDictionary().setName( "Name", name );
+        getCOSObject().setName("Name", name);
     }
 }

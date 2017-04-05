@@ -77,7 +77,7 @@ public class PDPushButton extends PDButton
     @Override
     public List<String> getOptions()
     {
-    	return Collections.<String>emptyList();
+    	return Collections.emptyList();
     }
 
     /**

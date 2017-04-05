@@ -192,7 +192,7 @@ public class PDDocument implements Closeable
 		}
 		else
 		{
-			acroForm.getDictionary().setNeedToBeUpdated(true);
+			acroForm.getCOSObject().setNeedToBeUpdated(true);
 		}
 
 		// For invisible signatures, the annotation has a rectangle array with values [ 0 0 0 0 ]. This annotation is
@@ -217,7 +217,7 @@ public class PDDocument implements Closeable
 
 		// Set the AcroForm Fields
 		List<PDFieldTreeNode> acroFormFields = acroForm.getFields();
-		acroForm.getDictionary().setDirect(true);
+		acroForm.getCOSObject().setDirect(true);
 		acroForm.setSignaturesExist(true);
 		acroForm.setAppendOnly(true);
 
@@ -267,7 +267,7 @@ public class PDDocument implements Closeable
 			if (pdField instanceof PDSignatureField)
 			{
 				PDSignature signature = ((PDSignatureField) pdField).getSignature();
-				if (signature != null && signature.getDictionary().equals(sigObject.getDictionary()))
+				if (signature != null && signature.getCOSObject().equals(sigObject.getCOSObject()))
 				{
 					signatureField = (PDSignatureField) pdField;
 				}
@@ -286,7 +286,7 @@ public class PDDocument implements Closeable
 				&& field.getCOSObject().equals(signatureField.getCOSObject()))
 			{
 				checkFields = true;
-				signatureField.getDictionary().setNeedToBeUpdated(true);
+				signatureField.getCOSObject().setNeedToBeUpdated(true);
 				break;
 			}
 		}
@@ -366,7 +366,7 @@ public class PDDocument implements Closeable
 		{
 			dr.setDirect(true);
 			dr.setNeedToBeUpdated(true);
-			COSDictionary acroFormDict = acroForm.getDictionary();
+			COSDictionary acroFormDict = acroForm.getCOSObject();
 			acroFormDict.setItem(COSName.DR, dr);
 		}
 	}
@@ -414,7 +414,7 @@ public class PDDocument implements Closeable
 			catalog.setAcroForm(acroForm);
 		}
 
-		COSDictionary acroFormDict = acroForm.getDictionary();
+		COSDictionary acroFormDict = acroForm.getCOSObject();
 		acroFormDict.setDirect(true);
 		acroFormDict.setNeedToBeUpdated(true);
 		if (!acroForm.isSignaturesExist())
@@ -427,7 +427,7 @@ public class PDDocument implements Closeable
 
 		for (PDSignatureField sigField : sigFields)
 		{
-			sigField.getDictionary().setNeedToBeUpdated(true);
+			sigField.getCOSObject().setNeedToBeUpdated(true);
 
 			// Check if the field already exists
 			checkSignatureField(acroFormFields, sigField);
@@ -435,7 +435,7 @@ public class PDDocument implements Closeable
 			// Check if we need to add a signature
 			if (sigField.getSignature() != null)
 			{
-				sigField.getDictionary().setNeedToBeUpdated(true);
+				sigField.getCOSObject().setNeedToBeUpdated(true);
 				if (options == null)
 				{
 					// TODO ??
@@ -583,7 +583,7 @@ public class PDDocument implements Closeable
 	public void setDocumentInformation(PDDocumentInformation info)
 	{
 		documentInformation = info;
-		document.getTrailer().setItem(COSName.INFO, info.getDictionary());
+		document.getTrailer().setItem(COSName.INFO, info.getCOSObject());
 	}
 
 	/**

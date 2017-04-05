@@ -1,15 +1,15 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSeedValue;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * A signature field is a form field that contains a digital signature.
@@ -21,7 +21,7 @@ public class PDSignatureField extends PDField
 {
     /**
      * Constructor.
-     * 
+     *
      * @param theAcroForm The form that this field is part of.
      * @param field the PDF object to represent as a field.
      * @param parentNode the parent node of the node to be created
@@ -32,23 +32,23 @@ public class PDSignatureField extends PDField
     }
 
     /**
-     * @see PDField#PDField(PDAcroForm)
-     *
      * @param theAcroForm The acroForm for this field.
      * @throws IOException If there is an error while resolving partial name for the signature field
-     *         or getting the widget object.
+     * or getting the widget object.
+     * @see PDField#PDField(PDAcroForm)
      */
     public PDSignatureField(PDAcroForm theAcroForm) throws IOException
     {
-        super( theAcroForm );
-        getDictionary().setItem(COSName.FT, COSName.SIG);
+        super(theAcroForm);
+        getCOSObject().setItem(COSName.FT, COSName.SIG);
         getWidget().setLocked(true);
         getWidget().setPrinted(true);
         setPartialName(generatePartialName());
     }
-    
+
     /**
      * Generate a unique name for the signature.
+     *
      * @return the signature's unique name
      */
     private String generatePartialName()
@@ -57,21 +57,21 @@ public class PDSignatureField extends PDField
         List<PDFieldTreeNode> fields = acroForm.getFields();
         String fieldName = "Signature";
         Set<String> sigNames = new HashSet<String>();
-        for ( PDFieldTreeNode field : fields )
+        for (PDFieldTreeNode field : fields)
         {
-            if(field instanceof PDSignatureField)
+            if (field instanceof PDSignatureField)
             {
                 sigNames.add(field.getPartialName());
             }
         }
         int i = 1;
-        while(sigNames.contains(fieldName+i))
+        while (sigNames.contains(fieldName + i))
         {
             ++i;
         }
-        return fieldName+i;
+        return fieldName + i;
     }
-    
+
     /**
      * Return a string rep of this object.
      *
@@ -82,22 +82,21 @@ public class PDSignatureField extends PDField
     {
         return "PDSignatureField";
     }
-    
+
     /**
      * Add a signature dictionary to the signature field.
-     * 
+     *
      * @param value is the PDSignatureField
      */
     public void setSignature(PDSignature value)
     {
         setValue(value);
     }
-    
+
     /**
      * Get the signature dictionary.
-     * 
+     *
      * @return the signature dictionary
-     * 
      */
     public PDSignature getSignature()
     {
@@ -106,42 +105,41 @@ public class PDSignatureField extends PDField
 
     /**
      * Add a signature dictionary to the signature field.
-     * 
+     *
      * @param value is the PDSignatureField
      */
     public void setValue(PDSignature value)
     {
         if (value == null)
         {
-            getDictionary().removeItem(COSName.V);
+            getCOSObject().removeItem(COSName.V);
         }
         else
         {
-            getDictionary().setItem(COSName.V, (PDSignature)value);
+            getCOSObject().setItem(COSName.V, value);
         }
     }
-    
+
     @Override
     public void setValue(String fieldValue)
     {
-    	// Signature fields don't support the strings for value
-    	throw new IllegalArgumentException( "Signature fields don't support a string for the value entry." );
+        // Signature fields don't support the strings for value
+        throw new IllegalArgumentException("Signature fields don't support a string for the value entry.");
     }
-    
+
     /**
      * Get the signature dictionary.
-     * 
+     *
      * @return the signature dictionary
-     * 
      */
     public PDSignature getValue()
     {
-        COSBase dictionary = getDictionary().getDictionaryObject(COSName.V);
+        COSBase dictionary = getCOSObject().getDictionaryObject(COSName.V);
         if (dictionary == null)
         {
             return null;
         }
-        return new PDSignature((COSDictionary)dictionary);
+        return new PDSignature((COSDictionary) dictionary);
     }
 
     /**
@@ -153,7 +151,7 @@ public class PDSignatureField extends PDField
      */
     public PDSeedValue getSeedValue()
     {
-        COSDictionary dict = (COSDictionary)getDictionary().getDictionaryObject(COSName.SV);
+        COSDictionary dict = (COSDictionary) getCOSObject().getDictionaryObject(COSName.SV);
         PDSeedValue sv = null;
         if (dict != null)
         {
@@ -173,10 +171,10 @@ public class PDSignatureField extends PDField
     {
         if (sv != null)
         {
-            getDictionary().setItem(COSName.SV, sv.getCOSObject());
+            getCOSObject().setItem(COSName.SV, sv.getCOSObject());
         }
     }
-    
+
     @Override
     public Object getDefaultValue()
     {
@@ -188,6 +186,6 @@ public class PDSignatureField extends PDField
     public void setDefaultValue(String value)
     {
         // Signature fields don't support the "DV" entry.
-        throw new IllegalArgumentException( "Signature fields don't support the \"DV\" entry." );
+        throw new IllegalArgumentException("Signature fields don't support the \"DV\" entry.");
     }
 }

@@ -1,5 +1,14 @@
 package com.tom_roush.pdfbox.text;
 
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.PDPageTree;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
+import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDThreadBead;
+import com.tom_roush.pdfbox.util.QuickSort;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -17,15 +26,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 import java.util.regex.Pattern;
-
-import com.tom_roush.pdfbox.pdmodel.PDDocument;
-import com.tom_roush.pdfbox.pdmodel.PDPage;
-import com.tom_roush.pdfbox.pdmodel.PDPageTree;
-import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
-import com.tom_roush.pdfbox.pdmodel.common.PDStream;
-import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
-import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDThreadBead;
-import com.tom_roush.pdfbox.util.QuickSort;
 
 /**
  * This class will take a pdf document and strip out all of the text and ignore the
@@ -1886,12 +1886,12 @@ public class PDFTextStripper extends PDFTextStreamEngine
 	 * Note that the number of entries in that list may differ from the number of characters in the
 	 * string due to normalization.
 	 *
-	 * @author Axel D�rfler
+	 * @author Axel Dörfler
 	 */
 	private static final class WordWithTextPositions
 	{
-		protected String text;
-		protected List<TextPosition> textPositions;
+		String text;
+		List<TextPosition> textPositions;
 
 		WordWithTextPositions(String word, List<TextPosition> positions)
 		{

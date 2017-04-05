@@ -161,7 +161,7 @@ public final class ExternalFonts
 				Arrays.asList("TimesNewRomanPS-BoldItalicMT", "TimesNewRomanPS-BoldItalic",
 						"TimesNewRoman-BoldItalic", "LiberationSerif-BoldItalic",
 						"NimbusRomNo9L-MediItal","DroidSerif-BoldItalic", "Roboto-BoldItalic"));
-		substitutes.put("Symbol", Arrays.asList("SymbolMT", "StandardSymL"));
+		substitutes.put("Symbol", Arrays.asList("Symbol", "SymbolMT", "StandardSymL"));
 		substitutes.put("ZapfDingbats", Arrays.asList("ZapfDingbatsITC", "Dingbats", "MS-Gothic"));
 		// TODO: load extra fonts? (DroidSerif for times and a symbol font)
 

@@ -1,7 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSFloat;
@@ -21,6 +19,8 @@ import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.P
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageXYZDestination;
 import com.tom_roush.pdfbox.util.awt.AWTColor;
+
+import java.io.IOException;
 
 /**
  * This represents an outline item in a pdf document. The items at each level of the hierarchy form an iterable linked
@@ -122,7 +122,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     void setPreviousSibling(PDOutlineNode outlineNode)
     {
-    	getCOSDictionary().setItem(COSName.PREV, outlineNode);
+    	getCOSObject().setItem(COSName.PREV, outlineNode);
     }
 
     /**
@@ -140,7 +140,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     void setNextSibling(PDOutlineNode outlineNode)
     {
-    	getCOSDictionary().setItem(COSName.NEXT, outlineNode);
+    	getCOSObject().setItem(COSName.NEXT, outlineNode);
     }
 
     /**
@@ -150,7 +150,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public String getTitle()
     {
-    	return getCOSDictionary().getString(COSName.TITLE);
+    	return getCOSObject().getString(COSName.TITLE);
     }
 
     /**
@@ -160,7 +160,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public void setTitle(String title)
     {
-    	getCOSDictionary().setString(COSName.TITLE, title);
+    	getCOSObject().setString(COSName.TITLE, title);
     }
 
     /**
@@ -171,7 +171,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public PDDestination getDestination() throws IOException
     {
-    	return PDDestination.create(getCOSDictionary().getDictionaryObject(COSName.DEST));
+    	return PDDestination.create(getCOSObject().getDictionaryObject(COSName.DEST));
     }
 
     /**
@@ -181,7 +181,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public void setDestination(PDDestination dest)
     {
-    	getCOSDictionary().setItem(COSName.DEST, dest);
+    	getCOSObject().setItem(COSName.DEST, dest);
     }
 
     /**
@@ -282,7 +282,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public PDAction getAction()
     {
-    	return PDActionFactory.createAction((COSDictionary) getCOSDictionary().getDictionaryObject(COSName.A));
+    	return PDActionFactory.createAction((COSDictionary) getCOSObject().getDictionaryObject(COSName.A));
     }
 
     /**
@@ -292,7 +292,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public void setAction( PDAction action )
     {
-    	getCOSDictionary().setItem(COSName.A, action);
+    	getCOSObject().setItem(COSName.A, action);
     }
 
     /**
@@ -303,7 +303,7 @@ public final class PDOutlineItem extends PDOutlineNode
     public PDStructureElement getStructureElement()
     {
         PDStructureElement se = null;
-        COSDictionary dic = (COSDictionary) getCOSDictionary().getDictionaryObject(COSName.SE);
+        COSDictionary dic = (COSDictionary) getCOSObject().getDictionaryObject(COSName.SE);
         if( dic != null )
         {
             se = new PDStructureElement( dic );
@@ -318,7 +318,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public void setStructuredElement( PDStructureElement structureElement )
     {
-    	getCOSDictionary().setItem(COSName.SE, structureElement);
+    	getCOSObject().setItem(COSName.SE, structureElement);
     }
 
     /**
@@ -329,12 +329,12 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public PDColor getTextColor()
     {
-        COSArray csValues = (COSArray) getCOSDictionary().getDictionaryObject(COSName.C);
+        COSArray csValues = (COSArray) getCOSObject().getDictionaryObject(COSName.C);
         if( csValues == null )
         {
             csValues = new COSArray();
             csValues.growToSize( 3, new COSFloat( 0 ) );
-            getCOSDictionary().setItem( COSName.C, csValues );
+            getCOSObject().setItem( COSName.C, csValues );
         }
         return new PDColor(csValues, PDDeviceRGB.INSTANCE);
     }
@@ -346,7 +346,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public void setTextColor( PDColor textColor )
     {
-    	getCOSDictionary().setItem( COSName.C, textColor.toCOSArray() );
+    	getCOSObject().setItem( COSName.C, textColor.toCOSArray() );
     }
 
     /**
@@ -360,7 +360,7 @@ public final class PDOutlineItem extends PDOutlineNode
         array.add( new COSFloat( textColor.getRed()/255f));
         array.add( new COSFloat( textColor.getGreen()/255f));
         array.add( new COSFloat( textColor.getBlue()/255f));
-        getCOSDictionary().setItem( COSName.C, array );
+        getCOSObject().setItem( COSName.C, array );
     }
 
     /**
@@ -370,7 +370,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public boolean isItalic()
     {
-    	return getCOSDictionary().getFlag( COSName.F, ITALIC_FLAG );
+    	return getCOSObject().getFlag( COSName.F, ITALIC_FLAG );
     }
 
     /**
@@ -380,7 +380,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public void setItalic( boolean italic )
     {
-    	getCOSDictionary().setFlag( COSName.F, ITALIC_FLAG, italic );
+    	getCOSObject().setFlag( COSName.F, ITALIC_FLAG, italic );
     }
 
     /**
@@ -390,7 +390,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public boolean isBold()
     {
-    	return getCOSDictionary().getFlag( COSName.F, BOLD_FLAG );
+    	return getCOSObject().getFlag( COSName.F, BOLD_FLAG );
     }
 
     /**
@@ -400,6 +400,6 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public void setBold( boolean bold )
     {
-    	getCOSDictionary().setFlag( COSName.F, BOLD_FLAG, bold );
+    	getCOSObject().setFlag( COSName.F, BOLD_FLAG, bold );
     }
 }

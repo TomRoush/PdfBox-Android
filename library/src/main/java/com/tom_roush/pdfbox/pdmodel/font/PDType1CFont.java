@@ -159,7 +159,15 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 	@Override
 	protected Encoding readEncodingFromFont() throws IOException
 	{
-		return Type1Encoding.fromFontBox(type1Equivalent.getEncoding());
+		if (getStandard14AFM() != null)
+		{
+			// read from AFM
+			return new Type1Encoding(getStandard14AFM());
+		}
+		else
+		{
+			return Type1Encoding.fromFontBox(type1Equivalent.getEncoding());
+		}
 	}
 
 	@Override
@@ -218,7 +226,7 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 		float height = 0;
 		if (!glyphHeights.containsKey(name))
 		{
-			height = (float)cffFont.getType1CharString(name).getBounds().height(); // todo: cffFont could be null
+			height = cffFont.getType1CharString(name).getBounds().height(); // todo: cffFont could be null
 			glyphHeights.put(name, height);
 		}
 		return height;

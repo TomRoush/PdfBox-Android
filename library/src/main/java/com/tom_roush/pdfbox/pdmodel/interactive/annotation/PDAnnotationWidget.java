@@ -26,7 +26,7 @@ public class PDAnnotationWidget extends PDAnnotation
     public PDAnnotationWidget()
     {
         super();
-        getDictionary().setName( COSName.SUBTYPE, SUB_TYPE);
+        getCOSObject().setName(COSName.SUBTYPE, SUB_TYPE);
     }
 
 
@@ -39,7 +39,7 @@ public class PDAnnotationWidget extends PDAnnotation
     public PDAnnotationWidget(COSDictionary field)
     {
         super( field );
-        getDictionary().setName( COSName.SUBTYPE, SUB_TYPE);
+        getCOSObject().setName(COSName.SUBTYPE, SUB_TYPE);
     }
 
     /**
@@ -64,7 +64,7 @@ public class PDAnnotationWidget extends PDAnnotation
      */
     public String getHighlightingMode()
     {
-        return this.getDictionary().getNameAsString(COSName.H, "I");
+        return this.getCOSObject().getNameAsString(COSName.H, "I");
     }
 
     /**
@@ -95,7 +95,7 @@ public class PDAnnotationWidget extends PDAnnotation
             || "O".equals(highlightingMode) || "P".equals(highlightingMode)
             || "T".equals(highlightingMode))
         {
-            this.getDictionary().setName(COSName.H, highlightingMode);
+            this.getCOSObject().setName(COSName.H, highlightingMode);
         }
         else
         {
@@ -111,7 +111,7 @@ public class PDAnnotationWidget extends PDAnnotation
      */
     public PDAppearanceCharacteristicsDictionary getAppearanceCharacteristics()
     {
-        COSBase mk = this.getDictionary().getDictionaryObject(COSName.MK);
+        COSBase mk = this.getCOSObject().getDictionaryObject(COSName.MK);
         if (mk instanceof COSDictionary)
         {
             return new PDAppearanceCharacteristicsDictionary((COSDictionary) mk);
@@ -126,7 +126,7 @@ public class PDAnnotationWidget extends PDAnnotation
      */
     public void setAppearanceCharacteristics(PDAppearanceCharacteristicsDictionary appearanceCharacteristics)
     {
-        this.getDictionary().setItem(COSName.MK, appearanceCharacteristics);
+        this.getCOSObject().setItem(COSName.MK, appearanceCharacteristics);
     }
 
     /**
@@ -137,7 +137,7 @@ public class PDAnnotationWidget extends PDAnnotation
     public PDAction getAction()
     {
         COSDictionary action = (COSDictionary)
-            this.getDictionary().getDictionaryObject( COSName.A );
+            this.getCOSObject().getDictionaryObject(COSName.A);
         return PDActionFactory.createAction( action );
     }
 
@@ -146,9 +146,9 @@ public class PDAnnotationWidget extends PDAnnotation
      * As of PDF 1.6 this is only used for Widget Annotations
      * @param action The annotation action.
      */
-    public void setAction( PDAction action )
+    public void setAction(PDAction action)
     {
-        this.getDictionary().setItem( COSName.A, action );
+        this.getCOSObject().setItem(COSName.A, action);
     }
 
     /**
@@ -160,7 +160,7 @@ public class PDAnnotationWidget extends PDAnnotation
      */
     public PDAnnotationAdditionalActions getActions()
     {
-        COSDictionary aa = (COSDictionary)this.getDictionary().getDictionaryObject( "AA" );
+        COSDictionary aa = (COSDictionary) this.getCOSObject().getDictionaryObject("AA");
         PDAnnotationAdditionalActions retval = null;
         if( aa != null )
         {
@@ -176,7 +176,7 @@ public class PDAnnotationWidget extends PDAnnotation
      */
     public void setActions( PDAnnotationAdditionalActions actions )
     {
-        this.getDictionary().setItem( "AA", actions );
+        this.getCOSObject().setItem("AA", actions);
     }
 
     /**
@@ -188,7 +188,7 @@ public class PDAnnotationWidget extends PDAnnotation
      */
     public void setBorderStyle( PDBorderStyleDictionary bs )
     {
-        this.getDictionary().setItem( "BS", bs);
+        this.getCOSObject().setItem("BS", bs);
     }
 
     /**
@@ -199,7 +199,7 @@ public class PDAnnotationWidget extends PDAnnotation
      */
     public PDBorderStyleDictionary getBorderStyle()
     {
-    	COSDictionary bs = (COSDictionary) this.getDictionary().getItem(COSName.BS);
+    	COSDictionary bs = (COSDictionary) this.getCOSObject().getItem(COSName.BS);
         if (bs != null)
         {
             return new PDBorderStyleDictionary( bs );

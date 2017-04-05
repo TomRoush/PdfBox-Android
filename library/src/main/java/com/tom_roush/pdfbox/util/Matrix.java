@@ -344,8 +344,8 @@ public final class Matrix implements Cloneable
      */
     public void transform(PointF point)
     {
-        float x = (float)point.x;
-        float y = (float)point.y;
+        float x = point.x;
+        float y = point.y;
         float a = single[0];
         float b = single[1];
         float c = single[3];

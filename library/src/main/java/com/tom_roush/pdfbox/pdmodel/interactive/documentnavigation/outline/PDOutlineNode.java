@@ -16,11 +16,11 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline;
 
-import java.util.Iterator;
-
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.PDDictionaryWrapper;
+
+import java.util.Iterator;
 
 /**
  * Base class for a node in the outline of a PDF document.
@@ -50,7 +50,7 @@ public abstract class PDOutlineNode extends PDDictionaryWrapper
 	 */
 	PDOutlineNode getParent()
 	{
-		COSDictionary item = (COSDictionary) getCOSDictionary().getDictionaryObject(COSName.PARENT);
+		COSDictionary item = (COSDictionary) getCOSObject().getDictionaryObject(COSName.PARENT);
 		if (item != null)
 		{
 			if (COSName.OUTLINES.equals(item.getCOSName(COSName.TYPE)))
@@ -64,7 +64,7 @@ public abstract class PDOutlineNode extends PDDictionaryWrapper
 
 	void setParent(PDOutlineNode parent)
 	{
-		getCOSDictionary().setItem(COSName.PARENT, parent);
+		getCOSObject().setItem(COSName.PARENT, parent);
 	}
 
 	/**
@@ -172,7 +172,7 @@ public abstract class PDOutlineNode extends PDDictionaryWrapper
 
 	PDOutlineItem getOutlineItem(COSName name)
 	{
-		COSDictionary item = (COSDictionary) getCOSDictionary().getDictionaryObject(name);
+		COSDictionary item = (COSDictionary) getCOSObject().getDictionaryObject(name);
 		if (item != null)
 		{
 			return new PDOutlineItem(item);
@@ -195,7 +195,7 @@ public abstract class PDOutlineNode extends PDDictionaryWrapper
 	 */
 	void setFirstChild(PDOutlineNode outlineNode)
 	{
-		getCOSDictionary().setItem(COSName.FIRST, outlineNode);
+		getCOSObject().setItem(COSName.FIRST, outlineNode);
 	}
 
 	/**
@@ -213,7 +213,7 @@ public abstract class PDOutlineNode extends PDDictionaryWrapper
 	 */
 	void setLastChild(PDOutlineNode outlineNode)
 	{
-		getCOSDictionary().setItem(COSName.LAST, outlineNode);
+		getCOSObject().setItem(COSName.LAST, outlineNode);
 	}
 
 	/**
@@ -225,7 +225,7 @@ public abstract class PDOutlineNode extends PDDictionaryWrapper
 	 */
 	public int getOpenCount()
 	{
-		return getCOSDictionary().getInt(COSName.COUNT, 0);
+		return getCOSObject().getInt(COSName.COUNT, 0);
 	}
 
 	/**
@@ -235,7 +235,7 @@ public abstract class PDOutlineNode extends PDDictionaryWrapper
 	 */
 	void setOpenCount(int openCount)
 	{
-		getCOSDictionary().setInt(COSName.COUNT, openCount);
+		getCOSObject().setInt(COSName.COUNT, openCount);
 	}
 
 	/**

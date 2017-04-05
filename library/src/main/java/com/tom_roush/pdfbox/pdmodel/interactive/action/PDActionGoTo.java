@@ -1,9 +1,13 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.action;
 
-import java.io.IOException;
-
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
+
+import java.io.IOException;
 
 /**
  * This represents a go-to action that can be executed in a PDF document.
@@ -46,16 +50,32 @@ public class PDActionGoTo extends PDAction
      */
     public PDDestination getDestination() throws IOException
     {
-        return PDDestination.create( getCOSDictionary().getDictionaryObject( "D" ) );
+        return PDDestination.create(getCOSObject().getDictionaryObject(COSName.D));
     }
 
     /**
      * This will set the destination to jump to.
      *
      * @param d The destination.
+     *
+     * @IllegalArgumentException if the destination is not a page dictionary object.
      */
     public void setDestination( PDDestination d )
     {
-        getCOSDictionary().setItem( "D", d );
+        if (d instanceof PDPageDestination)
+        {
+            PDPageDestination pageDest = (PDPageDestination) d;
+            COSArray destArray = pageDest.getCOSObject();
+            if (destArray.size() >= 1)
+            {
+                COSBase page = destArray.getObject(0);
+                if (!(page instanceof COSDictionary))
+                {
+                    throw new IllegalArgumentException("Destination of a GoTo action must be " +
+                        "a page dictionary object");
+                }
+            }
+        }
+        getCOSObject().setItem(COSName.D, d);
     }
 }

@@ -66,5 +66,5 @@ public interface Type1Equivalent
     /**
      * Returns the font's bounding box in PostScript units.
      */
-    abstract BoundingBox getFontBBox() throws IOException;
+    BoundingBox getFontBBox() throws IOException;
 }

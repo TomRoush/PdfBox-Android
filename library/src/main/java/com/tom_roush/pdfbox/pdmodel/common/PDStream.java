@@ -1,14 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.common;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -20,6 +11,15 @@ import com.tom_roush.pdfbox.filter.FilterFactory;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A PDStream represents a stream in a PDF document. Streams are tied to a
@@ -372,8 +372,7 @@ public class PDStream implements COSObjectable
     public PDFileSpecification getFile() throws IOException
     {
         COSBase f = stream.getDictionaryObject(COSName.F);
-        PDFileSpecification retval = PDFileSpecification.createFS(f);
-        return retval;
+        return PDFileSpecification.createFS(f);
     }
 
     /**

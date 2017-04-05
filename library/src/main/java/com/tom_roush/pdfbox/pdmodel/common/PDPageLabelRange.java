@@ -1,14 +1,13 @@
 package com.tom_roush.pdfbox.pdmodel.common;
 
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * Contains information for a page label range.
- * 
+ *
  * @author Igor Podolskiy
- * 
+ *
  * @see PDPageLabels
  */
 public class PDPageLabelRange implements COSObjectable
@@ -60,7 +59,7 @@ public class PDPageLabelRange implements COSObjectable
 
     /**
      * Creates a new page label range object from the given dictionary.
-     * 
+     *
      * @param dict
      *            the base dictionary for the new object.
      */
@@ -71,23 +70,18 @@ public class PDPageLabelRange implements COSObjectable
 
     /**
      * Returns the underlying dictionary.
-     * 
+     *
      * @return the underlying dictionary.
      */
-    public COSDictionary getCOSDictionary()
-    {
-        return root;
-    }
-
     @Override
-    public COSBase getCOSObject()
+    public COSDictionary getCOSObject()
     {
         return root;
     }
 
     /**
      * Returns the numbering style for this page range.
-     * 
+     *
      * @return one of the STYLE_* constants
      */
     public String getStyle()
@@ -97,7 +91,7 @@ public class PDPageLabelRange implements COSObjectable
 
     /**
      * Sets the numbering style for this page range.
-     * 
+     *
      * @param style
      *            one of the STYLE_* constants or {@code null} if no page
      *            numbering is desired.
@@ -116,7 +110,7 @@ public class PDPageLabelRange implements COSObjectable
 
     /**
      * Returns the start value for page numbering in this page range.
-     * 
+     *
      * @return a positive integer the start value for numbering.
      */
     public int getStart()
@@ -126,7 +120,7 @@ public class PDPageLabelRange implements COSObjectable
 
     /**
      * Sets the start value for page numbering in this page range.
-     * 
+     *
      * @param start
      *            a positive integer representing the start value.
      * @throws IllegalArgumentException
@@ -144,7 +138,7 @@ public class PDPageLabelRange implements COSObjectable
 
     /**
      * Returns the page label prefix for this page range.
-     * 
+     *
      * @return the page label prefix for this page range, or {@code null} if no
      *         prefix has been defined.
      */
@@ -155,7 +149,7 @@ public class PDPageLabelRange implements COSObjectable
 
     /**
      * Sets the page label prefix for this page range.
-     * 
+     *
      * @param prefix
      *            the page label prefix for this page range, or {@code null} to
      *            unset the prefix.

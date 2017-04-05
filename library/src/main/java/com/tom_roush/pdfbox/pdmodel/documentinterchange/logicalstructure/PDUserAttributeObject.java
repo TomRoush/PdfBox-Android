@@ -1,11 +1,11 @@
 package com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A User attribute object.
@@ -46,8 +46,7 @@ public class PDUserAttributeObject extends PDAttributeObject
      */
     public List<PDUserProperty> getOwnerUserProperties()
     {
-        COSArray p = (COSArray) this.getCOSDictionary()
-            .getDictionaryObject(COSName.P);
+        COSArray p = (COSArray) this.getCOSObject().getDictionaryObject(COSName.P);
         List<PDUserProperty> properties = new ArrayList<PDUserProperty>(p.size());
         for (int i = 0; i < p.size(); i++)
         {
@@ -69,7 +68,7 @@ public class PDUserAttributeObject extends PDAttributeObject
         {
             p.add(userProperty);
         }
-        this.getCOSDictionary().setItem(COSName.P, p);
+        this.getCOSObject().setItem(COSName.P, p);
     }
 
     /**
@@ -79,7 +78,7 @@ public class PDUserAttributeObject extends PDAttributeObject
      */
     public void addUserProperty(PDUserProperty userProperty)
     {
-        COSArray p = (COSArray) this.getCOSDictionary()
+        COSArray p = (COSArray) this.getCOSObject()
             .getDictionaryObject(COSName.P);
         p.add(userProperty);
         this.notifyChanged();
@@ -96,8 +95,7 @@ public class PDUserAttributeObject extends PDAttributeObject
         {
             return;
         }
-        COSArray p = (COSArray) this.getCOSDictionary()
-            .getDictionaryObject(COSName.P);
+        COSArray p = (COSArray) this.getCOSObject().getDictionaryObject(COSName.P);
         p.remove(userProperty.getCOSObject());
         this.notifyChanged();
     }

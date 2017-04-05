@@ -100,7 +100,7 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
             throws IOException
     {
         List<PDFieldTreeNode> acroFormFields = acroForm.getFields();
-        COSDictionary acroFormDict = acroForm.getDictionary();
+        COSDictionary acroFormDict = acroForm.getCOSObject();
         acroForm.setSignaturesExist(true);
         acroForm.setAppendOnly(true);
         acroFormDict.setDirect(true);
@@ -343,7 +343,7 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
     public void createWidgetDictionary(PDSignatureField signatureField,
                                        PDResources holderFormResources) throws IOException
     {
-        COSDictionary widgetDict = signatureField.getWidget().getDictionary();
+        COSDictionary widgetDict = signatureField.getWidget().getCOSObject();
         widgetDict.setNeedToBeUpdated(true);
         widgetDict.setItem(COSName.DR, holderFormResources.getCOSObject());
 

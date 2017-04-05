@@ -38,7 +38,7 @@ public class PDShadingType2 extends PDShading
     {
         if (extend == null)
         {
-            extend = (COSArray) getCOSDictionary().getDictionaryObject(COSName.EXTEND);
+            extend = (COSArray) getCOSObject().getDictionaryObject(COSName.EXTEND);
         }
         return extend;
     }
@@ -51,14 +51,7 @@ public class PDShadingType2 extends PDShading
     public void setExtend(COSArray newExtend)
     {
         extend = newExtend;
-        if (newExtend == null)
-        {
-            getCOSDictionary().removeItem(COSName.EXTEND);
-        }
-        else
-        {
-            getCOSDictionary().setItem(COSName.EXTEND, newExtend);
-        }
+        getCOSObject().setItem(COSName.EXTEND, newExtend);        getCOSObject().setItem(COSName.EXTEND, newExtend);
     }
 
     /**
@@ -70,7 +63,7 @@ public class PDShadingType2 extends PDShading
     {
         if (domain == null)
         {
-            domain = (COSArray) getCOSDictionary().getDictionaryObject(COSName.DOMAIN);
+            domain = (COSArray) getCOSObject().getDictionaryObject(COSName.DOMAIN);
         }
         return domain;
     }
@@ -83,14 +76,7 @@ public class PDShadingType2 extends PDShading
     public void setDomain(COSArray newDomain)
     {
         domain = newDomain;
-        if (newDomain == null)
-        {
-            getCOSDictionary().removeItem(COSName.DOMAIN);
-        }
-        else
-        {
-            getCOSDictionary().setItem(COSName.DOMAIN, newDomain);
-        }
+        getCOSObject().setItem(COSName.DOMAIN, newDomain);
     }
 
     /**
@@ -102,7 +88,7 @@ public class PDShadingType2 extends PDShading
     {
         if (coords == null)
         {
-            coords = (COSArray) getCOSDictionary().getDictionaryObject(COSName.COORDS);
+            coords = (COSArray) getCOSObject().getDictionaryObject(COSName.COORDS);
         }
         return coords;
     }
@@ -115,14 +101,7 @@ public class PDShadingType2 extends PDShading
     public void setCoords(COSArray newCoords)
     {
         coords = newCoords;
-        if (newCoords == null)
-        {
-            getCOSDictionary().removeItem(COSName.COORDS);
-        }
-        else
-        {
-            getCOSDictionary().setItem(COSName.COORDS, newCoords);
-        }
+        getCOSObject().setItem(COSName.COORDS, newCoords);
     }
 
 //    @Override

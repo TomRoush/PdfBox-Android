@@ -1,6 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.common;
 
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
@@ -32,26 +31,14 @@ public class PDDictionaryWrapper implements COSObjectable
         this.dictionary = dictionary;
     }
 
-
     /**
      * {@inheritDoc}
      */
     @Override
-    public COSBase getCOSObject()
+    public COSDictionary getCOSObject()
     {
         return this.dictionary;
     }
-
-    /**
-     * Gets the COS dictionary.
-     * 
-     * @return the COS dictionary
-     */
-    public COSDictionary getCOSDictionary()
-    {
-        return this.dictionary;
-    }
-
 
     @Override
     public boolean equals(Object obj)

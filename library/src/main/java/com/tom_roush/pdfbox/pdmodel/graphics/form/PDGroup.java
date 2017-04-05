@@ -1,6 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.form;
 
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
@@ -29,12 +28,7 @@ public final class PDGroup implements COSObjectable
     }
 
     @Override
-    public COSBase getCOSObject()
-    {
-        return dictionary;
-    }
-
-    public COSDictionary getCOSDictionary()
+    public COSDictionary getCOSObject()
     {
         return dictionary;
     }
@@ -46,7 +40,7 @@ public final class PDGroup implements COSObjectable
     {
         if (subType == null)
         {
-            subType = (COSName) getCOSDictionary().getDictionaryObject(COSName.S);
+            subType = (COSName) getCOSObject().getDictionaryObject(COSName.S);
         }
         return subType;
     }
@@ -61,8 +55,7 @@ public final class PDGroup implements COSObjectable
     {
         if (colorSpace == null)
         {
-            colorSpace = PDColorSpace.create(getCOSDictionary().getDictionaryObject(
-                    COSName.COLORSPACE));
+            colorSpace = PDColorSpace.create(getCOSObject().getDictionaryObject(COSName.COLORSPACE));
         }
         return colorSpace;
     }
@@ -73,7 +66,7 @@ public final class PDGroup implements COSObjectable
      */
     public boolean isIsolated()
     {
-        return getCOSDictionary().getBoolean(COSName.I, false);
+        return getCOSObject().getBoolean(COSName.I, false);
     }
 
     /**
@@ -82,6 +75,6 @@ public final class PDGroup implements COSObjectable
      */
     public boolean isKnockout()
     {
-        return getCOSDictionary().getBoolean(COSName.K, false);
+        return getCOSObject().getBoolean(COSName.K, false);
     }
 }

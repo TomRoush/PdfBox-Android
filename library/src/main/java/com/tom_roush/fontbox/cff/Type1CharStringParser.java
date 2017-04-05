@@ -16,12 +16,12 @@
  */
 package com.tom_roush.fontbox.cff;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-
-import android.util.Log;
 
 /**
  * This class represents a converter for a mapping into a Type 1 sequence.
@@ -174,7 +174,7 @@ public class Type1CharStringParser
     	CharStringCommand command = (CharStringCommand)item;
 
     	// div
-    	if (command.getKey().getValue()[0] == 12 && command.getKey().getValue()[0] == 12)
+    	if (command.getKey().getValue()[0] == 12 && command.getKey().getValue()[1] == 12)
     	{
     		int a = (Integer)sequence.remove(sequence.size() - 1);
     		int b = (Integer)sequence.remove(sequence.size() - 1);

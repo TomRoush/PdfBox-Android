@@ -254,7 +254,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 		return dict.getNameAsString(COSName.BASE_FONT);
 	}
 
-	//    @Override TODO
+	@Override
 	public float getHeight(int code) throws IOException
 	{
 		String name = codeToName(code);
@@ -267,7 +267,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 		{
 			RectF bounds = new RectF();
 			type1Equivalent.getPath(name).computeBounds(bounds, true);
-			return (float)bounds.height();
+			return bounds.height();
 		}
 	}
 
@@ -297,14 +297,13 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 	public float getWidthFromFont(int code) throws IOException
 	{
 		String name = codeToName(code);
-		if (getStandard14AFM() != null)
+		// width of .notdef is ignored for substitutes, see PDFBOX-1900
+		if (!isEmbedded && name.equals(".notdef"))
 		{
-			return getStandard14Width(code);
+			return 250;
 		}
-		else
-		{
-			return type1Equivalent.getWidth(name);
-		}
+
+		return type1Equivalent.getWidth(name);
 	}
 
 	@Override

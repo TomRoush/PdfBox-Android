@@ -1,15 +1,14 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.pattern;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSArray;
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
+
+import java.io.IOException;
 
 /**
  * A Pattern dictionary from a page's resources.
@@ -67,20 +66,11 @@ public abstract class PDAbstractPattern implements COSObjectable
     }
 
     /**
-     * This will get the underlying dictionary.
-     * @return The dictionary for these pattern resources.
-     */
-    public COSDictionary getCOSDictionary()
-    {
-        return patternDictionary;
-    }
-
-    /**
      * Convert this standard java object to a COS object.
      * @return The cos object that matches this Java object.
      */
     @Override
-    public COSBase getCOSObject()
+    public COSDictionary getCOSObject()
     {
         return patternDictionary;
     }
@@ -159,8 +149,8 @@ public abstract class PDAbstractPattern implements COSObjectable
      */
     public Matrix getMatrix()
     {
-    	COSArray array = (COSArray)getCOSDictionary().getDictionaryObject(COSName.MATRIX);
-    	if (array != null)
+        COSArray array = (COSArray) getCOSObject().getDictionaryObject(COSName.MATRIX);
+        if (array != null)
     	{
     		return new Matrix(array);
     	}
@@ -184,6 +174,6 @@ public abstract class PDAbstractPattern implements COSObjectable
     	{
     		matrix.add(new COSFloat((float)v));
     	}
-    	getCOSDictionary().setItem(COSName.MATRIX, matrix);
+        getCOSObject().setItem(COSName.MATRIX, matrix);
     }
 }

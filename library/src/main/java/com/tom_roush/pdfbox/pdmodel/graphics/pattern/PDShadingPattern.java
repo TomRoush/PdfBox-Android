@@ -1,11 +1,11 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.pattern;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
+
+import java.io.IOException;
 
 /**
  * A shading pattern dictionary.
@@ -21,7 +21,7 @@ public class PDShadingPattern extends PDAbstractPattern
     public PDShadingPattern()
     {
         super();
-        getCOSDictionary().setInt(COSName.PATTERN_TYPE, PDAbstractPattern.TYPE_SHADING_PATTERN);
+        getCOSObject().setInt(COSName.PATTERN_TYPE, PDAbstractPattern.TYPE_SHADING_PATTERN);
     }
 
     /**
@@ -47,7 +47,8 @@ public class PDShadingPattern extends PDAbstractPattern
     {
         if (extendedGraphicsState == null) 
         {
-            COSDictionary dictionary = (COSDictionary)getCOSDictionary().getDictionaryObject( COSName.EXT_G_STATE );
+            COSDictionary dictionary =
+                (COSDictionary) getCOSObject().getDictionaryObject(COSName.EXT_G_STATE);
             if( dictionary != null )
             {
                 extendedGraphicsState = new PDExtendedGraphicsState( dictionary );
@@ -63,14 +64,7 @@ public class PDShadingPattern extends PDAbstractPattern
     public void setExternalGraphicsState( PDExtendedGraphicsState extendedGraphicsState )
     {
         this.extendedGraphicsState = extendedGraphicsState;
-        if (extendedGraphicsState != null)
-        {
-            getCOSDictionary().setItem( COSName.EXT_G_STATE, extendedGraphicsState );
-        }
-        else
-        {
-            getCOSDictionary().removeItem(COSName.EXT_G_STATE);
-        }
+        getCOSObject().setItem(COSName.EXT_G_STATE, extendedGraphicsState);
     }
 
     /**
@@ -82,8 +76,7 @@ public class PDShadingPattern extends PDAbstractPattern
     {
         if (shading == null) 
         {
-            COSDictionary dictionary = (COSDictionary)getCOSDictionary()
-            		.getDictionaryObject( COSName.SHADING );
+            COSDictionary dictionary = (COSDictionary) getCOSObject().getDictionaryObject(COSName.SHADING);
             if( dictionary != null )
             {
                 shading = PDShading.create(dictionary);
@@ -99,13 +92,6 @@ public class PDShadingPattern extends PDAbstractPattern
     public void setShading( PDShading shadingResources )
     {
         shading = shadingResources;
-        if (shadingResources != null)
-        {
-            getCOSDictionary().setItem( COSName.SHADING, shadingResources );
-        }
-        else
-        {
-            getCOSDictionary().removeItem(COSName.SHADING);
-        }
+        getCOSObject().setItem(COSName.SHADING, shadingResources);
     }
 }

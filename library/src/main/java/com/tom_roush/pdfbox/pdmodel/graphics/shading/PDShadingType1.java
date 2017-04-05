@@ -36,8 +36,8 @@ public class PDShadingType1 extends PDShading
      */
     public Matrix getMatrix()
     {
-    	COSArray array = (COSArray) getCOSDictionary().getDictionaryObject(COSName.MATRIX);
-    	if (array != null)
+        COSArray array = (COSArray) getCOSObject().getDictionaryObject(COSName.MATRIX);
+        if (array != null)
     	{
     		return new Matrix(array);
     	}
@@ -60,9 +60,9 @@ public class PDShadingType1 extends PDShading
         transform.getValues(values);
         for (float v : values)
         {
-            matrix.add(new COSFloat((float) v));
+            matrix.add(new COSFloat(v));
         }
-        getCOSDictionary().setItem(COSName.MATRIX, matrix);
+        getCOSObject().setItem(COSName.MATRIX, matrix);
     }
 
     /**
@@ -74,7 +74,7 @@ public class PDShadingType1 extends PDShading
     {
         if (domain == null)
         {
-            domain = (COSArray) getCOSDictionary().getDictionaryObject(COSName.DOMAIN);
+            domain = (COSArray) getCOSObject().getDictionaryObject(COSName.DOMAIN);
         }
         return domain;
     }
@@ -87,7 +87,7 @@ public class PDShadingType1 extends PDShading
     public void setDomain(COSArray newDomain)
     {
         domain = newDomain;
-        getCOSDictionary().setItem(COSName.DOMAIN, newDomain);
+        getCOSObject().setItem(COSName.DOMAIN, newDomain);
     }
 
 //    @Override
