@@ -268,7 +268,7 @@ public class COSWriter implements ICOSVisitor, Closeable
 		}
 		catch (IOException e)
 		{
-			Log.e("PdfBoxAndroid", e.getMessage(),e);
+			Log.e("PdfBox-Android", e.getMessage(),e);
 		}
 	}
 

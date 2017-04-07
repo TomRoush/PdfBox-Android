@@ -65,7 +65,7 @@ public class PDCIDFontType0 extends PDCIDFont
 		if (bytes != null && bytes.length > 0 && (bytes[0] & 0xff) == '%')
 		{
 			// todo: PDFBOX-2642 contains a Type1 PFB font in a CIDFont, but we can't handle it yet
-			Log.e("PdfBoxAndroid", "Unsupported: Type1 font instead of CFF in " + fd.getFontName());
+			Log.e("PdfBox-Android", "Unsupported: Type1 font instead of CFF in " + fd.getFontName());
 			fontIsDamaged = true;
 		}
 		else if (bytes != null)
@@ -77,7 +77,7 @@ public class PDCIDFontType0 extends PDCIDFont
 			}
 			catch (IOException e)
 			{
-				Log.e("PdfBoxAndroid", "Can't read the embedded CFF font " + fd.getFontName(), e);
+				Log.e("PdfBox-Android", "Can't read the embedded CFF font " + fd.getFontName(), e);
 				fontIsDamaged = true;
 			}
 		}
@@ -133,12 +133,12 @@ public class PDCIDFontType0 extends PDCIDFont
 					// Asian and Extended Language Pack
 					if (!fontIsDamaged)
 					{
-						Log.e("PdfBoxAndroid", "Missing CID-keyed font " + getBaseFont());
+						Log.e("PdfBox-Android", "Missing CID-keyed font " + getBaseFont());
 					}
 				}
 				else
 				{
-					Log.w("PdfBoxAndroid", "Using fallback for CID-keyed font " + getBaseFont());
+					Log.w("PdfBox-Android", "Using fallback for CID-keyed font " + getBaseFont());
 				}
 			}
 			isEmbedded = false;

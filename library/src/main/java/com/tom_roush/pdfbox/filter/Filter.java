@@ -72,7 +72,7 @@ public abstract class Filter
         }
         else if (obj != null)
         {
-        	Log.e("PdfBoxAndroid", "Expected DecodeParams to be an Array or Dictionary but found " +
+        	Log.e("PdfBox-Android", "Expected DecodeParams to be an Array or Dictionary but found " +
                       obj.getClass().getName());
         }
         return new COSDictionary();

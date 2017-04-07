@@ -236,7 +236,7 @@ public abstract class BaseParser implements Closeable
 				{
 					//an invalid dictionary, we are expecting
 					//the key, read until we can recover
-					Log.w("PdfBoxAndroid", "Invalid dictionary, found: '" + c + "' but expected: '/'");
+					Log.w("PdfBox-Android", "Invalid dictionary, found: '" + c + "' but expected: '/'");
 					int read = pdfSource.read();
 					while(read != -1 && read != '/' && read != '>')
 					{
@@ -293,7 +293,7 @@ public abstract class BaseParser implements Closeable
 
 					if( value == null )
 					{
-						Log.w("PdfBoxAndroid", "Bad Dictionary Declaration " + pdfSource );
+						Log.w("PdfBox-Android", "Bad Dictionary Declaration " + pdfSource );
 					}
 					else
 					{
@@ -802,7 +802,7 @@ public abstract class BaseParser implements Closeable
 			else
 			{
 				//it could be a bad object in the array which is just skipped
-				Log.w("PdfBoxAndroid", "Corrupt object reference at offset " + pdfSource.getOffset());
+				Log.w("PdfBox-Android", "Corrupt object reference at offset " + pdfSource.getOffset());
 
 				// This could also be an "endobj" or "endstream" which means we can assume that
 				// the array has ended.

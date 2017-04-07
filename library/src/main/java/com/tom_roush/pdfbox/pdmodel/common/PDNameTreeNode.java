@@ -183,7 +183,7 @@ public class PDNameTreeNode implements COSObjectable
                 catch (IOException exception)
                 {
                     node.setItem(COSName.LIMITS, null);
-                    Log.e("PdfBoxAndroid", "Error while calculating the Limits of a PageNameTreeNode:", exception);
+                    Log.e("PdfBox-Android", "Error while calculating the Limits of a PageNameTreeNode:", exception);
                 }
             }
         }
@@ -222,7 +222,7 @@ public class PDNameTreeNode implements COSObjectable
             }
             else
             {
-            	Log.e("PdfBoxAndroid", "NameTreeNode does not have \"names\" nor \"kids\" objects.");
+            	Log.e("PdfBox-Android", "NameTreeNode does not have \"names\" nor \"kids\" objects.");
             }
         }
         return retval;

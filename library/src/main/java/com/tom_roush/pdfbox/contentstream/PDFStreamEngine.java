@@ -634,7 +634,7 @@ public abstract class PDFStreamEngine
 		PDFont font = textState.getFont();
 		if (font == null)
 		{
-			Log.w("PdfBoxAndroid", "No current font, will use default");
+			Log.w("PdfBox-Android", "No current font, will use default");
 			font = PDFontFactory.createDefaultFont();
 		}
 
@@ -836,17 +836,17 @@ public abstract class PDFStreamEngine
 				e instanceof MissingResourceException ||
 				e instanceof MissingImageReaderException)
 		{
-			Log.e("PdfBoxAndroid", e.getMessage());
+			Log.e("PdfBox-Android", e.getMessage());
 		}
 		else if (e instanceof EmptyGraphicsStackException)
 		{
-			Log.w("PdfBoxAndroid", e.getMessage());
+			Log.w("PdfBox-Android", e.getMessage());
 		}
 		else if (operator.getName().equals("Do"))
 		{
 			// todo: this too forgiving, but PDFBox has always worked this way for DrawObject
 			// some careful refactoring is needed
-			Log.w("PdfBoxAndroid", e.getMessage());
+			Log.w("PdfBox-Android", e.getMessage());
 		}
 		else
 		{
@@ -945,7 +945,7 @@ public abstract class PDFStreamEngine
 	{
 		if (phase < 0)
 		{
-			Log.w("PdfBoxAndroid", "Dash phase has negative value " + phase + ", set to 0");
+			Log.w("PdfBox-Android", "Dash phase has negative value " + phase + ", set to 0");
 			phase = 0;
 		}
 		PDLineDashPattern lineDash = new PDLineDashPattern(array, phase);

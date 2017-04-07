@@ -1154,7 +1154,7 @@ public class PDDocument implements Closeable
 				}
 				catch(NumberFormatException exception)
 				{
-					Log.e("PdfBoxAndroid", "Can't extract the version number of the document catalog.", exception);
+					Log.e("PdfBox-Android", "Can't extract the version number of the document catalog.", exception);
 				}
 			}
 			// the most recent version is the correct one
@@ -1183,7 +1183,7 @@ public class PDDocument implements Closeable
 		// the version can't be downgraded
 		if (newVersion < currentVersion)
 		{
-			Log.e("PdfBoxAndroid", "It's not allowed to downgrade the version of a pdf.");
+			Log.e("PdfBox-Android", "It's not allowed to downgrade the version of a pdf.");
 			return;
 		}
 		// update the catalog version if the document version is >= 1.4

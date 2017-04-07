@@ -252,7 +252,7 @@ public class CmapSubtable
 
 				if (firstCode + j > 0x10FFFF)
 				{
-					Log.w("PdfBoxAndroid", "Format 12 cmap contains character beyond UCS-4");
+					Log.w("PdfBox-Android", "Format 12 cmap contains character beyond UCS-4");
 				}
 				glyphIdToCharacterCode[(int) glyphIndex] = (int) (firstCode + j);
 				characterCodeToGlyphId.put((int) (firstCode + j), (int) glyphIndex);
@@ -278,7 +278,7 @@ public class CmapSubtable
 
 			if (glyphId > numGlyphs)
 			{
-				Log.w("PdfBoxAndroid", "Format 13 cmap contains an invalid glyph index");
+				Log.w("PdfBox-Android", "Format 13 cmap contains an invalid glyph index");
 				break;
 			}
 
@@ -303,7 +303,7 @@ public class CmapSubtable
 				
 				if (firstCode + j > 0x10FFFF)
 				{
-					Log.w("PdfBoxAndroid", "Format 13 cmap contains character beyond UCS-4");
+					Log.w("PdfBox-Android", "Format 13 cmap contains character beyond UCS-4");
 				}
 				
 				glyphIdToCharacterCode[(int) glyphId] = (int) (firstCode + j);
@@ -323,7 +323,7 @@ public class CmapSubtable
 	{
 		// Unicode Variation Sequences (UVS)
 		// see http://blogs.adobe.com/CCJKType/2013/05/opentype-cmap-table-ramblings.html
-		Log.w("PdfBoxAndroid", "Format 14 cmap table is not supported and will be ignored");
+		Log.w("PdfBox-Android", "Format 14 cmap table is not supported and will be ignored");
 	}
 
 	/**
@@ -414,7 +414,7 @@ public class CmapSubtable
 		 */
 		 if (tmpGlyphToChar.isEmpty())
 		 {
-			 Log.w("PdfBoxAndroid", "cmap format 4 subtable is empty");
+			 Log.w("PdfBox-Android", "cmap format 4 subtable is empty");
 			 return;
 		 }
 		 glyphIdToCharacterCode = newGlyphIdToCharacterCode(Collections.max(tmpGlyphToChar.keySet()) + 1);

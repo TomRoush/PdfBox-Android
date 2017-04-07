@@ -1,9 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import android.util.Log;
 
 import com.tom_roush.fontbox.cmap.CMap;
 import com.tom_roush.fontbox.ttf.CmapSubtable;
@@ -20,7 +17,10 @@ import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.util.Matrix;
 
-import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Type 2 CIDFont (TrueType).
@@ -68,12 +68,12 @@ public class PDCIDFontType2 extends PDCIDFont
 			}
 			catch (NullPointerException e) // TTF parser is buggy
 			{
-				Log.w("PdfBoxAndroid", "Could not read embedded TTF for font " + getBaseFont(), e);
+				Log.w("PdfBox-Android", "Could not read embedded TTF for font " + getBaseFont(), e);
 				fontIsDamaged = true;
 			}
 			catch (IOException e)
 			{
-				Log.w("PdfBoxAndroid", "Could not read embedded TTF for font " + getBaseFont(), e);
+				Log.w("PdfBox-Android", "Could not read embedded TTF for font " + getBaseFont(), e);
 				fontIsDamaged = true;
 			}
 		}
@@ -95,19 +95,19 @@ public class PDCIDFontType2 extends PDCIDFont
 
 				if (otf.hasLayoutTables())
 				{
-					Log.e("PdfBoxAndroid", "OpenType Layout tables used in font " + getBaseFont() +
+					Log.e("PdfBox-Android", "OpenType Layout tables used in font " + getBaseFont() +
 							" are not implemented in PDFBox and will be ignored");
 				}
 			}
 			catch (NullPointerException e) // TTF parser is buggy
 			{
 				fontIsDamaged = true;
-				Log.w("PdfBoxAndroid", "Could not read embedded OTF for font " + getBaseFont(), e);
+				Log.w("PdfBox-Android", "Could not read embedded OTF for font " + getBaseFont(), e);
 			}
 			catch (IOException e)
 			{
 				fontIsDamaged = true;
-				Log.w("PdfBoxAndroid", "Could not read embedded OTF for font " + getBaseFont(), e);
+				Log.w("PdfBox-Android", "Could not read embedded OTF for font " + getBaseFont(), e);
 			}
 		}
 
@@ -125,7 +125,7 @@ public class PDCIDFontType2 extends PDCIDFont
 			{
 				// fallback
 				ttfFont = ExternalFonts.getTrueTypeFallbackFont(getFontDescriptor());
-				Log.w("PdfBoxAndroid", "Using fallback font '" + ttfFont + "' for '" + getBaseFont() + "'");
+				Log.w("PdfBox-Android", "Using fallback font '" + ttfFont + "' for '" + getBaseFont() + "'");
 			}
 		}
 		ttf = ttfFont;
@@ -241,12 +241,12 @@ public class PDCIDFontType2 extends PDCIDFont
 				String unicode = parent.toUnicode(code);
 				if (unicode == null)
 				{
-					Log.w("PdfBoxAndroid", "Failed to find a character mapping for " + code + " in " + getName());
+					Log.w("PdfBox-Android", "Failed to find a character mapping for " + code + " in " + getName());
 					return 0;
 				}
 				else if (unicode.length() > 1)
 				{
-					Log.w("PdfBoxAndroid", "Trying to map multi-byte character using 'cmap', result will be poor");
+					Log.w("PdfBox-Android", "Trying to map multi-byte character using 'cmap', result will be poor");
 				}
 
 				// a non-embedded font always has a cmap (otherwise ExternalFonts won't load it)

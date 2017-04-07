@@ -276,7 +276,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 
 			if (perms[9] != 'a' || perms[10] != 'd' || perms[11] != 'b')
 			{
-				Log.w("PdfBoxAndroid", "Verification of permissions failed (constant)");
+				Log.w("PdfBox-Android", "Verification of permissions failed (constant)");
 			}
 
 			int permsP = perms[0] & 0xFF | perms[1] & 0xFF << 8 | perms[2] & 0xFF << 16 |
@@ -284,13 +284,13 @@ public final class StandardSecurityHandler extends SecurityHandler
 
 			if (permsP != dicPermissions)
 			{
-				Log.w("PdfBoxAndroid", "Verification of permissions failed (" + permsP +
+				Log.w("PdfBox-Android", "Verification of permissions failed (" + permsP +
 						" != " + dicPermissions + ")");
 			}
 
 			if (encryptMetadata && perms[8] != 'T' || !encryptMetadata && perms[8] != 'F')
 			{
-				Log.w("PdfBoxAndroid", "Verification of permissions failed (EncryptMetadata)");
+				Log.w("PdfBox-Android", "Verification of permissions failed (EncryptMetadata)");
 			}
 		}
 		catch (GeneralSecurityException e)
@@ -1124,7 +1124,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 		{
 			if (Cipher.getMaxAllowedKeyLength("AES") != Integer.MAX_VALUE)
 			{
-				Log.w("PdfBoxAndroid", "JCE unlimited strength jurisdiction policy files are not installed");
+				Log.w("PdfBox-Android", "JCE unlimited strength jurisdiction policy files are not installed");
 			}
 		}
 		catch (NoSuchAlgorithmException ex)

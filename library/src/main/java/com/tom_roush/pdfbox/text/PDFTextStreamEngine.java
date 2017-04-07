@@ -184,7 +184,7 @@ class PDFTextStreamEngine extends PDFStreamEngine
 		}
 		catch (Throwable exception)
 		{
-			Log.w("PdfBoxAndroid", exception.getMessage(), exception);
+			Log.w("PdfBox-Android", exception.getMessage(), exception);
 		}
 
 		if (spaceWidthText == 0)

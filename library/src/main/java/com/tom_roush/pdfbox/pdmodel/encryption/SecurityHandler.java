@@ -329,7 +329,7 @@ public abstract class SecurityHandler
         	{
         		throw exception;
         	}
-        	Log.d("PdfBoxAndroid", "A GeneralSecurityException occured when decrypting some stream data", exception);
+        	Log.d("PdfBox-Android", "A GeneralSecurityException occured when decrypting some stream data", exception);
         }
         finally
         {

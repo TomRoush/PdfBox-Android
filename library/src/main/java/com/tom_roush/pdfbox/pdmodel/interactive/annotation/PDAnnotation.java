@@ -136,7 +136,7 @@ public abstract class PDAnnotation implements COSObjectable
 				// TODO not yet implemented:
 				// Movie, Screen, PrinterMark, TrapNet, Watermark, 3D, Redact
 				annot = new PDAnnotationUnknown(annotDic);
-				Log.d("PdfBoxAndroid", "Unknown or unsupported annotation subtype " + subtype);
+				Log.d("PdfBox-Android", "Unknown or unsupported annotation subtype " + subtype);
 			}
 		}
 		else
@@ -190,7 +190,7 @@ public abstract class PDAnnotation implements COSObjectable
 			}
 			else
 			{
-				Log.w("PdfBoxAndroid", rectArray + " is not a rectangle array, returning null");
+				Log.w("PdfBox-Android", rectArray + " is not a rectangle array, returning null");
 			}
 		}
 		return rectangle;

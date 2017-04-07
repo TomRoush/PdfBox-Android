@@ -1,19 +1,21 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible;
 
+import android.util.Log;
+
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.PDResources;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
+import com.tom_roush.pdfbox.util.awt.AffineTransform;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.pdmodel.PDResources;
-import com.tom_roush.pdfbox.pdmodel.PDDocument;
-import com.tom_roush.pdfbox.pdmodel.PDPage;
-import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
-import com.tom_roush.pdfbox.pdmodel.common.PDStream;
-import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
-import com.tom_roush.pdfbox.util.awt.AffineTransform;
-import android.util.Log;
 /**
  * Using that class, we build pdf template.
  * @author Vakhtang Koroghlishvili
@@ -50,7 +52,7 @@ public class PDFTemplateCreator
      */
     public InputStream buildPDF(PDVisibleSignDesigner properties) throws IOException
     {
-        Log.i("PdfBoxAndroid", "pdf building has been started");
+        Log.i("PdfBox-Android", "pdf building has been started");
         PDFTemplateStructure pdfStructure = pdfBuilder.getStructure();
 
         // we create array of [Text, ImageB, ImageC, ImageI]
@@ -131,7 +133,7 @@ public class PDFTemplateCreator
         pdfBuilder.createWidgetDictionary(pdSignatureField, holderFormResources);
         
         ByteArrayInputStream in = pdfStructure.getTemplateAppearanceStream();
-        Log.i("PdfBoxAndroid", "stream returning started, size= " + in.available());
+        Log.i("PdfBox-Android", "stream returning started, size= " + in.available());
         
         // we must close the document
         template.close();

@@ -143,7 +143,7 @@ public class LZWFilter extends Filter
         }
         catch (EOFException ex)
         {
-        	Log.w("PdfBoxAndroid", "Premature EOF in LZW stream, EOD code missing");
+        	Log.w("PdfBox-Android", "Premature EOF in LZW stream, EOD code missing");
         }
         decoded.flush();
     }

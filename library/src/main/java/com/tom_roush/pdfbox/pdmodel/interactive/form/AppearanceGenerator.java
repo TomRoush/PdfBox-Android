@@ -62,14 +62,14 @@ public final class AppearanceGenerator
 			}
 			else if (fieldValue != null)
 			{
-				Log.d("PdfBoxAndroid", "Can't generate the appearance for values typed "
+				Log.d("PdfBox-Android", "Can't generate the appearance for values typed "
 						+ fieldValue.getClass().getName() + ".");
 			}
 		}
 		// TODO: implement the handling for additional field types
 		else
 		{
-			Log.d("PdfBoxAndroid", "Unable to generate the field appearance.");
+			Log.d("PdfBox-Android", "Unable to generate the field appearance.");
 		}
 	}
 }

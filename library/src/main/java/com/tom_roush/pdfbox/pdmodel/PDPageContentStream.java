@@ -163,7 +163,7 @@ public final class PDPageContentStream implements Closeable
         {
             if (hasContent)
             {
-            	Log.w("PdfBoxAndroid", "You are overwriting an existing content, you should use the append mode");
+            	Log.w("PdfBox-Android", "You are overwriting an existing content, you should use the append mode");
             }
             contents = new PDStream(document);
             if (compress)

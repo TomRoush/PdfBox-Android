@@ -104,7 +104,7 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 			toUnicodeCMap = readCMap(toUnicode);
 			if (toUnicodeCMap != null && !toUnicodeCMap.hasUnicodeMappings())
 			{
-				Log.w("PdfBoxAndroid", "Invalid ToUnicode CMap in font " + getName());
+				Log.w("PdfBox-Android", "Invalid ToUnicode CMap in font " + getName());
 			}
 		}
 		else
@@ -483,7 +483,7 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 			}
 			catch (Exception e)
 			{
-				Log.e("PdfBoxAndroid", "Can't determine the width of the space character, assuming 250", e);
+				Log.e("PdfBox-Android", "Can't determine the width of the space character, assuming 250", e);
 				fontWidthOfSpace = 250f;
 			}
 		}

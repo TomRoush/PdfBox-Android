@@ -266,7 +266,7 @@ public final class ExternalFonts
 		if (type1Equivalent == null)
 		{
 			// only systems with no fonts should reach this point, so we return a basic fallback
-			Log.e("PdfBoxAndroid", "No fallback font for '" + fontName + "'");
+			Log.e("PdfBox-Android", "No fallback font for '" + fontName + "'");
 			return ttfFallbackFont;
 		}
 		return type1Equivalent;
@@ -283,7 +283,7 @@ public final class ExternalFonts
 		if (ttf == null)
 		{
 			// we have to return something here as TTFs aren't strictly required on the system
-			Log.e("PdfBoxAndroid", "No TTF fallback font for '" + fontName + "'");
+			Log.e("PdfBox-Android", "No TTF fallback font for '" + fontName + "'");
 			return ttfFallbackFont;
 		}
 		return ttf;

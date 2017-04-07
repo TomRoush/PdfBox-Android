@@ -146,12 +146,12 @@ public class COSDocument extends COSBase implements Closeable
 					}
 					else if (typeItem != null)
 					{
-						Log.d("PdfBoxAndroid", "Expected a /Name object after /Type, got '" + typeItem + "' instead");
+						Log.d("PdfBox-Android", "Expected a /Name object after /Type, got '" + typeItem + "' instead");
 					}
 				}
 				catch (ClassCastException e)
 				{
-					Log.w("PdfBoxAndroid", e.getMessage(), e);
+					Log.w("PdfBox-Android", e.getMessage(), e);
 				}
 			}
 		}
@@ -201,12 +201,12 @@ public class COSDocument extends COSBase implements Closeable
 					}
 					else if (typeItem != null)
 					{
-						Log.d("PdfBoxAndroid", "Expected a /Name object after /Type, got '" + typeItem + "' instead");
+						Log.d("PdfBox-Android", "Expected a /Name object after /Type, got '" + typeItem + "' instead");
 					}
 				}
 				catch (ClassCastException e)
 				{
-					Log.w("PdfBoxAndroid", e.getMessage(), e);
+					Log.w("PdfBox-Android", e.getMessage(), e);
 				}
 			}
 		}
@@ -491,7 +491,7 @@ public class COSDocument extends COSBase implements Closeable
 		{
 			if (warnMissingClose) 
 			{
-				Log.w("PdfBoxAndroid", "Warning: You did not close a PDF Document" );
+				Log.w("PdfBox-Android", "Warning: You did not close a PDF Document" );
 			}
 			close();
 		}

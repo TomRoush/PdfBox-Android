@@ -697,7 +697,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public PointF getCurrentPoint()
     {
-    	Log.d("PdfBoxAndroid", "PageDrawer.getCurrentPoint does not return the right value");
+    	Log.d("PdfBox-Android", "PageDrawer.getCurrentPoint does not return the right value");
     	return new PointF();
 //        return linePath.getCurrentPoint();
     }

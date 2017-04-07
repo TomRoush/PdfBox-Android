@@ -39,7 +39,7 @@ final class Type1Glyph2D implements Glyph2D
 			String name = font.codeToName(code);
 			if (name.equals(".notdef"))
 			{
-				Log.w("PdfBoxAndroid", "No glyph for " + code + " (" + name + ") in font " + font.getName());
+				Log.w("PdfBox-Android", "No glyph for " + code + " (" + name + ") in font " + font.getName());
 			}
 			// todo: can this happen? should it be encapsulated?
 			Path path = font.getPath(name);
@@ -52,7 +52,7 @@ final class Type1Glyph2D implements Glyph2D
 		}
 		catch (IOException e)
 		{
-			Log.e("PdfBoxAndroid", "Glyph rendering failed", e); // todo: escalate this error?
+			Log.e("PdfBox-Android", "Glyph rendering failed", e); // todo: escalate this error?
 			return new Path();
 		}
 	}

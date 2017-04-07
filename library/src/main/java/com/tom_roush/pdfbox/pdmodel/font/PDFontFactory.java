@@ -1,12 +1,12 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.IOException;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 
-import android.util.Log;
+import java.io.IOException;
 
 /**
  * Creates the appropriate font subtype based on information in the dictionary.
@@ -30,7 +30,7 @@ public final class PDFontFactory
 		COSName type = dictionary.getCOSName(COSName.TYPE, COSName.FONT);
 		if (!COSName.FONT.equals(type))
 		{
-			Log.e("PdfBoxAndroid", "Expected 'Font' dictionary but found '" + type.getName() + "'");
+			Log.e("PdfBox-Android", "Expected 'Font' dictionary but found '" + type.getName() + "'");
 		}
 
 		COSName subType = dictionary.getCOSName(COSName.SUBTYPE);
@@ -76,7 +76,7 @@ public final class PDFontFactory
 		{
 			// assuming Type 1 font (see PDFBOX-1988) because it seems that Adobe Reader does this
 			// however, we may need more sophisticated logic perhaps looking at the FontFile
-			Log.w("PdfBoxAndroid", "Invalid font subtype '" + subType + "'");
+			Log.w("PdfBox-Android", "Invalid font subtype '" + subType + "'");
 			return new PDType1Font(dictionary);
 		}
 	}

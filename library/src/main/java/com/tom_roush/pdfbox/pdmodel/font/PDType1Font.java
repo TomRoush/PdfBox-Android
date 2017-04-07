@@ -165,12 +165,12 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 				}
 				catch (DamagedFontException e)
 				{
-					Log.w("PdfBoxAndroid", "Can't read damaged embedded Type1 font " + fd.getFontName());
+					Log.w("PdfBox-Android", "Can't read damaged embedded Type1 font " + fd.getFontName());
 					fontIsDamaged = true;
 				}
 				catch (IOException e)
 				{
-					Log.e("PdfBoxAndroid", "Can't read the embedded Type1 font " + fd.getFontName(), e);
+					Log.e("PdfBox-Android", "Can't read the embedded Type1 font " + fd.getFontName(), e);
 					fontIsDamaged = true;
 				}
 			}
@@ -201,7 +201,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 			else
 			{
 				type1Equivalent = ExternalFonts.getType1FallbackFont(getFontDescriptor());
-				Log.w("PdfBoxAndroid", "Using fallback font " + type1Equivalent.getName() + " for " + getBaseFont());
+				Log.w("PdfBox-Android", "Using fallback font " + type1Equivalent.getName() + " for " + getBaseFont());
 			}
 		}
 		readEncoding();
@@ -239,7 +239,7 @@ public class PDType1Font extends PDSimpleFont implements PDType1Equivalent
 
 		if (length1 - offset != 0 && offset > 0)
 		{
-			Log.w("PdfBoxAndroid", "Ignored invalid Length1 for Type 1 font " + getName());
+			Log.w("PdfBox-Android", "Ignored invalid Length1 for Type 1 font " + getName());
 			return offset;
 		}
 

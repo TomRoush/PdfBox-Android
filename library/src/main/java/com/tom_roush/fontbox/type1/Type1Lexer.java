@@ -143,7 +143,7 @@ class Type1Lexer
                 }
                 else if (c == 0)
                 {
-                	Log.w("PdfBoxAndroid", "NULL byte in font, skipped");
+                	Log.w("PdfBox-Android", "NULL byte in font, skipped");
                     skip = true;
                 }
                 else

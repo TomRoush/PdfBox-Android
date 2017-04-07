@@ -35,7 +35,7 @@ public final class PDSoftMask implements COSObjectable
             }
             else
             {
-            	Log.w("PdfBoxAndroid", "Invalid SMask " + dictionary);
+            	Log.w("PdfBox-Android", "Invalid SMask " + dictionary);
                 return null;
             }
         }
@@ -45,7 +45,7 @@ public final class PDSoftMask implements COSObjectable
         }
         else
         {
-        	Log.w("PdfBoxAndroid", "Invalid SMask " + dictionary);
+        	Log.w("PdfBox-Android", "Invalid SMask " + dictionary);
             return null;
         }
     }

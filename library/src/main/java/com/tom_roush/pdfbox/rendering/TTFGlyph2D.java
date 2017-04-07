@@ -102,12 +102,12 @@ final class TTFGlyph2D implements Glyph2D
 				{
 					int cid = ((PDType0Font) font).codeToCID(code);
 					String cidHex = String.format("%04x", cid);
-					Log.w("PdfBoxAndroid", "No glyph for " + code + " (CID " + cidHex + ") in font " +
+					Log.w("PdfBox-Android", "No glyph for " + code + " (CID " + cidHex + ") in font " +
 							font.getName());
 				}
 				else
 				{
-					Log.w("PdfBoxAndroid", "No glyph for " + code + " in font " + font.getName());
+					Log.w("PdfBox-Android", "No glyph for " + code + " in font " + font.getName());
 				}
 			}
 			GlyphData glyph = ttf.getGlyph().getGlyph(gid);

@@ -111,6 +111,6 @@ final class CCITTFaxFilter extends Filter
     protected void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
             throws IOException
     {
-    	Log.w("PdfBoxAndroid", "CCITTFaxDecode.encode is not implemented yet, skipping this stream.");
+    	Log.w("PdfBox-Android", "CCITTFaxDecode.encode is not implemented yet, skipping this stream.");
     }
 }

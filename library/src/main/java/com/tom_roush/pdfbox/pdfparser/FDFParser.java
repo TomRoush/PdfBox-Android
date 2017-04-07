@@ -73,7 +73,7 @@ public class FDFParser extends COSParser
             }
             catch (NumberFormatException nfe)
             {
-            	Log.w("PdfBoxAndroid", "System property " + SYSPROP_EOFLOOKUPRANGE
+            	Log.w("PdfBox-Android", "System property " + SYSPROP_EOFLOOKUPRANGE
             			+ " does not contain an integer value, but: '" + eofLookupRangeStr + "'");
             }
         }
@@ -171,12 +171,12 @@ public class FDFParser extends COSParser
             {
                 if (!tempPDFFile.delete())
                 {
-                	Log.w("PdfBoxAndroid", "Temporary file '" + tempPDFFile.getName() + "' can't be deleted");
+                	Log.w("PdfBox-Android", "Temporary file '" + tempPDFFile.getName() + "' can't be deleted");
                 }
             }
             catch (SecurityException e)
             {
-            	Log.w("PdfBoxAndroid", "Temporary file '" + tempPDFFile.getName() + "' can't be deleted", e);
+            	Log.w("PdfBox-Android", "Temporary file '" + tempPDFFile.getName() + "' can't be deleted", e);
             }
         }
     }

@@ -67,7 +67,7 @@ public class PDFBoxResourceLoader {
      */
     public static boolean isReady() {
     	if(ASSET_MANAGER == null && !hasWarned) {
-    		Log.w("PdfBoxAndroid", "Call PDFBoxResourceLoader.init() first to decrease resource load time");
+    		Log.w("PdfBox-Android", "Call PDFBoxResourceLoader.init() first to decrease resource load time");
     		hasWarned = true;
     	}
     	return ASSET_MANAGER != null;

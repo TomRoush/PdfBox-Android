@@ -119,7 +119,7 @@ public abstract class PDColorSpace implements COSObjectable {
 //            }
 
 //            throw new IOException("Invalid color space kind: " + name);
-            Log.e("PdfBoxAndroid", "Invalid color space kind: " + name + ". Will try DeviceRGB instead");
+            Log.e("PdfBox-Android", "Invalid color space kind: " + name + ". Will try DeviceRGB instead");
             return PDDeviceRGB.INSTANCE;
         } else {
             throw new IOException("Expected a name or array but got: " + colorSpace);

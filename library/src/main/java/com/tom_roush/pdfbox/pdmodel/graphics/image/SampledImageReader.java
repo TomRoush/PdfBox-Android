@@ -129,7 +129,7 @@ final class SampledImageReader
         }
         else
         {
-        	Log.e("PdfBoxAndroid", "Trying to create other-bit image not supported");
+        	Log.e("PdfBox-Android", "Trying to create other-bit image not supported");
 //            return fromAny(pdImage, raster, colorKey);
             return from8bit(pdImage, raster);
         }
@@ -425,7 +425,7 @@ final class SampledImageReader
                     float decode1 = ((COSNumber) cosDecode.get(1)).floatValue();
                     if (decode0 >= 0 && decode0 <= 1 && decode1 >= 0 && decode1 <= 1)
                     {
-                    	Log.w("PdfBoxAndroid", "decode array " + cosDecode
+                    	Log.w("PdfBox-Android", "decode array " + cosDecode
                                 + " not compatible with color space, using the first two entries");
                         return new float[]
                         {
@@ -433,7 +433,7 @@ final class SampledImageReader
                         };
                     }
                 }
-                Log.e("PdfBoxAndroid", "decode array " + cosDecode
+                Log.e("PdfBox-Android", "decode array " + cosDecode
                         + " not compatible with color space, using default");
             }
             else

@@ -61,7 +61,7 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 				bytes = IOUtils.toByteArray(ff3Stream.createInputStream());
 				if (bytes.length == 0)
 				{
-					Log.e("PdfBoxAndroid", "Invalid data for embedded Type1C font " + getName());
+					Log.e("PdfBox-Android", "Invalid data for embedded Type1C font " + getName());
 					bytes = null;
 				}
 			}
@@ -80,7 +80,7 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 		}
 		catch (IOException e)
 		{
-			Log.e("PdfBoxAndroid", "Can't read the embedded Type1C font " + getName(), e);
+			Log.e("PdfBox-Android", "Can't read the embedded Type1C font " + getName(), e);
 			fontIsDamaged = true;
 		}
 		isDamaged = fontIsDamaged;
@@ -101,7 +101,7 @@ public class PDType1CFont extends PDSimpleFont implements PDType1Equivalent
 			else
 			{
 				type1Equivalent = ExternalFonts.getType1FallbackFont(getFontDescriptor());
-				Log.w("PdfBoxAndroid", "Using fallback font " + type1Equivalent.getName() + " for " + getBaseFont());
+				Log.w("PdfBox-Android", "Using fallback font " + type1Equivalent.getName() + " for " + getBaseFont());
 			}
 			isEmbedded = false;
 		}

@@ -158,7 +158,7 @@ public class PDType0Font extends PDFont
             }
             else if (!cMap.hasCIDMappings())
             {
-            	Log.w("PdfBoxAndroid", "Invalid Encoding CMap in font " + getName());
+            	Log.w("PdfBox-Android", "Invalid Encoding CMap in font " + getName());
             }
         }
     }

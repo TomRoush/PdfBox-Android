@@ -81,7 +81,7 @@ public class PDType3Font extends PDSimpleFont
 			else
 			{
 				// todo: call getWidthFromFont?
-				Log.e("PdfBoxAndroid", "No width for glyph " + code + " in font " + getName());
+				Log.e("PdfBox-Android", "No width for glyph " + code + " in font " + getName());
 				return 0;
 			}
 		}

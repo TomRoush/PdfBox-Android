@@ -176,7 +176,7 @@ public class PDStructureTreeRoot extends PDStructureNode
             }
             catch (IOException e)
             {
-            	Log.e("PdfBoxAndroid", e.getMessage(),e);
+            	Log.e("PdfBox-Android", e.getMessage(),e);
             }
         }
         return new Hashtable<String, Object>();

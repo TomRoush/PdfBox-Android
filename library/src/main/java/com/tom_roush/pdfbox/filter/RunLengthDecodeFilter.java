@@ -1,12 +1,12 @@
 package com.tom_roush.pdfbox.filter;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 
-import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Decompresses data encoded using a byte-oriented run-length encoding algorithm,
@@ -53,6 +53,6 @@ final class RunLengthDecodeFilter extends Filter
     protected void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
             throws IOException
     {
-    	Log.w("PdfBoxAndroid", "RunLengthDecodeFilter.encode is not implemented yet, skipping this stream.");
+    	Log.w("PdfBox-Android", "RunLengthDecodeFilter.encode is not implemented yet, skipping this stream.");
     }
 }

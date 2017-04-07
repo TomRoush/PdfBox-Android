@@ -62,7 +62,7 @@ public final class COSString extends COSBase
 			{
 				if (FORCE_PARSING)
 				{
-					Log.w("PdfBoxAndroid", "Encountered a malformed hex string");
+					Log.w("PdfBox-Android", "Encountered a malformed hex string");
 					bytes.write('?'); // todo: what does Acrobat do? Any example PDFs?
 				}
 				else

@@ -436,7 +436,7 @@ public class PDFStreamParser extends BaseParser
 
 		if (!noBinData)
 		{
-			Log.w("PdfBoxAndroid", "ignoring 'EI' assumed to be in the middle of inline image");
+			Log.w("PdfBox-Android", "ignoring 'EI' assumed to be in the middle of inline image");
 		}
 
 		return noBinData;

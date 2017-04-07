@@ -133,7 +133,7 @@ public class COSStream extends COSDictionary implements Closeable
         }
         catch (IOException exception)
         {
-            Log.e("PdfBoxAndroid", "Can't create temp file, using memory buffer instead", exception);
+            Log.e("PdfBox-Android", "Can't create temp file, using memory buffer instead", exception);
             return new RandomAccessBuffer();
         }
     }

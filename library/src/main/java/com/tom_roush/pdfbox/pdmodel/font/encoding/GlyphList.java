@@ -127,7 +127,7 @@ public final class GlyphList
 					String[] unicodeList = parts[1].split(" ");
 					if (nameToUnicode.containsKey(name))
 					{
-						Log.w("PdfBoxAndroid", "duplicate value for " + name + " -> " + parts[1] + " " +
+						Log.w("PdfBox-Android", "duplicate value for " + name + " -> " + parts[1] + " " +
 								nameToUnicode.get(name));
 					}
 					int[] codePoints = new int[unicodeList.length];
@@ -218,7 +218,7 @@ public final class GlyphList
 						int codePoint = Integer.parseInt(name.substring(chPos, chPos + 4), 16);
 						if (codePoint > 0xD7FF && codePoint < 0xE000)
 						{
-							Log.w("PdfBoxAndroid", "Unicode character name with disallowed code area: " + name);
+							Log.w("PdfBox-Android", "Unicode character name with disallowed code area: " + name);
 						}
 						else
 						{
@@ -229,7 +229,7 @@ public final class GlyphList
 				}
 				catch (NumberFormatException nfe)
 				{
-					Log.w("PdfBoxAndroid", "Not a number in Unicode character name: " + name);
+					Log.w("PdfBox-Android", "Not a number in Unicode character name: " + name);
 				}
 			}
 			else if (name.startsWith("u") && name.length() == 5)
@@ -240,7 +240,7 @@ public final class GlyphList
 					int codePoint = Integer.parseInt(name.substring(1), 16);
 					if (codePoint > 0xD7FF && codePoint < 0xE000)
 					{
-						Log.w("PdfBoxAndroid", "Unicode character name with disallowed code area: " + name);
+						Log.w("PdfBox-Android", "Unicode character name with disallowed code area: " + name);
 					}
 					else
 					{
@@ -249,7 +249,7 @@ public final class GlyphList
 				}
 				catch (NumberFormatException nfe)
 				{
-					Log.w("PdfBoxAndroid", "Not a number in Unicode character name: " + name);
+					Log.w("PdfBox-Android", "Not a number in Unicode character name: " + name);
 				}
 			}
 			nameToUnicode.put(name, unicode);

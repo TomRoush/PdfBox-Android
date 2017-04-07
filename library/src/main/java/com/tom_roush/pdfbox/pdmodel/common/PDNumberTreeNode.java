@@ -142,7 +142,7 @@ public class PDNumberTreeNode implements COSObjectable
             }
             else
             {
-            	Log.w("PdfBoxAndroid", "NumberTreeNode does not have \"nums\" nor \"kids\" objects.");
+            	Log.w("PdfBox-Android", "NumberTreeNode does not have \"nums\" nor \"kids\" objects.");
             }
         }
         return retval;

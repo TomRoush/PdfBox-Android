@@ -527,7 +527,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         }
         else
         {
-        	Log.w("PdfBoxAndroid", "getSuffix() returns null, filters: " + filters);
+        	Log.w("PdfBox-Android", "getSuffix() returns null, filters: " + filters);
             // TODO more...
             return null;
         }

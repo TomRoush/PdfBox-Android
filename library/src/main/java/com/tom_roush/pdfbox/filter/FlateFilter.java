@@ -1,5 +1,10 @@
 package com.tom_roush.pdfbox.filter;
 
+import android.util.Log;
+
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -8,11 +13,6 @@ import java.io.OutputStream;
 import java.util.zip.DataFormatException;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
-
-import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.cos.COSName;
-
-import android.util.Log;
 
 /**
  * Decompresses data encoded using the zlib/deflate compression method,
@@ -60,7 +60,7 @@ final class FlateFilter extends Filter
         catch (DataFormatException e)
         {
             // if the stream is corrupt a DataFormatException may occur
-        	Log.e("PdfBoxAndroid", "FlateFilter: stop reading corrupt stream due to a DataFormatException");
+        	Log.e("PdfBox-Android", "FlateFilter: stop reading corrupt stream due to a DataFormatException");
 
             // re-throw the exception
             throw new IOException(e);

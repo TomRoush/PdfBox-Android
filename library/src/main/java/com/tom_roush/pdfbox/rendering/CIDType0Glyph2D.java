@@ -44,7 +44,7 @@ final class CIDType0Glyph2D implements Glyph2D
 			if (charString.getGID() == 0)
 			{
 				String cidHex = String.format("%04x", cid);
-				Log.w("PdfBoxAndroid", "No glyph for " + code + " (CID " + cidHex + ") in font " + fontName);
+				Log.w("PdfBox-Android", "No glyph for " + code + " (CID " + cidHex + ") in font " + fontName);
 			}
 			Path path = charString.getPath();
 			cache.put(code, path);
@@ -53,7 +53,7 @@ final class CIDType0Glyph2D implements Glyph2D
 		catch (IOException e)
 		{
 			// TODO: escalate this error?
-			Log.w("PdfBoxAndroid", "Glyph rendering failed", e);
+			Log.w("PdfBox-Android", "Glyph rendering failed", e);
 			return new Path();
 		}
 	}

@@ -143,7 +143,7 @@ public class Type1CharStringParser
 
                 if (results.size() > 0)
                 {
-                	Log.w("PdfBoxAndroid", "Value left on the PostScript stack in glyph " + glyphName + " of font " + fontName);
+                	Log.w("PdfBox-Android", "Value left on the PostScript stack in glyph " + glyphName + " of font " + fontName);
                 }
             }
             else if (b0 >= 0 && b0 <= 31)

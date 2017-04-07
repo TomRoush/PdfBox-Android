@@ -289,11 +289,11 @@ public class StandardStructureTypes
                 }
                 catch (IllegalArgumentException e)
                 {
-                	Log.e("PdfBoxAndroid", e.getMessage(),e);
+                	Log.e("PdfBox-Android", e.getMessage(),e);
                 }
                 catch (IllegalAccessException e)
                 {
-                	Log.e("PdfBoxAndroid", e.getMessage(),e);
+                	Log.e("PdfBox-Android", e.getMessage(),e);
                 }
             }
         }

@@ -141,6 +141,6 @@ final class DCTFilter extends Filter
     protected void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
             throws IOException
     {
-    	Log.w("PdfBoxAndroid", "DCTFilter#encode is not implemented yet, skipping this stream.");
+    	Log.w("PdfBox-Android", "DCTFilter#encode is not implemented yet, skipping this stream.");
     }
 }

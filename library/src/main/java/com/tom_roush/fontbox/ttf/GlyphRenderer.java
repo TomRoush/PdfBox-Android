@@ -138,19 +138,19 @@ class GlyphRenderer
     private void moveTo(Path path, Point point)
     {
         path.moveTo(point.x, point.y);
-//        Log.v("PdfBoxAndroid", "moveTo: " + String.format("%d,%d", point.x, point.y));
+//        Log.v("PdfBox-Android", "moveTo: " + String.format("%d,%d", point.x, point.y));
     }
 
     private void lineTo(Path path, Point point)
     {
         path.lineTo(point.x, point.y);
-//        Log.v("PdfBoxAndroid", "lineTo: " + String.format("%d,%d", point.x, point.y));
+//        Log.v("PdfBox-Android", "lineTo: " + String.format("%d,%d", point.x, point.y));
     }
 
     private void quadTo(Path path, Point ctrlPoint, Point point)
     {
         path.quadTo(ctrlPoint.x, ctrlPoint.y, point.x, point.y);
-//        Log.v("PdfBoxAndroid", "quadTo: " + String.format("%d,%d %d,%d", ctrlPoint.x, ctrlPoint.y,
+//        Log.v("PdfBox-Android", "quadTo: " + String.format("%d,%d %d,%d", ctrlPoint.x, ctrlPoint.y,
 //                    point.x, point.y));
     }
 

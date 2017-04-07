@@ -579,7 +579,7 @@ class AppearanceGeneratorHelper
 		{
 			// Unknown quadding value - default to left
 			leftOffset = contentEdge.getLowerLeftX();
-			Log.d("PdfBoxAndroid", "Unknown justification value, defaulting to left: " + q);
+			Log.d("PdfBox-Android", "Unknown justification value, defaulting to left: " + q);
 		}
 
 	 return leftOffset;

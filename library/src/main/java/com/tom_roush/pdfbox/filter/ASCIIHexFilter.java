@@ -49,7 +49,7 @@ final class ASCIIHexFilter extends Filter
        
             if (REVERSE_HEX[firstByte] == -1)
             {
-                Log.e("PdfBoxAndroid", "Invalid hex, int: " + firstByte + " char: " + (char)firstByte);
+                Log.e("PdfBox-Android", "Invalid hex, int: " + firstByte + " char: " + (char)firstByte);
             }
             value = REVERSE_HEX[firstByte] * 16;
             secondByte = encoded.read();
@@ -64,7 +64,7 @@ final class ASCIIHexFilter extends Filter
             {
                 if (REVERSE_HEX[secondByte] == -1)
                 {
-                	Log.e("PdfBoxAndroid", "Invalid hex, int: " + secondByte + " char: " + (char)secondByte);
+                	Log.e("PdfBox-Android", "Invalid hex, int: " + secondByte + " char: " + (char)secondByte);
                 }
                 value += REVERSE_HEX[secondByte];
             }

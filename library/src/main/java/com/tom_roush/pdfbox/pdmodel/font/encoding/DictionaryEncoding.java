@@ -1,7 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel.font.encoding;
 
-import java.util.HashMap;
-import java.util.Map;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -9,7 +8,8 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNumber;
 
-import android.util.Log;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This will perform the encoding from a dictionary.
@@ -79,7 +79,7 @@ public class DictionaryEncoding extends Encoding
 				else
 				{
 					base = StandardEncoding.INSTANCE;
-					Log.w("PdfBoxAndroid", "Built-in encoding required for symbolic font, using standard encoding");
+					Log.w("PdfBox-Android", "Built-in encoding required for symbolic font, using standard encoding");
 					//FIXME, see PDFBOX-2299, happens with Type3 fonts of the isartor test suite
 					// throw new IllegalArgumentException("Built-in Encoding required for symbolic font");throw new IllegalArgumentException("Built-in Encoding required for symbolic font");
 				}

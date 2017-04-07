@@ -271,7 +271,7 @@ public class Type1CharString
 		else
 		{
 			// indicates an invalid charstring
-			Log.w("PdfBoxAndroid", "Unknown charstring command: " + command.getKey());
+			Log.w("PdfBox-Android", "Unknown charstring command: " + command.getKey());
 		}
 		return null;
 	}
@@ -298,7 +298,7 @@ public class Type1CharString
 
 			if (flexPoints.size() < 7)
 			{
-				Log.w("PdfBoxAndroid", "flex without moveTo in font " + fontName + ", glyph " + glyphName +
+				Log.w("PdfBox-Android", "flex without moveTo in font " + fontName + ", glyph " + glyphName +
 						", command " + commandCount);
 				return;
 			}
@@ -358,7 +358,7 @@ public class Type1CharString
 		//        if (path.getCurrentPoint() == null) TODO: Patch for now
 		if(path.isEmpty())
 		{
-			Log.w("PdfBoxAndroid", "rlineTo without initial moveTo in font " + fontName + ", glyph " + glyphName);
+			Log.w("PdfBox-Android", "rlineTo without initial moveTo in font " + fontName + ", glyph " + glyphName);
 			path.moveTo(x, y);
 		}
 		else
@@ -383,7 +383,7 @@ public class Type1CharString
 		//      if (path.getCurrentPoint() == null) TODO: Patch for now
 		if(path.isEmpty())
 		{
-			Log.w("PdfBoxAndroid", "rrcurveTo without initial moveTo in font " + fontName + ", glyph " + glyphName);
+			Log.w("PdfBox-Android", "rrcurveTo without initial moveTo in font " + fontName + ", glyph " + glyphName);
 			path.moveTo(x3, y3);
 		}
 		else
@@ -401,7 +401,7 @@ public class Type1CharString
 		//      if (path.getCurrentPoint() == null) TODO: Patch for now
 		if(path.isEmpty())
 		{
-			Log.w("PdfBoxAndroid", "closepath without initial moveTo in font " + fontName + ", glyph " + glyphName);
+			Log.w("PdfBox-Android", "closepath without initial moveTo in font " + fontName + ", glyph " + glyphName);
 		}
 		else
 		{
@@ -430,7 +430,7 @@ public class Type1CharString
 			}
 			catch (IOException e)
 			{
-				Log.w("PdfBoxAndroid", "invalid seac character in glyph " + glyphName + " of font " + fontName);
+				Log.w("PdfBox-Android", "invalid seac character in glyph " + glyphName + " of font " + fontName);
 			}
 		}
 		// accent character
@@ -448,7 +448,7 @@ public class Type1CharString
 			}
 			catch (IOException e)
 			{
-				Log.w("PdfBoxAndroid", "invalid seac character in glyph " + glyphName + " of font " + fontName);
+				Log.w("PdfBox-Android", "invalid seac character in glyph " + glyphName + " of font " + fontName);
 			}
 		}
 	}
