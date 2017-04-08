@@ -13,6 +13,7 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.JPEGFactory;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
@@ -152,7 +153,14 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
     @Override
     public void createSignatureImage(PDDocument template, Bitmap image) throws IOException
     {
-        pdfStructure.setImage(JPEGFactory.createFromImage(template, image));
+        if (image.hasAlpha())
+        {
+            pdfStructure.setImage(LosslessFactory.createFromImage(template, image));
+        }
+        else
+        {
+            pdfStructure.setImage(JPEGFactory.createFromImage(template, image));
+        }
         Log.i("PdfBox-Android", "Visible Signature Image has been created");
     }
 

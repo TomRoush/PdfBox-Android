@@ -234,7 +234,7 @@ public abstract class PDAnnotation implements COSObjectable
 	@Override
 	public COSDictionary getCOSObject()
 	{
-		return getCOSObject();
+		return dictionary;
 	}
 
 	/**
