@@ -24,6 +24,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDCheckbox;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDComboBox;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDListBox;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDRadioButton;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
@@ -178,24 +179,24 @@ public class MainActivity extends Activity {
 			PDAcroForm acroForm = docCatalog.getAcroForm();
 
 			// Fill the text field
-			PDFieldTreeNode field = acroForm.getField("TextField");
+			PDField field = acroForm.getField("TextField");
 			field.setValue("Filled Text Field");
 			// Optional: don't allow this field to be edited
 			field.setReadonly(true);
 
-			PDFieldTreeNode checkbox = acroForm.getField("Checkbox");
+			PDField checkbox = acroForm.getField("Checkbox");
 			((PDCheckbox) checkbox).check();
 
-			PDFieldTreeNode radio = acroForm.getField("Radio");
+			PDField radio = acroForm.getField("Radio");
 			((PDRadioButton)radio).setValue("Second");
 
-			PDFieldTreeNode listbox = acroForm.getField("ListBox");
+			PDField listbox = acroForm.getField("ListBox");
 			List<Integer> listValues = new ArrayList<>();
 			listValues.add(1);
 			listValues.add(2);
 			((PDListBox) listbox).setSelectedOptionsIndex(listValues);
 
-			PDFieldTreeNode dropdown = acroForm.getField("Dropdown");
+			PDField dropdown = acroForm.getField("Dropdown");
 			((PDComboBox) dropdown).setValue("Hello");
 
 			String path = root.getAbsolutePath() + "/Download/FilledForm.pdf";
