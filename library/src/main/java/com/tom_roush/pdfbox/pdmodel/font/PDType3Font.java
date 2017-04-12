@@ -1,7 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.IOException;
-import java.io.InputStream;
+import android.util.Log;
 
 import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -10,11 +9,14 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.DictionaryEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.GlyphList;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
 
-import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * A PostScript Type 3 Font.
@@ -45,8 +47,17 @@ public class PDType3Font extends PDSimpleFont
 	}
 
 	@Override
+	protected final void readEncoding() throws IOException
+	{
+		COSDictionary encodingDict = (COSDictionary)dict.getDictionaryObject(COSName.ENCODING);
+		encoding = new DictionaryEncoding(encodingDict);
+		glyphList = GlyphList.getZapfDingbats();
+	}
+
+	@Override
 	protected Encoding readEncodingFromFont() throws IOException
 	{
+		// Type 3 fonts do not have a built-in encoding
 		throw new UnsupportedOperationException("not supported for Type 3 fonts");
 	}
 
@@ -56,13 +67,13 @@ public class PDType3Font extends PDSimpleFont
 		return false;
 	}
 
-	//    @Override TODO
+	@Override
 	public Vector getDisplacement(int code) throws IOException
 	{
 		return getFontMatrix().transform(new Vector(getWidth(code), 0));
 	}
 
-	//    @Override TODO
+	@Override
 	public float getWidth(int code) throws IOException
 	{
 		int firstChar = dict.getInt(COSName.FIRST_CHAR, -1);
@@ -87,7 +98,7 @@ public class PDType3Font extends PDSimpleFont
 		}
 	}
 
-	//    @Override TOOD
+	@Override
 	public float getWidthFromFont(int code)
 	{
 		// todo: could these be extracted from the font's stream?
@@ -100,7 +111,7 @@ public class PDType3Font extends PDSimpleFont
 		return true;
 	}
 
-	//    @Override TODO
+	@Override
 	public float getHeight(int code) throws IOException
 	{
 		PDFontDescriptor desc = getFontDescriptor();

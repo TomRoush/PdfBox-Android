@@ -16,11 +16,6 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.List;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSDocument;
@@ -36,9 +31,14 @@ import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import com.tom_roush.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Structure of PDF document with visible signature.
@@ -67,7 +67,7 @@ public class PDFTemplateStructure
     private PDFormXObject innerForm;
     private PDStream imageFormStream;
     private PDResources imageFormResources;
-    private List<PDFieldTreeNode> acroFormFields;
+    private List<PDField> acroFormFields;
     private COSName innerFormName;
     private COSName imageFormName;
     private COSName imageName;
@@ -555,7 +555,7 @@ public class PDFTemplateStructure
      * Gets acroFormFields
      * @return the AcroForm fields
      */
-    public List<PDFieldTreeNode> getAcroFormFields()
+    public List<PDField> getAcroFormFields()
     {
         return acroFormFields;
     }
@@ -564,7 +564,7 @@ public class PDFTemplateStructure
      * Sets acroFormFields
      * @param acroFormFields
      */
-    public void setAcroFormFields(List<PDFieldTreeNode> acroFormFields)
+    public void setAcroFormFields(List<PDField> acroFormFields)
     {
         this.acroFormFields = acroFormFields;
     }
@@ -590,8 +590,7 @@ public class PDFTemplateStructure
 
     /**
      * Gets Widget Dictionary.
-     * {@link com.tom_roush.pdfbox.pdmodel.interactive.form.PDField}
-     * @see com.tom_roush.pdfbox.pdmodel.interactive.form.PDField#getWidget()
+     *
      * @return the widget dictionary
      */
     public COSDictionary getWidgetDictionary()
@@ -601,8 +600,7 @@ public class PDFTemplateStructure
 
     /**
      * Sets Widget Dictionary.
-     * {@link com.tom_roush.pdfbox.pdmodel.interactive.form.PDField}
-     * @see com.tom_roush.pdfbox.pdmodel.interactive.form.PDField#getWidget()
+     *
      * @param widgetDictionary
      */
     public void setWidgetDictionary(COSDictionary widgetDictionary)

@@ -11,18 +11,16 @@ import com.tom_roush.pdfbox.cos.COSName;
  */
 public final class PDComboBox extends PDChoice
 {
-    /**
-     * Ff-flag.
-     */
     private static final int FLAG_EDIT = 1 << 18;
 
     /**
-     * @param theAcroForm The acroform.
-     * @see PDFieldTreeNode#PDFieldTreeNode(PDAcroForm)
+     * @see PDField#PDField(PDAcroForm)
+     *
+     * @param acroform The acroform.
      */
-    public PDComboBox(PDAcroForm theAcroForm)
+    public PDComboBox(PDAcroForm acroform)
     {
-        super(theAcroForm);
+        super(acroform);
         setCombo(true);
     }
 
@@ -31,11 +29,11 @@ public final class PDComboBox extends PDChoice
      *
      * @param acroForm The form that this field is part of.
      * @param field the PDF object to represent as a field.
-     * @param parentNode the parent node of the node to be created
+     * @param parent the parent node of the node
      */
-    public PDComboBox(PDAcroForm acroForm, COSDictionary field, PDFieldTreeNode parentNode)
+    PDComboBox(PDAcroForm acroForm, COSDictionary field, PDNonTerminalField parent)
     {
-        super(acroForm, field, parentNode);
+        super(acroForm, field, parent);
     }
 
     /**
@@ -45,7 +43,7 @@ public final class PDComboBox extends PDChoice
      */
     public boolean isEdit()
     {
-        return getCOSObject().getFlag(COSName.FF, FLAG_EDIT);
+        return dictionary.getFlag(COSName.FF, FLAG_EDIT);
     }
 
     /**
@@ -55,7 +53,7 @@ public final class PDComboBox extends PDChoice
      */
     public void setEdit(boolean edit)
     {
-        getCOSObject().setFlag(COSName.FF, FLAG_EDIT, edit);
+        dictionary.setFlag(COSName.FF, FLAG_EDIT, edit);
     }
 
     /**
@@ -77,14 +75,14 @@ public final class PDComboBox extends PDChoice
             }
             else
             {
-                getCOSObject().setString(COSName.V, value);
+                dictionary.setString(COSName.V, value);
                 // remove I key for single valued choice field
                 setSelectedOptionsIndex(null);
             }
         }
         else
         {
-            getCOSObject().removeItem(COSName.V);
+            dictionary.removeItem(COSName.V);
         }
         // TODO create/update appearance
     }

@@ -15,24 +15,25 @@ import java.io.IOException;
 public final class PDCheckbox extends PDButton
 {
     /**
-     * @param theAcroForm The acroform.
-     * @see PDFieldTreeNode#PDFieldTreeNode(PDAcroForm)
+     * @see PDField#PDField(PDAcroForm)
+     *
+     * @param acroForm The acroform.
      */
-    public PDCheckbox(PDAcroForm theAcroForm)
+    public PDCheckbox(PDAcroForm acroForm)
     {
-        super(theAcroForm);
+        super(acroForm);
     }
 
     /**
      * Constructor.
      *
-     * @param theAcroForm The form that this field is part of.
+     * @param acroForm The form that this field is part of.
      * @param field the PDF object to represent as a field.
-     * @param parentNode the parent node of the node to be created
+     * @param parent the parent node of the node
      */
-    public PDCheckbox(PDAcroForm theAcroForm, COSDictionary field, PDFieldTreeNode parentNode)
+    public PDCheckbox(PDAcroForm acroForm, COSDictionary field, PDNonTerminalField parent)
     {
-        super(theAcroForm, field, parentNode);
+        super(acroForm, field, parent);
     }
 
     /**
@@ -58,7 +59,7 @@ public final class PDCheckbox extends PDButton
             // empty catch blocks.
             return false;
         }
-        COSName radioValue = (COSName) getCOSObject().getDictionaryObject(COSName.AS);
+        COSName radioValue = (COSName) dictionary.getDictionaryObject(COSName.AS);
         return radioValue != null && fieldValue != null && radioValue.getName().equals(onValue);
 
     }
@@ -70,7 +71,7 @@ public final class PDCheckbox extends PDButton
     {
         String onValue = getOnValue();
         setValue(onValue);
-        getCOSObject().setItem(COSName.AS, COSName.getPDFName(onValue));
+        dictionary.setItem(COSName.AS, COSName.getPDFName(onValue));
     }
 
     /**
@@ -78,7 +79,7 @@ public final class PDCheckbox extends PDButton
      */
     public void unCheck()
     {
-        getCOSObject().setItem(COSName.AS, PDButton.OFF);
+        dictionary.setItem(COSName.AS, COSName.OFF);
     }
 
     /**
@@ -88,7 +89,7 @@ public final class PDCheckbox extends PDButton
      */
     public String getOffValue()
     {
-        return PDButton.OFF.getName();
+        return COSName.OFF.getName();
     }
 
     /**
@@ -98,7 +99,7 @@ public final class PDCheckbox extends PDButton
      */
     public String getOnValue()
     {
-        COSDictionary ap = (COSDictionary) getCOSObject().getDictionaryObject(COSName.AP);
+        COSDictionary ap = (COSDictionary) dictionary.getDictionaryObject(COSName.AP);
         COSBase n = ap.getDictionaryObject(COSName.N);
 
         //N can be a COSDictionary or a COSStream
@@ -106,7 +107,7 @@ public final class PDCheckbox extends PDButton
         {
             for (COSName key : ((COSDictionary) n).keySet())
             {
-                if (!key.equals(PDButton.OFF))
+                if (!key.equals(COSName.OFF))
                 {
                     return key.getName();
                 }
@@ -134,30 +135,19 @@ public final class PDCheckbox extends PDButton
         }
     }
 
-    /**
-     * Set the field value.
-     * <p>
-     * The field value holds a name object which is corresponding to the
-     * appearance state representing the corresponding appearance
-     * from the appearance directory.
-     * <p>
-     * The default value is Off.
-     *
-     * @param value the new field value value.
-     */
+    @Override
     public void setValue(String value)
     {
         if (value == null)
         {
-            getCOSObject().removeItem(COSName.V);
-            getCOSObject().setItem(COSName.AS, PDButton.OFF);
+            dictionary.removeItem(COSName.V);
+            dictionary.setItem(COSName.AS, COSName.OFF);
         }
         else
         {
             COSName nameValue = COSName.getPDFName(value);
-            getCOSObject().setItem(COSName.V, nameValue);
-            getCOSObject().setItem(COSName.AS, nameValue);
+            dictionary.setItem(COSName.V, nameValue);
+            dictionary.setItem(COSName.AS, nameValue);
         }
     }
-
 }

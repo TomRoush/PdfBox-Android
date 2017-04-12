@@ -77,10 +77,7 @@ public abstract class PDPageDestination extends PDDestination
      * PDF).  If this object is referencing by page number then this method will return that number,
      * otherwise -1 will be returned.
      *
-     * @return page number, or -1 if the destination type is unknown. The page number is 0-based if
-     * it was in the dictionary (for remote destinations), and 1-based if it was computed from a
-     * page reference (for local destinations).
-     * @deprecated This method has inconsistent behavior (see returns), use {@link #retrieveDestPageNumber()} instead.
+     * @return The zero-based page number for this destination.
      */
     public int getPageNumber()
     {
@@ -102,7 +99,10 @@ public abstract class PDPageDestination extends PDDestination
      *
      * @since Apache PDFBox 1.0.0
      * @see com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem
-     * @return page number, or -1 if the destination type is unknown
+     * @return page number, or -1 if the destination type is unknown. The page number is 0-based if
+     * it was in the dictionary (for remote destinations), and 1-based if it was computed from a
+     * page reference (for local destinations).
+     * @deprecated This method has inconsistent behavior (see returns), use {@link #retrieveDestPageNumber()} instead.
      */
     @Deprecated
     public int findPageNumber()

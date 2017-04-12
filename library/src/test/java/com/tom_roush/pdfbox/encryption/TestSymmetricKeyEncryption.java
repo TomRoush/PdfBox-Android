@@ -25,7 +25,6 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentNameDictionary;
 import com.tom_roush.pdfbox.pdmodel.PDEmbeddedFilesNameTreeNode;
-import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDComplexFileSpecification;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDEmbeddedFile;
 import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
@@ -327,11 +326,11 @@ public class TestSymmetricKeyEncryption extends TestCase
         PDDocumentCatalog catalog = docWithEmbeddedFile.getDocumentCatalog();
         PDDocumentNameDictionary names = catalog.getNames();
         PDEmbeddedFilesNameTreeNode embeddedFiles = names.getEmbeddedFiles();
-        Map<String, COSObjectable> embeddedFileNames = embeddedFiles.getNames();
+        Map<String, PDComplexFileSpecification> embeddedFileNames = embeddedFiles.getNames();
         Assert.assertEquals(1, embeddedFileNames.size());
-        Map.Entry<String, COSObjectable> entry = embeddedFileNames.entrySet().iterator().next();
+        Map.Entry<String, PDComplexFileSpecification> entry = embeddedFileNames.entrySet().iterator().next();
         Log.i("PdfBox-Android", "Processing embedded file " + entry.getKey() + ":");
-        PDComplexFileSpecification complexFileSpec = (PDComplexFileSpecification) entry.getValue();
+        PDComplexFileSpecification complexFileSpec = entry.getValue();
         PDEmbeddedFile embeddedFile = complexFileSpec.getEmbeddedFile();
 
         File resultFile = new File(testResultsDir, name);
@@ -388,5 +387,4 @@ public class TestSymmetricKeyEncryption extends TestCase
     {
         return getStreamAsByteArray(new FileInputStream(f));
     }
-
 }

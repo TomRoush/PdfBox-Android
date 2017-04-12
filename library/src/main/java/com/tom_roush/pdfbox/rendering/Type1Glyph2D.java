@@ -1,13 +1,13 @@
 package com.tom_roush.pdfbox.rendering;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import android.graphics.Path;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Equivalent;
 
-import android.graphics.Path;
-import android.util.Log;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Glyph to GeneralPath conversion for Type 1 PFB and CFF, and TrueType fonts with a 'post' table.
@@ -21,7 +21,7 @@ final class Type1Glyph2D implements Glyph2D
 	 *
 	 * @param font PDF Type1 font.
 	 */
-	public Type1Glyph2D(PDType1Equivalent font)
+	Type1Glyph2D(PDType1Equivalent font)
 	{
 		this.font = font;
 	}

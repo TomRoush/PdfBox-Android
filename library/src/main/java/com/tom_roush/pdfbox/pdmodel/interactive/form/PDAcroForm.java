@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -32,11 +31,11 @@ public final class PDAcroForm implements COSObjectable
 {
     private static final int FLAG_SIGNATURES_EXIST = 1;
     private static final int FLAG_APPEND_ONLY = 1 << 1;
-    
-    private final COSDictionary acroForm;
-    private final PDDocument document;
 
-    private Map<String,PDFieldTreeNode> fieldCache;
+    private final PDDocument document;
+    private final COSDictionary dictionary;
+
+    private Map<String, PDField> fieldCache;
 
     /**
      * Constructor.
@@ -46,9 +45,8 @@ public final class PDAcroForm implements COSObjectable
     public PDAcroForm(PDDocument doc)
     {
         document = doc;
-        acroForm = new COSDictionary();
-        COSArray fields = new COSArray();
-        acroForm.setItem( COSName.FIELDS, fields );
+        dictionary = new COSDictionary();
+        dictionary.setItem(COSName.FIELDS, new COSArray());
     }
 
     /**
@@ -60,7 +58,7 @@ public final class PDAcroForm implements COSObjectable
     public PDAcroForm(PDDocument doc, COSDictionary form)
     {
         document = doc;
-        acroForm = form;
+        dictionary = form;
     }
 
     /**
@@ -68,20 +66,15 @@ public final class PDAcroForm implements COSObjectable
      *
      * @return The PDF document.
      */
-    public PDDocument getDocument()
+    PDDocument getDocument()
     {
         return document;
     }
 
-    /**
-     * This will get the dictionary that this form wraps.
-     *
-     * @return The dictionary for this form.
-     */
     @Override
     public COSDictionary getCOSObject()
     {
-        return acroForm;
+        return dictionary;
     }
 
     /**
@@ -94,13 +87,13 @@ public final class PDAcroForm implements COSObjectable
      */
     public void importFDF( FDFDocument fdf ) throws IOException
     {
-        List<?> fields = fdf.getCatalog().getFDF().getFields();
+        List<FDFField> fields = fdf.getCatalog().getFDF().getFields();
         if( fields != null )
         {
-            for (Object field : fields)
+            for (FDFField field : fields)
             {
                 FDFField fdfField = (FDFField) field;
-                PDFieldTreeNode docField = getField( fdfField.getPartialFieldName() );
+                PDField docField = getField(fdfField.getPartialFieldName());
                 if( docField != null )
                 {
                     docField.importFDF( fdfField );
@@ -123,44 +116,19 @@ public final class PDAcroForm implements COSObjectable
         catalog.setFDF( fdfDict );
 
         List<FDFField> fdfFields = new ArrayList<FDFField>();
-        List<PDFieldTreeNode> fields = getFields();
-        Iterator<PDFieldTreeNode> fieldIter = fields.iterator();
-        while( fieldIter.hasNext() )
+        List<PDField> fields = getFields();
+        for (PDField field : fields)
         {
-            PDFieldTreeNode docField = fieldIter.next();
-            addFieldAndChildren( docField, fdfFields );
+            fdfFields.add(field.exportFDF());
         }
+
         fdfDict.setID( document.getDocument().getDocumentID() );
+
         if( !fdfFields.isEmpty() )
         {
             fdfDict.setFields( fdfFields );
         }
         return fdf;
-    }
-
-    private void addFieldAndChildren( PDFieldTreeNode docField, List<FDFField> fdfFields ) throws IOException
-    {
-        Object fieldValue = docField.getValue();
-        FDFField fdfField = new FDFField();
-        fdfField.setPartialFieldName( docField.getPartialName() );
-        fdfField.setValue( fieldValue );
-        List<COSObjectable> kids = docField.getKids();
-        List<FDFField> childFDFFields = new ArrayList<FDFField>();
-        if( kids != null )
-        {
-            for (COSObjectable kid : kids)
-            {
-                addFieldAndChildren((PDFieldTreeNode) kid, childFDFFields);
-            }
-            if( !childFDFFields.isEmpty() )
-            {
-                fdfField.setKids( childFDFFields );
-            }
-        }
-        if( fieldValue != null || !childFDFFields.isEmpty() )
-        {
-            fdfFields.add( fdfField );
-        }
     }
 
     /**
@@ -171,31 +139,28 @@ public final class PDAcroForm implements COSObjectable
      *
      * The fields within an AcroForm are organized in a tree structure. The documents root fields
      * might either be terminal fields, non-terminal fields or a mixture of both. Non-terminal fields
-     * mark branches which contents can be retrieved using {@link PDFieldTreeNode#getKids()}.
+     * mark branches which contents can be retrieved using {@link PDNonTerminalField#getChildren()}.
      *
      * @return A list of the documents root fields. 
      */
-    public List<PDFieldTreeNode> getFields()
+    public List<PDField> getFields()
     {
-    	COSArray cosFields = (COSArray) acroForm.getDictionaryObject(COSName.FIELDS);
-    	if( cosFields == null )
+        COSArray cosFields = (COSArray) dictionary.getDictionaryObject(COSName.FIELDS);
+        if( cosFields == null )
     	{
             return Collections.emptyList();
         }
-        List<PDFieldTreeNode> pdFields = new ArrayList<PDFieldTreeNode>();
+        List<PDField> pdFields = new ArrayList<PDField>();
         for (int i = 0; i < cosFields.size(); i++)
         {
             COSDictionary element = (COSDictionary) cosFields.getObject(i);
             if (element != null)
             {
-                PDFieldTreeNode field = PDFieldTreeNode.createField( this, element, null );
-                if( field != null )
-                {
-                    pdFields.add(field);
-                }
+                PDField field = PDField.fromDictionary(this, element, null);
+                pdFields.add(field);
             }
         }
-        return new COSArrayList<PDFieldTreeNode>( pdFields, cosFields );
+        return new COSArrayList<PDField>(pdFields, cosFields);
     }
 
     /**
@@ -203,9 +168,9 @@ public final class PDAcroForm implements COSObjectable
      *
      * @param fields The fields that are part of the documents root fields.
      */
-    public void setFields( List<PDFieldTreeNode> fields )
+    public void setFields(List<PDField> fields)
     {
-        acroForm.setItem( COSName.FIELDS, COSArrayList.converterToCOSArray( fields ));
+        dictionary.setItem(COSName.FIELDS, COSArrayList.converterToCOSArray(fields));
     }
 
     /**
@@ -221,13 +186,12 @@ public final class PDAcroForm implements COSObjectable
     {
         if( cache )
         {
-            fieldCache = new HashMap<String,PDFieldTreeNode>();
-            List<PDFieldTreeNode> fields = getFields();
-            Iterator<PDFieldTreeNode> fieldIter = fields.iterator();
-            while( fieldIter.hasNext() )
+            fieldCache = new HashMap<String, PDField>();
+            // fixme: this code does not cache non-terminal fields or their kids
+            List<PDField> fields = getFields();
+            for (PDField field : fields)
             {
-                PDFieldTreeNode next = fieldIter.next();
-                fieldCache.put( next.getFullyQualifiedName(), next );
+                fieldCache.put(field.getFullyQualifiedName(), field);
             }
         }
         else
@@ -249,23 +213,21 @@ public final class PDAcroForm implements COSObjectable
     /**
      * This will get a field by name, possibly using the cache if setCache is true.
      *
-     * @param name The name of the field to get.
-     *
+     * @param fullyQualifiedName The name of the field to get.
      * @return The field with that name of null if one was not found.
-     *
      * @throws IOException If there is an error getting the field type.
      */
-    public PDFieldTreeNode getField( String name ) throws IOException
+    public PDField getField(String fullyQualifiedName) throws IOException
     {
-        PDFieldTreeNode retval = null;
+        PDField retval = null;
         if( fieldCache != null )
         {
-            retval = fieldCache.get( name );
+            retval = fieldCache.get(fullyQualifiedName);
         }
         else
         {
-            String[] nameSubSection = name.split( "\\." );
-            COSArray fields = (COSArray) acroForm.getDictionaryObject(COSName.FIELDS);
+            String[] nameSubSection = fullyQualifiedName.split("\\.");
+            COSArray fields = (COSArray) dictionary.getDictionaryObject(COSName.FIELDS);
 
             for (int i = 0; i < fields.size() && retval == null; i++)
             {
@@ -274,14 +236,14 @@ public final class PDAcroForm implements COSObjectable
                 {
                     COSString fieldName =
                         (COSString)element.getDictionaryObject( COSName.T );
-                    if( fieldName.getString().equals( name ) ||
+                    if (fieldName.getString().equals(fullyQualifiedName) ||
                         fieldName.getString().equals( nameSubSection[0] ) )
                     {
-                        PDFieldTreeNode root = PDFieldTreeNode.createField( this, element, null );
+                        PDField root = PDField.fromDictionary(this, element, null);
 
                         if( nameSubSection.length > 1 )
                         {
-                            PDFieldTreeNode kid = root.findKid( nameSubSection, 1 );
+                            PDField kid = root.findKid(nameSubSection, 1);
                             if( kid != null )
                             {
                                 retval = kid;
@@ -309,8 +271,8 @@ public final class PDAcroForm implements COSObjectable
      */
     public String getDefaultAppearance()
     {
-    	COSString defaultAppearance = (COSString) getCOSObject().getItem(COSName.DA);
-    	return defaultAppearance.getString();
+        COSString defaultAppearance = (COSString) dictionary.getItem(COSName.DA);
+        return defaultAppearance.getString();
     }
 
     /**
@@ -320,41 +282,29 @@ public final class PDAcroForm implements COSObjectable
      */
     public void setDefaultAppearance(String daValue)
     {
-        if (daValue != null)
-        {
-        	getCOSObject().setString(COSName.DA, daValue);
-        }
-        else
-        {
-            getCOSObject().removeItem(COSName.DA);
-        }
+        dictionary.setString(COSName.DA, daValue);
     }
 
     /**
-     * Get the value of NeedAppearances.
+     * True if the viewing application should construct the appearances of all field widgets.
+     * The default value is false.
      * 
      * @return the value of NeedAppearances, false if the value isn't set
      */
-    public boolean isNeedAppearances()
+    public boolean getNeedAppearances()
     {
-        return getCOSObject().getBoolean(COSName.NEED_APPEARANCES, false);
+        return dictionary.getBoolean(COSName.NEED_APPEARANCES, false);
     }
 
     /**
-     * Set the NeedAppearances value.
+     * Set the NeedAppearances value. If this is false, PDFBox will create appearances for all field
+     * widget.
      * 
      * @param value the value for NeedAppearances
      */
     public void setNeedAppearances(Boolean value)
     {
-        if (value != null)
-        {
-            getCOSObject().setBoolean(COSName.NEED_APPEARANCES, value);
-        }
-        else
-        {
-            getCOSObject().removeItem(COSName.NEED_APPEARANCES);
-        }
+        dictionary.setBoolean(COSName.NEED_APPEARANCES, value);
     }
     
     /**
@@ -365,7 +315,7 @@ public final class PDAcroForm implements COSObjectable
     public PDResources getDefaultResources()
     {
         PDResources retval = null;
-        COSDictionary dr = (COSDictionary)acroForm.getDictionaryObject( COSName.DR );
+        COSDictionary dr = (COSDictionary) dictionary.getDictionaryObject(COSName.DR);
         if( dr != null )
         {
             retval = new PDResources( dr );
@@ -380,12 +330,7 @@ public final class PDAcroForm implements COSObjectable
      */
     public void setDefaultResources( PDResources dr )
     {
-        COSDictionary drDict = null;
-        if( dr != null )
-        {
-            drDict = dr.getCOSObject();
-        }
-        acroForm.setItem( COSName.DR, drDict );
+        dictionary.setItem(COSName.DR, dr);
     }
     
     /**
@@ -395,7 +340,7 @@ public final class PDAcroForm implements COSObjectable
      */
     public boolean hasXFA()
     {
-    	return acroForm.containsKey(COSName.XFA);
+        return dictionary.containsKey(COSName.XFA);
     }
 
     /**
@@ -416,7 +361,7 @@ public final class PDAcroForm implements COSObjectable
     public PDXFAResource getXFA()
     {
         PDXFAResource xfa = null;
-        COSBase base = acroForm.getDictionaryObject( COSName.XFA );
+        COSBase base = dictionary.getDictionaryObject(COSName.XFA);
         if( base != null )
         {
             xfa = new PDXFAResource( base );
@@ -431,7 +376,7 @@ public final class PDAcroForm implements COSObjectable
      */
     public void setXFA( PDXFAResource xfa )
     {
-        acroForm.setItem( COSName.XFA, xfa );
+        dictionary.setItem(COSName.XFA, xfa);
     }
     
     /**
@@ -446,7 +391,7 @@ public final class PDAcroForm implements COSObjectable
     public int getQ()
     {
         int retval = 0;
-        COSNumber number = (COSNumber) getCOSObject().getDictionaryObject( COSName.Q );
+        COSNumber number = (COSNumber) dictionary.getDictionaryObject(COSName.Q);
         if( number != null )
         {
             retval = number.intValue();
@@ -461,7 +406,7 @@ public final class PDAcroForm implements COSObjectable
      */
     public void setQ( int q )
     {
-        getCOSObject().setInt( COSName.Q, q );
+        dictionary.setInt(COSName.Q, q);
     }
 
     /**
@@ -471,7 +416,7 @@ public final class PDAcroForm implements COSObjectable
      */
     public boolean isSignaturesExist()
     {
-        return getCOSObject().getFlag( COSName.SIG_FLAGS, FLAG_SIGNATURES_EXIST );
+        return dictionary.getFlag(COSName.SIG_FLAGS, FLAG_SIGNATURES_EXIST);
     }
 
     /**
@@ -481,7 +426,7 @@ public final class PDAcroForm implements COSObjectable
      */
     public void setSignaturesExist( boolean signaturesExist )
     {
-        getCOSObject().setFlag( COSName.SIG_FLAGS, FLAG_SIGNATURES_EXIST, signaturesExist );
+        dictionary.setFlag(COSName.SIG_FLAGS, FLAG_SIGNATURES_EXIST, signaturesExist);
     }
 
     /**
@@ -491,7 +436,7 @@ public final class PDAcroForm implements COSObjectable
      */
     public boolean isAppendOnly()
     {
-        return getCOSObject().getFlag( COSName.SIG_FLAGS, FLAG_APPEND_ONLY );
+        return dictionary.getFlag(COSName.SIG_FLAGS, FLAG_APPEND_ONLY);
     }
 
     /**
@@ -501,6 +446,6 @@ public final class PDAcroForm implements COSObjectable
      */
     public void setAppendOnly( boolean appendOnly )
     {
-        getCOSObject().setFlag( COSName.SIG_FLAGS, FLAG_APPEND_ONLY, appendOnly );
+        dictionary.setFlag(COSName.SIG_FLAGS, FLAG_APPEND_ONLY, appendOnly);
     }
 }

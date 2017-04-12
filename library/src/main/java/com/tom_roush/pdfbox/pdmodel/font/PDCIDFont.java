@@ -1,9 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -13,6 +9,10 @@ import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A CIDFont. A CIDFont is a PDF object that contains information about a CIDFont program. Although
@@ -279,8 +279,8 @@ public abstract class PDCIDFont implements COSObjectable, PDFontLike
         }
     }
 
-//    @Override
-//    public abstract float getHeight(int code) throws IOException;TODO
+    @Override
+    public abstract float getHeight(int code) throws IOException;
 
     @Override
     public float getWidth(int code) throws IOException
@@ -356,6 +356,21 @@ public abstract class PDCIDFont implements COSObjectable, PDFontLike
             average = getDefaultWidth();
         }
         return average;
+    }
+
+    /**
+     * Returns the CIDSystemInfo, or null if it is missing (which isn't allowed but could happen).
+     */
+    public PDCIDSystemInfo getCIDSystemInfo(){
+        COSDictionary cidSystemInfoDict = (COSDictionary)
+            dict.getDictionaryObject(COSName.CIDSYSTEMINFO);
+
+        PDCIDSystemInfo cidSystemInfo = null;
+        if (cidSystemInfoDict != null)
+        {
+            cidSystemInfo = new PDCIDSystemInfo(cidSystemInfoDict);
+        }
+        return cidSystemInfo;
     }
 
     /**

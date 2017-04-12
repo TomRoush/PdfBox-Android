@@ -31,7 +31,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import com.tom_roush.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
 
 import java.io.Closeable;
@@ -42,7 +42,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -203,10 +202,10 @@ public class PDDocument implements Closeable
 		// Create Annotation / Field for signature
 		List<PDAnnotation> annotations = page.getAnnotations();
 
-		List<PDFieldTreeNode> fields = acroForm.getFields();
+		List<PDField> fields = acroForm.getFields();
 		if (fields == null)
 		{
-			fields = new ArrayList<PDFieldTreeNode>();
+			fields = new ArrayList<PDField>();
 			acroForm.setFields(fields);
 		}
 		PDSignatureField signatureField = findSignatureField(fields, sigObject);
@@ -216,7 +215,7 @@ public class PDDocument implements Closeable
 		}
 
 		// Set the AcroForm Fields
-		List<PDFieldTreeNode> acroFormFields = acroForm.getFields();
+		List<PDField> acroFormFields = acroForm.getFields();
 		acroForm.getCOSObject().setDirect(true);
 		acroForm.setSignaturesExist(true);
 		acroForm.setAppendOnly(true);
@@ -259,10 +258,10 @@ public class PDDocument implements Closeable
 		return signatureField;
 	}
 
-	private PDSignatureField findSignatureField(List<PDFieldTreeNode> fields, PDSignature sigObject)
+	private PDSignatureField findSignatureField(List<PDField> fields, PDSignature sigObject)
 	{
 		PDSignatureField signatureField = null;
-		for (PDFieldTreeNode pdField : fields)
+		for (PDField pdField : fields)
 		{
 			if (pdField instanceof PDSignatureField)
 			{
@@ -277,10 +276,10 @@ public class PDDocument implements Closeable
 	}
 
 	//return true if the field already existed in the field list, in that case, it is marked for update
-	private boolean checkSignatureField(List<PDFieldTreeNode> acroFormFields, PDSignatureField signatureField)
+	private boolean checkSignatureField(List<PDField> acroFormFields, PDSignatureField signatureField)
 	{
 		boolean checkFields = false;
-		for (PDFieldTreeNode field : acroFormFields)
+		for (PDField field : acroFormFields)
 		{
 			if (field instanceof PDSignatureField
 				&& field.getCOSObject().equals(signatureField.getCOSObject()))
@@ -289,6 +288,7 @@ public class PDDocument implements Closeable
 				signatureField.getCOSObject().setNeedToBeUpdated(true);
 				break;
 			}
+			// fixme: this code does not check non-terminal fields, there could be a descendant signature
 		}
 		if (!checkFields)
 		{
@@ -423,7 +423,7 @@ public class PDDocument implements Closeable
 			acroForm.setSignaturesExist(true);
 		}
 
-		List<PDFieldTreeNode> acroFormFields = acroForm.getFields();
+		List<PDField> acroFormFields = acroForm.getFields();
 
 		for (PDSignatureField sigField : sigFields)
 		{
@@ -673,14 +673,17 @@ public class PDDocument implements Closeable
 	 */
 	public List<PDSignatureField> getSignatureFields() throws IOException
 	{
-		List<PDSignatureField> fields = new LinkedList<PDSignatureField>();
+		List<PDSignatureField> fields = new ArrayList<PDSignatureField>();
 		PDAcroForm acroForm = getDocumentCatalog().getAcroForm();
 		if (acroForm != null)
 		{
-			List<COSDictionary> signatureDictionary = document.getSignatureFields(false);
-			for (COSDictionary dict : signatureDictionary)
+			// fixme: non-terminal fields are ignored, could have descendant signatures
+			for (PDField field : acroForm.getFields())
 			{
-				fields.add(new PDSignatureField(acroForm, dict, null));
+				if (field instanceof PDSignatureField)
+				{
+					fields.add((PDSignatureField)field);
+				}
 			}
 		}
 		return fields;
@@ -694,11 +697,14 @@ public class PDDocument implements Closeable
 	 */
 	public List<PDSignature> getSignatureDictionaries() throws IOException
 	{
-		List<COSDictionary> signatureDictionary = document.getSignatureDictionaries();
-		List<PDSignature> signatures = new LinkedList<PDSignature>();
-		for (COSDictionary dict : signatureDictionary)
+		List<PDSignature> signatures = new ArrayList<PDSignature>();
+		for (PDSignatureField field : getSignatureFields())
 		{
-			signatures.add(new PDSignature(dict));
+			COSBase value = field.getCOSObject().getDictionaryObject(COSName.V);
+			if (value != null)
+			{
+				signatures.add(new PDSignature((COSDictionary)value));
+			}
 		}
 		return signatures;
 	}

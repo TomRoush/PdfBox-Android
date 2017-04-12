@@ -19,7 +19,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionar
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import com.tom_roush.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
@@ -100,7 +100,7 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
     public void createAcroFormDictionary(PDAcroForm acroForm, PDSignatureField signatureField)
             throws IOException
     {
-        List<PDFieldTreeNode> acroFormFields = acroForm.getFields();
+        List<PDField> acroFormFields = acroForm.getFields();
         COSDictionary acroFormDict = acroForm.getCOSObject();
         acroForm.setSignaturesExist(true);
         acroForm.setAppendOnly(true);

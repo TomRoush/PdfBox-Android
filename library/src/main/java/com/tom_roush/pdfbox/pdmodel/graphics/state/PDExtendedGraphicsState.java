@@ -2,8 +2,6 @@ package com.tom_roush.pdfbox.pdmodel.graphics.state;
 
 import android.graphics.Paint;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -14,6 +12,8 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDFontSetting;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDLineDashPattern;
 import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
+
+import java.io.IOException;
 
 /**
  * An extended graphics state dictionary.
@@ -135,17 +135,8 @@ public class PDExtendedGraphicsState implements COSObjectable
 	 *
 	 * @return The underlying dictionary for this class.
 	 */
-	public COSDictionary getCOSDictionary()
-	{
-		return dict;
-	}
-
-	/**
-	 * Convert this standard java object to a COS object.
-	 *
-	 * @return The cos object that matches this Java object.
-	 */
-	public COSBase getCOSObject()
+	@Override
+	public COSDictionary getCOSObject()
 	{
 		return dict;
 	}

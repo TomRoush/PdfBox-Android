@@ -6,6 +6,7 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.PDStructureElementNameTreeNode;
 import com.tom_roush.pdfbox.pdmodel.common.COSDictionaryMap;
 import com.tom_roush.pdfbox.pdmodel.common.PDNameTreeNode;
 import com.tom_roush.pdfbox.pdmodel.common.PDNumberTreeNode;
@@ -100,7 +101,7 @@ public class PDStructureTreeRoot extends PDStructureNode
         COSDictionary idTreeDic = (COSDictionary) this.getCOSObject().getDictionaryObject(COSName.ID_TREE);
         if (idTreeDic != null)
         {
-            return new PDNameTreeNode(idTreeDic, PDStructureElement.class);
+            return new PDStructureElementNameTreeNode(idTreeDic);
         }
         return null;
     }

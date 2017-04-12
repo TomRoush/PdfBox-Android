@@ -1,7 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.font.encoding;
 
-import android.util.Log;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -47,9 +45,23 @@ public class DictionaryEncoding extends Encoding
 	}
 
 	/**
+	 * Creates a new DictionaryEncoding for a Type 3 font from a PDF.
+	 *
+	 * @param fontEncoding The Type 3 encoding dictionary.
+	 */
+	public DictionaryEncoding(COSDictionary fontEncoding)
+	{
+		encoding = fontEncoding;
+		baseEncoding = null;
+		applyDifferences();
+	}
+
+	/**
 	 * Creates a new DictionaryEncoding from a PDF.
 	 *
 	 * @param fontEncoding The encoding dictionary.
+	 * @param isNonSymbolic True if the font is non-symbolic. False for Type 3 fonts.
+	 * @param builtIn The font's built-in encoding. Null for Type 3 fonts.
 	 */
 	public DictionaryEncoding(COSDictionary fontEncoding, boolean isNonSymbolic, Encoding builtIn)
 	{
@@ -78,31 +90,33 @@ public class DictionaryEncoding extends Encoding
 				}
 				else
 				{
-					base = StandardEncoding.INSTANCE;
-					Log.w("PdfBox-Android", "Built-in encoding required for symbolic font, using standard encoding");
-					//FIXME, see PDFBOX-2299, happens with Type3 fonts of the isartor test suite
-					// throw new IllegalArgumentException("Built-in Encoding required for symbolic font");throw new IllegalArgumentException("Built-in Encoding required for symbolic font");
+					throw new IllegalArgumentException("Symbolic fonts must have a built-in " +
+						"encoding");
 				}
 			}
 		}
 		baseEncoding = base;
 
-		codeToName.putAll( baseEncoding.codeToName );
-		names.addAll( baseEncoding.names );
+		codeToName.putAll(baseEncoding.codeToName);
+		names.addAll(baseEncoding.names);
+		applyDifferences();
+	}
 
+	private void applyDifferences()
+	{
 		// now replace with the differences
-		COSArray differences = (COSArray)encoding.getDictionaryObject( COSName.DIFFERENCES );
+		COSArray differences = (COSArray) encoding.getDictionaryObject(COSName.DIFFERENCES);
 		int currentIndex = -1;
-		for( int i=0; differences != null && i<differences.size(); i++ )
+		for (int i = 0; differences != null && i < differences.size(); i++)
 		{
-			COSBase next = differences.getObject( i );
-			if( next instanceof COSNumber )
+			COSBase next = differences.getObject(i);
+			if (next instanceof COSNumber)
 			{
-				currentIndex = ((COSNumber)next).intValue();
+				currentIndex = ((COSNumber) next).intValue();
 			}
-			else if( next instanceof COSName )
+			else if (next instanceof COSName)
 			{
-				COSName name = (COSName)next;
+				COSName name = (COSName) next;
 				add(currentIndex, name.getName());
 				this.differences.put(currentIndex, name.getName());
 				currentIndex++;
@@ -111,7 +125,7 @@ public class DictionaryEncoding extends Encoding
 	}
 
 	/**
-	 * Returns the base encoding.
+	 * Returns the base encoding. Will be null for Type 3 fonts.
 	 */
 	public Encoding getBaseEncoding()
 	{

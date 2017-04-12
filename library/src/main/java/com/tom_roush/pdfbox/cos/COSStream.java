@@ -15,6 +15,7 @@ import com.tom_roush.pdfbox.io.RandomAccessFileOutputStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -464,6 +465,29 @@ public class COSStream extends COSDictionary implements Closeable
     public COSBase getFilters()
     {
         return getDictionaryObject(COSName.FILTER);
+    }
+
+    /**
+     * Returns the contents of the stream as a text string.
+     */
+    public String getString()
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        InputStream input = null;
+        try
+        {
+            input = getUnfilteredStream();
+        }
+        catch (IOException e)
+        {
+            return "";
+        }
+        finally
+        {
+            IOUtils.closeQuietly(input);
+        }
+        COSString string = new COSString(out.toByteArray());
+        return string.getString();
     }
 
     /**

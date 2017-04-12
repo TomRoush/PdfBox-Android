@@ -16,12 +16,12 @@
  */
 package com.tom_roush.fontbox.cff;
 
+import com.tom_roush.fontbox.util.BoundingBox;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.tom_roush.fontbox.util.BoundingBox;
 
 /**
  * An Adobe Compact Font Format (CFF) font. Thread safe.
@@ -36,6 +36,7 @@ public abstract class CFFFont
     protected CFFCharset charset;
     protected final List<byte[]> charStrings = new ArrayList<byte[]>();
     protected IndexData globalSubrIndex;
+    private byte[] data;
 
     /**
      * The name of the font.
@@ -123,6 +124,26 @@ public abstract class CFFFont
     List<byte[]> getCharStringBytes()
     {
         return charStrings;
+    }
+
+    /**
+     * Sets the original data.
+     *
+     * @param data the original data.
+     */
+    void setData(byte[] data)
+    {
+        this.data = data;
+    }
+
+    /**
+     * Returns the the original data.
+     *
+     * @return the dictionary
+     */
+    public byte[] getData()
+    {
+        return data;
     }
 
     /**

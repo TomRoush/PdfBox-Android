@@ -10,7 +10,6 @@ import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
-import com.tom_roush.pdfbox.pdmodel.common.PDTextStream;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDAction;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionFactory;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDAdditionalActions;
@@ -76,7 +75,7 @@ public class FDFField implements COSObjectable
 				}
 				else if( child.getTagName().equals( "value-richtext" ) )
 				{
-					setRichText( new PDTextStream( XMLUtil.getNodeValue( child ) ) );
+					setRichText(new COSString(XMLUtil.getNodeValue(child)));
 				}
 				else if( child.getTagName().equals( "field" ) )
 				{
@@ -100,23 +99,23 @@ public class FDFField implements COSObjectable
 	 */
 	public void writeXML( Writer output ) throws IOException
 	{
-		output.write( "<field name=\"" + getPartialFieldName() + "\">\n");
+		output.write("<field name=\"" + getPartialFieldName() + "\">\n");
 		Object value = getValue();
 		if( value != null )
 		{
-			if(value instanceof String)
+			if(value instanceof COSString)
 			{
-				output.write( "<value>" + escapeXML((String)value) + "</value>\n" );
+				output.write("<value>" + escapeXML(((COSString) value).getString()) + "</value>\n");
 			}
-			else if(value instanceof PDTextStream)
+			else if(value instanceof COSStream)
 			{
-				output.write( "<value>" + escapeXML(((PDTextStream)value).getAsString()) + "</value>\n" );
+				output.write("<value>" + escapeXML(((COSStream) value).getString()) + "</value>\n");
 			}
 		}
-		PDTextStream rt = getRichText();
+		String rt = getRichText();
 		if( rt != null )
 		{
-			output.write( "<value-richtext>" + escapeXML(rt.getAsString()) + "</value-richtext>\n" );
+			output.write("<value-richtext>" + escapeXML(rt) + "</value-richtext>\n");
 		}
 		List<FDFField> kids = getKids();
 		if( kids != null )
@@ -207,7 +206,7 @@ public class FDFField implements COSObjectable
 	}
 
 	/**
-	 * This will set the value for the field.  This will return type will either be <br />
+	 * This will get the value for the field.  This will return type will either be <br />
 	 * String : Checkboxes, Radio Button <br />
 	 * java.util.List of strings: Choice Field
 	 * PDTextStream: Textfields
@@ -218,25 +217,27 @@ public class FDFField implements COSObjectable
 	 */
 	public Object getValue() throws IOException
 	{
-		Object retval = null;
 		COSBase value = field.getDictionaryObject( COSName.V );
 		if( value instanceof COSName )
 		{
-			retval = ((COSName)value).getName();
+			return ((COSName) value).getName();
 		}
 		else if( value instanceof COSArray )
 		{
-			retval = COSArrayList.convertCOSStringCOSArrayToList( (COSArray)value );
+			return COSArrayList.convertCOSStringCOSArrayToList((COSArray) value);
 		}
 		else if( value instanceof COSString || value instanceof COSStream )
 		{
-			retval = PDTextStream.createTextStream( value );
+			return value;
 		}
 		else if( value != null )
 		{
 			throw new IOException( "Error:Unknown type for field import" + value );
 		}
-		return retval;
+		else
+		{
+			return null;
+		}
 	}
 
 	/**
@@ -708,10 +709,21 @@ public class FDFField implements COSObjectable
 	 *
 	 * @return The rich text XHTML stream.
 	 */
-	public PDTextStream getRichText()
+	public String getRichText()
 	{
 		COSBase rv = field.getDictionaryObject( COSName.RV );
-		return PDTextStream.createTextStream( rv );
+		if (rv == null)
+		{
+			return null;
+		}
+		else if (rv instanceof COSString)
+		{
+			return ((COSString) rv).getString();
+		}
+		else
+		{
+			return ((COSStream) rv).getString();
+		}
 	}
 
 	/**
@@ -719,7 +731,17 @@ public class FDFField implements COSObjectable
 	 *
 	 * @param rv The rich text value for the stream.
 	 */
-	public void setRichText( PDTextStream rv )
+	public void setRichText(COSString rv)
+	{
+		field.setItem(COSName.RV, rv);
+	}
+
+	/**
+	 * This will set the rich text value.
+	 *
+	 * @param rv The rich text value for the stream.
+	 */
+	public void setRichText( COSStream rv )
 	{
 		field.setItem( COSName.RV, rv );
 	}

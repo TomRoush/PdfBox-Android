@@ -18,38 +18,31 @@ import java.util.List;
  *
  * @author sug
  */
-public abstract class PDButton extends PDField
+public abstract class PDButton extends PDTerminalField
 {
-    /**
-     * The value for the Off state for PDCheckbox and PDRadioButton.
-     * <p>
-     * This shall not be confused with the OFF state as it is used within
-     * other parts of a PDF.
-     */
-    static final COSName OFF = COSName.getPDFName("Off");
-
     /**
      * A Ff flag. If set, the field is a set of radio buttons
      */
-    public static final int FLAG_RADIO = 1 << 15;
+    static final int FLAG_RADIO = 1 << 15;
     /**
      * A Ff flag. If set, the field is a pushbutton.
      */
-    public static final int FLAG_PUSHBUTTON = 1 << 16;
+    static final int FLAG_PUSHBUTTON = 1 << 16;
     /**
      * A Ff flag. If set, radio buttons individual fields, using the same
      * value for the on state will turn on and off in unison.
      */
-    public static final int FLAG_RADIOS_IN_UNISON = 1 << 25;
+    static final int FLAG_RADIOS_IN_UNISON = 1 << 25;
 
     /**
-     * @param theAcroForm The acroform.
-     * @see PDFieldTreeNode#PDFieldTreeNode(PDAcroForm)
+     * @see PDField#PDField(PDAcroForm) (PDAcroForm)
+     *
+     * @param acroForm The acroform.
      */
-    public PDButton(PDAcroForm theAcroForm)
+    public PDButton(PDAcroForm acroForm)
     {
-        super(theAcroForm);
-        getCOSObject().setItem(COSName.FT, COSName.BTN);
+        super(acroForm);
+        dictionary.setItem(COSName.FT, COSName.BTN);
     }
 
     /**
@@ -57,11 +50,11 @@ public abstract class PDButton extends PDField
      *
      * @param acroForm The form that this field is part of.
      * @param field the PDF object to represent as a field.
-     * @param parentNode the parent node of the node to be created
+     * @param parent the parent node of the node
      */
-    public PDButton(PDAcroForm acroForm, COSDictionary field, PDFieldTreeNode parentNode)
+    PDButton(PDAcroForm acroForm, COSDictionary field, PDNonTerminalField parent)
     {
-        super(acroForm, field, parentNode);
+        super(acroForm, field, parent);
     }
 
     /**
@@ -71,7 +64,7 @@ public abstract class PDButton extends PDField
      */
     public boolean isPushButton()
     {
-        return getCOSObject().getFlag(COSName.FF, FLAG_PUSHBUTTON);
+        return dictionary.getFlag(COSName.FF, FLAG_PUSHBUTTON);
     }
 
     /**
@@ -81,7 +74,7 @@ public abstract class PDButton extends PDField
      */
     public void setPushButton(boolean pushbutton)
     {
-        getCOSObject().setFlag(COSName.FF, FLAG_PUSHBUTTON, pushbutton);
+        dictionary.setFlag(COSName.FF, FLAG_PUSHBUTTON, pushbutton);
     }
 
     /**
@@ -91,7 +84,7 @@ public abstract class PDButton extends PDField
      */
     public boolean isRadioButton()
     {
-        return getCOSObject().getFlag(COSName.FF, FLAG_RADIO);
+        return dictionary.getFlag(COSName.FF, FLAG_RADIO);
     }
 
     /**
@@ -101,7 +94,7 @@ public abstract class PDButton extends PDField
      */
     public void setRadioButton(boolean radiobutton)
     {
-        getCOSObject().setFlag(COSName.FF, FLAG_RADIO, radiobutton);
+        dictionary.setFlag(COSName.FF, FLAG_RADIO, radiobutton);
     }
 
     @Override
@@ -123,28 +116,16 @@ public abstract class PDButton extends PDField
         }
     }
 
-    /**
-     * Set the fields default value.
-     * <p>
-     * The field value holds a name object which is corresponding to the
-     * appearance state representing the corresponding appearance
-     * from the appearance directory.
-     * <p>
-     * The default value is used to represent the initial state of the
-     * field or to revert when resetting the form.
-     *
-     * @param defaultValue the new field value.
-     */
     @Override
     public void setDefaultValue(String defaultValue)
     {
         if (defaultValue == null)
         {
-            getCOSObject().removeItem(COSName.DV);
+            dictionary.removeItem(COSName.DV);
         }
         else
         {
-            getCOSObject().setItem(COSName.DV, COSName.getPDFName(defaultValue));
+            dictionary.setItem(COSName.DV, COSName.getPDFName(defaultValue));
         }
     }
 
@@ -183,18 +164,23 @@ public abstract class PDButton extends PDField
     /**
      * This will set the options.
      *
-     * @param values List containing all possible options. Supplying null or an empty list will remove the Opt entry.
+     * @param values List containing all possible options. Supplying null list will remove the Opt entry.
      * @see #getOptions()
      */
     public void setOptions(List<String> values)
     {
-        if (values == null || values.isEmpty())
+        COSArray cosValues = null;
+        if (values != null)
         {
-            removeInheritableAttribute(COSName.OPT);
+            cosValues = COSArrayList.convertStringListToCOSStringCOSArray(values);
         }
-        else
-        {
-            setInheritableAttribute(COSName.OPT, COSArrayList.convertStringListToCOSStringCOSArray(values));
-        }
+        dictionary.setItem(COSName.OPT, cosValues);
+    }
+
+    @Override
+    void constructAppearances() throws IOException
+    {
+        // TODO: implement appearance generation for buttons
+        throw new UnsupportedOperationException("not implemented");
     }
 }

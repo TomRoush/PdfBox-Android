@@ -27,6 +27,7 @@ public class PDType0Font extends PDFont
 	private final PDCIDFont descendantFont;
 	private CMap cMap, cMapUCS2;
 	private boolean isCMapPredefined;
+	private boolean isDescendantCJK;
 	private PDCIDFontType2Embedder embedder;
 
 	/**
@@ -86,9 +87,9 @@ public class PDType0Font extends PDFont
 			throw new IOException("Missing descendant font dictionary");
 		}
 
+		descendantFont = PDFontFactory.createDescendantFont(descendantFontDictionary, this);
 		readEncoding();
 		fetchCMapUCS2();
-		descendantFont = PDFontFactory.createDescendantFont(descendantFontDictionary, this);
 	}
 
 	/**
@@ -161,6 +162,17 @@ public class PDType0Font extends PDFont
             	Log.w("PdfBox-Android", "Invalid Encoding CMap in font " + getName());
             }
         }
+
+		// check if the descendant font is CJK
+		PDCIDSystemInfo ros = descendantFont.getCIDSystemInfo();
+		if (ros != null)
+		{
+			isDescendantCJK = ros.getRegistry().equals("Adobe") &&
+				(ros.getOrdering().equals("GB1") ||
+				 ros.getOrdering().equals("CNS1") ||
+				 ros.getOrdering().equals("Japan1") ||
+				 ros.getOrdering().equals("Korea1"));
+		}
     }
 
 	/**
@@ -187,9 +199,21 @@ public class PDType0Font extends PDFont
 				cMapName = ((COSName)encoding).getName();
 			}
 
+			if ("Identity-H".equals(cMapName) || "Identity-V".equals(cMapName))
+			{
+				if (isDescendantCJK)
+				{
+					cMapName = getCJKCMap(descendantFont.getCIDSystemInfo());
+				}
+				else
+				{
+					// we can't map Identity-H or Identity-V to Unicode
+					return;
+				}
+			}
+
 			// try to find the corresponding Unicode (UC2) CMap
-			if (cMapName != null && !cMapName.equals("Identity-H") &&
-					!cMapName.equals("Identity-V"))
+			if (cMapName != null)
 			{
 				CMap cMap = CMapManager.getPredefinedCMap(cMapName);
 				if (cMap != null)
@@ -202,6 +226,34 @@ public class PDType0Font extends PDFont
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * Returns the name of CJK CMap represented by the given CIDSystemInfo, if any.
+	 */
+	private String getCJKCMap(PDCIDSystemInfo ros)
+	{
+		// CJK can fallback to using CIDSystemInfo
+		if (ros.getOrdering().equals("GB1"))
+		{
+			return "Adobe-GB1-0";
+		}
+		else if (ros.getOrdering().equals("CNS1"))
+		{
+			return "Adobe-CNS1-0";
+		}
+		else if (ros.getOrdering().equals("Japan1"))
+		{
+			return "Adobe-Japan1-1";
+		}
+		else if (ros.getOrdering().equals("Korea1"))
+		{
+			return "Adobe-Korea1-0";
+		}
+		else
+		{
+			throw new IllegalStateException();
 		}
 	}
 
@@ -341,6 +393,8 @@ public class PDType0Font extends PDFont
 		else
 		{
 			// if no value has been produced, there is no way to obtain Unicode for the character.
+			String cid = "CID+" + codeToCID(code);
+			Log.w("PdfBox-Android", "No Unicode mapping for " + cid + " (" + code + ") in font " + getName());
 			return null;
 		}
 	}

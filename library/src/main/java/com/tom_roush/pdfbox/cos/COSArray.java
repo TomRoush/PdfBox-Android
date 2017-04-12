@@ -1,12 +1,12 @@
 package com.tom_roush.pdfbox.cos;
 
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-
-import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * An array of PDFBase objects as part of the PDF document.
@@ -181,7 +181,7 @@ public class COSArray extends COSBase implements Iterable<COSBase>
     }
 
     /**
-     * This will get an object from the array.  This will NOT derefernce
+     * This will get an object from the array. This will NOT dereference
      * the COS object.
      *
      * @param index The index into the array to get the object.

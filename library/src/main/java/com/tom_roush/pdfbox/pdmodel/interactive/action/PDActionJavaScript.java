@@ -1,7 +1,10 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.action;
 
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.pdmodel.common.PDTextStream;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.cos.COSString;
 
 /**
  * This represents a JavaScript action.
@@ -48,14 +51,6 @@ public class PDActionJavaScript extends PDAction
     /**
      * @param sAction The JavaScript.
      */
-    public void setAction(PDTextStream sAction)
-    {
-        action.setItem("JS", sAction);
-    }
-
-    /**
-     * @param sAction The JavaScript.
-     */
     public void setAction(String sAction)
     {
         action.setString("JS", sAction);
@@ -64,8 +59,20 @@ public class PDActionJavaScript extends PDAction
     /**
      * @return The Javascript Code.
      */
-    public PDTextStream getAction()
+    public String getAction()
     {
-        return PDTextStream.createTextStream( action.getDictionaryObject("JS") );
+        COSBase base = action.getDictionaryObject( COSName.JS );
+        if (base instanceof COSString)
+        {
+            return ((COSString)base).getString();
+        }
+        else if (base instanceof COSStream)
+        {
+            return ((COSStream)base).getString();
+        }
+        else
+        {
+            return null;
+        }
     }
 }

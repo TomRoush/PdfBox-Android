@@ -11,6 +11,7 @@ import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentInformation;
+import com.tom_roush.pdfbox.pdmodel.PDDocumentNameDestinationDictionary;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentNameDictionary;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
@@ -24,7 +25,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import com.tom_roush.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -297,6 +298,20 @@ public class PDFMergerUtility
 			}
 		}
 
+		PDDocumentNameDestinationDictionary destDests = destCatalog.getDests();
+		PDDocumentNameDestinationDictionary srcDests = srcCatalog.getDests();
+		if (srcDests != null)
+		{
+			if (destDests == null)
+			{
+				destCatalog.getCOSObject().setItem(COSName.DESTS, cloner.cloneForNewDocument(srcDests));
+			}
+			else
+			{
+				cloner.cloneMerge(srcDests, destDests);
+			}
+		}
+
 		PDDocumentOutline destOutline = destCatalog.getDocumentOutline();
 		PDDocumentOutline srcOutline = srcCatalog.getDocumentOutline();
 		if (srcOutline != null)
@@ -493,29 +508,24 @@ public class PDFMergerUtility
 	private void mergeAcroForm(PDFCloneUtility cloner, PDAcroForm destAcroForm, PDAcroForm srcAcroForm)
 			throws IOException
 	{
-		List<PDFieldTreeNode> destFields = destAcroForm.getFields();
-		List<PDFieldTreeNode> srcFields = srcAcroForm.getFields();
+		List<PDField> srcFields = srcAcroForm.getFields();
 		if (srcFields != null)
 		{
-			if (destFields == null)
+			List<COSDictionary> destFields = new ArrayList<COSDictionary>();
+			// fixme: we're only iterating over the root fields, names of kids aren't being checked
+			for (PDField srcField : srcFields)
 			{
-				destFields = new COSArrayList<PDFieldTreeNode>();
-				destAcroForm.setFields(destFields);
-			}
-			Iterator<PDFieldTreeNode> srcFieldsIterator = srcFields.iterator();
-			while (srcFieldsIterator.hasNext())
-			{
-				PDFieldTreeNode srcField = srcFieldsIterator.next();
-				PDFieldTreeNode destFieldNode = PDFieldTreeNode.createField(destAcroForm,
-						(COSDictionary) cloner.cloneForNewDocument(srcField.getCOSObject()), null);
+				COSDictionary dstField = (COSDictionary) cloner.cloneForNewDocument(srcField.getCOSObject());
 				// if the form already has a field with this name then we need to rename this field
 				// to prevent merge conflicts.
-				if (destAcroForm.getField(destFieldNode.getFullyQualifiedName()) != null)
+				if (destAcroForm.getField(srcField.getFullyQualifiedName()) != null)
 				{
-					destFieldNode.setPartialName("dummyFieldName" + (nextFieldNum++));
+					dstField.setString(COSName.T, "dummyFieldName" + nextFieldNum++);
 				}
-				destFields.add(destFieldNode);
+				destFields.add(dstField);
 			}
+			destAcroForm.getCOSObject().setItem(COSName.FIELDS,
+				COSArrayList.converterToCOSArray(destFields));
 		}
 	}
 

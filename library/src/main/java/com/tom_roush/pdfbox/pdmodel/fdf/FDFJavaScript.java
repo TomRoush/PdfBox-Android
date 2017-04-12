@@ -1,16 +1,17 @@
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
-import com.tom_roush.pdfbox.pdmodel.common.PDNamedTextStream;
-import com.tom_roush.pdfbox.pdmodel.common.PDTextStream;
+import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionFactory;
+import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionJavaScript;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * This represents an FDF JavaScript dictionary that is part of the FDF document.
@@ -19,14 +20,14 @@ import com.tom_roush.pdfbox.pdmodel.common.PDTextStream;
  */
 public class FDFJavaScript implements COSObjectable
 {
-    private COSDictionary js;
+    private final COSDictionary dictionary;
 
     /**
      * Default constructor.
      */
     public FDFJavaScript()
     {
-        js = new COSDictionary();
+        dictionary = new COSDictionary();
     }
 
     /**
@@ -36,7 +37,7 @@ public class FDFJavaScript implements COSObjectable
      */
     public FDFJavaScript( COSDictionary javaScript )
     {
-        js = javaScript;
+        dictionary = javaScript;
     }
 
     /**
@@ -46,7 +47,7 @@ public class FDFJavaScript implements COSObjectable
      */
     public COSBase getCOSObject()
     {
-        return js;
+        return dictionary;
     }
 
     /**
@@ -56,7 +57,7 @@ public class FDFJavaScript implements COSObjectable
      */
     public COSDictionary getCOSDictionary()
     {
-        return js;
+        return dictionary;
     }
 
     /**
@@ -64,9 +65,21 @@ public class FDFJavaScript implements COSObjectable
      *
      * @return Some javascript code.
      */
-    public PDTextStream getBefore()
+    public String getBefore()
     {
-        return PDTextStream.createTextStream( js.getDictionaryObject( COSName.BEFORE ) );
+        COSBase base = dictionary.getDictionaryObject( COSName.BEFORE );
+        if (base instanceof COSString)
+        {
+            return ((COSString)base).getString();
+        }
+        else if (base instanceof COSStream)
+        {
+            return ((COSStream)base).getString();
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /**
@@ -74,9 +87,9 @@ public class FDFJavaScript implements COSObjectable
      *
      * @param before A reference to some javascript code.
      */
-    public void setBefore( PDTextStream before )
+    public void setBefore( String before )
     {
-        js.setItem( COSName.BEFORE, before );
+        dictionary.setItem(COSName.BEFORE, new COSString(before));
     }
 
     /**
@@ -84,9 +97,21 @@ public class FDFJavaScript implements COSObjectable
      *
      * @return Some javascript code.
      */
-    public PDTextStream getAfter()
+    public String getAfter()
     {
-        return PDTextStream.createTextStream( js.getDictionaryObject( COSName.AFTER ) );
+        COSBase base = dictionary.getDictionaryObject(COSName.AFTER);
+        if (base instanceof COSString)
+        {
+            return ((COSString) base).getString();
+        }
+        else if (base instanceof COSStream)
+        {
+            return ((COSStream) base).getString();
+        }
+        else
+        {
+            return null;
+        }
     }
 
     /**
@@ -94,46 +119,45 @@ public class FDFJavaScript implements COSObjectable
      *
      * @param after A reference to some javascript code.
      */
-    public void setAfter( PDTextStream after )
+    public void setAfter( String after )
     {
-        js.setItem( COSName.AFTER, after );
+        dictionary.setItem(COSName.AFTER, new COSString(after));
     }
 
     /**
-     * This will return a list of PDNamedTextStream objects.  This is the "Doc"
-     * entry of the pdf document.  These will be added to the PDF documents
-     * javascript name tree.  This will not return null.
+     * Returns the dictionary's "Doc" entry, that is, a map of key value pairs to be added to
+     * the document's JavaScript name tree.
      *
-     * @return A list of all named javascript entries.
+     * @return Map of named "JavaScript" dictionaries.
      */
-    public List<PDNamedTextStream> getNamedJavaScripts()
+    public Map<String, PDActionJavaScript> getDoc()
     {
-        COSArray array = (COSArray)js.getDictionaryObject( COSName.DOC );
-        List<PDNamedTextStream> namedStreams = new ArrayList<PDNamedTextStream>();
-        if( array == null )
+        Map<String, PDActionJavaScript> map = new LinkedHashMap<String, PDActionJavaScript>();
+        COSArray array = (COSArray) dictionary.getDictionaryObject(COSName.DOC);
+        if (array == null)
         {
-            array = new COSArray();
-            js.setItem( COSName.DOC, array );
+            return null;
         }
-        for( int i=0; i<array.size(); i++ )
+        for (int i = 0; i < array.size(); i++)
         {
-            COSName name = (COSName)array.get( i );
-            i++;
-            COSBase stream = array.get( i );
-            PDNamedTextStream namedStream = new PDNamedTextStream( name, stream );
-            namedStreams.add( namedStream );
+            PDActionFactory.createAction((COSDictionary) array.getObject(i));
         }
-        return new COSArrayList<PDNamedTextStream>( namedStreams, array );
+        return map;
     }
 
     /**
-     * This should be a list of PDNamedTextStream objects.
+     * Sets the dictionary's "Doc" entry.
      *
-     * @param namedStreams The named streams.
+     * @param map Map of named "JavaScript" dictionaries.
      */
-    public void setNamedJavaScripts( List<PDTextStream> namedStreams )
+    public void setDoc(Map<String, PDActionJavaScript> map)
     {
-        COSArray array = COSArrayList.converterToCOSArray( namedStreams );
-        js.setItem( COSName.DOC, array );
+        COSArray array = new COSArray();
+        for (Map.Entry<String, PDActionJavaScript> entry : map.entrySet())
+        {
+            array.add(new COSString(entry.getKey()));
+            array.add(entry.getValue());
+        }
+        dictionary.setItem(COSName.DOC, array);
     }
 }

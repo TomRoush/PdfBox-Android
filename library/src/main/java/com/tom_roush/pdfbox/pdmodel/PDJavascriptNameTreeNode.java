@@ -1,28 +1,26 @@
 package com.tom_roush.pdfbox.pdmodel;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.cos.COSStream;
-import com.tom_roush.pdfbox.cos.COSString;
-import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDNameTreeNode;
-import com.tom_roush.pdfbox.pdmodel.common.PDTextStream;
+import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionFactory;
+import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionJavaScript;
+
+import java.io.IOException;
 
 /**
  * This class holds all of the name trees that are available at the document level.
  *
  * @author Ben Litchfield
  */
-public class PDJavascriptNameTreeNode extends PDNameTreeNode
+public class PDJavascriptNameTreeNode extends PDNameTreeNode<PDActionJavaScript>
 {
     /**
      * Constructor.
      */
     public PDJavascriptNameTreeNode()
     {
-        super( PDTextStream.class );
+        super();
     }
 
     /**
@@ -32,34 +30,21 @@ public class PDJavascriptNameTreeNode extends PDNameTreeNode
      */
     public PDJavascriptNameTreeNode( COSDictionary dic )
     {
-        super( dic, PDTextStream.class );
+        super(dic);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected COSObjectable convertCOSToPD( COSBase base ) throws IOException
+    @Override
+    protected PDActionJavaScript convertCOSToPD( COSBase base ) throws IOException
     {
-        PDTextStream stream = null;
-        if( base instanceof COSString )
+        if (!(base instanceof COSDictionary))
         {
-            stream = new PDTextStream((COSString)base);
+            throw new IOException(
+                "Error creating Javascript object, expected a COSDictionary and not " + base);
         }
-        else if( base instanceof COSStream )
-        {
-            stream = new PDTextStream((COSStream)base);
-        }
-        else
-        {
-            throw new IOException( "Error creating Javascript object, expected either COSString or COSStream and not " 
-                    + base );
-        }
-        return stream;
+        return (PDActionJavaScript)PDActionFactory.createAction((COSDictionary) base);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     protected PDNameTreeNode createChildNode( COSDictionary dic )
     {
         return new PDJavascriptNameTreeNode(dic);

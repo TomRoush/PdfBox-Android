@@ -1,29 +1,27 @@
 package com.tom_roush.pdfbox.pdmodel;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDNameTreeNode;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
+
+import java.io.IOException;
 
 /**
  * This class holds all of the name trees that are available at the document level.
  *
  * @author Ben Litchfield
  */
-public class PDDestinationNameTreeNode extends PDNameTreeNode
+public class PDDestinationNameTreeNode extends PDNameTreeNode<PDPageDestination>
 {
-
     /**
      * Constructor.
      */
     public PDDestinationNameTreeNode()
     {
-        super( PDPageDestination.class );
+        super();
     }
 
     /**
@@ -33,13 +31,11 @@ public class PDDestinationNameTreeNode extends PDNameTreeNode
      */
     public PDDestinationNameTreeNode( COSDictionary dic )
     {
-        super( dic, PDPageDestination.class );
+        super(dic);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected COSObjectable convertCOSToPD( COSBase base ) throws IOException
+    @Override
+    protected PDPageDestination convertCOSToPD(COSBase base) throws IOException
     {
         COSBase destination = base;
         if( base instanceof COSDictionary )
@@ -49,12 +45,10 @@ public class PDDestinationNameTreeNode extends PDNameTreeNode
             //it for now
             destination = ((COSDictionary)base).getDictionaryObject( COSName.D );
         }
-        return PDDestination.create( destination );
+        return (PDPageDestination) PDDestination.create(destination);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     protected PDNameTreeNode createChildNode( COSDictionary dic )
     {
         return new PDDestinationNameTreeNode(dic);

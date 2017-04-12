@@ -4,19 +4,21 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 
 /**
- * A scrollable list box. Contains several text items, one or more of which shall be selected as the field value.
+ * A scrollable list box. Contains several text items, one or more of which shall be selected as the
+ * field value.
  *
  * @author John Hewson
  */
 public final class PDListBox extends PDChoice
 {
     /**
-     * @param theAcroForm The acroform.
-     * @see PDFieldTreeNode#PDFieldTreeNode(PDAcroForm)
+     * @see PDField#PDField(PDAcroForm)
+     *
+     * @param acroForm The acroform.
      */
-    public PDListBox(PDAcroForm theAcroForm)
+    public PDListBox(PDAcroForm acroForm)
     {
-        super(theAcroForm);
+        super(acroForm);
     }
 
     /**
@@ -24,11 +26,11 @@ public final class PDListBox extends PDChoice
      *
      * @param acroForm The form that this field is part of.
      * @param field the PDF object to represent as a field.
-     * @param parentNode the parent node of the node to be created
+     * @param parent the parent node of the node
      */
-    public PDListBox(PDAcroForm acroForm, COSDictionary field, PDFieldTreeNode parentNode)
+    PDListBox(PDAcroForm acroForm, COSDictionary field, PDNonTerminalField parent)
     {
-        super(acroForm, field, parentNode);
+        super(acroForm, field, parent);
     }
 
     /**
@@ -38,7 +40,7 @@ public final class PDListBox extends PDChoice
      */
     public int getTopIndex()
     {
-        return getCOSObject().getInt(COSName.TI, 0);
+        return dictionary.getInt(COSName.TI, 0);
     }
 
     /**
@@ -50,11 +52,11 @@ public final class PDListBox extends PDChoice
     {
         if (topIndex != null)
         {
-            getCOSObject().setInt(COSName.TI, topIndex);
+            dictionary.setInt(COSName.TI, topIndex);
         }
         else
         {
-            getCOSObject().removeItem(COSName.TI);
+            dictionary.removeItem(COSName.TI);
         }
     }
 }

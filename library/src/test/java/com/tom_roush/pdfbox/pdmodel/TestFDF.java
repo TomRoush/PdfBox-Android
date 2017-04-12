@@ -20,14 +20,14 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.pdfparser.PDFStreamParser;
-import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFDocument;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceEntry;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import com.tom_roush.pdfbox.pdmodel.interactive.form.PDFieldTreeNode;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDRadioButton;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDTerminalField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDTextField;
 
 import junit.framework.Test;
@@ -214,16 +214,17 @@ public class TestFDF extends TestCase
                 fdf = FDFDocument.load( fileFDF );
                 PDAcroForm form = freedom.getDocumentCatalog().getAcroForm();
                 form.importFDF( fdf );
-                PDTextField feld2 = (PDTextField)form.getField( "eeFirstName" );
-                List<COSObjectable> kids = feld2.getKids();
-                PDFieldTreeNode firstKid = (PDFieldTreeNode)kids.get( 0 );
-                PDFieldTreeNode secondKid = (PDFieldTreeNode)kids.get( 1 );
+
+                PDTextField field2 = (PDTextField) form.getField("eeFirstName");
+                List<PDAnnotationWidget> kids = field2.getWidgets();
+                PDAnnotationWidget firstKid = kids.get(0);
+                PDAnnotationWidget secondKid = kids.get(1);
                 testContentStreamContains( freedom, firstKid, "Steve" );
                 testContentStreamContains( freedom, secondKid, "Steve" );
 
                 //the appearance stream is suppose to be null because there
                 //is an F action in the AA dictionary that populates that field.
-                PDFieldTreeNode totalAmt = form.getField( "eeSuppTotalAmt" );
+                PDField totalAmt = form.getField("eeSuppTotalAmt");
                 assertTrue(totalAmt.getCOSObject().getDictionaryObject(COSName.AP) == null);
 
             }
@@ -241,9 +242,9 @@ public class TestFDF extends TestCase
         }
     }
 
-    private void testContentStreamContains( PDDocument doc, PDFieldTreeNode field, String expected ) throws Exception
+    private void testContentStreamContains(PDDocument doc, PDAnnotationWidget widget,
+        String expected) throws Exception
     {
-        PDAnnotationWidget widget = field.getWidget();
         PDAppearanceEntry normalAppearance = widget.getAppearance().getNormalAppearance();
         PDAppearanceStream appearanceStream = normalAppearance.getAppearanceStream();
         COSStream actual = appearanceStream.getCOSStream();
@@ -252,9 +253,10 @@ public class TestFDF extends TestCase
         assertTrue( actualTokens.contains( new COSString( expected ) ) );
     }
 
-    private void testContentStreams( PDDocument doc, PDFieldTreeNode field, String expected ) throws Exception
+    private void testContentStreams(PDDocument doc, PDTerminalField field, String expected)
+        throws Exception
     {
-        PDAnnotationWidget widget = field.getWidget();
+        PDAnnotationWidget widget = field.getWidgets().get(0);
         PDAppearanceEntry normalAppearance = widget.getAppearance().getNormalAppearance();
         PDAppearanceStream appearanceStream = normalAppearance.getAppearanceStream();
         COSStream actual = appearanceStream.getCOSStream();

@@ -1,8 +1,16 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
+import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.fdf.FDFField;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A non terminal field in an interactive form.
@@ -14,38 +22,35 @@ import com.tom_roush.pdfbox.cos.COSName;
  * belong to the non terminal field but are inheritable attributes
  * for descendant terminal fields.
  */
-public class PDNonTerminalField extends PDFieldTreeNode
+public class PDNonTerminalField extends PDField
 {
     /**
      * Constructor.
-     * 
-     * @param theAcroForm The form that this field is part of.
+     *
+     * @param acroForm The form that this field is part of.
      */
-    public PDNonTerminalField(PDAcroForm theAcroForm)
+    public PDNonTerminalField(PDAcroForm acroForm)
     {
-        super(theAcroForm);
+        super(acroForm);
     }
 
     /**
      * Constructor.
-     * 
-     * @param theAcroForm The form that this field is part of.
+     *
+     * @param acroForm The form that this field is part of.
      * @param field the PDF object to represent as a field.
-     * @param parentNode the parent node of the node to be created
+     * @param parent the parent node of the node to be created
      */
-    public PDNonTerminalField(PDAcroForm theAcroForm, COSDictionary field, PDFieldTreeNode parentNode)
+    public PDNonTerminalField(PDAcroForm acroForm, COSDictionary field, PDNonTerminalField parent)
     {
-        super(theAcroForm, field, parentNode);
+        super(acroForm, field, parent);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int getFieldFlags()
     {
         int retval = 0;
-        COSInteger ff = (COSInteger) getCOSObject().getDictionaryObject(COSName.FF);
+        COSInteger ff = (COSInteger) dictionary.getDictionaryObject(COSName.FF);
         if (ff != null)
         {
             retval = ff.intValue();
@@ -54,52 +59,108 @@ public class PDNonTerminalField extends PDFieldTreeNode
         return retval;
     }
 
+    @Override
+    public void importFDF(FDFField fdfField) throws IOException
+    {
+        super.importFDF(fdfField);
+
+        List<FDFField> fdfKids = fdfField.getKids();
+        List<PDField> children = getChildren();
+        for (int i = 0; fdfKids != null && i < fdfKids.size(); i++)
+        {
+            for (COSObjectable pdKid : children)
+            {
+                if (pdKid instanceof PDField)
+                {
+                    PDField pdChild = (PDField) pdKid;
+                    FDFField fdfChild = fdfKids.get(i);
+                    String fdfName = fdfChild.getPartialFieldName();
+                    if (fdfName != null && fdfName.equals(pdChild.getPartialName()))
+                    {
+                        pdChild.importFDF(fdfChild);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    FDFField exportFDF() throws IOException
+    {
+        FDFField fdfField = new FDFField();
+        fdfField.setPartialFieldName(getPartialName());
+        fdfField.setValue(getValue());
+
+        List<PDField> children = getChildren();
+        List<FDFField> fdfChildren = new ArrayList<FDFField>();
+        for (PDField child : children)
+        {
+            fdfChildren.add(child.exportFDF());
+        }
+        fdfField.setKids(fdfChildren);
+
+        return fdfField;
+    }
+
     /**
-     * {@inheritDoc}
+     * Returns this field's children. These may be either terminal or non-terminal fields.
+     *
+     * @return he list of child fields.
      */
+    public List<PDField> getChildren()
+    {
+        List<PDField> children = new ArrayList<PDField>();
+        COSArray kids = (COSArray) dictionary.getDictionaryObject(COSName.KIDS);
+        for (int i = 0; i < kids.size(); i++)
+        {
+            PDField field = PDField.fromDictionary(acroForm, (COSDictionary) kids.get(i), this);
+            children.add(field);
+        }
+        return children;
+    }
+
+    /**
+     * Sets the child fields.
+     *
+     * @param children The list of child fields.
+     */
+    public void setChildren(List<PDField> children)
+    {
+        COSArray kidsArray = COSArrayList.converterToCOSArray(children);
+        dictionary.setItem(COSName.KIDS, kidsArray);
+    }
+
     @Override
     public String getFieldType()
     {
         // There is no need to look up the parent hierarchy within a non terminal field
-        return getCOSObject().getNameAsString(COSName.FT);
+        return dictionary.getNameAsString(COSName.FT);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Object getValue()
     {
     	// There is no need to look up the parent hierarchy within a non terminal field
-    	return getCOSObject().getNameAsString(COSName.V);
+        return dictionary.getNameAsString(COSName.V);
     }
-    
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     public void setValue(String fieldValue)
     {
     	// There is no need to look up the parent hierarchy within a non terminal field
-    	getCOSObject().setString(COSName.V, fieldValue);
+        dictionary.setString(COSName.V, fieldValue);
     }
-    
-    /**
-     * {@inheritDoc}
-     */
+
     @Override
     public Object getDefaultValue()
     {
     	// There is no need to look up the parent hierarchy within a non terminal field
-    	return getCOSObject().getNameAsString(COSName.V);
+        return dictionary.getNameAsString(COSName.V);
     }
-    
-    /**
-     * {@inheritDoc}
-     */
+
     public void setDefaultValue(String defaultValue)
     {
     	// There is no need to look up the parent hierarchy within a non terminal field
-    	getCOSObject().setString(COSName.V, defaultValue);
+        dictionary.setString(COSName.V, defaultValue);
     }
 }
