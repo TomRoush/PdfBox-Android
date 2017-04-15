@@ -55,35 +55,4 @@ public final class PDComboBox extends PDChoice
     {
         dictionary.setFlag(COSName.FF, FLAG_EDIT, edit);
     }
-
-    /**
-     * Sets the field value - the 'V' key.
-     *
-     * @param value the value
-     */
-    @Override
-    public void setValue(String value)
-    {
-        if (value != null)
-        {
-            // check if the options contain the value to be set is
-            // only necessary if the edit flag has not been set.
-            // If the edit flag has been set the field allows a custom value.
-            if (!isEdit() && getOptions().indexOf(value) == -1)
-            {
-                throw new IllegalArgumentException("The list box does not contain the given value.");
-            }
-            else
-            {
-                dictionary.setString(COSName.V, value);
-                // remove I key for single valued choice field
-                setSelectedOptionsIndex(null);
-            }
-        }
-        else
-        {
-            dictionary.removeItem(COSName.V);
-        }
-        // TODO create/update appearance
-    }
 }

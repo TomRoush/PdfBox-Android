@@ -134,18 +134,8 @@ public class FDFField implements COSObjectable
 	 * @return The cos object that matches this Java object.
 	 */
 	@Override
-	public COSBase getCOSObject()
-	{
-		return field;
-	}
-
-	/**
-	 * Convert this standard java object to a COS object.
-	 *
-	 * @return The cos object that matches this Java object.
-	 */
-	public COSDictionary getCOSDictionary()
-	{
+    public COSDictionary getCOSObject()
+    {
 		return field;
 	}
 
@@ -212,7 +202,6 @@ public class FDFField implements COSObjectable
 	 * PDTextStream: Textfields
 	 *
 	 * @return The value of the field.
-	 *
 	 * @throws IOException If there is an error getting the value.
 	 */
 	public Object getValue() throws IOException
@@ -241,7 +230,38 @@ public class FDFField implements COSObjectable
 	}
 
 	/**
-	 * You should pass in a string, or a java.util.List of strings to set the
+     * Returns the COS value of this field.
+     *
+     * @return The COS value of the field.
+     * @throws IOException If there is an error getting the value.
+     */
+    public COSBase getCOSValue() throws IOException
+    {
+        COSBase value = field.getDictionaryObject(COSName.V);
+        if (value instanceof COSName)
+        {
+            return value;
+        }
+        else if (value instanceof COSArray)
+        {
+            return value;
+        }
+        else if (value instanceof COSString || value instanceof COSStream)
+        {
+            return value;
+        }
+        else if (value != null)
+        {
+            throw new IOException("Error:Unknown type for field import" + value);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /**
+     * You should pass in a string, or a java.util.List of strings to set the
 	 * value.
 	 *
 	 * @param value The value that should populate when imported.
@@ -267,8 +287,18 @@ public class FDFField implements COSObjectable
 		{
 			throw new IOException( "Error:Unknown type for field import" + value );
 		}
-		field.setItem( COSName.V, cos );
-	}
+        field.setItem(COSName.V, cos);
+    }
+
+    /**
+     * Sets the COS value of this field.
+     *
+     * @param value COS value.
+     */
+    public void setValue(COSBase value)
+    {
+        field.setItem(COSName.V, value);
+    }
 
 	/**
 	 * This will get the Ff entry of the cos dictionary.  If it it not present then

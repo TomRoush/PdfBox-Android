@@ -16,14 +16,14 @@
  */
 package com.tom_roush.fontbox.ttf;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import android.util.Log;
 
 /**
  * A "cmap" subtable.
@@ -39,7 +39,7 @@ public class CmapSubtable
 	private int platformEncodingId;
 	private long subTableOffset;
 	private int[] glyphIdToCharacterCode;
-	private Map<Integer, Integer> characterCodeToGlyphId = new HashMap<Integer, Integer>();
+    private final Map<Integer, Integer> characterCodeToGlyphId = new HashMap<Integer, Integer>();
 
 	/**
 	 * This will read the required data from the stream.

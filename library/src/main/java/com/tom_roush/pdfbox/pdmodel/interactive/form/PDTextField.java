@@ -1,9 +1,7 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.cos.COSString;
 
 import java.io.IOException;
 
@@ -192,40 +190,53 @@ public final class PDTextField extends PDVariableText
 		dictionary.setInt(COSName.MAX_LEN, maxLen);
 	}
 
-	@Override
-	public void setDefaultValue(String value)
-	{
-		dictionary.setString(COSName.DV, value);
-	}
+    /**
+     * Sets the plain text value of this field.
+     *
+     * @param value Plain text
+     * @throws IOException if the value could not be set
+     */
+    public void setValue(String value) throws IOException
+    {
+        dictionary.setString(COSName.V, value);
+        applyChange();
+    }
 
-	@Override
-	public String getDefaultValue()
-	{
-		COSBase fieldValue = getInheritableAttribute(COSName.DV);
-		if (fieldValue instanceof COSString)
-		{
-			return ((COSString) fieldValue).getString();
-		}
+    /**
+     * Sets the default value of this field.
+     *
+     * @param value Plain text
+     * @throws IOException if the value could not be set
+     */
+    public void setDefaultValue(String value) throws IOException
+    {
+        dictionary.setString(COSName.DV, value);
+    }
 
-		return "";
-	}
+    /**
+     * Returns the value of this field, or an empty string.
+     *
+     * @return A non-null string.
+     */
+    public String getValue()
+    {
+        return getStringOrStream(getInheritableAttribute(COSName.V));
+    }
 
-	@Override
-	public void setValue(String value) throws IOException
-	{
-		dictionary.setString(COSName.V, value);
-		applyChange();
-	}
+    /**
+     * Returns the default value of this field, or an empty string.
+     *
+     * @return A non-null string.
+     */
+    public String getDefaultValue()
+    {
+        return getStringOrStream(getInheritableAttribute(COSName.DV));
+    }
 
-	@Override
-	public String getValue() throws IOException
-	{
-		String string = getStringOrStream(getInheritableAttribute(COSName.V));
-		if (string != null)
-		{
-			return string;
-		}
-		return "";
+    @Override
+    public String getValueAsString()
+    {
+        return getValue();
 	}
 
 	@Override

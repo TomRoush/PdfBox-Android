@@ -7,20 +7,34 @@ import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDBorderEffectDictionary;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
 import com.tom_roush.pdfbox.util.DateConverter;
+import com.tom_roush.pdfbox.util.awt.AWTColor;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.io.IOException;
 import java.util.Calendar;
+
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 /**
  * This represents an FDF annotation that is part of the FDF document.
  *
  * @author Ben Litchfield
+ * @author Johanneke Lamberink
  */
 public abstract class FDFAnnotation implements COSObjectable
 {
@@ -60,17 +74,18 @@ public abstract class FDFAnnotation implements COSObjectable
 		this();
 
 		String page = element.getAttribute( "page" );
-		if( page != null )
-		{
-			setPage( Integer.parseInt( page ) );
-		}
+        if (page == null || page.isEmpty())
+        {
+            throw new IOException("Error: missing required attribute 'page'");
+        }
+        setPage(Integer.parseInt(page));
 
 		String color = element.getAttribute( "color" );
 		if( color != null && color.length() == 7 && color.charAt( 0 ) == '#' )
 		{
 			int colorValue = Integer.parseInt(color.substring(1,7), 16);
-			//                setColor( new Color(colorValue) );TODO: PdfBox-Android
-		}
+            setColor(new AWTColor(colorValue));
+        }
 
 		setDate( element.getAttribute( "date" ) );
 
@@ -121,28 +136,124 @@ public abstract class FDFAnnotation implements COSObjectable
 
 		setName( element.getAttribute( "name" ) );
 
-		String rect = element.getAttribute( "rect" );
-		if( rect != null )
-		{
-			String[] rectValues = rect.split( "," );
-			float[] values = new float[ rectValues.length ];
-			for( int i=0; i<rectValues.length; i++ )
-			{
-				values[i] = Float.parseFloat( rectValues[i] );
-			}
-			COSArray array = new COSArray();
-			array.setFloatArray( values );
-			setRectangle( new PDRectangle( array ) );
-		}
+        String rect = element.getAttribute("rect");
+        if (rect == null)
+        {
+            throw new IOException("Error: missing attribute 'rect'");
+        }
+        String[] rectValues = rect.split(",");
+        if (rectValues.length != 4)
+        {
+            throw new IOException("Error: wrong amount of numbers in attribute 'rect'");
+        }
+        float[] values = new float[4];
+        for (int i = 0; i < 4; i++)
+        {
+            values[i] = Float.parseFloat(rectValues[i]);
+        }
+        COSArray array = new COSArray();
+        array.setFloatArray(values);
+        setRectangle(new PDRectangle(array));
 
         setTitle(element.getAttribute("title"));
-        setCreationDate( DateConverter.toCalendar( element.getAttribute( "creationdate" ) ) );
-		String opac = element.getAttribute( "opacity" );
-		if( opac != null )
-		{
-			setOpacity( Float.parseFloat( opac ) );
-		}
-		setSubject( element.getAttribute( "subject" ) );
+
+        /*
+         * Set the markup annotation attributes
+         */
+        setCreationDate(DateConverter.toCalendar(element.getAttribute("creationdate")));
+        String opac = element.getAttribute("opacity");
+        if (opac != null && !opac.isEmpty())
+        {
+            setOpacity(Float.parseFloat(opac));
+        }
+        setSubject(element.getAttribute("subject"));
+        setIntent(element.getAttribute("intent"));
+
+        XPath xpath = XPathFactory.newInstance().newXPath();
+        try
+        {
+            setContents(xpath.evaluate("contents[1]", element));
+        }
+        catch (XPathExpressionException e)
+        {
+            Log.d("PdfBox-Android",
+                "Error while evaluating XPath expression for richtext contents");
+        }
+
+        try
+        {
+            Node richContents = (Node) xpath.evaluate("contents-richtext[1]", element,
+                XPathConstants.NODE);
+            if (richContents != null)
+            {
+                setRichContents(richContentsToString(richContents, true));
+                setContents(richContents.getTextContent().trim());
+            }
+        }
+        catch (XPathExpressionException e)
+        {
+            Log.d("PdfBox-Android",
+                "Error while evaluating XPath expression for richtext contents");
+        }
+
+        PDBorderStyleDictionary borderStyle = new PDBorderStyleDictionary();
+        String width = element.getAttribute("width");
+        if (width != null && !width.isEmpty())
+        {
+            borderStyle.setWidth(Float.parseFloat(width));
+        }
+        if (borderStyle.getWidth() > 0)
+        {
+            String style = element.getAttribute("style");
+            if (style != null && !style.isEmpty())
+            {
+                if (style.equals("dash"))
+                {
+                    borderStyle.setStyle("D");
+                }
+                else if (style.equals("bevelled"))
+                {
+                    borderStyle.setStyle("B");
+                }
+                else if (style.equals("inset"))
+                {
+                    borderStyle.setStyle("I");
+                }
+                else if (style.equals("underline"))
+                {
+                    borderStyle.setStyle("U");
+                }
+                else if (style.equals("cloudy"))
+                {
+                    borderStyle.setStyle("S");
+                    PDBorderEffectDictionary borderEffect = new PDBorderEffectDictionary();
+                    borderEffect.setStyle("C");
+                    String intensity = element.getAttribute("intensity");
+                    if (intensity != null && !intensity.isEmpty())
+                    {
+                        borderEffect.setIntensity(Float.parseFloat(element
+                            .getAttribute("intensity")));
+                    }
+                    setBorderEffect(borderEffect);
+                }
+                else
+                {
+                    borderStyle.setStyle("S");
+                }
+            }
+            String dashes = element.getAttribute("dashes");
+            if (dashes != null && !dashes.isEmpty())
+            {
+                String[] dashesValues = dashes.split(",");
+                COSArray dashPattern = new COSArray();
+                for (int i = 0; i < dashesValues.length; i++)
+                {
+                    dashPattern.add(COSNumber.get(dashesValues[i]));
+                }
+                borderStyle.setDashStyle(dashPattern);
+            }
+            setBorderStyle(borderStyle);
+        }
 	}
 
 	/**
@@ -240,19 +351,10 @@ public abstract class FDFAnnotation implements COSObjectable
 	 *
 	 * @return The cos object that matches this Java object.
 	 */
-	public COSBase getCOSObject()
-	{
-		return annot;
-	}
-
-	/**
-	 * Convert this standard java object to a COS object.
-	 *
-	 * @return The cos object that matches this Java object.
-	 */
-	public COSDictionary getCOSDictionary()
-	{
-		return annot;
+    @Override
+    public COSDictionary getCOSObject()
+    {
+        return annot;
 	}
 
 	/**
@@ -286,37 +388,37 @@ public abstract class FDFAnnotation implements COSObjectable
 	 *
 	 * @return The annotation color, or null if there is none.
 	 */
-	//    public Color getColor()
-	//    {
-	//        Color retval = null;
-	//        COSArray array = (COSArray)annot.getDictionaryObject( "color" );
-	//        if( array != null )
-	//        {
-	//            float[] rgb = array.toFloatArray();
-	//            if( rgb.length >=3 )
-	//            {
-	//                retval = new Color( rgb[0], rgb[1], rgb[2] );
-	//            }
-	//        }
-	//        return retval;
-	//    }TODO: PdfBox-Android
+    public AWTColor getColor()
+    {
+        AWTColor retval = null;
+        COSArray array = (COSArray) annot.getDictionaryObject("color");
+        if (array != null)
+        {
+            float[] rgb = array.toFloatArray();
+            if (rgb.length >= 3)
+            {
+                retval = new AWTColor(rgb[0], rgb[1], rgb[2]);
+            }
+        }
+        return retval;
+    }
 
 	/**
 	 * Set the annotation color.
 	 *
 	 * @param c The annotation color.
 	 */
-	//    public void setColor( Color c )
-	//    {
-	//        COSArray color = null;
-	//        if( c != null )
-	//        {
-	//            float[] colors = c.getRGBColorComponents( null );
-	//            color = new COSArray();
-	//            color.setFloatArray( colors );
-	//        }
-	//        annot.setItem( "color", color );
-	//    }TODO: PdfBox-Android
+    public void setColor(AWTColor c)
+    {
+        COSArray color = null;
+        if (c != null)
+        {
+            float[] colors = c.getRGBColorComponents(null);
+            color = new COSArray();
+            color.setFloatArray(colors);
+        }
+        annot.setItem("color", color);
+    }
 
 	/**
 	 * Modification date.
@@ -565,6 +667,26 @@ public abstract class FDFAnnotation implements COSObjectable
 		return retval;
 	}
 
+    /**
+     * Set the contents, or a description, for an annotation.
+     *
+     * @param contents The annotation contents, or a description.
+     */
+    public void setContents(String contents)
+    {
+        annot.setString(COSName.CONTENTS, contents);
+    }
+
+    /**
+     * Get the text, or a description, of the annotation.
+     *
+     * @return The text, or a description, of the annotation.
+     */
+    public String getContents()
+    {
+        return annot.getString(COSName.CONTENTS);
+    }
+
 	/**
 	 * Set a unique title for an annotation.
 	 *
@@ -647,4 +769,175 @@ public abstract class FDFAnnotation implements COSObjectable
 	{
 		return annot.getString( COSName.SUBJ );
 	}
+
+    /**
+     * The intent of the annotation.
+     *
+     * @param intent The annotation's intent.
+     */
+    public void setIntent(String intent)
+    {
+        annot.setString(COSName.IT, intent);
+    }
+
+    /**
+     * Get the intent of the annotation.
+     *
+     * @return The intent of the annotation.
+     */
+    public String getIntent()
+    {
+        return annot.getString(COSName.IT);
+    }
+
+    /**
+     * This will retrieve the rich text stream which is displayed in the popup window.
+     *
+     * @return the rich text stream.
+     */
+    public String getRichContents()
+    {
+        return getStringOrStream(annot.getDictionaryObject(COSName.RC));
+    }
+
+    /**
+     * This will set the rich text stream which is displayed in the popup window.
+     *
+     * @param rc the rich text stream.
+     */
+    public void setRichContents(String rc)
+    {
+        annot.setItem(COSName.RC, new COSString(rc));
+    }
+
+    /**
+     * This will set the border style dictionary, specifying the width and dash pattern used in drawing the annotation.
+     *
+     * @param bs the border style dictionary to set.
+     */
+    public void setBorderStyle(PDBorderStyleDictionary bs)
+    {
+        annot.setItem(COSName.BS, bs);
+    }
+
+    /**
+     * This will retrieve the border style dictionary, specifying the width and dash pattern used in drawing the
+     * annotation.
+     *
+     * @return the border style dictionary.
+     */
+    public PDBorderStyleDictionary getBorderStyle()
+    {
+        COSDictionary bs = (COSDictionary) annot.getDictionaryObject(COSName.BS);
+        if (bs != null)
+        {
+            return new PDBorderStyleDictionary(bs);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /**
+     * This will set the border effect dictionary, describing the effect applied to the border described by the BS
+     * entry.
+     *
+     * @param be the border effect dictionary to set.
+     */
+    public void setBorderEffect(PDBorderEffectDictionary be)
+    {
+        annot.setItem(COSName.BE, be);
+    }
+
+    /**
+     * This will retrieve the border style dictionary, describing the effect applied to the border described by the BS
+     * entry.
+     *
+     * @return the border effect dictionary.
+     */
+    public PDBorderEffectDictionary getBorderEffect()
+    {
+        COSDictionary be = (COSDictionary) annot.getDictionaryObject(COSName.BE);
+        if (be != null)
+        {
+            return new PDBorderEffectDictionary(be);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Get a text or text stream.
+     *
+     * Some dictionary entries allow either a text or a text stream.
+     *
+     * @param base the potential text or text stream
+     * @return the text stream
+     */
+    protected final String getStringOrStream(COSBase base)
+    {
+        if (base == null)
+        {
+            return "";
+        }
+        else if (base instanceof COSString)
+        {
+            return ((COSString) base).getString();
+        }
+        else if (base instanceof COSStream)
+        {
+            return ((COSStream) base).getString();
+        }
+        else
+        {
+            return "";
+        }
+    }
+
+
+    private String richContentsToString(Node node, boolean root)
+    {
+        String retval = "";
+        XPath xpath = XPathFactory.newInstance().newXPath();
+        try
+        {
+            NodeList nodelist = (NodeList) xpath.evaluate("*", node, XPathConstants.NODESET);
+            String subString = "";
+            if (nodelist.getLength() == 0)
+            {
+                subString = node.getFirstChild().getNodeValue();
+            }
+            for (int i = 0; i < nodelist.getLength(); i++)
+            {
+                Node child = nodelist.item(i);
+                if (child instanceof Element)
+                {
+                    subString += richContentsToString(child, false);
+                }
+            }
+            NamedNodeMap attributes = node.getAttributes();
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < attributes.getLength(); i++)
+            {
+                Node attribute = attributes.item(i);
+                builder.append(String.format(" %s=\"%s\"", attribute.getNodeName(),
+                    attribute.getNodeValue()));
+            }
+            if (root)
+            {
+                return subString;
+            }
+            retval = String.format("<%s%s>%s</%s>", node.getNodeName(), builder.toString(),
+                subString, node.getNodeName());
+        }
+        catch (XPathExpressionException e)
+        {
+            Log.d("PdfBox-Android",
+                "Error while evaluating XPath expression for richtext contents");
+        }
+        return retval;
+    }
 }

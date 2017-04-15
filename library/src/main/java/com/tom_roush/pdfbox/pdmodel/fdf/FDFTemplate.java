@@ -1,14 +1,13 @@
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.tom_roush.pdfbox.cos.COSArray;
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This represents an FDF template that is part of the FDF page.
@@ -17,7 +16,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
  */
 public class FDFTemplate implements COSObjectable
 {
-    private COSDictionary template;
+    private final COSDictionary template;
 
     /**
      * Default constructor.
@@ -42,17 +41,8 @@ public class FDFTemplate implements COSObjectable
      *
      * @return The cos object that matches this Java object.
      */
-    public COSBase getCOSObject()
-    {
-        return template;
-    }
-
-    /**
-     * Convert this standard java object to a COS object.
-     *
-     * @return The cos object that matches this Java object.
-     */
-    public COSDictionary getCOSDictionary()
+    @Override
+    public COSDictionary getCOSObject()
     {
         return template;
     }

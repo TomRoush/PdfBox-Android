@@ -3,6 +3,7 @@ package com.tom_roush.pdfbox.pdmodel.interactive.form;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSeedValue;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 
@@ -75,8 +76,10 @@ public class PDSignatureField extends PDTerminalField
      * Add a signature dictionary to the signature field.
      *
      * @param value is the PDSignatureField
+     * @deprecated Use {@link #setValue(PDSignature)} instead.
      */
-    public void setSignature(PDSignature value)
+    @Deprecated
+    public void setSignature(PDSignature value) throws IOException
     {
         setValue(value);
     }
@@ -92,30 +95,31 @@ public class PDSignatureField extends PDTerminalField
     }
 
     /**
-     * Add a signature dictionary to the signature field.
+     * Sets the value of this field to be the given signature.
      *
      * @param value is the PDSignatureField
      */
-    public void setValue(PDSignature value)
+    public void setValue(PDSignature value) throws IOException
     {
-        if (value == null)
-        {
-            dictionary.removeItem(COSName.V);
-        }
-        else
-        {
-            dictionary.setItem(COSName.V, value);
-        }
+        dictionary.setItem(COSName.V, value);
+        applyChange();
     }
 
-    @Override
-    public void setValue(String fieldValue)
+    /**
+     * Sets the default value of this field to be the given signature.
+     *
+     * @param value is the PDSignatureField
+     */
+    public void setDefaultValue(PDSignature value) throws IOException
     {
-        // Signature fields don't support the strings for value
-        throw new IllegalArgumentException("Signature fields don't support a string for the value entry.");
+        dictionary.setItem(COSName.DV, value);
     }
 
-    @Override
+    /**
+     * Returns the signature contained in this field.
+     *
+     * @return A signature dictionary.
+     */
     public PDSignature getValue()
     {
         COSBase value = dictionary.getDictionaryObject(COSName.V);
@@ -124,6 +128,27 @@ public class PDSignatureField extends PDTerminalField
             return null;
         }
         return new PDSignature((COSDictionary) value);
+    }
+
+    /**
+     * Returns the default value, if any.
+     *
+     * @return A signature dictionary.
+     */
+    public PDSignature getDefaultValue()
+    {
+        COSBase value = dictionary.getDictionaryObject(COSName.DV);
+        if (value == null)
+        {
+            return null;
+        }
+        return new PDSignature((COSDictionary) value);
+    }
+
+    @Override
+    public String getValueAsString()
+    {
+        return getValue().toString();
     }
 
     /**
@@ -160,29 +185,20 @@ public class PDSignatureField extends PDTerminalField
     }
 
     @Override
-    public Object getDefaultValue()
-    {
-        // Signature fields don't support the "DV" entry.
-        return null;
-    }
-
-    @Override
-    public void setDefaultValue(String value)
-    {
-        // Signature fields don't support the "DV" entry.
-        throw new IllegalArgumentException("Signature fields don't support the \"DV\" entry.");
-    }
-
-    @Override
-    public String toString()
-    {
-        return "PDSignatureField";
-    }
-
-    @Override
     void constructAppearances() throws IOException
     {
-        // TODO: implement appearance generation for signatures
-        throw new UnsupportedOperationException("not implemented");
+        PDAnnotationWidget widget = this.getWidgets().get(0);
+        if (widget != null)
+        {
+            // check if the signature is visible
+            if (widget.getRectangle() != null && widget.getRectangle().getHeight() == 0 &&
+                widget.getRectangle().getWidth() == 0 || widget.isNoView() || widget.isHidden())
+            {
+                return;
+            }
+
+            // TODO: implement appearance generation for signatures
+            throw new UnsupportedOperationException("not implemented");
+        }
     }
 }

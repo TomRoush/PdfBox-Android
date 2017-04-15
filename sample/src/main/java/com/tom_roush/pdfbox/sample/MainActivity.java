@@ -27,6 +27,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDComboBox;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDListBox;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDRadioButton;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDTextField;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
@@ -179,8 +180,8 @@ public class MainActivity extends Activity {
 			PDAcroForm acroForm = docCatalog.getAcroForm();
 
 			// Fill the text field
-			PDField field = acroForm.getField("TextField");
-			field.setValue("Filled Text Field");
+            PDTextField field = (PDTextField) acroForm.getField("TextField");
+            field.setValue("Filled Text Field");
 			// Optional: don't allow this field to be edited
 			field.setReadonly(true);
 

@@ -19,10 +19,10 @@
 
 package com.tom_roush.fontbox.type1;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
-
-import android.util.Log;
 
 /**
  * Lexer for the ASCII portions of an Adobe Type 1 font.
@@ -53,7 +53,7 @@ class Type1Lexer
      * @param bytes Header-less .pfb segment
      * @throws IOException
      */
-    public Type1Lexer(byte[] bytes) throws IOException
+    Type1Lexer(byte[] bytes) throws IOException
     {
         buffer = ByteBuffer.wrap(bytes);
         aheadToken = readToken(null);

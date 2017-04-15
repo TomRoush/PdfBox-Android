@@ -20,8 +20,6 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.cos.COSStream;
-import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFField;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
@@ -109,80 +107,11 @@ public abstract class PDField implements COSObjectable
     public abstract String getFieldType();
 
     /**
-     * Get the value of the "DV" entry. The "DV" entry is an inheritable attribute.
+     * Returns a string representation of the "V" entry, or an empty string.
      *
-     * This will return null if the "DV" entry doesn't exist or if it has no value assigned.
-     *
-     * The different field types do require specific object types for their value
-     * e.g. for RadioButtons the DV entry needs to be a name object.
-     * If the value doesn't match the expected type an IOException is thrown. Such a wrong entry might
-     * have been set with a different library or by using PDFBox low level COS model.
-     *
-     * To get the value in such cases the lower level COS model can be used.
-     *
-     * @return The value of this field.
-     * @throws IOException If there is an error reading the data for this field
-     * or the type is not in line with the fields required type.
+     * @return A non-null string.
      */
-    public abstract Object getDefaultValue() throws IOException;
-
-    /**
-     * Set the value of the "DV" entry. The "DV" entry is an inheritable attribute.
-     *
-     * The different field types do require specific object types for their value
-     * e.g. for RadioButtons the DV entry needs to be a name object. This needs to be handled by the
-     * individual classes.
-     *
-     * Trying to set the default value for a {@link PDPushButton} field will lead to an
-     * {@link IllegalArgumentException} as PDPushButton fields do not support setting the
-     * entry although, common to all field types, the DV entry shall not be set.
-     *
-     * As a result it might be necessary to check the type of the value before
-     * reusing it.
-     *
-     * @param defaultValue The new default field value.
-     */
-    public abstract void setDefaultValue(String defaultValue);
-
-    /**
-     * Get the value of the "V" entry. The "V" entry is an inheritable attribute.
-     *
-     * This will return null if the "V" entry doesn't exist or if it has no value assigned.
-     *
-     * The different field types do require specific object types for their value
-     * e.g. for RadioButtons the V entry needs to be a name object.
-     * If the value doesn't match the expected type an IOException is thrown. Such a wrong entry might
-     * have been set with a different library or by using PDFBox low level COS model.
-     *
-     * To get the value in such cases the lower level COS model can be used.
-     *
-     * As a result it might be necessary to check the type of the value before
-     * reusing it.
-     *
-     * @return The value of this entry.
-     * @throws IOException If there is an error reading the data for this field
-     * or the type is not in line with the fields required type.
-     */
-    public abstract Object getValue() throws IOException;
-
-    /**
-     * Set the value of the "V" entry. The "V" entry is an inheritable attribute.
-     *
-     * The different field types do require specific object types for their value
-     * e.g. for RadioButtons the V entry needs to be a name object. This needs to be handled by the
-     * individual classes.
-     *
-     * Trying to set the value for a {@link PDPushButton} field will lead to an
-     * {@link IllegalArgumentException} as PDPushButton fields do not support setting the
-     * entry although, common to all field types, the DV entry shall not be set.
-     *
-     * As a result it might be necessary to check the type of the value before
-     * reusing it.
-     *
-     * @param fieldValue The new field value.
-     * @throws IOException if there is an error setting the field value.
-     */
-    public abstract void setValue(String fieldValue) throws IOException;
+    public abstract String getValueAsString();
 
     /**
      * sets the field to be read-only.
@@ -264,12 +193,11 @@ public abstract class PDField implements COSObjectable
     public PDFormFieldAdditionalActions getActions()
     {
         COSDictionary aa = (COSDictionary) dictionary.getDictionaryObject(COSName.AA);
-        PDFormFieldAdditionalActions retval = null;
         if (aa != null)
         {
-            retval = new PDFormFieldAdditionalActions(aa);
+            return new PDFormFieldAdditionalActions(aa);
         }
-        return retval;
+        return null;
     }
 
     /**
@@ -278,25 +206,12 @@ public abstract class PDField implements COSObjectable
      * @param fdfField The fdf field to import.
      * @throws IOException If there is an error importing the data for this field.
      */
-    public void importFDF(FDFField fdfField) throws IOException
+    void importFDF(FDFField fdfField) throws IOException
     {
-        Object fieldValue = fdfField.getValue();
-        int fieldFlags = getFieldFlags();
-
+        COSBase fieldValue = fdfField.getCOSValue();
         if (fieldValue != null)
         {
-            if (fieldValue instanceof COSString)
-            {
-                setValue(((COSString) fieldValue).getString());
-            }
-            else if (fieldValue instanceof COSStream)
-            {
-                setValue(((COSStream) fieldValue).getString());
-            }
-            else
-            {
-                throw new IOException("Unknown field type:" + fieldValue.getClass().getName());
-            }
+            dictionary.setItem(COSName.V, fieldValue);
         }
         Integer ff = fdfField.getFieldFlags();
         if (ff != null)
@@ -307,6 +222,7 @@ public abstract class PDField implements COSObjectable
         {
             // these are suppose to be ignored if the Ff is set.
             Integer setFf = fdfField.getSetFieldFlags();
+            int fieldFlags = getFieldFlags();
 
             if (setFf != null)
             {
@@ -395,14 +311,7 @@ public abstract class PDField implements COSObjectable
      * This will get the dictionary associated with this field.
      *
      * @return the dictionary that this class wraps.
-     * @deprecated use {@link #getCOSObject()} instead.
      */
-    @Deprecated
-    public COSDictionary getDictionary()
-    {
-        return dictionary;
-    }
-
     @Override
     public COSDictionary getCOSObject()
     {

@@ -16,10 +16,10 @@
  */
 package com.tom_roush.fontbox.ttf;
 
+import android.graphics.Path;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import android.graphics.Path;
 
 /**
  * This class provides a glyph to GeneralPath conversion for true type fonts.
@@ -37,7 +37,7 @@ class GlyphRenderer
 {
     private GlyphDescription glyphDescription;
 
-    public GlyphRenderer(GlyphDescription glyphDescription)
+    GlyphRenderer(GlyphDescription glyphDescription)
     {
         this.glyphDescription = glyphDescription;
     }

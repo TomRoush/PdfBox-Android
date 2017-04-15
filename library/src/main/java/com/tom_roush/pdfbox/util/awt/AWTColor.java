@@ -173,8 +173,20 @@ public class AWTColor {
 	{
 		color = Color.argb(a, r, g, b);
 	}
-	
-	/**
+
+    /**
+     * Creates an AWTColor with the specified RGB values
+     *
+     * @param r The red component as a float in the range (0.0f - 1.0f)
+     * @param g The green component as a float in the range (0.0f - 1.0f)
+     * @param b The blue component as a float in the range (0.0f - 1.0f)
+     */
+    public AWTColor(float r, float g, float b)
+    {
+        color = Color.rgb((int) (r * 255.0f), (int) (g * 255.0f), (int) (b * 255.0f));
+    }
+
+    /**
 	 * Returns the red component of this color
 	 * 
 	 * @return the value of the red component
@@ -213,4 +225,27 @@ public class AWTColor {
 	{
 		return Color.alpha(color);
 	}
+
+    /**
+     * Returns the RGB values range (0.0 - 1.0) as a float array
+     *
+     * @param compArray the array that will hold the values or null
+     * @return the float array of the RGB values
+     */
+    public float[] getRGBColorComponents(float[] compArray)
+    {
+        float[] retval;
+        if (compArray == null)
+        {
+            retval = new float[3];
+        }
+        else
+        {
+            retval = compArray;
+        }
+        retval[0] = (float) getRed() / 255.0f;
+        retval[1] = (float) getGreen() / 255.0f;
+        retval[2] = (float) getBlue() / 255.0f;
+        return retval;
+    }
 }

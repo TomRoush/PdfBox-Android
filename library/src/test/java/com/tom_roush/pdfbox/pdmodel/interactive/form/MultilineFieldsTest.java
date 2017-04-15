@@ -29,8 +29,9 @@ import java.io.IOException;
 public class MultilineFieldsTest
 {
     private static final File OUT_DIR = new File("target/test-output");
-    private static final String PATH_OF_PDF =
-        "/pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/form/MultilineFields.pdf";
+    private static final File IN_DIR = new File(
+        "src/test/resources/pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/form");
+    private static final String NAME_OF_PDF = "MultilineFields.pdf";
     private static final String TEST_VALUE =
         "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, " +
             "sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam";
@@ -42,7 +43,8 @@ public class MultilineFieldsTest
     @Before
     public void setUp() throws IOException
     {
-        document = PDDocument.load(getClass().getResourceAsStream(PATH_OF_PDF)); // XXX: from File
+        System.out.println("Working Directory = " + System.getProperty("user.dir"));
+        document = PDDocument.load(new File(IN_DIR, NAME_OF_PDF));
         acroForm = document.getDocumentCatalog().getAcroForm();
         OUT_DIR.mkdirs();
     }
@@ -50,48 +52,56 @@ public class MultilineFieldsTest
     @Test
     public void fillFields() throws IOException
     {
-        PDField field = (PDField) acroForm.getField("AlignLeft");
+        PDTextField field = (PDTextField) acroForm.getField("AlignLeft");
         field.setValue(TEST_VALUE);
 
-        field = (PDField) acroForm.getField("AlignMiddle");
+        field = (PDTextField) acroForm.getField("AlignMiddle");
         field.setValue(TEST_VALUE);
 
-        field = (PDField) acroForm.getField("AlignRight");
+        field = (PDTextField) acroForm.getField("AlignRight");
         field.setValue(TEST_VALUE);
 
-        field = (PDField) acroForm.getField("AlignLeft-Border_Small");
+        field = (PDTextField) acroForm.getField("AlignLeft-Border_Small");
         field.setValue(TEST_VALUE);
 
-        field = (PDField) acroForm.getField("AlignMiddle-Border_Small");
+        field = (PDTextField) acroForm.getField("AlignMiddle-Border_Small");
         field.setValue(TEST_VALUE);
 
-        field = (PDField) acroForm.getField("AlignRight-Border_Small");
+        field = (PDTextField) acroForm.getField("AlignRight-Border_Small");
         field.setValue(TEST_VALUE);
 
-        field = (PDField) acroForm.getField("AlignLeft-Border_Medium");
+        field = (PDTextField) acroForm.getField("AlignLeft-Border_Medium");
         field.setValue(TEST_VALUE);
 
-        field = (PDField) acroForm.getField("AlignMiddle-Border_Medium");
+        field = (PDTextField) acroForm.getField("AlignMiddle-Border_Medium");
         field.setValue(TEST_VALUE);
 
-        field = (PDField) acroForm.getField("AlignRight-Border_Medium");
+        field = (PDTextField) acroForm.getField("AlignRight-Border_Medium");
         field.setValue(TEST_VALUE);
 
-        field = (PDField) acroForm.getField("AlignLeft-Border_Wide");
+        field = (PDTextField) acroForm.getField("AlignLeft-Border_Wide");
         field.setValue(TEST_VALUE);
 
-        field = (PDField) acroForm.getField("AlignMiddle-Border_Wide");
+        field = (PDTextField) acroForm.getField("AlignMiddle-Border_Wide");
         field.setValue(TEST_VALUE);
 
-        field = (PDField) acroForm.getField("AlignRight-Border_Wide");
+        field = (PDTextField) acroForm.getField("AlignRight-Border_Wide");
         field.setValue(TEST_VALUE);
+
+        // compare rendering
+        File file = new File(OUT_DIR, NAME_OF_PDF);
+        document.save(file);
+//        TestPDFToImage testPDFToImage = new TestPDFToImage(TestPDFToImage.class.getName());
+//        if (!testPDFToImage.doTestFile(file, IN_DIR.getAbsolutePath(), OUT_DIR.getAbsolutePath()))
+//        {
+//            // don't fail, rendering is different on different systems, result must be viewed manually
+//            System.err.println ("Rendering of " + file + " failed or is not identical to expected rendering in " + IN_DIR + " directory");
+//        } TODO: PdfBox-Android
     }
 
     @After
     public void tearDown() throws IOException
     {
-        File file = new File(OUT_DIR, "MultilineTests.pdf");
-        document.save(file);
         document.close();
     }
 }

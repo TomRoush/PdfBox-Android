@@ -1,6 +1,7 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
 import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -60,7 +61,7 @@ public class PDNonTerminalField extends PDField
     }
 
     @Override
-    public void importFDF(FDFField fdfField) throws IOException
+    void importFDF(FDFField fdfField) throws IOException
     {
         super.importFDF(fdfField);
 
@@ -113,7 +114,8 @@ public class PDNonTerminalField extends PDField
         COSArray kids = (COSArray) dictionary.getDictionaryObject(COSName.KIDS);
         for (int i = 0; i < kids.size(); i++)
         {
-            PDField field = PDField.fromDictionary(acroForm, (COSDictionary) kids.get(i), this);
+            PDField field = PDField
+                .fromDictionary(acroForm, (COSDictionary) kids.getObject(i), this);
             children.add(field);
         }
         return children;
@@ -130,37 +132,75 @@ public class PDNonTerminalField extends PDField
         dictionary.setItem(COSName.KIDS, kidsArray);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p><b>Note:</b> while non-terminal fields <b>do</b> inherit field values, this method returns
+     * the local value, without inheritance.
+     */
     @Override
     public String getFieldType()
     {
-        // There is no need to look up the parent hierarchy within a non terminal field
         return dictionary.getNameAsString(COSName.FT);
     }
 
-    @Override
-    public Object getValue()
+    /**
+     * {@inheritDoc}
+     *
+     * <p><b>Note:</b> while non-terminal fields <b>do</b> inherit field values, this method returns
+     * the local value, without inheritance.
+     */
+    public COSBase getValue()
     {
-    	// There is no need to look up the parent hierarchy within a non terminal field
-        return dictionary.getNameAsString(COSName.V);
+        return dictionary.getDictionaryObject(COSName.V);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p><b>Note:</b> while non-terminal fields <b>do</b> inherit field values, this method returns
+     * the local value, without inheritance.
+     */
     @Override
-    public void setValue(String fieldValue)
+    public String getValueAsString()
     {
-    	// There is no need to look up the parent hierarchy within a non terminal field
-        dictionary.setString(COSName.V, fieldValue);
+        return dictionary.getDictionaryObject(COSName.V).toString();
     }
 
-    @Override
-    public Object getDefaultValue()
+    /**
+     * Sets the value of this field. This may be of any kind which is valid for this field's
+     * children.
+     *
+     * <p><b>Note:</b> while non-terminal fields <b>do</b> inherit field values, this method returns
+     * the local value, without inheritance.
+     */
+    public void setValue(COSBase object) throws IOException
     {
-    	// There is no need to look up the parent hierarchy within a non terminal field
-        return dictionary.getNameAsString(COSName.V);
+        dictionary.setItem(COSName.V, object);
+        // todo: propagate change event to children?
+        // todo: construct appearances of children?
     }
 
-    public void setDefaultValue(String defaultValue)
+    /**
+     * Returns the default value of this field. This may be of any kind which is valid for this field's
+     * children.
+     *
+     * <p><b>Note:</b> while non-terminal fields <b>do</b> inherit field values, this method returns
+     * the local value, without inheritance.
+     */
+    public COSBase getDefaultValue()
     {
-    	// There is no need to look up the parent hierarchy within a non terminal field
-        dictionary.setString(COSName.V, defaultValue);
+        return dictionary.getDictionaryObject(COSName.DV);
+    }
+
+    /**
+     * Sets the default of this field. This may be of any kind which is valid for this field's
+     * children.
+     *
+     * <p><b>Note:</b> while non-terminal fields <b>do</b> inherit field values, this method returns
+     * the local value, without inheritance.
+     */
+    public void setDefaultValue(COSBase value)
+    {
+        dictionary.setItem(COSName.V, value);
     }
 }

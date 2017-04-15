@@ -313,8 +313,8 @@ public class PDOptionalContentProperties implements COSObjectable
                 if (name.equals(groupName))
                 {
                     //enable group
-                    off.remove(group);
-                    on.add(group);
+                    off.remove(o);
+                    on.add(o);
                     found = true;
                     break;
                 }
@@ -329,8 +329,8 @@ public class PDOptionalContentProperties implements COSObjectable
                 if (name.equals(groupName))
                 {
                     //disable group
-                    on.remove(group);
-                    off.add(group);
+                    on.remove(o);
+                    off.add(o);
                     found = true;
                     break;
                 }
@@ -350,6 +350,4 @@ public class PDOptionalContentProperties implements COSObjectable
         }
         return found;
     }
-
-
 }

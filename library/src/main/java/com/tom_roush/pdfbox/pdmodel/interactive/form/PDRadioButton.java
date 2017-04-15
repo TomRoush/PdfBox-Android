@@ -96,7 +96,7 @@ public final class PDRadioButton extends PDButton
             for (COSObjectable kid : kids)
             {
                 // fixme: this is always false, because it's kids are always widgets, not fields.
-                if (kid instanceof PDCheckbox)
+                /*if (kid instanceof PDCheckbox)
                 {
                     PDCheckbox btn = (PDCheckbox) kid;
                     if (btn.getOnValue().equals(fieldValue))
@@ -104,7 +104,7 @@ public final class PDRadioButton extends PDButton
                         break;
                     }
                     idx++;
-                }
+                }*/
             }
             if (idx <= options.size())
             {
@@ -114,41 +114,82 @@ public final class PDRadioButton extends PDButton
         return "";
     }
 
-    @Override
-    public String getValue() throws IOException
+    /**
+     * Returns the selected value. May be empty if NoToggleToOff is set but there is no value
+     * selected.
+     *
+     * @return A non-null string.
+     */
+    public String getValue()
     {
-        COSBase attribute = getInheritableAttribute(COSName.V);
-
-        if (attribute == null)
+        COSBase value = getInheritableAttribute(COSName.V);
+        if (value instanceof COSName)
         {
-            return "";
-        }
-        else if (attribute instanceof COSName)
-        {
-            return ((COSName) attribute).getName();
+            return ((COSName) value).getName();
         }
         else
         {
-            throw new IOException("Expected a COSName entry but got " + attribute.getClass().getName());
+            return "";
+        }
+    }
+
+    /**
+     * Returns the default value, if any.
+     *
+     * @return A non-null string.
+     */
+    public String getDefaultValue()
+    {
+        COSBase value = getInheritableAttribute(COSName.DV);
+        if (value instanceof COSName)
+        {
+            return ((COSName) value).getName();
+        }
+        else
+        {
+            return "";
         }
     }
 
     @Override
-    public void setValue(String fieldValue)
+    public String getValueAsString()
     {
-        COSName nameForValue = COSName.getPDFName(fieldValue);
-        dictionary.setItem(COSName.V, nameForValue);
+        return getValue();
+    }
+
+    /**
+     * Sets the selected radio button, given its name.
+     *
+     * @param value Name of radio button to select
+     * @throws IOException if the value could not be set
+     */
+    public void setValue(String value) throws IOException
+    {
+        dictionary.setName(COSName.V, value);
+        // update the appearance state (AS)
         for (PDAnnotationWidget widget : getWidgets())
         {
             PDAppearanceEntry appearanceEntry = widget.getAppearance().getNormalAppearance();
-            if (((COSDictionary) appearanceEntry.getCOSObject()).containsKey(nameForValue))
+            if (((COSDictionary) appearanceEntry.getCOSObject()).containsKey(value))
             {
-                widget.getCOSObject().setName(COSName.AS, fieldValue);
+                widget.getCOSObject().setName(COSName.AS, value);
             }
             else
             {
                 widget.getCOSObject().setItem(COSName.AS, COSName.OFF);
             }
         }
+        applyChange();
+    }
+
+    /**
+     * Sets the default value.
+     *
+     * @param value Name of radio button to select
+     * @throws IOException if the value could not be set
+     */
+    public void setDefaultValue(String value) throws IOException
+    {
+        dictionary.setName(COSName.DV, value);
     }
 }

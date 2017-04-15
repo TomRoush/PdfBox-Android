@@ -1,14 +1,14 @@
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
-import java.io.IOException;
-import java.io.Writer;
-
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
+
 import org.w3c.dom.Element;
+
+import java.io.IOException;
+import java.io.Writer;
 
 /**
  * This represents an FDF catalog that is part of the FDF document.
@@ -68,17 +68,8 @@ public class FDFCatalog implements COSObjectable
      *
      * @return The cos object that matches this Java object.
      */
-    public COSBase getCOSObject()
-    {
-        return catalog;
-    }
-
-    /**
-     * Convert this standard java object to a COS object.
-     *
-     * @return The cos object that matches this Java object.
-     */
-    public COSDictionary getCOSDictionary()
+    @Override
+    public COSDictionary getCOSObject()
     {
         return catalog;
     }
@@ -111,7 +102,7 @@ public class FDFCatalog implements COSObjectable
     public FDFDictionary getFDF()
     {
         COSDictionary fdf = (COSDictionary)catalog.getDictionaryObject( COSName.FDF );
-        FDFDictionary retval = null;
+        FDFDictionary retval;
         if( fdf != null )
         {
             retval = new FDFDictionary( fdf );

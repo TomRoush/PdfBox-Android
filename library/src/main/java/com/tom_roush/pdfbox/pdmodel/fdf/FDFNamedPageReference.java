@@ -1,12 +1,11 @@
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
-import java.io.IOException;
-
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
+
+import java.io.IOException;
 
 /**
  * This represents an FDF named page reference that is part of the FDF field.
@@ -15,7 +14,7 @@ import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification
  */
 public class FDFNamedPageReference implements COSObjectable
 {
-    private COSDictionary ref;
+    private final COSDictionary ref;
 
     /**
      * Default constructor.
@@ -40,17 +39,8 @@ public class FDFNamedPageReference implements COSObjectable
      *
      * @return The cos object that matches this Java object.
      */
-    public COSBase getCOSObject()
-    {
-        return ref;
-    }
-
-    /**
-     * Convert this standard java object to a COS object.
-     *
-     * @return The cos object that matches this Java object.
-     */
-    public COSDictionary getCOSDictionary()
+    @Override
+    public COSDictionary getCOSObject()
     {
         return ref;
     }

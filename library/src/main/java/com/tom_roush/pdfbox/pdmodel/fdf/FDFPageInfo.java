@@ -1,6 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
@@ -11,7 +10,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
  */
 public class FDFPageInfo implements COSObjectable
 {
-    private COSDictionary pageInfo;
+    private final COSDictionary pageInfo;
 
     /**
      * Default constructor.
@@ -36,17 +35,8 @@ public class FDFPageInfo implements COSObjectable
      *
      * @return The cos object that matches this Java object.
      */
-    public COSBase getCOSObject()
-    {
-        return pageInfo;
-    }
-
-    /**
-     * Convert this standard java object to a COS object.
-     *
-     * @return The cos object that matches this Java object.
-     */
-    public COSDictionary getCOSDictionary()
+    @Override
+    public COSDictionary getCOSObject()
     {
         return pageInfo;
     }

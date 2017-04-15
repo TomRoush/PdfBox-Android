@@ -1,17 +1,18 @@
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+
 import org.w3c.dom.Element;
+
+import java.io.IOException;
 
 /**
  * This represents a Highlight FDF annotation.
  *
  * @author Ben Litchfield
  */
-public class FDFAnnotationHighlight extends FDFAnnotation
+public class FDFAnnotationHighlight extends FDFAnnotationTextMarkup
 {
     /**
      * COS Model value for SubType entry.

@@ -1,15 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.tom_roush.fontbox.ttf.CmapSubtable;
 import com.tom_roush.fontbox.ttf.HeaderTable;
 import com.tom_roush.fontbox.ttf.HorizontalHeaderTable;
@@ -24,6 +14,16 @@ import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Common functionality for embedding TrueType fonts.
@@ -191,16 +191,16 @@ abstract class TrueTypeEmbedder implements Subsetter
         // CapHeight, XHeight
         if (os2.getVersion() >= 1.2)
         {
-            fd.setCapHeight(os2.getCapHeight() / scaling);
-            fd.setXHeight(os2.getHeight() / scaling);
+            fd.setCapHeight(os2.getCapHeight() * scaling);
+            fd.setXHeight(os2.getHeight() * scaling);
         }
         else
         {
             // estimate by summing the typographical +ve ascender and -ve descender
-            fd.setCapHeight((os2.getTypoAscender() + os2.getTypoDescender()) / scaling);
+            fd.setCapHeight((os2.getTypoAscender() + os2.getTypoDescender()) * scaling);
 
             // estimate by halving the typographical ascender
-            fd.setXHeight((os2.getTypoAscender() / 2.0f) / scaling);
+            fd.setXHeight(os2.getTypoAscender() / 2.0f * scaling);
         }
 
         // StemV - there's no true TTF equivalent of this, so we estimate it

@@ -33,10 +33,10 @@ public class NamingTable extends TTFTable
      * A tag that identifies this table type.
      */
     public static final String TAG = "name";
-    
-    private List<NameRecord> nameRecords = new ArrayList<NameRecord>();
 
-    private Map<Integer, Map<Integer, Map<Integer, Map<Integer, String>>>> lookupTable =
+    private final List<NameRecord> nameRecords = new ArrayList<NameRecord>();
+
+    private final Map<Integer, Map<Integer, Map<Integer, Map<Integer, String>>>> lookupTable =
             new HashMap<Integer, Map<Integer, Map<Integer, Map<Integer, String>>>>();
 
     private String fontFamily = null;

@@ -146,7 +146,7 @@ public abstract class PDTerminalField extends PDField
     {
         FDFField fdfField = new FDFField();
         fdfField.setPartialFieldName(getPartialName());
-        fdfField.setValue(getValue());
+        fdfField.setValue(dictionary.getDictionaryObject(COSName.V));
 
         // fixme: the old code which was here assumed that Kids were PDField instances,
         //        which is never true. They're annotation widgets.
@@ -173,7 +173,7 @@ public abstract class PDTerminalField extends PDField
             // there are multiple widgets
             for (int i = 0; i < kids.size(); i++)
             {
-                COSBase kid = kids.get(i);
+                COSBase kid = kids.getObject(i);
                 if (kid instanceof COSDictionary)
                 {
                     widgets.add(new PDAnnotationWidget((COSDictionary) kid));
@@ -201,7 +201,7 @@ public abstract class PDTerminalField extends PDField
      * specified, then the first entry in that list will be returned.
      *
      * @return The widget that is associated with this field.
-     * @deprecated Fields may have more than one widget, call {@link #getWidgets() instead}.
+     * @deprecated Fields may have more than one widget, call {@link #getWidgets()} instead.
      */
     @Deprecated
     public PDAnnotationWidget getWidget()

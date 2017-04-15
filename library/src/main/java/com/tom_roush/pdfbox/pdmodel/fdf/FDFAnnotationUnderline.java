@@ -1,17 +1,18 @@
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+
 import org.w3c.dom.Element;
+
+import java.io.IOException;
 
 /**
  * This represents a Underline FDF annotation.
  *
  * @author Ben Litchfield
  */
-public class FDFAnnotationUnderline extends FDFAnnotation
+public class FDFAnnotationUnderline extends FDFAnnotationTextMarkup
 {
     /**
      * COS Model value for SubType entry.

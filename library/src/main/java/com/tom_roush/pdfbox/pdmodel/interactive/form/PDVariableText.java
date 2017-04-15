@@ -6,6 +6,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.pdmodel.PDResources;
 
 import java.io.IOException;
 
@@ -58,6 +59,23 @@ public abstract class PDVariableText extends PDTerminalField
 		COSString defaultAppearance = (COSString) getInheritableAttribute(COSName.DA);
 		return defaultAppearance.getString();
 	}
+
+    /**
+     * Get the default appearance.
+     *
+     * This is an inheritable attribute.
+     *
+     * The default appearance contains a set of default graphics and text operators
+     * to define the field’s text size and color.
+     *
+     * @return the DA element of the dictionary object
+     */
+    PDAppearanceString getDefaultAppearanceString() throws IOException
+    {
+        COSString da = (COSString) getInheritableAttribute(COSName.DA);
+        PDResources dr = getAcroForm().getDefaultResources();
+        return new PDAppearanceString(da, dr);
+    }
 
 	/**
 	 * Set the default appearance.
@@ -149,14 +167,8 @@ public abstract class PDVariableText extends PDTerminalField
 	 */
 	public String getRichTextValue() throws IOException
 	{
-		String string = getStringOrStream(getInheritableAttribute(COSName.RV));
-		if (string != null)
-		{
-			return string;
-		}
-
-		return "";
-	}
+        return getStringOrStream(getInheritableAttribute(COSName.RV));
+    }
 
 	/**
 	 * Set the fields rich text value.
@@ -196,15 +208,14 @@ public abstract class PDVariableText extends PDTerminalField
 	 *
 	 * @param base the potential text or text stream
 	 * @return the text stream
-	 * @throws IOException if the field dictionary entry is not a text type
 	 */
-	protected String getStringOrStream(COSBase base) throws IOException
-	{
-		if (base == null)
+    protected String getStringOrStream(COSBase base)
+    {
+        if (base == null)
 		{
-			return null;
-		}
-		else if (base instanceof COSString)
+            return "";
+        }
+        else if (base instanceof COSString)
 		{
 			return ((COSString) base).getString();
 		}
@@ -214,7 +225,7 @@ public abstract class PDVariableText extends PDTerminalField
 		}
 		else
 		{
-			throw new IOException("Unexpected field value of type: " + base.getClass().getName());
-		}
-	}
+            return "";
+        }
+    }
 }
