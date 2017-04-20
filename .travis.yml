@@ -5,7 +5,8 @@ android:
     - tools
     - build-tools-25.0.2
     - android-21
-    # - sys-img-x86-android-21
+    - sys-img-x86-android-21
+    - extra-android-support
 
 jdk:
   - oraclejdk8
@@ -19,10 +20,10 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 
-# before_script:
-  # Create and start the emulator
-  # - echo no | android create avd --force -n test -t android-21 --abi x86_64
-  # - emulator -avd test -no-skin -no-audio -no-window &
-  # - android-wait-for-emulator
+ before_script:
+#   Create and start the emulator
+   - echo no | android create avd --force -n test -t android-21 --abi x86_64
+   - emulator -avd test -no-skin -no-audio -no-window &
+   - android-wait-for-emulator
 
-script: ./gradlew build test
+script: ./gradlew build test connectedCheck
