@@ -16,12 +16,18 @@
  */
 package com.tom_roush.pdfbox.encryption;
 
+import android.content.Context;
+import android.support.test.InstrumentationRegistry;
+
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
 import com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyProtectionPolicy;
 import com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyRecipient;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,12 +39,14 @@ import java.security.cert.X509Certificate;
 
 import javax.crypto.Cipher;
 
+import static org.junit.Assert.fail;
+
 /**
  * Tests for public key encryption.
  *
  * @author Ben Litchfield
  */
-public class TestPublicKeyEncryption extends TestCase
+public class TestPublicKeyEncryption
 {
 
     private AccessPermission permission1;
@@ -53,23 +61,25 @@ public class TestPublicKeyEncryption extends TestCase
     private String password1;
     private String password2;
 
+    Context testContext;
+    private final String path = "pdfbox/com/tom_roush/pdfbox/pdmodel/encryption/";
+
     /**
      * Simple test document that gets encrypted by the test cases.
      */
     private PDDocument document;
 
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         if (Cipher.getMaxAllowedKeyLength("AES") != Integer.MAX_VALUE)
         {
             // we need strong encryption for these tests
 //            fail("JCE unlimited strength jurisdiction policy files are not installed");
         }
+
+        testContext = InstrumentationRegistry.getInstrumentation().getContext();
 
         permission1 = new AccessPermission();
         permission1.setCanAssembleDocument(false);
@@ -100,8 +110,7 @@ public class TestPublicKeyEncryption extends TestCase
         keyStore1 = "test1.pfx";
         keyStore2 = "test2.pfx";
 
-        InputStream input =
-                TestPublicKeyEncryption.class.getResourceAsStream("/pdfbox/com/tom_roush/pdfbox/pdmodel/encryption/test.pdf");
+        InputStream input = testContext.getAssets().open(path + "test.pdf");
         try
         {
             document = PDDocument.load(input);
@@ -112,11 +121,8 @@ public class TestPublicKeyEncryption extends TestCase
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected void tearDown() throws Exception
+    @After
+    public void tearDown() throws Exception
     {
         document.close();
     }
@@ -127,6 +133,7 @@ public class TestPublicKeyEncryption extends TestCase
      *
      * @throws Exception If there is an unexpected error during the test.
      */
+    @Test
     public void testProtectionError() throws Exception
     {
         PublicKeyProtectionPolicy policy = new PublicKeyProtectionPolicy();
@@ -134,25 +141,25 @@ public class TestPublicKeyEncryption extends TestCase
         document.protect(policy);
 
         PDDocument encryptedDoc = null;
-//        try
-//        {
-//            encryptedDoc = reload(document, password2, getKeyStore(keyStore2));
-//            Assert.assertTrue(encryptedDoc.isEncrypted());
-//            fail("No exception when using an incorrect decryption key");
-//        }
-//        catch (IOException ex)
-//        {
-//            String msg = ex.getMessage();
-//            Assert.assertTrue("not the expected exception: " + msg,
-//                    msg.contains("serial-#: rid 2 vs. cert 3"));
-//        }
-//        finally
-//        {
-//            if (encryptedDoc != null)
-//            {
-//                encryptedDoc.close();
-//            }
-//        } TODO: PdfBox-Android
+        try
+        {
+            encryptedDoc = reload(document, password2, getKeyStore(keyStore2));
+            Assert.assertTrue(encryptedDoc.isEncrypted());
+            fail("No exception when using an incorrect decryption key");
+        }
+        catch (IOException ex)
+        {
+            String msg = ex.getMessage();
+            Assert.assertTrue("not the expected exception: " + msg,
+                    msg.contains("serial-#: rid 2 vs. cert 3"));
+        }
+        finally
+        {
+            if (encryptedDoc != null)
+            {
+                encryptedDoc.close();
+            }
+        }
     }
 
 
@@ -162,32 +169,33 @@ public class TestPublicKeyEncryption extends TestCase
      *
      * @throws Exception If there is an unexpected error during the test.
      */
+    @Test
     public void testProtection() throws Exception
     {
         PublicKeyProtectionPolicy policy = new PublicKeyProtectionPolicy();
         policy.addRecipient(recipient1);
         document.protect(policy);
 
-//        PDDocument encryptedDoc = reload(document, password1, getKeyStore(keyStore1));
-//        try
-//        {
-//            Assert.assertTrue(encryptedDoc.isEncrypted());
-//
-//            AccessPermission permission =
-//                    encryptedDoc.getCurrentAccessPermission();
-//            Assert.assertFalse(permission.canAssembleDocument());
-//            Assert.assertFalse(permission.canExtractContent());
-//            Assert.assertTrue(permission.canExtractForAccessibility());
-//            Assert.assertFalse(permission.canFillInForm());
-//            Assert.assertFalse(permission.canModify());
-//            Assert.assertFalse(permission.canModifyAnnotations());
-//            Assert.assertFalse(permission.canPrint());
-//            Assert.assertFalse(permission.canPrintDegraded());
-//        }
-//        finally
-//        {
-//            encryptedDoc.close();
-//        } TODO: PdfBox-Android
+        PDDocument encryptedDoc = reload(document, password1, getKeyStore(keyStore1));
+        try
+        {
+            Assert.assertTrue(encryptedDoc.isEncrypted());
+
+            AccessPermission permission =
+                    encryptedDoc.getCurrentAccessPermission();
+            Assert.assertFalse(permission.canAssembleDocument());
+            Assert.assertFalse(permission.canExtractContent());
+            Assert.assertTrue(permission.canExtractForAccessibility());
+            Assert.assertFalse(permission.canFillInForm());
+            Assert.assertFalse(permission.canModify());
+            Assert.assertFalse(permission.canModifyAnnotations());
+            Assert.assertFalse(permission.canPrint());
+            Assert.assertFalse(permission.canPrintDegraded());
+        }
+        finally
+        {
+            encryptedDoc.close();
+        }
     }
 
 
@@ -196,6 +204,7 @@ public class TestPublicKeyEncryption extends TestCase
      *
      * @throws Exception If there is an error during the test.
      */
+    @Test
     public void testMultipleRecipients() throws Exception
     {
         PublicKeyProtectionPolicy policy = new PublicKeyProtectionPolicy();
@@ -204,44 +213,44 @@ public class TestPublicKeyEncryption extends TestCase
         document.protect(policy);
 
         // open first time
-//        PDDocument encryptedDoc1 = reload(document, password1, getKeyStore(keyStore1));
-//        try
-//        {
-//            AccessPermission permission =
-//                    encryptedDoc1.getCurrentAccessPermission();
-//            Assert.assertFalse(permission.canAssembleDocument());
-//            Assert.assertFalse(permission.canExtractContent());
-//            Assert.assertTrue(permission.canExtractForAccessibility());
-//            Assert.assertFalse(permission.canFillInForm());
-//            Assert.assertFalse(permission.canModify());
-//            Assert.assertFalse(permission.canModifyAnnotations());
-//            Assert.assertFalse(permission.canPrint());
-//            Assert.assertFalse(permission.canPrintDegraded());
-//        }
-//        finally
-//        {
-//            encryptedDoc1.close();
-//        }
-//
-//        // open second time
-//        PDDocument encryptedDoc2 = reload(document, password2, getKeyStore(keyStore2));
-//        try
-//        {
-//            AccessPermission permission =
-//                    encryptedDoc2.getCurrentAccessPermission();
-//            Assert.assertFalse(permission.canAssembleDocument());
-//            Assert.assertFalse(permission.canExtractContent());
-//            Assert.assertTrue(permission.canExtractForAccessibility());
-//            Assert.assertFalse(permission.canFillInForm());
-//            Assert.assertFalse(permission.canModify());
-//            Assert.assertFalse(permission.canModifyAnnotations());
-//            Assert.assertTrue(permission.canPrint());
-//            Assert.assertFalse(permission.canPrintDegraded());
-//        }
-//        finally
-//        {
-//            encryptedDoc2.close();
-//        } TODO: PdfBox-Android
+        PDDocument encryptedDoc1 = reload(document, password1, getKeyStore(keyStore1));
+        try
+        {
+            AccessPermission permission =
+                    encryptedDoc1.getCurrentAccessPermission();
+            Assert.assertFalse(permission.canAssembleDocument());
+            Assert.assertFalse(permission.canExtractContent());
+            Assert.assertTrue(permission.canExtractForAccessibility());
+            Assert.assertFalse(permission.canFillInForm());
+            Assert.assertFalse(permission.canModify());
+            Assert.assertFalse(permission.canModifyAnnotations());
+            Assert.assertFalse(permission.canPrint());
+            Assert.assertFalse(permission.canPrintDegraded());
+        }
+        finally
+        {
+            encryptedDoc1.close();
+        }
+
+        // open second time
+        PDDocument encryptedDoc2 = reload(document, password2, getKeyStore(keyStore2));
+        try
+        {
+            AccessPermission permission =
+                    encryptedDoc2.getCurrentAccessPermission();
+            Assert.assertFalse(permission.canAssembleDocument());
+            Assert.assertFalse(permission.canExtractContent());
+            Assert.assertTrue(permission.canExtractForAccessibility());
+            Assert.assertFalse(permission.canFillInForm());
+            Assert.assertFalse(permission.canModify());
+            Assert.assertFalse(permission.canModifyAnnotations());
+            Assert.assertTrue(permission.canPrint());
+            Assert.assertFalse(permission.canPrintDegraded());
+        }
+        finally
+        {
+            encryptedDoc2.close();
+        }
     }
 
     /**
@@ -274,7 +283,7 @@ public class TestPublicKeyEncryption extends TestCase
      */
     private PublicKeyRecipient getRecipient(String certificate, AccessPermission permission) throws Exception
     {
-        InputStream input = TestPublicKeyEncryption.class.getResourceAsStream("/pdfbox/com/tom_roush/pdfbox/pdmodel/encryption/" + certificate);
+        InputStream input = testContext.getAssets().open(path + certificate);
         try
         {
             CertificateFactory factory = CertificateFactory.getInstance("X.509");
@@ -292,6 +301,14 @@ public class TestPublicKeyEncryption extends TestCase
 
     private InputStream getKeyStore(String name)
     {
-        return TestPublicKeyEncryption.class.getResourceAsStream("/pdfbox/com/tom_roush/pdfbox/pdmodel/encryption/" + name);
+        try
+        {
+            return testContext.getAssets().open(path + name);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

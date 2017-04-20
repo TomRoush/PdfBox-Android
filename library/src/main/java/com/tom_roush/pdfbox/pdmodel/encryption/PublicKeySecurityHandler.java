@@ -157,7 +157,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 					{
 						foundRecipient = true;
 						PrivateKey privateKey = (PrivateKey) material.getPrivateKey();
-						envelopedData = ri.getContent(new JceKeyTransEnvelopedRecipient(privateKey).setProvider("BC"));
+						envelopedData = ri.getContent(new JceKeyTransEnvelopedRecipient(privateKey).setProvider("SC"));
 						break;
 					}
 					j++;
@@ -400,8 +400,8 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 		try
 		{
 			apg = AlgorithmParameterGenerator.getInstance(algorithm);
-			keygen = KeyGenerator.getInstance(algorithm);
-			cipher = Cipher.getInstance(algorithm);
+			keygen = KeyGenerator.getInstance(algorithm, "SC");
+			cipher = Cipher.getInstance(algorithm, "SC");
 		}
 		catch (NoSuchAlgorithmException e)
 		{
