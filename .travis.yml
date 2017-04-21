@@ -5,7 +5,8 @@ android:
     - tools
     - build-tools-25.0.2
     - android-21
-    - sys-img-x86-android-21
+    - sys-img-armeabi-v7a-android-21
+#    - sys-img-x86-android-21
     - extra-android-support
     - extra-android-m2repository
 
@@ -21,10 +22,10 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 
- before_script:
-#   Create and start the emulator
-   - echo no | android create avd --force -n test -t android-21 --abi x86_64
-   - emulator -avd test -no-skin -no-audio -no-window &
-   - android-wait-for-emulator
+# Emulator Management: Create, Start and Wait
+before_script:
+  - echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
+  - emulator -avd test -no-audio -no-window &
+  - android-wait-for-emulator
 
 script: ./gradlew build test connectedCheck
