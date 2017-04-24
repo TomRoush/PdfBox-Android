@@ -1,5 +1,16 @@
 package com.tom_roush.pdfbox.pdmodel.encryption;
 
+import android.util.Log;
+
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,17 +34,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
-import com.tom_roush.pdfbox.cos.COSArray;
-import com.tom_roush.pdfbox.cos.COSBase;
-import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.cos.COSStream;
-import com.tom_roush.pdfbox.cos.COSString;
-import com.tom_roush.pdfbox.io.IOUtils;
-import com.tom_roush.pdfbox.pdmodel.PDDocument;
-
-import android.util.Log;
 
 /**
  * A security handler as described in the PDF specifications.
@@ -427,8 +427,9 @@ public abstract class SecurityHandler
 	private void decryptDictionary(COSDictionary dictionary, long objNum, long genNum) throws IOException
 	{
 		// skip dictionary containing the signature
-		if (!COSName.SIG.equals(dictionary.getItem(COSName.TYPE)))
-		{
+        if (!COSName.SIG.equals(dictionary.getItem(COSName.TYPE)) &&
+            !COSName.SIG.equals(dictionary.getItem(COSName.FT)))
+        {
 			for (Map.Entry<COSName, COSBase> entry : dictionary.entrySet())
 			{
 				COSBase value = entry.getValue();

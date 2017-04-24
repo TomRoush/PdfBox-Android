@@ -27,5 +27,5 @@ public class PDShadingType6 extends PDShadingType4
 //    public Paint toPaint(Matrix matrix)
 //    {
 //        return new Type6ShadingPaint(this, matrix);
-//    }TODO
+//    }TODO: PdfBox-Android
 }

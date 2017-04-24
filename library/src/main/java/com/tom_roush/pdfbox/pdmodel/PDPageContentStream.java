@@ -855,7 +855,7 @@ public final class PDPageContentStream implements Closeable
     {
     	COSName key;
     	if (colorSpace instanceof PDDeviceGray ||
-    			colorSpace instanceof PDDeviceRGB /*|| TODO
+    			colorSpace instanceof PDDeviceRGB /*|| TODO: PdfBox-Android
     			colorSpace instanceof PDDeviceCMYK*/)
     	{
     		return COSName.getPDFName(colorSpace.getName());

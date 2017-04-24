@@ -27,5 +27,5 @@ public class PDShadingType3 extends PDShadingType2
 //    public Paint toPaint(Matrix matrix)
 //    {
 //        return new RadialShadingPaint(this, matrix);
-//    }TODO
+//    }TODO: PdfBox-Android
 }

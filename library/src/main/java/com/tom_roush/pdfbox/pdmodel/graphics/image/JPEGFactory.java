@@ -270,7 +270,7 @@ public final class JPEGFactory
 //				throw new UnsupportedOperationException("color space not implemented: "
 //						+ awtColorSpace.getType());
 //		}
-//	}
+//	} TODO: PdfBox-Android
 
 	// returns the color channels of an image
 	private static Bitmap getColorImage(Bitmap image)

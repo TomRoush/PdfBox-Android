@@ -49,5 +49,5 @@ public class PDShadingType4 extends PDTriangleBasedShadingType
 //    public Paint toPaint(Matrix matrix)
 //    {
 //        return new Type4ShadingPaint(this, matrix);
-//    }TODO
+//    }TODO: PdfBox-Android
 }

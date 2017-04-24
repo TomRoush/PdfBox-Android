@@ -163,7 +163,7 @@ public final class ExternalFonts
 						"NimbusRomNo9L-MediItal","DroidSerif-BoldItalic", "Roboto-BoldItalic"));
 		substitutes.put("Symbol", Arrays.asList("Symbol", "SymbolMT", "StandardSymL"));
 		substitutes.put("ZapfDingbats", Arrays.asList("ZapfDingbatsITC", "Dingbats", "MS-Gothic"));
-		// TODO: load extra fonts? (DroidSerif for times and a symbol font)
+		// TODO: PdfBox-Android load extra fonts? (DroidSerif for times and a symbol font)
 
 		// extra substitute mechanism for CJK CIDFonts when all we know is the ROS
 		substitutes.put("$Adobe-CNS1", Arrays.asList("AdobeMingStd-Light"));

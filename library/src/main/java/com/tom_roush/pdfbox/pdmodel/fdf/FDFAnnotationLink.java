@@ -23,6 +23,9 @@ import org.w3c.dom.Element;
 
 import java.io.IOException;
 
+/**
+ * This represents a Polygon FDF annotation.
+ */
 public class FDFAnnotationLink extends FDFAnnotation
 {
     /**

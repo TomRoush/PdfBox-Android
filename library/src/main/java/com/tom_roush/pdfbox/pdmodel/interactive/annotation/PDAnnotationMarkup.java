@@ -85,7 +85,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public String getTitlePopup()
     {
-        return getCOSObject().getString("T");
+        return getCOSObject().getString(COSName.T);
     }
 
     /**
@@ -97,7 +97,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setTitlePopup( String t )
     {
-        getCOSObject().setString("T", t);
+        getCOSObject().setString(COSName.T, t);
     }
 
     /**
@@ -139,7 +139,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public float getConstantOpacity()
     {
-        return getCOSObject().getFloat("CA", 1);
+        return getCOSObject().getFloat(COSName.CA, 1);
     }
 
     /**
@@ -151,7 +151,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setConstantOpacity( float ca )
     {
-        getCOSObject().setFloat("CA", ca);
+        getCOSObject().setFloat(COSName.CA, ca);
     }
 
     /**
@@ -185,7 +185,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setRichContents( String rc )
     {
-        getCOSObject().setItem("RC", new COSString(rc));
+        getCOSObject().setItem(COSName.RC, new COSString(rc));
     }
 
     /**
@@ -197,7 +197,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public Calendar getCreationDate() throws IOException
     {
-        return getCOSObject().getDate("CreationDate");
+        return getCOSObject().getDate(COSName.CREATION_DATE);
     }
 
     /**
@@ -208,7 +208,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setCreationDate( Calendar creationDate )
     {
-        getCOSObject().setDate("CreationDate", creationDate);
+        getCOSObject().setDate(COSName.CREATION_DATE, creationDate);
     }
 
     /**
@@ -243,7 +243,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public String getSubject()
     {
-        return getCOSObject().getString("Subj");
+        return getCOSObject().getString(COSName.SUBJ);
     }
 
     /**
@@ -253,7 +253,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setSubject( String subj )
     {
-        getCOSObject().setString("Subj", subj);
+        getCOSObject().setString(COSName.SUBJ, subj);
     }
 
     /**
@@ -287,7 +287,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public String getIntent()
     {
-        return getCOSObject().getNameAsString("IT");
+        return getCOSObject().getNameAsString(COSName.IT);
     }
 
     /**
@@ -299,7 +299,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public void setIntent( String it )
     {
-        getCOSObject().setName("IT", it);
+        getCOSObject().setName(COSName.IT, it);
     }
 
     /**

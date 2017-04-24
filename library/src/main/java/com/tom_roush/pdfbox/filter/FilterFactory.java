@@ -1,12 +1,11 @@
 package com.tom_roush.pdfbox.filter;
 
-import java.io.IOException;
+import com.tom_roush.pdfbox.cos.COSName;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * Factory for Filter classes.
@@ -33,7 +32,7 @@ public final class FilterFactory
         Filter runLength = new RunLengthDecodeFilter();
         Filter crypt = new CryptFilter();
 //        Filter jpx = new JPXFilter();
-//        Filter jbig2 = new JBIG2Filter();TODO
+//        Filter jbig2 = new JBIG2Filter();TODO: PdfBox-Android
 
         filters.put(COSName.FLATE_DECODE, flate);
         filters.put(COSName.FLATE_DECODE_ABBREVIATION, flate);
@@ -51,7 +50,7 @@ public final class FilterFactory
         filters.put(COSName.RUN_LENGTH_DECODE_ABBREVIATION, runLength);
         filters.put(COSName.CRYPT, crypt);
 //        filters.put(COSName.JPX_DECODE, jpx);
-//        filters.put(COSName.JBIG2_DECODE, jbig2);TODO
+//        filters.put(COSName.JBIG2_DECODE, jbig2);TODO: PdfBox-Android
     }
 
     /**

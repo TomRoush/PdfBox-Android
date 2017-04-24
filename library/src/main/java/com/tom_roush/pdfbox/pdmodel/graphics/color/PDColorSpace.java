@@ -172,7 +172,7 @@ public abstract class PDColorSpace implements COSObjectable {
 //     * @return an (A)RGB Bitmap
 //     * @throws IOException if the color conversion fails
 //     */
-//    public abstract Bitmap toRGBImage(WritableRaster raster) throws IOException; TODO
+//    public abstract Bitmap toRGBImage(WritableRaster raster) throws IOException; TODO: PdfBox-Android
 
 //    /**
 //     * Returns the (A)RGB equivalent of the given raster, using the given AWT color space
@@ -198,7 +198,8 @@ public abstract class PDColorSpace implements COSObjectable {
 //        ColorConvertOp op = new ColorConvertOp(null);
 //        op.filter(src, dest);
 //        return dest;
-//    } TODO
+//    } TODO: PdfBox-Android
+
     @Override
     public COSBase getCOSObject() {
         return array;

@@ -1,18 +1,18 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.common.PDMemoryStream;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 
 /**
  * Reads a sampled image from a PDF file.
@@ -71,7 +71,7 @@ final class SampledImageReader
 //        }
 //
 //        return masked;
-//    }TODO
+//    }TODO: PdfBox-Android
 
 	/**
      * Returns the content of the given image as an AWT buffered image with an RGB color space.
@@ -207,7 +207,7 @@ final class SampledImageReader
 //                iis.close();
 //            }
 //        }
-//    }TODO
+//    }TODO: PdfBox-Android
 
     // faster, 8-bit non-decoded, non-colormasked image conversion
     private static Bitmap from8bit(PDImage pdImage, Bitmap raster)
@@ -368,7 +368,7 @@ final class SampledImageReader
 //                iis.close();
 //            }
 //        }
-//    }TODO
+//    }TODO: PdfBox-Android
 
     // color key mask: RGB + Binary -> ARGB
 //    private static BufferedImage applyColorKeyMask(BufferedImage image, BufferedImage mask)
@@ -404,7 +404,7 @@ final class SampledImageReader
 //        }
 //
 //        return masked;
-//    }TODO
+//    }TODO: PdfBox-Android
 
     // gets decode array from dictionary or returns default
     private static float[] getDecodeArray(PDImage pdImage) throws IOException

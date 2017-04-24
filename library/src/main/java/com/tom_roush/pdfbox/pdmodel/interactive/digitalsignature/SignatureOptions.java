@@ -1,6 +1,7 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature;
 
 import com.tom_roush.pdfbox.cos.COSDocument;
+import com.tom_roush.pdfbox.io.RandomAccessBufferedFileInputStream;
 import com.tom_roush.pdfbox.pdfparser.PDFParser;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSigProperties;
 
@@ -54,7 +55,7 @@ public class SignatureOptions implements Closeable
      */
     public void setVisualSignature(File file) throws IOException
     {
-        PDFParser parser = new PDFParser(file);
+        PDFParser parser = new PDFParser(new RandomAccessBufferedFileInputStream(file));
         parser.parse();
         visualSignature = parser.getDocument();
     }
@@ -67,7 +68,7 @@ public class SignatureOptions implements Closeable
      */
     public void setVisualSignature(InputStream is) throws IOException
     {
-        PDFParser parser = new PDFParser(is);
+        PDFParser parser = new PDFParser(new RandomAccessBufferedFileInputStream(is));
         parser.parse();
         visualSignature = parser.getDocument();
     }
@@ -122,6 +123,7 @@ public class SignatureOptions implements Closeable
      *
      * @throws IOException if the document could not be closed
      */
+    @Override
     public void close() throws IOException
     {
         if (visualSignature != null)

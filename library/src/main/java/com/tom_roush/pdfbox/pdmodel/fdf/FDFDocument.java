@@ -1,5 +1,14 @@
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSDocument;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdfparser.FDFParser;
+import com.tom_roush.pdfbox.pdfwriter.COSWriter;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -11,14 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
-
-import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.cos.COSDocument;
-import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.pdfparser.FDFParser;
-import com.tom_roush.pdfbox.pdfwriter.COSWriter;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * This is the in-memory representation of the FDF document.  You need to call
@@ -35,7 +36,7 @@ public class FDFDocument implements Closeable
      *
      * @throws IOException If there is an error creating this document.
      */
-    public FDFDocument() throws IOException
+    public FDFDocument()
     {
         document = new COSDocument();
         document.setVersion( 1.2f );

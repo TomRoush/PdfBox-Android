@@ -449,32 +449,25 @@ public abstract class PDFStreamEngine
 	{
 		List<COSBase> arguments = new ArrayList<COSBase>();
 		PDFStreamParser parser = new PDFStreamParser(contentStream.getContentStream());
-		try
-		{
-			Iterator<Object> iter = parser.getTokenIterator();
-			while (iter.hasNext())
-			{
-				Object token = iter.next();
-				if (token instanceof COSObject)
-				{
-					arguments.add(((COSObject) token).getObject());
-				}
-				else if (token instanceof Operator)
-				{
-					processOperator((Operator) token, arguments);
-					arguments = new ArrayList<COSBase>();
-				}
-				else
-				{
-					arguments.add((COSBase) token);
-				}
-			}
-		}
-		finally
-		{
-			parser.close();
-		}
-	}
+        Iterator<Object> iter = parser.getTokenIterator();
+        while (iter.hasNext())
+        {
+            Object token = iter.next();
+            if (token instanceof COSObject)
+            {
+                arguments.add(((COSObject) token).getObject());
+            }
+            else if (token instanceof Operator)
+            {
+                processOperator((Operator) token, arguments);
+                arguments = new ArrayList<COSBase>();
+            }
+            else
+            {
+                arguments.add((COSBase) token);
+            }
+        }
+    }
 
 	/**
 	 * Pushes the given stream's resources, returning the previous resources.

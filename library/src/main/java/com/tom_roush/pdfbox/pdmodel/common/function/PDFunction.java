@@ -110,7 +110,7 @@ public abstract class PDFunction implements COSObjectable
         int functionType = functionDictionary.getInt( COSName.FUNCTION_TYPE );
         if( functionType == 0 )
         {
-//            retval = new PDFunctionType0(functionDictionary);TODO
+//            retval = new PDFunctionType0(functionDictionary);TODO: PdfBox-Android
         }
         else if( functionType == 2 )
         {

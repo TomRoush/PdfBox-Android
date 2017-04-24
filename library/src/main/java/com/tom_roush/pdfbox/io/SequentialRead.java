@@ -1,20 +1,13 @@
 package com.tom_roush.pdfbox.io;
 
+import java.io.Closeable;
 import java.io.IOException;
 
 /**
  * An interface allowing sequential read operations.
  */
-public interface SequentialRead
+public interface SequentialRead extends Closeable
 {
-	
-	/**
-     * Release resources that are being held.
-     *
-     * @throws IOException If there is an error closing this resource.
-     */
-    void close() throws IOException;
-
     /**
      * Read a single byte of data.
      *
@@ -23,6 +16,15 @@ public interface SequentialRead
      * @throws IOException If there is an error while reading the data.
      */
     int read() throws IOException;
+
+    /**
+     * Read a buffer of data.
+     *
+     * @param b The buffer to write the data to.
+     * @return The number of bytes that were actually read.
+     * @throws IOException If there was an error while reading the data.
+     */
+    int read(byte[] b) throws IOException;
 
     /**
      * Read a buffer of data.

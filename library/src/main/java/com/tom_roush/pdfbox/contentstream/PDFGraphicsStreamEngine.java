@@ -1,6 +1,7 @@
 package com.tom_roush.pdfbox.contentstream;
 
-import java.io.IOException;
+import android.graphics.Path;
+import android.graphics.PointF;
 
 import com.tom_roush.pdfbox.contentstream.operator.color.SetNonStrokingColor;
 import com.tom_roush.pdfbox.contentstream.operator.color.SetNonStrokingColorN;
@@ -65,8 +66,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage;
 
-import android.graphics.Path;
-import android.graphics.PointF;
+import java.io.IOException;
 
 /**
  * PDFStreamEngine subclass for advanced processing of graphics.
@@ -88,7 +88,7 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
         addOperator(new FillNonZeroAndStrokePath());
         addOperator(new CloseFillEvenOddAndStrokePath());
         addOperator(new FillEvenOddAndStrokePath());
-//        addOperator(new BeginInlineImage());TODO
+//        addOperator(new BeginInlineImage());TODO: PdfBox-Android
         addOperator(new BeginText());
         addOperator(new CurveTo());
         addOperator(new Concatenate());
@@ -107,8 +107,8 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
         addOperator(new SetFlatness());
         addOperator(new SetLineJoinStyle());
         addOperator(new SetLineCapStyle());
-//        addOperator(new SetStrokingDeviceCMYKColor());TODO
-//        addOperator(new SetNonStrokingDeviceCMYKColor());TODO
+//        addOperator(new SetStrokingDeviceCMYKColor());TODO: PdfBox-Android
+//        addOperator(new SetNonStrokingDeviceCMYKColor());TODO: PdfBox-Android
         addOperator(new LineTo());
         addOperator(new MoveTo());
         addOperator(new SetLineMiterLimit());

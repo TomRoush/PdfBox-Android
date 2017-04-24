@@ -11,12 +11,12 @@ import com.tom_roush.pdfbox.cos.COSNull;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PushbackInputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -77,19 +77,12 @@ public class PDFStreamParser extends BaseParser
 	 */
 	public void parse() throws IOException
 	{
-		try
-		{
-			Object token;
-			while( (token = parseNextToken()) != null )
-			{
-				streamObjects.add( token );
-			}
-		}
-		finally
-		{
-			pdfSource.close();
-		}
-	}
+        Object token;
+        while ((token = parseNextToken()) != null)
+        {
+            streamObjects.add(token);
+        }
+    }
 
 	/**
 	 * This will get the tokens that were parsed from the stream.
@@ -188,7 +181,7 @@ public class PDFStreamParser extends BaseParser
 			c = (char)pdfSource.peek();
 
 			//put back first bracket
-			pdfSource.unread(leftBracket);
+            pdfSource.rewind(1);
 
             if (c == '<')
             {
@@ -387,9 +380,9 @@ public class PDFStreamParser extends BaseParser
 	 * @return <code>true</code> if next bytes are probably printable ASCII
 	 * characters starting with a PDF operator, otherwise <code>false</code>
 	 */
-	private boolean hasNoFollowingBinData(final PushbackInputStream pdfSource)
-			throws IOException
-	{
+    private boolean hasNoFollowingBinData(final RandomAccessRead pdfSource)
+        throws IOException
+    {
 		// as suggested in PDFBOX-1164
 		final int readBytes = pdfSource.read(binCharTestArr, 0, MAX_BIN_CHAR_TEST_LENGTH);
 		boolean noBinData = true;
@@ -431,8 +424,8 @@ public class PDFStreamParser extends BaseParser
 					noBinData = false;
 				}
 			}
-			pdfSource.unread(binCharTestArr, 0, readBytes);
-		}
+            pdfSource.rewind(readBytes);
+        }
 
 		if (!noBinData)
 		{

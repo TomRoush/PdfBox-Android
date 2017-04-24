@@ -21,6 +21,10 @@
 
 package com.tom_roush.pdfbox.pdfparser;
 
+import com.tom_roush.pdfbox.cos.COSDocument;
+import com.tom_roush.pdfbox.io.RandomAccessBufferedFileInputStream;
+import com.tom_roush.pdfbox.io.RandomAccessRead;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -61,6 +65,7 @@ public class TestPDFParser
         int result = 0;
         File[] tmpPdfs = tmpDirectory.listFiles(new FilenameFilter()
         {
+            @Override
             public boolean accept(File dir, String name)
             {
                 return name.startsWith(COSParser.TMP_FILE_PREFIX)
@@ -77,19 +82,12 @@ public class TestPDFParser
     }
 
     @Test
-    public void testPDFParserString() throws Exception
-    {
-        PDFParser pdfParser = new PDFParser("src/test/resources" + PATH_OF_PDF);
-        executeParserTest(pdfParser);
-    }
-
-    @Test
     public void testPDFParserFile() throws IOException
     {
         try
         {
-            PDFParser pdfParser = new PDFParser(new File(getClass().getResource(PATH_OF_PDF).toURI()));
-            executeParserTest(pdfParser);
+            executeParserTest(new RandomAccessBufferedFileInputStream(
+                new File(getClass().getResource(PATH_OF_PDF).toURI())), false);
         } catch (URISyntaxException e)
         {
             e.printStackTrace();
@@ -99,15 +97,9 @@ public class TestPDFParser
     @Test
     public void testPDFParserInputStream() throws IOException
     {
-        PDFParser pdfParser = new PDFParser(getClass().getResourceAsStream(PATH_OF_PDF));
-        executeParserTest(pdfParser);
-    }
-
-    @Test
-    public void testPDFParserStringScratchFile() throws Exception
-    {
-        PDFParser pdfParser = new PDFParser("src/test/resources" + PATH_OF_PDF, true);
-        executeParserTest(pdfParser);
+        executeParserTest(
+            new RandomAccessBufferedFileInputStream(getClass().getResourceAsStream(PATH_OF_PDF)),
+            false);
     }
 
     @Test
@@ -115,8 +107,8 @@ public class TestPDFParser
     {
         try
         {
-            PDFParser pdfParser = new PDFParser(new File(getClass().getResource(PATH_OF_PDF).toURI()), true);
-            executeParserTest(pdfParser);
+            executeParserTest(new RandomAccessBufferedFileInputStream(
+                new File(getClass().getResource(PATH_OF_PDF).toURI())), true);
         } catch (URISyntaxException e)
         {
             e.printStackTrace();
@@ -126,14 +118,20 @@ public class TestPDFParser
     @Test
     public void testPDFParserInputStreamScratchFile() throws IOException
     {
-        PDFParser pdfParser = new PDFParser(getClass().getResourceAsStream(PATH_OF_PDF), true);
-        executeParserTest(pdfParser);
+        executeParserTest(
+            new RandomAccessBufferedFileInputStream(getClass().getResourceAsStream(PATH_OF_PDF)),
+            true);
     }
 
-    private void executeParserTest(PDFParser pdfParser) throws IOException
+    private void executeParserTest(RandomAccessRead source, boolean useScratchFile)
+        throws IOException
     {
+        PDFParser pdfParser = new PDFParser(source, useScratchFile);
         pdfParser.parse();
-        assertNotNull(pdfParser.getDocument());
+        COSDocument doc = pdfParser.getDocument();
+        assertNotNull(doc);
+        doc.close();
+        source.close();
         // number tmp file must be the same
         assertEquals(numberOfTmpFiles, getNumberOfTempFile());
     }

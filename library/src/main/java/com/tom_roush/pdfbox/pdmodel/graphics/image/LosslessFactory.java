@@ -15,9 +15,8 @@
  */
 package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -30,8 +29,9 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import com.tom_roush.pdfbox.util.awt.AWTColor;
 
-import android.graphics.Bitmap;
-import android.graphics.Color;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * Factory for creating a PDImageXObject containing a lossless compressed image.
@@ -99,7 +99,7 @@ public final class LosslessFactory
                     bos.write(color.getAlpha() == 0 ? 255 : color.getBlue());
                 }
             }
-//        } TODO
+//        } TODO: PdfBox-Android
 
         PDImageXObject pdImage = prepareImageXObject(document, bos.toByteArray(), 
                 image.getWidth(), image.getHeight(), bpc, deviceColorSpace);

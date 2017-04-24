@@ -1,23 +1,20 @@
 package com.tom_roush.pdfbox.cos;
 
-import android.util.Log;
-
 import com.tom_roush.pdfbox.filter.DecodeResult;
 import com.tom_roush.pdfbox.filter.Filter;
 import com.tom_roush.pdfbox.filter.FilterFactory;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.RandomAccess;
 import com.tom_roush.pdfbox.io.RandomAccessBuffer;
-import com.tom_roush.pdfbox.io.RandomAccessFile;
 import com.tom_roush.pdfbox.io.RandomAccessFileInputStream;
 import com.tom_roush.pdfbox.io.RandomAccessFileOutputStream;
+import com.tom_roush.pdfbox.io.ScratchFile;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -49,18 +46,14 @@ public class COSStream extends COSDictionary implements Closeable
     private RandomAccessFileOutputStream unFilteredStream;
     private DecodeResult decodeResult;
 
-    private File scratchFileFiltered;
-    private File scratchFileUnfiltered;
-
-    private final boolean scratchFiles;
-    private final File scratchFileDirectory;
+    private final ScratchFile scratchFile;
 
     /**
      * Constructor.  Creates a new stream with an empty dictionary.
      */
     public COSStream()
     {
-        this(false, null);
+        this((ScratchFile) null);
     }
 
     /**
@@ -70,71 +63,40 @@ public class COSStream extends COSDictionary implements Closeable
      */
     public COSStream(COSDictionary dictionary)
     {
-        this(dictionary, false, null);
+        this(dictionary, null);
     }
 
     /**
      * Constructor.  Creates a new stream with an empty dictionary.
      *
-     * @param useScratchFiles enables the usage of a scratch file if set to true
-     * @param scratchDirectory directory to be used to create the scratch file. If null java.io.temp is used instead.
+     * @param scratchFile scratch file to use.
      */
-    public COSStream(boolean useScratchFiles, File scratchDirectory)
+    public COSStream(ScratchFile scratchFile)
     {
         super();
-        scratchFiles = useScratchFiles;
-        scratchFileDirectory = scratchDirectory;
+        this.scratchFile = scratchFile;
     }
 
     /**
      * Constructor.
      *
      * @param dictionary The dictionary that is associated with this stream.
-     * @param useScratchFiles enables the usage of a scratch file if set to true
-     * @param scratchDirectory directory to be used to create the scratch file. If null java.io.temp is used instead.
+     * @param scratchFile The scratch file to use.
      */
-    public COSStream(COSDictionary dictionary, boolean useScratchFiles, File scratchDirectory)
+    public COSStream(COSDictionary dictionary, ScratchFile scratchFile)
     {
         super(dictionary);
-        scratchFiles = useScratchFiles;
-        scratchFileDirectory = scratchDirectory;
+        this.scratchFile = scratchFile;
     }
 
-    private RandomAccess createBuffer(boolean filtered) throws IOException
+    private RandomAccess createBuffer() throws IOException
     {
-        if (scratchFiles)
+        if (scratchFile != null)
         {
-            return createScratchFile(filtered);
+            return scratchFile.createBuffer();
         }
         else
         {
-            return new RandomAccessBuffer();
-        }
-    }
-
-    /**
-     * Create a scratch file to be used as buffer.
-     */
-    private RandomAccess createScratchFile(boolean filtered)
-    {
-        try
-        {
-            if (filtered)
-            {
-                deleteFile(scratchFileFiltered);
-                scratchFileFiltered = File.createTempFile("PDFBox_streamf_", null, scratchFileDirectory);
-                return new RandomAccessFile(scratchFileFiltered, "rw");
-            }
-            else
-            {
-                deleteFile(scratchFileUnfiltered);
-                scratchFileUnfiltered = File.createTempFile("PDFBox_streamu_", null, scratchFileDirectory);
-                return new RandomAccessFile(scratchFileUnfiltered, "rw");
-            }
-        }
-        catch (IOException exception)
-        {
-            Log.e("PdfBox-Android", "Can't create temp file, using memory buffer instead", exception);
             return new RandomAccessBuffer();
         }
     }
@@ -347,7 +309,7 @@ public class COSStream extends COSDictionary implements Closeable
         {
             if (result == null)
             {
-                result = createBuffer(false);
+                result = createBuffer();
             }
         }
         else
@@ -370,7 +332,7 @@ public class COSStream extends COSDictionary implements Closeable
             IOUtils.closeQuietly(unFilteredStream);
             if (destBuffer == null)
             {
-                result = createBuffer(false);
+                result = createBuffer();
             }
             else
             {
@@ -442,7 +404,7 @@ public class COSStream extends COSDictionary implements Closeable
         IOUtils.closeQuietly(filteredStream);
         if (destBuffer == null)
         {
-            result = createBuffer(true);
+            result = createBuffer();
         }
         else
         {
@@ -567,7 +529,7 @@ public class COSStream extends COSDictionary implements Closeable
     {
         if (filteredBuffer == null)
         {
-            filteredBuffer = createBuffer(true);
+            filteredBuffer = createBuffer();
         }
         else if (clear)
         {
@@ -585,7 +547,7 @@ public class COSStream extends COSDictionary implements Closeable
     {
         if (unfilteredBuffer == null)
         {
-            unfilteredBuffer = createBuffer(false);
+            unfilteredBuffer = createBuffer();
         }
         else if (clear)
         {
@@ -614,19 +576,6 @@ public class COSStream extends COSDictionary implements Closeable
         if (filteredBuffer != null)
         {
             filteredBuffer.close();
-        }
-        deleteFile(scratchFileFiltered);
-        deleteFile(scratchFileUnfiltered);
-    }
-
-    private void deleteFile(File file) throws IOException
-    {
-        if (file != null && file.exists())
-        {
-            if (!file.delete())
-            {
-                throw new IOException("Can't delete the temporary scratch file " + file.getAbsolutePath());
-            }
         }
     }
 }

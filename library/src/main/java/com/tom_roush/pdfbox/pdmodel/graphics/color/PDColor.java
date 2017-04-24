@@ -1,10 +1,10 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
-import java.util.Arrays;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNumber;
+
+import java.util.Arrays;
 
 /**
  * A color value, consisting of one or more color components, or for pattern color spaces,
@@ -133,7 +133,7 @@ public final class PDColor
 	//		rgb = (rgb << 8) + g;
 	//		rgb = (rgb << 8) + b;
 	//		return rgb;
-	//	} TODO
+	//	} TODO: PdfBox-Android
 
 	/**
 	 * Returns this color value as a COS array

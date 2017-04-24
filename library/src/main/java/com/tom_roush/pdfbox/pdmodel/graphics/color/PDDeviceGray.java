@@ -43,7 +43,7 @@ public final class PDDeviceGray extends PDDeviceColorSpace
         return initialColor;
     }
 
-//    @Override TODO
+    @Override
     public float[] toRGB(float[] value)
     {
         return new float[] { value[0], value[0], value[0] };
@@ -72,5 +72,5 @@ public final class PDDeviceGray extends PDDeviceColorSpace
 //        }
 //
 //        return image;
-//    } TODO
+//    } TODO: PdfBox-Android
 }

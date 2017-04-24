@@ -1,15 +1,15 @@
 package com.tom_roush.pdfbox.filter;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 
-import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * A filter for stream data.
@@ -103,6 +103,6 @@ public abstract class Filter
 //            throw new MissingImageReaderException("Cannot read " + formatName + " image: " + errorCause);
 //        }
 //        return reader;
-//    }TODO
+//    }TODO: PdfBox-Android
 
 }

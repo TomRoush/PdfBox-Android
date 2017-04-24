@@ -64,7 +64,7 @@ final class DCTFilter extends Filter
 //            return Integer.parseInt(adobe.getAttribute("transform"));
 //        }
 //        return 0; // Unknown
-//    }TODO
+//    }TODO: PdfBox-Android
 
     // converts YCCK image to CMYK. YCCK is an equivalent encoding for
     // CMYK data, so no color management code is needed here, nor does the
@@ -105,7 +105,7 @@ final class DCTFilter extends Filter
 //            }
 //        }
 //        return writableRaster;
-//    }TODO
+//    }TODO: PdfBox-Android
 
     // converts from BGR to RGB
 //    private WritableRaster fromBGRtoRGB(Raster raster) throws IOException
@@ -129,7 +129,7 @@ final class DCTFilter extends Filter
 //            writableRaster.setPixels(0, y, width, 1, tab);
 //        }
 //        return writableRaster;
-//    } TODO
+//    } TODO: PdfBox-Android
 
     // clamps value to 0-255 range
     private int clamp(float value)

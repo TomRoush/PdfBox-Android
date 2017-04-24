@@ -22,7 +22,7 @@ public final class PDDeviceRGB extends PDDeviceColorSpace {
         // there is a JVM bug which results in a CMMException which appears to be a race
         // condition caused by lazy initialization of the color transform, so we perform
         // an initial color conversion while we're still in a static context, see PDFBOX-2184
-//        colorSpaceRGB.toRGB(new float[]{0, 0, 0});TODO
+//        colorSpaceRGB.toRGB(new float[]{0, 0, 0});TODO: PdfBox-Android
     }
 
     @Override
@@ -64,5 +64,5 @@ public final class PDDeviceRGB extends PDDeviceColorSpace {
 //                false, false, Transparency.OPAQUE, raster.getDataBuffer().getDataType());
 //
 //        return new BufferedImage(colorModel, raster, false, null);
-//    }TODO
+//    }TODO: PdfBox-Android
 }

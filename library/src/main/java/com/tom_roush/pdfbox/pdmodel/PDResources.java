@@ -428,11 +428,12 @@ public final class PDResources implements COSObjectable
 
 		// find a unique key
 		String key;
-		int iter = dict.keySet().size() + 1;
-		do
+        int n = dict.keySet().size();
+        do
 		{
-			key = prefix + iter++;
-		}
+            ++n;
+            key = prefix + n;
+        }
 		while (dict.containsKey(key));
 		return COSName.getPDFName(key);
 	}

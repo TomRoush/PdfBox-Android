@@ -1,5 +1,11 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.state;
 
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.Region;
+
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDLineDashPattern;
 import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
@@ -7,12 +13,6 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.util.Matrix;
-
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.Region;
 
 /**
  * The current state of the graphics parameters when executing a content stream.
@@ -58,7 +58,7 @@ public class PDGraphicsState implements Cloneable
      */
     public PDGraphicsState(PDRectangle page)
     {
-//        clippingPath = new Area(new GeneralPath(page.toGeneralPath()));TODO
+//        clippingPath = new Area(new GeneralPath(page.toGeneralPath()));TODO: PdfBox-Android
     	RectF bounds = new RectF();
     	page.toGeneralPath().computeBounds(bounds, true);
     	clippingPath = new Region();
@@ -583,10 +583,10 @@ public class PDGraphicsState implements Cloneable
 //    public Composite getStrokingJavaComposite()
 //    {
 //        return BlendComposite.getInstance(blendMode, (float) alphaConstants);
-//    }TODO
+//    }TODO: PdfBox-Android
 
 //    public Composite getNonStrokingJavaComposite()
 //    {
 //        return BlendComposite.getInstance(blendMode, (float) nonStrokingAlphaConstants);
-//    }TODO
+//    }TODO: PdfBox-Android
 }

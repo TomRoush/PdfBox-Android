@@ -405,5 +405,5 @@ public abstract class PDShading implements COSObjectable
      * this matrix which maps the pattern's internal coordinate system to user space
      * @return an AWT Paint instance
      */
-//    public abstract Paint toPaint(Matrix matrix);TODO
+//    public abstract Paint toPaint(Matrix matrix);TODO: PDfBox-Android
 }

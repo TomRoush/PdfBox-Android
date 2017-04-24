@@ -68,7 +68,6 @@ class PDAppearanceString
         PDFStreamParser parser = new PDFStreamParser(stream);
         parser.parse();
         tokens = parser.getTokens();
-        parser.close();
 
         this.defaultResources = defaultResources;
     }

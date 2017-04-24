@@ -2,6 +2,7 @@ package com.tom_roush.pdfbox.cos;
 
 import android.util.Log;
 
+import com.tom_roush.pdfbox.io.ScratchFile;
 import com.tom_roush.pdfbox.pdfparser.PDFObjectStreamParser;
 
 import java.io.Closeable;
@@ -54,9 +55,7 @@ public class COSDocument extends COSBase implements Closeable
 
 	private boolean isXRefStream;
 
-	private final File scratchDirectory;
-
-	private final boolean useScratchFile;
+    private ScratchFile scratchFile;
 
 	/**
 	 * Constructor.
@@ -81,9 +80,18 @@ public class COSDocument extends COSBase implements Closeable
 	 */
 	public COSDocument(File scratchDir, boolean useScratchFiles) 
 	{
-		scratchDirectory = scratchDir;
-		useScratchFile = useScratchFiles;
-	}
+        if (useScratchFiles)
+        {
+            try
+            {
+                scratchFile = new ScratchFile(scratchDir);
+            }
+            catch (IOException e)
+            {
+                Log.e("PdfBox-Android", "Can't create temp file, using memory buffer instead", e);
+            }
+        }
+    }
 
 	/**
 	 * Constructor. Uses memory to store stream.
@@ -100,8 +108,8 @@ public class COSDocument extends COSBase implements Closeable
 	 */
 	public COSStream createCOSStream()
 	{
-		return new COSStream( useScratchFile, scratchDirectory);
-	}
+        return new COSStream(scratchFile);
+    }
 
 	/**
 	 * Creates a new COSStream using the current configuration for scratch files.
@@ -112,8 +120,8 @@ public class COSDocument extends COSBase implements Closeable
 	 */
 	public COSStream createCOSStream(COSDictionary dictionary)
 	{
-		return new COSStream( dictionary, useScratchFile, scratchDirectory );
-	}
+        return new COSStream(dictionary, scratchFile);
+    }
 
 	/**
 	 * This will get the first dictionary object by type.
@@ -404,9 +412,14 @@ public class COSDocument extends COSBase implements Closeable
 					}
 				}
 			}
-			closed = true;
-		}
-	}
+
+            if (scratchFile != null)
+            {
+                scratchFile.close();
+            }
+            closed = true;
+        }
+    }
 
 	/**
 	 * Returns true if this document has been closed.
@@ -458,29 +471,21 @@ public class COSDocument extends COSBase implements Closeable
 		for( COSObject objStream : getObjectsByType( COSName.OBJ_STM ) )
 		{
 			COSStream stream = (COSStream)objStream.getObject();
-			PDFObjectStreamParser parser =
-					new PDFObjectStreamParser(stream, this);
-			try
-			{
-				parser.parse();
-				for (COSObject next : parser.getObjects())
-				{
-					COSObjectKey key = new COSObjectKey(next);
-					if (objectPool.get(key) == null || objectPool.get(key).getObject() == null
-							// xrefTable stores negated objNr of objStream for objects in objStreams
-							|| (xrefTable.containsKey(key)
-									&& xrefTable.get(key) == -objStream.getObjectNumber()))
-					{
-						COSObject obj = getObjectFromPool(key);
-						obj.setObject(next.getObject());
-					}
-				}
-			}
-			finally
-			{
-				parser.close();
-			}
-		}
+            PDFObjectStreamParser parser = new PDFObjectStreamParser(stream, this);
+            parser.parse();
+            for (COSObject next : parser.getObjects())
+            {
+                COSObjectKey key = new COSObjectKey(next);
+                if (objectPool.get(key) == null || objectPool.get(key).getObject() == null
+                    // xrefTable stores negated objNr of objStream for objects in objStreams
+                    || (xrefTable.containsKey(key) &&
+                    xrefTable.get(key) == -objStream.getObjectNumber()))
+                {
+                    COSObject obj = getObjectFromPool(key);
+                    obj.setObject(next.getObject());
+                }
+            }
+        }
 	}
 
 	/**

@@ -1,12 +1,18 @@
 package com.tom_roush.pdfbox.rendering;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PointF;
+import android.graphics.RectF;
+import android.graphics.Region;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.contentstream.PDFGraphicsStreamEngine;
+import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType0;
 import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType2;
@@ -28,15 +34,9 @@ import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PointF;
-import android.graphics.RectF;
-import android.graphics.Region;
-import android.util.Log;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Paints a page in a PDF document to a Canvas context. May be subclassed to provide custom
@@ -266,7 +266,25 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     }
 
     @Override
-    protected void showText(byte[] string) throws IOException
+    public void showTextString(byte[] string) throws IOException
+    {
+        beginTextClip();
+        super.showTextString(string);
+        endTextClip();
+    }
+
+    @Override
+    public void showTextStrings(COSArray array) throws IOException
+    {
+        beginTextClip();
+        super.showTextStrings(array);
+        endTextClip();
+    }
+
+    /**
+     * Begin buffering the text clipping path, if any.
+     */
+    private void beginTextClip()
     {
         PDGraphicsState state = getGraphicsState();
         RenderingMode renderingMode = state.getTextState().getRenderingMode();
@@ -276,8 +294,15 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         {
             textClippingArea = new Region();
         }
+    }
 
-        super.showText(string);
+    /**
+     * End buffering the text clipping path, if any.
+     */
+    private void endTextClip()
+    {
+        PDGraphicsState state = getGraphicsState();
+        RenderingMode renderingMode = state.getTextState().getRenderingMode();
 
         // apply the buffered clip as one area
         if (renderingMode.isClip())

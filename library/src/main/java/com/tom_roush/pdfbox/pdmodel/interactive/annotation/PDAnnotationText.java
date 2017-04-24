@@ -129,7 +129,7 @@ public class PDAnnotationText extends PDAnnotationMarkup
      */
     public String getState()
     {
-        return this.getCOSObject().getString("State");
+        return this.getCOSObject().getString(COSName.STATE);
     }
 
     /**
@@ -139,7 +139,7 @@ public class PDAnnotationText extends PDAnnotationMarkup
      */
     public void setState(String state)
     {
-        this.getCOSObject().setString("State", state);
+        this.getCOSObject().setString(COSName.STATE, state);
     }
 
     /**
@@ -149,7 +149,7 @@ public class PDAnnotationText extends PDAnnotationMarkup
      */
     public String getStateModel()
     {
-        return this.getCOSObject().getString("StateModel");
+        return this.getCOSObject().getString(COSName.STATE_MODEL);
     }
 
     /**
@@ -160,7 +160,7 @@ public class PDAnnotationText extends PDAnnotationMarkup
      */
     public void setStateModel(String stateModel)
     {
-        this.getCOSObject().setString("StateModel", stateModel);
+        this.getCOSObject().setString(COSName.STATE_MODEL, stateModel);
     }
 
 }
