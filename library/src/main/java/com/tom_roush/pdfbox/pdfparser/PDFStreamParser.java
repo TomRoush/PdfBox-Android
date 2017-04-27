@@ -16,7 +16,6 @@ import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -35,39 +34,37 @@ public class PDFStreamParser extends BaseParser
 	private final byte[] binCharTestArr = new byte[MAX_BIN_CHAR_TEST_LENGTH];
 
 	/**
-	 * Constructor that takes a stream to parse.
-	 *
-	 * @param stream The stream to read data from.
-	 * @throws IOException If there is an error reading from the stream.
-	 */
-	public PDFStreamParser(InputStream stream) throws IOException
-	{
-		super(stream);
-	}
+     * Constructor.
+     *
+     * @param stream The stream to parse.
+     * @throws IOException If there is an error initializing the stream.
+     */
+    public PDFStreamParser(PDStream stream) throws IOException
+    {
+        this((COSStream) stream.getCOSObject());
+    }
 
 	/**
 	 * Constructor.
 	 *
 	 * @param stream The stream to parse.
-	 *
 	 * @throws IOException If there is an error initializing the stream.
 	 */
-	public PDFStreamParser( PDStream stream ) throws IOException
-	{
-		this( stream.createInputStream() );
-	}
+    public PDFStreamParser(COSStream stream) throws IOException
+    {
+        super(stream);
+    }
 
 	/**
 	 * Constructor.
 	 *
-	 * @param stream The stream to parse.
-	 *
-	 * @throws IOException If there is an error initializing the stream.
+     * @param input The random access read to parse.
+     * @throws IOException If there is an error initializing the stream.
 	 */
-	public PDFStreamParser( COSStream stream ) throws IOException
-	{
-		this( stream.getUnfilteredStream() );
-	}
+    public PDFStreamParser(RandomAccessRead input) throws IOException
+    {
+        super(input);
+    }
 
 	/**
 	 * This will parse the tokens in the stream.  This will close the

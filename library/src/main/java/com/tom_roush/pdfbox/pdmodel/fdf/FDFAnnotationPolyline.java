@@ -59,6 +59,12 @@ public class FDFAnnotationPolyline extends FDFAnnotation
         super(element);
         annot.setName(COSName.SUBTYPE, SUBTYPE);
 
+        initVertices(element);
+        initStyles(element);
+    }
+
+    private void initVertices(Element element) throws IOException, NumberFormatException
+    {
         XPath xpath = XPathFactory.newInstance().newXPath();
         try
         {
@@ -80,7 +86,10 @@ public class FDFAnnotationPolyline extends FDFAnnotation
             Log.d("PdfBox-Android",
                 "Error while evaluating XPath expression for polyline vertices");
         }
+    }
 
+    private void initStyles(Element element) throws NumberFormatException
+    {
         String startStyle = element.getAttribute("head");
         if (startStyle != null && !startStyle.isEmpty())
         {

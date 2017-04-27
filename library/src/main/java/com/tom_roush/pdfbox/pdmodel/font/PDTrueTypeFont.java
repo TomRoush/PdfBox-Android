@@ -16,11 +16,14 @@
  */
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import android.graphics.Path;
 import android.util.Log;
 
+import com.tom_roush.fontbox.FontBoxFont;
 import com.tom_roush.fontbox.ttf.CmapSubtable;
 import com.tom_roush.fontbox.ttf.CmapTable;
 import com.tom_roush.fontbox.ttf.GlyphData;
+import com.tom_roush.fontbox.ttf.PostScriptTable;
 import com.tom_roush.fontbox.ttf.TTFParser;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.fontbox.util.BoundingBox;
@@ -28,6 +31,7 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.BuiltInEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.GlyphList;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.MacOSRomanEncoding;
@@ -45,7 +49,7 @@ import java.util.Map;
  *
  * @author Ben Litchfield
  */
-public class PDTrueTypeFont extends PDSimpleFont
+public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
 {
 	private static final int START_RANGE_F000 = 0xF000;
 	private static final int START_RANGE_F100 = 0xF100;
@@ -147,13 +151,12 @@ public class PDTrueTypeFont extends PDSimpleFont
 		// substitute
 		if (ttfFont == null)
 		{
-			ttfFont = ExternalFonts.getTrueTypeFont(getBaseFont());
+            FontMapping<TrueTypeFont> mapping = FontMapper.getTrueTypeFont(getFontDescriptor());
+            ttfFont = mapping.getFont();
 
-			// fallback
-			if (ttfFont == null)
-			{
-				ttfFont = ExternalFonts.getTrueTypeFallbackFont(getFontDescriptor());
-				Log.w("PdfBox-Android", "Using fallback font '" + ttfFont + "' for '" + getBaseFont() + "'");
+            if (mapping.isFallback())
+            {
+                Log.w("PdfBox-Android", "Using fallback font '" + ttfFont + "' for '" + getBaseFont() + "'");
 			}
 		}
 		ttf = ttfFont;
@@ -178,11 +181,30 @@ public class PDTrueTypeFont extends PDSimpleFont
 		}
 		else
 		{
-			// for symbolic fonts the (3, 0) (Windows, Symbol) cmap is the font's built-in encoding
-			// but this is handled by codeToGID
-			return null;
-		}
-	}
+            // synthesize an encoding, so that getEncoding() is always usable
+            PostScriptTable post = ttf.getPostScript();
+            Map<Integer, String> codeToName = new HashMap<Integer, String>();
+            for (int code = 0; code <= 256; code++)
+            {
+                int gid = codeToGID(code);
+                if (gid > 0)
+                {
+                    String name = null;
+                    if (post != null)
+                    {
+                        name = post.getName(gid);
+                    }
+                    if (name == null)
+                    {
+                        // GID pseudo-name
+                        name = Integer.toString(gid);
+                    }
+                    codeToName.put(code, name);
+                }
+            }
+            return new BuiltInEncoding(codeToName);
+        }
+    }
 
 	/**
 	 * Creates a new TrueType font for embedding.
@@ -328,6 +350,73 @@ public class PDTrueTypeFont extends PDSimpleFont
 	{
 		return isEmbedded;
 	}
+
+    @Override
+    public Path getPath(int code) throws IOException
+    {
+        int gid = codeToGID(code);
+        GlyphData glyph = ttf.getGlyph().getGlyph(gid);
+
+        // some glyphs have no outlines (e.g. space, table, newline)
+        if (glyph == null)
+        {
+            return new Path();
+        }
+        else
+        {
+            return glyph.getPath();
+        }
+    }
+
+    @Override
+    public Path getPath(String name) throws IOException
+    {
+        // handle glyph names and uniXXXX names
+        int gid = ttf.nameToGID(name);
+        if (gid == 0)
+        {
+            try
+            {
+                // handle GID pseudo-names
+                gid = Integer.parseInt(name);
+                if (gid > ttf.getNumberOfGlyphs())
+                {
+                    gid = 0;
+                }
+            }
+            catch (NumberFormatException e)
+            {
+                gid = 0;
+            }
+        }
+        // I'm assuming .notdef paths are not drawn, as it PDFBOX-2421
+        if (gid == 0)
+        {
+            return new Path();
+        }
+
+        GlyphData glyph = ttf.getGlyph().getGlyph(gid);
+        if (glyph != null)
+        {
+            return glyph.getPath();
+        }
+        else
+        {
+            return new Path();
+        }
+    }
+
+    @Override
+    public FontBoxFont getFontBoxFont()
+    {
+        return ttf;
+    }
+
+    @Override
+    public boolean hasGlyph(int code) throws IOException
+    {
+        return codeToGID(code) != 0;
+    }
 
 	/**
 	 * Returns the GID for the given character code.

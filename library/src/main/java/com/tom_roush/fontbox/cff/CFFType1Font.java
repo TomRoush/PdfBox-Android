@@ -18,7 +18,7 @@ package com.tom_roush.fontbox.cff;
 
 import android.graphics.Path;
 
-import com.tom_roush.fontbox.ttf.Type1Equivalent;
+import com.tom_roush.fontbox.EncodedFont;
 import com.tom_roush.fontbox.type1.Type1CharStringReader;
 
 import java.io.IOException;
@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author Villu Ruusmann
  * @author John Hewson
  */
-public class CFFType1Font extends CFFFont implements Type1Equivalent
+public class CFFType1Font extends CFFFont implements EncodedFont
 {
     private final Map<String, Object> privateDict = new LinkedHashMap<String, Object>();
     private CFFEncoding encoding;

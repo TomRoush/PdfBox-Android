@@ -17,7 +17,6 @@
 package com.tom_roush.pdfbox.multipdf;
 
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
-import com.tom_roush.pdfbox.util.PageExtractor;
 
 import junit.framework.TestCase;
 

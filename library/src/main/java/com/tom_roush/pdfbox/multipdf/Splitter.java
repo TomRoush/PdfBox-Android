@@ -56,12 +56,13 @@ public class Splitter
      * page.
      *
      * @param split The number of pages each split document should contain.
+     * @throws IllegalArgumentException if the page is smaller than one.
      */
     public void setSplitAtPage(int split)
     {
         if(split <= 0)
         {
-            throw new RuntimeException("Error split must be at least one page.");
+            throw new IllegalArgumentException("Number of pages is smaller than one");
         }
         splitLength = split;
     }
@@ -70,12 +71,13 @@ public class Splitter
      * This will set the start page.
      *
      * @param start the start page
+     * @throws IllegalArgumentException if the start page is smaller than one.
      */
     public void setStartPage(int start)
     {
         if(start <= 0)
         {
-            throw new RuntimeException("Error split must be at least one page.");
+            throw new IllegalArgumentException("Start page is smaller than one");
         }
         startPage = start;
     }
@@ -84,12 +86,13 @@ public class Splitter
      * This will set the end page.
      *
      * @param end the end page
+     * @throws IllegalArgumentException if the end page is smaller than one.
      */
     public void setEndPage(int end)
     {
         if(end <= 0)
         {
-            throw new RuntimeException("Error split must be at least one page.");
+            throw new IllegalArgumentException("End page is smaller than one");
         }
         endPage = end;
     }

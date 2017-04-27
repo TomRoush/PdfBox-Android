@@ -1,9 +1,9 @@
 package com.tom_roush.pdfbox.contentstream.operator;
 
+import com.tom_roush.pdfbox.cos.COSDictionary;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * An Operator in a PDF content stream.
@@ -23,13 +23,14 @@ public final class Operator
      * Constructor.
      *
      * @param aOperator The operator that this object will represent.
+     * @throws IllegalArgumentException if the operator starts with "/".
      */
     private Operator(String aOperator)
     {
         theOperator = aOperator;
         if( aOperator.startsWith( "/" ) )
         {
-            throw new RuntimeException( "Operators are not allowed to start with / '" + aOperator + "'" );
+            throw new IllegalArgumentException("Operators are not allowed to start with / '" + aOperator + "'");
         }
     }
 

@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * @author Ben Litchfield
  */
-public abstract class PDCIDFont implements COSObjectable, PDFontLike
+public abstract class PDCIDFont implements COSObjectable, PDFontLike, PDVectorFont
 {
     protected final PDType0Font parent;
 

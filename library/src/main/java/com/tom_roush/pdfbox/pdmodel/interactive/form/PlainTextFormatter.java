@@ -64,8 +64,8 @@ class PlainTextFormatter
 		}
 	}
 
-	private AppearanceStyle appearanceStyle;
-	private final boolean wrapLines;
+    private final AppearanceStyle appearanceStyle;
+    private final boolean wrapLines;
 	private final float width;
 	private final PDPageContentStream contents;
 	private final PlainText textContent;
@@ -91,8 +91,8 @@ class PlainTextFormatter
 		private float horizontalOffset = 0f;
 		private float verticalOffset = 0f;
 
-		public Builder(PDPageContentStream contents)
-		{
+        Builder(PDPageContentStream contents)
+        {
 			this.contents = contents;
 		}
 
@@ -251,6 +251,6 @@ class PlainTextFormatter
 				}
 			}
 		}
-		horizontalOffset = horizontalOffset -lastPos;
-	}
+        horizontalOffset = horizontalOffset - lastPos;
+    }
 }

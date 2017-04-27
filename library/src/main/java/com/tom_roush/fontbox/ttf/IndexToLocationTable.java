@@ -34,6 +34,11 @@ public class IndexToLocationTable extends TTFTable
     public static final String TAG = "loca";
     
     private long[] offsets;
+
+    IndexToLocationTable(TrueTypeFont font)
+    {
+        super(font);
+    }
     
     /**
      * This will read the required data from the stream.

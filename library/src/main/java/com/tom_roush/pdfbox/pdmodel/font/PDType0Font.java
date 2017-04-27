@@ -1,5 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import android.graphics.Path;
 import android.util.Log;
 
 import com.tom_roush.fontbox.cmap.CMap;
@@ -22,7 +23,7 @@ import java.io.InputStream;
  *
  * @author Ben Litchfield
  */
-public class PDType0Font extends PDFont
+public class PDType0Font extends PDFont implements PDVectorFont
 {
 	private final PDCIDFont descendantFont;
 	private CMap cMap, cMapUCS2;
@@ -461,4 +462,16 @@ public class PDType0Font extends PDFont
 		}
 		return getClass().getSimpleName() + "/" + descendant + " " + getBaseFont();
 	}
+
+    @Override
+    public Path getPath(int code) throws IOException
+    {
+        return descendantFont.getPath(code);
+    }
+
+    @Override
+    public boolean hasGlyph(int code) throws IOException
+    {
+        return descendantFont.hasGlyph(code);
+    }
 }

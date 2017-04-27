@@ -9,7 +9,6 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.RandomAccessBuffer;
 import com.tom_roush.pdfbox.io.RandomAccessFile;
-import com.tom_roush.pdfbox.pdmodel.fdf.FDFDocument;
 
 import java.io.File;
 import java.io.IOException;
@@ -136,18 +135,5 @@ public class FDFParser extends COSParser
                 document = null;
             }
         }
-    }
-
-    /**
-     * This will get the FDF document that was parsed.  When you are done with
-     * this document you must call close() on it to release resources.
-     *
-     * @return The document at the PD layer.
-     *
-     * @throws IOException If there is an error getting the document.
-     */
-    public FDFDocument getFDFDocument() throws IOException
-    {
-        return new FDFDocument( getDocument() );
     }
 }

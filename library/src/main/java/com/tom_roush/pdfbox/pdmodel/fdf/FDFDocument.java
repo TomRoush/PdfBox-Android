@@ -154,7 +154,7 @@ public class FDFDocument implements Closeable
     {
     	FDFParser parser = new FDFParser(filename);
     	parser.parse();
-    	return parser.getFDFDocument();
+        return new FDFDocument(parser.getDocument());
     }
 
     /**
@@ -170,7 +170,7 @@ public class FDFDocument implements Closeable
     {
     	FDFParser parser = new FDFParser(file);
     	parser.parse();
-    	return parser.getFDFDocument();
+        return new FDFDocument(parser.getDocument());
     }
 
     /**
@@ -186,7 +186,7 @@ public class FDFDocument implements Closeable
     {
         FDFParser parser = new FDFParser( input );
         parser.parse();
-        return parser.getFDFDocument();
+        return new FDFDocument(parser.getDocument());
     }
 
     /**

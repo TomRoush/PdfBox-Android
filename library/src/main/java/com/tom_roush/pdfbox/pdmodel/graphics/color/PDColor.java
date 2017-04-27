@@ -4,6 +4,7 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNumber;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 /**
@@ -30,10 +31,10 @@ public final class PDColor
 	{
 		if (array.size() > 0 && array.get(array.size() - 1) instanceof COSName)
 		{
-			// color components (optional)
-			components = new float[array.size() - 1];
-			for (int i = 0; i < array.size() - 1; i++)
-			{
+            // color components (optional), for the color of an uncoloured tiling pattern
+            components = new float[array.size() - 1];
+            for (int i = 0; i < array.size() - 1; i++)
+            {
 				components[i] = ((COSNumber)array.get(i)).floatValue();
 			}
 
@@ -123,28 +124,31 @@ public final class PDColor
 	 * @throws IOException if the color conversion fails
 	 * @throws IllegalStateException if this color value is a pattern.
 	 */
-	//	public int toRGB() throws IOException
-	//	{
-	//		float[] floats = colorSpace.toRGB(components);
-	//		int r = Math.round(floats[0] * 255);
-	//		int g = Math.round(floats[1] * 255);
-	//		int b = Math.round(floats[2] * 255);
-	//		int rgb = r;
-	//		rgb = (rgb << 8) + g;
-	//		rgb = (rgb << 8) + b;
-	//		return rgb;
-	//	} TODO: PdfBox-Android
+    public int toRGB() throws IOException
+    {
+        float[] floats = colorSpace.toRGB(components);
+        int r = Math.round(floats[0] * 255);
+        int g = Math.round(floats[1] * 255);
+        int b = Math.round(floats[2] * 255);
+        int rgb = r;
+        rgb = (rgb << 8) + g;
+        rgb = (rgb << 8) + b;
+        return rgb;
+    }
 
 	/**
-	 * Returns this color value as a COS array
-	 * @return the color value as a COS array
-	 */
-	public COSArray toCOSArray()
+     * Returns the color component values as a COS array
+     * @return the color component values as a COS array
+     */
+    public COSArray toCOSArray()
 	{
 		COSArray array = new COSArray();
 		array.setFloatArray(components);
-		array.add(patternName);
-		return array;
+        if (patternName != null)
+        {
+            array.add(patternName);
+        }
+        return array;
 	}
 
 	/**

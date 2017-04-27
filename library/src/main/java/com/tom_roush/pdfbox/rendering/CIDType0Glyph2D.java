@@ -1,14 +1,13 @@
 package com.tom_roush.pdfbox.rendering;
 
+import android.graphics.Path;
+import android.util.Log;
+
+import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType0;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.tom_roush.fontbox.cff.Type2CharString;
-import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType0;
-
-import android.graphics.Path;
-import android.util.Log;
 
 /**
  * GeneralPath conversion for CFF CIDFont.
@@ -33,21 +32,20 @@ final class CIDType0Glyph2D implements Glyph2D
 	@Override
 	public Path getPathForCharacterCode(int code)
 	{
-		int cid = font.getParent().codeToCID(code);
 		if (cache.containsKey(code))
 		{
 			return cache.get(code);
 		}
 		try
 		{
-			Type2CharString charString = font.getType2CharString(cid);
-			if (charString.getGID() == 0)
-			{
-				String cidHex = String.format("%04x", cid);
+            if (!font.hasGlyph(code))
+            {
+                int cid = font.getParent().codeToCID(code);
+                String cidHex = String.format("%04x", cid);
 				Log.w("PdfBox-Android", "No glyph for " + code + " (CID " + cidHex + ") in font " + fontName);
 			}
-			Path path = charString.getPath();
-			cache.put(code, path);
+            Path path = font.getPath(code);
+            cache.put(code, path);
 			return path;
 		}
 		catch (IOException e)

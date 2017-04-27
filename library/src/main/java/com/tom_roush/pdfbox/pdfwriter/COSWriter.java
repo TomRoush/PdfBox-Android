@@ -731,10 +731,10 @@ public class COSWriter implements ICOSVisitor, Closeable
 
 	 private void writeXrefRange(long x, long y) throws IOException
 	 {
-		 getStandardOutput().write(String.valueOf(x).getBytes());
-		 getStandardOutput().write(SPACE);
-		 getStandardOutput().write(String.valueOf(y).getBytes());
-		 getStandardOutput().writeEOL();
+         getStandardOutput().write(String.valueOf(x).getBytes(Charsets.ISO_8859_1));
+         getStandardOutput().write(SPACE);
+         getStandardOutput().write(String.valueOf(y).getBytes(Charsets.ISO_8859_1));
+         getStandardOutput().writeEOL();
 	 }
 
 	 private void writeXrefEntry(COSWriterXRefEntry entry) throws IOException

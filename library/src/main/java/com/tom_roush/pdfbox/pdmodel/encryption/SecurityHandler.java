@@ -181,8 +181,8 @@ public abstract class SecurityHandler
 	/**
 	 * Encrypt or decrypt data with RC4.
 	 *
-	 * @param finalKey The final key obtained with via {@link #calcFinalKey()}.
-	 * @param input The data to encrypt.
+     * @param finalKey The final key obtained with via {@link #calcFinalKey(long, long)}.
+     * @param input The data to encrypt.
 	 * @param output The output to write the encrypted data to.
 	 * @throws IOException If there is an error reading the data.
 	 */
@@ -196,8 +196,8 @@ public abstract class SecurityHandler
 	/**
 	 * Encrypt or decrypt data with RC4.
 	 *
-	 * @param finalKey The final key obtained with via {@link #calcFinalKey()}.
-	 * @param input The data to encrypt.
+     * @param finalKey The final key obtained with via {@link #calcFinalKey(long, long)}.
+     * @param input The data to encrypt.
 	 * @param output The output to write the encrypted data to.
 	 * @throws IOException If there is an error reading the data.
 	 */

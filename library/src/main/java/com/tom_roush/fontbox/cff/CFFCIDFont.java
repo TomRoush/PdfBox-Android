@@ -17,13 +17,15 @@
 
 package com.tom_roush.fontbox.cff;
 
+import android.graphics.Path;
+
+import com.tom_roush.fontbox.type1.Type1CharStringReader;
+
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.tom_roush.fontbox.type1.Type1CharStringReader;
 
 /**
  * A Type 0 CIDFont represented in a CFF file. Thread safe.
@@ -247,6 +249,39 @@ public class CFFCIDFont extends CFFFont
     {
     	// our parser guarantees that FontMatrix will be present and correct in the Top DICT
     	return (List<Number>)topDict.get("FontMatrix");
+    }
+
+    @Override
+    public Path getPath(String selector) throws IOException
+    {
+        int cid = selectorToCID(selector);
+        return getType2CharString(cid).getPath();
+    }
+
+    @Override
+    public float getWidth(String selector) throws IOException
+    {
+        int cid = selectorToCID(selector);
+        return getType2CharString(cid).getWidth();
+    }
+
+    @Override
+    public boolean hasGlyph(String selector) throws IOException
+    {
+        int cid = selectorToCID(selector);
+        return cid != 0;
+    }
+
+    /**
+     * Parses a CID selector of the form \ddddd.
+     */
+    private int selectorToCID(String selector)
+    {
+        if (!selector.startsWith("\\"))
+        {
+            throw new IllegalArgumentException("Invalid selector");
+        }
+        return Integer.parseInt(selector.substring(1));
     }
 
     /**

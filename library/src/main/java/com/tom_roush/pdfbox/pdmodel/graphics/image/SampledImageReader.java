@@ -8,10 +8,12 @@ import android.util.Log;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.io.RandomAccessBuffer;
+import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.pdmodel.common.PDMemoryStream;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
 /**
@@ -176,8 +178,8 @@ final class SampledImageReader
 //            for (int y = 0; y < height; y++)
 //            {
 //                int x = 0;
-//                iis.read(buff);
-//                for (int r = 0; r < rowLen; r++)
+//                int readLen = iis.read(buff);
+//                for (int r = 0; r < rowLen && r < readLen; r++)
 //                {
 //                    int value = buff[r];
 //                    int mask = 128;
@@ -193,6 +195,11 @@ final class SampledImageReader
 //                        }
 //                    }
 //                }
+//            }
+//            if (readLen != rowLen)
+//            {
+//                Log.w("PdfBox-Android", "premature EOF, image will be incomplete");
+//                break;
 //            }
 //
 //            // use the color space to convert the image to RGB
@@ -213,25 +220,33 @@ final class SampledImageReader
     private static Bitmap from8bit(PDImage pdImage, Bitmap raster)
             throws IOException
     {
-        InputStream input = pdImage.getStream().createInputStream();
+        RandomAccessRead input;
+        PDStream stream = pdImage.getStream();
+        if (stream instanceof PDMemoryStream)
+        {
+            input = new RandomAccessBuffer(stream.getByteArray());
+        }
+        else
+        {
+            input = stream.getStream().getUnfilteredRandomAccess();
+        }
         try
         {
             // get the raster's underlying byte buffer
 //            byte[][] banks = ((DataBufferByte) raster.getDataBuffer()).getBankData();
-//            byte[] source = IOUtils.toByteArray(input);
 
             final int width = pdImage.getWidth();
             final int height = pdImage.getHeight();
             final int numComponents = pdImage.getColorSpace().getNumberOfComponents();
 //            int max = width * height;
 /*
-            for (int c = 0; c < numComponents; c++)
+            byte[] tempBytes = new byte[numComponents];
+            for (int i = 0; i < max; i++)
             {
-                int sourceOffset = c;
-                for (int i = 0; i < max; i++)
+                input.read(tempBytes);
+                for (int c = 0; c < numComponents; c++)
                 {
-//                    banks[c][i] = source[sourceOffset];
-                    sourceOffset += numComponents;
+                    banks[c][i] = tempBytes[0+c];
                 }
             }
             */

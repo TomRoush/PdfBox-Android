@@ -16,13 +16,13 @@
  */
 package com.tom_roush.fontbox.afm;
 
+import com.tom_roush.fontbox.util.BoundingBox;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import com.tom_roush.fontbox.util.BoundingBox;
 
 /**
  * This is the outermost AFM type.  This can be created by the afmparser with a valid AFM document.
@@ -213,13 +213,14 @@ public class FontMetrics
      * This will set the metricSets attribute.  This value must be 0,1, or 2.
      *
      * @param metricSetsValue The new metric sets attribute.
+     * @throws IllegalArgumentException If the metricSets attribute is not 0,1, or 2.
      */
     public void setMetricSets( int metricSetsValue )
     {
         if( metricSetsValue < 0 || metricSetsValue > 2 )
         {
-            throw new RuntimeException( "The metricSets attribute must be in the " +
-                                        "set {0,1,2} and not '" + metricSetsValue + "'" );
+            throw new IllegalArgumentException("The metricSets attribute must be in the " +
+                "set {0,1,2} and not '" + metricSetsValue + "'");
         }
         metricSets = metricSetsValue;
     }

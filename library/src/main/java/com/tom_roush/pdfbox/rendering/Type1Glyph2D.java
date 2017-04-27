@@ -3,7 +3,7 @@ package com.tom_roush.pdfbox.rendering;
 import android.graphics.Path;
 import android.util.Log;
 
-import com.tom_roush.pdfbox.pdmodel.font.PDType1Equivalent;
+import com.tom_roush.pdfbox.pdmodel.font.PDSimpleFont;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -15,15 +15,16 @@ import java.util.Map;
 final class Type1Glyph2D implements Glyph2D
 {
 	private final Map<Integer, Path> cache = new HashMap<Integer, Path>();
-	private final PDType1Equivalent font;
-	/**
-	 * Constructor.
+    private final PDSimpleFont font;
+
+    /**
+     * Constructor.
 	 *
 	 * @param font PDF Type1 font.
 	 */
-	Type1Glyph2D(PDType1Equivalent font)
-	{
-		this.font = font;
+    Type1Glyph2D(PDSimpleFont font)
+    {
+        this.font = font;
 	}
 	@Override
 	public Path getPathForCharacterCode(int code)
@@ -36,8 +37,8 @@ final class Type1Glyph2D implements Glyph2D
 		// fetch
 		try
 		{
-			String name = font.codeToName(code);
-			if (name.equals(".notdef"))
+            String name = font.getEncoding().getName(code);
+            if (name.equals(".notdef"))
 			{
 				Log.w("PdfBox-Android", "No glyph for " + code + " (" + name + ") in font " + font.getName());
 			}

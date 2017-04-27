@@ -19,7 +19,7 @@ import java.util.Set;
  *
  * @author John Hewson
  */
-class Standard14Fonts
+final class Standard14Fonts
 {
 	private Standard14Fonts()
 	{

@@ -19,11 +19,12 @@ package com.tom_roush.fontbox.type1;
 
 import android.graphics.Path;
 
+import com.tom_roush.fontbox.EncodedFont;
+import com.tom_roush.fontbox.FontBoxFont;
 import com.tom_roush.fontbox.cff.Type1CharString;
 import com.tom_roush.fontbox.cff.Type1CharStringParser;
 import com.tom_roush.fontbox.encoding.Encoding;
 import com.tom_roush.fontbox.pfb.PfbParser;
-import com.tom_roush.fontbox.ttf.Type1Equivalent;
 import com.tom_roush.fontbox.util.BoundingBox;
 
 import java.io.IOException;
@@ -40,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author John Hewson
  */
-public final class Type1Font implements Type1CharStringReader, Type1Equivalent
+public final class Type1Font implements Type1CharStringReader, EncodedFont, FontBoxFont
 {
     /**
      * Constructs a new Type1Font object from a .pfb stream.

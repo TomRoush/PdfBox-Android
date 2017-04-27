@@ -1,15 +1,15 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import com.tom_roush.pdfbox.cos.COSArray;
-import com.tom_roush.pdfbox.cos.COSBase;
-import com.tom_roush.pdfbox.cos.COSString;
-import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
 
 /**
  * A set of utility methods to help with common AcroForm form and field related functions.
@@ -29,8 +29,8 @@ public final class FieldUtils
     {
         private final String key;
         private final String value;
-        
-        public KeyValue(final String theKey, final String theValue)
+
+        KeyValue(final String theKey, final String theValue)
         {
             this.key = theKey;
             this.value = theValue;

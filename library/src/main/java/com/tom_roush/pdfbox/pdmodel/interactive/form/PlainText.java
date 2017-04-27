@@ -16,6 +16,8 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
+import com.tom_roush.pdfbox.pdmodel.font.PDFont;
+
 import java.io.IOException;
 import java.text.AttributedCharacterIterator.Attribute;
 import java.text.AttributedString;
@@ -23,8 +25,6 @@ import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 
 /**
  * A block of text.
@@ -123,7 +123,7 @@ class PlainText
 	 */
 	static class Paragraph
 	{
-		private String textContent;
+        private final String textContent;
 
 		Paragraph(String text)
 		{
@@ -159,25 +159,24 @@ class PlainText
 			int start = iterator.first();
 			int end = iterator.next();
 			float lineWidth = 0;
-			float wordWidth = 0f;
-			float whitespaceWidth = 0f;
 
 			List<Line> textLines = new ArrayList<Line>();
-			Line textLine =  new Line();
+            Line textLine = new Line();
 
 			while (end != BreakIterator.DONE)
 			{
 				String word = textContent.substring(start,end);
-				wordWidth = font.getStringWidth(word) * scale;
+                float wordWidth = font.getStringWidth(word) * scale;
 
 				lineWidth = lineWidth + wordWidth;
 
 				// check if the last word would fit without the whitespace ending it
 				if (lineWidth >= width && Character.isWhitespace(word.charAt(word.length()-1)))
 				{
-					whitespaceWidth = font.getStringWidth(word.substring(word.length()-1)) * scale;
-					lineWidth = lineWidth - whitespaceWidth;
-				}
+                    float whitespaceWidth =
+                        font.getStringWidth(word.substring(word.length() - 1)) * scale;
+                    lineWidth = lineWidth - whitespaceWidth;
+                }
 
 				if (lineWidth >= width)
 				{
@@ -205,8 +204,8 @@ class PlainText
 	 */
 	static class Line
 	{
-		private List<Word> words = new ArrayList<Word>();
-		private float lineWidth;
+        private final List<Word> words = new ArrayList<Word>();
+        private float lineWidth;
 
 		float getWidth()
 		{
@@ -261,7 +260,7 @@ class PlainText
 	static class Word
 	{
 		private AttributedString attributedString;
-		private String textContent;
+        private final String textContent;
 
 		Word(String text)
 		{

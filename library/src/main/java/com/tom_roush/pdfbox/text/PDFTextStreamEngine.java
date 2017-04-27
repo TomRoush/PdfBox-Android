@@ -56,8 +56,8 @@ class PDFTextStreamEngine extends PDFStreamEngine
 	/**
 	 * Constructor.
 	 */
-	public PDFTextStreamEngine() throws IOException
-	{
+    PDFTextStreamEngine() throws IOException
+    {
 		addOperator(new BeginText());
 		addOperator(new Concatenate());
 		addOperator(new DrawObject()); // special text version

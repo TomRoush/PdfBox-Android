@@ -17,6 +17,8 @@
 
 package com.tom_roush.fontbox.ttf;
 
+import android.graphics.Path;
+
 import java.io.IOException;
 
 /**
@@ -41,12 +43,25 @@ public class OpenTypeFont extends TrueTypeFont
      */
     public synchronized CFFTable getCFF() throws IOException
     {
-        CFFTable cmap = (CFFTable)tables.get(CFFTable.TAG);
-        if (cmap != null && !cmap.getInitialized())
+        CFFTable cff = (CFFTable) tables.get(CFFTable.TAG);
+        if (cff != null && !cff.getInitialized())
         {
-            readTable(cmap);
+            readTable(cff);
         }
-        return cmap;
+        return cff;
+    }
+
+    @Override
+    public synchronized GlyphTable getGlyph() throws IOException
+    {
+        throw new UnsupportedOperationException("OTF fonts do not have a glyf table");
+    }
+
+    @Override
+    public Path getPath(String name) throws IOException
+    {
+        int gid = nameToGID(name);
+        return getCFF().getFont().getType2CharString(gid).getPath();
     }
 
     /**

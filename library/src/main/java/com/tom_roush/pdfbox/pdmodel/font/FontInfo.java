@@ -14,27 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tom_roush.fontbox.encoding;
 
-import java.util.Map;
+package com.tom_roush.pdfbox.pdmodel.font;
+
+import com.tom_roush.fontbox.FontBoxFont;
 
 /**
- * A font-specific encoding.
+ * Information about a font on the system.
  *
  * @author John Hewson
  */
-public class CustomEncoding extends Encoding
+public abstract class FontInfo
 {
     /**
-     * Constructor.
-     * 
-     * @param codeToName the given code to name mapping
+     * Returns the PostScript name of the font.
      */
-    public CustomEncoding(Map<Integer, String> codeToName)
+    public abstract String getPostScriptName();
+
+    /**
+     * Returns the font's format.
+     */
+    public abstract FontFormat getFormat();
+
+    /**
+     * Returns the CIDSystemInfo associated with the font, if any.
+     */
+    public abstract PDCIDSystemInfo getCIDSystemInfo();
+
+    /**
+     * Returns a new FontBox font instance for the font. Implementors of this method must not
+     * cache the return value of this method unless doing so via the current {@link FontCache}.
+     */
+    public abstract FontBoxFont getFont();
+
+    @Override
+    public String toString()
     {
-        for (Map.Entry<Integer, String> entry : codeToName.entrySet())
-        {
-            addCharacterEncoding(entry.getKey(), entry.getValue());
-        }
+        return getPostScriptName() + " (" + getFormat() + ")";
     }
 }

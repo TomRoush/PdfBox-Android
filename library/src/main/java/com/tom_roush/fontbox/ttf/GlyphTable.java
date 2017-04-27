@@ -40,6 +40,11 @@ public class GlyphTable extends TTFTable
     private int numGlyphs;
     protected Map<Integer, GlyphData> cache = new ConcurrentHashMap<Integer, GlyphData>();
 
+    GlyphTable(TrueTypeFont font)
+    {
+        super(font);
+    }
+
     /**
      * This will read the required data from the stream.
      * 
@@ -105,11 +110,15 @@ public class GlyphTable extends TTFTable
     /**
      * Returns all glyphs. This method can be very slow.
      */
-    public synchronized GlyphData[] getGlyphs() throws IOException
+    public GlyphData[] getGlyphs() throws IOException
     {
         if (glyphs == null)
         {
-            readAll();
+            synchronized (font)
+            {
+                readAll();
+                ;
+            }
         }
         return glyphs;
     }
@@ -135,12 +144,7 @@ public class GlyphTable extends TTFTable
             return null;
         }
 
-        if (cache.containsKey(gid))
-        {
-            return cache.get(gid);
-        }
-
-        synchronized (this)
+        synchronized (font)
         {
             // save
             long currentPosition = data.getCurrentPosition();

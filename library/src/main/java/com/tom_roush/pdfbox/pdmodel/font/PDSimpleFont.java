@@ -16,11 +16,14 @@
  */
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import android.graphics.Path;
 import android.util.Log;
 
+import com.tom_roush.fontbox.FontBoxFont;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.BuiltInEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.DictionaryEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.GlyphList;
@@ -120,34 +123,29 @@ public abstract class PDSimpleFont extends PDFont
 				{
 					symbolic = false;
 				}
-				if (builtIn == null && !encodingDict.containsKey(COSName.BASE_ENCODING) && symbolic)
-				{
-					// TTF built-in encoding is handled by PDTrueTypeFont#codeToGID
-					this.encoding = null;
-				}
-				else
-				{
-					this.encoding = new DictionaryEncoding(encodingDict, !symbolic, builtIn);
-				}
-			}
-		}
+                this.encoding = new DictionaryEncoding(encodingDict, !symbolic, builtIn);
+            }
+        }
 		else
 		{
 			this.encoding = readEncodingFromFont();
 		}
 
-		// TTFs may have null encoding, but if it's non-symbolic then we have Standard Encoding
-		if (this.encoding == null && getSymbolicFlag() != null && !getSymbolicFlag())
-		{
-			this.encoding = StandardEncoding.INSTANCE;
+        // TTFs have a built-in encoding, but if the font is non-symbolic then we instead
+        // have Standard Encoding
+        if (this.encoding instanceof BuiltInEncoding &&
+            getSymbolicFlag() != null && !getSymbolicFlag())
+        {
+            this.encoding = StandardEncoding.INSTANCE;
 		}
 
 		// normalise the standard 14 name, e.g "Symbol,Italic" -> "Symbol"
 		String standard14Name = Standard14Fonts.getMappedFontName(getName());
 
-		// TTFs may have null encoding, but if it's standard 14 then we know it's Standard Encoding
-		if (this.encoding == null && isStandard14() &&
-			!standard14Name.equals("Symbol") &&
+        // TTFs may have a built-in encoding, but if the font is standard 14 then we know
+        // it's Standard Encoding
+        if (this.encoding instanceof BuiltInEncoding && isStandard14() &&
+            !standard14Name.equals("Symbol") &&
 			!standard14Name.equals("ZapfDingbats"))
 		{
 			this.encoding = StandardEncoding.INSTANCE;
@@ -437,6 +435,20 @@ public abstract class PDSimpleFont extends PDFont
 		}
 		return super.isStandard14();
 	}
+
+    /**
+     * Returns the path for the character with the given name. For some fonts, GIDs may be used
+     * instead of names when calling this method.
+     *
+     * @return glyph path
+     * @throws IOException if the path could not be read
+     */
+    public abstract Path getPath(String name) throws IOException;
+
+    /**
+     * Returns the embedded or system font used for rendering. This is never null.
+     */
+    public abstract FontBoxFont getFontBoxFont();
 
 	@Override
 	public void addToSubset(int codePoint)

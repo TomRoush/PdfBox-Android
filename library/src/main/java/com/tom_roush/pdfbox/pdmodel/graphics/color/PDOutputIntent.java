@@ -1,8 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -10,6 +7,9 @@ import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * An Output Intent describes the colour reproduction characteristics of a possible output
@@ -44,7 +44,7 @@ public final class PDOutputIntent implements COSObjectable
 
     public COSStream getDestOutputIntent()
     {
-        return (COSStream) dictionary.getItem(COSName.DEST_OUTPUT_PROFILE);
+        return (COSStream) dictionary.getDictionaryObject(COSName.DEST_OUTPUT_PROFILE);
     }
 
     public String getInfo()

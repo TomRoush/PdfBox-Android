@@ -982,7 +982,7 @@ public class AFMParser
     private String readLine() throws IOException
     {
         //First skip the whitespace
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         int nextByte = input.read();
         while( isWhitespace( nextByte ) )
         {
@@ -1009,7 +1009,7 @@ public class AFMParser
     private String readString() throws IOException
     {
         //First skip the whitespace
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         int nextByte = input.read();
         while( isWhitespace( nextByte ) )
         {

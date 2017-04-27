@@ -219,6 +219,25 @@ public class COSDocument extends COSBase implements Closeable
 		return retval;
 	}
 
+    /**
+     * Returns the COSObjectKey for a given COS object, or null if there is none.
+     * This lookup iterates over all objects in a PDF, which may be slow for large files.
+     *
+     * @param object COS object
+     * @return key
+     */
+    public COSObjectKey getKey(COSBase object)
+    {
+        for (Map.Entry<COSObjectKey, COSObject> entry : objectPool.entrySet())
+        {
+            if (entry.getValue().getObject() == object)
+            {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
 	/**
 	 * This will print contents to stdout.
 	 */

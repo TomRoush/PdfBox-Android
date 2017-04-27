@@ -1,32 +1,34 @@
 package com.tom_roush.pdfbox.rendering;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import android.graphics.Path;
+import android.util.Log;
 
-import com.tom_roush.fontbox.ttf.GlyphData;
 import com.tom_roush.fontbox.ttf.HeaderTable;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType2;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDTrueTypeFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType0Font;
+import com.tom_roush.pdfbox.pdmodel.font.PDVectorFont;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
-import android.graphics.Path;
-import android.util.Log;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * This class provides a glyph to GeneralPath conversion for TrueType fonts.
+ * This class provides a glyph to GeneralPath conversion for TrueType and OpenType fonts.
  */
 final class TTFGlyph2D implements Glyph2D
 {
 	private final PDFont font;
 	private final TrueTypeFont ttf;
-	private float scale = 1.0f;
+    private PDVectorFont vectorFont;
+    private float scale = 1.0f;
 	private boolean hasScaling;
 	private final Map<Integer, Path> glyphs = new HashMap<Integer, Path>();
 	private final boolean isCIDFont;
+
 	/**
 	 * Constructor.
 	 *
@@ -35,7 +37,9 @@ final class TTFGlyph2D implements Glyph2D
 	public TTFGlyph2D(PDTrueTypeFont ttfFont) throws IOException
 	{
 		this(ttfFont.getTrueTypeFont(), ttfFont, false);
-	}
+        vectorFont = ttfFont;
+    }
+
 	/**
 	 * Constructor.
 	 *
@@ -44,10 +48,11 @@ final class TTFGlyph2D implements Glyph2D
 	public TTFGlyph2D(PDType0Font type0Font) throws IOException
 	{
 		this(((PDCIDFontType2)type0Font.getDescendantFont()).getTrueTypeFont(), type0Font, true);
-	}
-	public TTFGlyph2D(TrueTypeFont ttf, PDFont font, boolean isCIDFont)
-			throws IOException
-	{
+        vectorFont = type0Font;
+    }
+
+    private TTFGlyph2D(TrueTypeFont ttf, PDFont font, boolean isCIDFont) throws IOException
+    {
 		this.font = font;
 		this.ttf = ttf;
 		this.isCIDFont = isCIDFont;
@@ -61,13 +66,15 @@ final class TTFGlyph2D implements Glyph2D
 			hasScaling = true;
 		}
 	}
-	@Override
+
+    @Override
 	public Path getPathForCharacterCode(int code) throws IOException
 	{
 		int gid = getGIDForCharacterCode(code);
 		return getPathForGID(gid, code);
 	}
-	// Try to map the given code to the corresponding glyph-ID
+
+    // Try to map the given code to the corresponding glyph-ID
 	private int getGIDForCharacterCode(int code) throws IOException
 	{
 		if (isCIDFont)
@@ -79,7 +86,8 @@ final class TTFGlyph2D implements Glyph2D
 			return ((PDTrueTypeFont)font).codeToGID(code);
 		}
 	}
-	/**
+
+    /**
 	 * Returns the path describing the glyph for the given glyphId.
 	 *
 	 * @param gid the GID
@@ -110,8 +118,8 @@ final class TTFGlyph2D implements Glyph2D
 					Log.w("PdfBox-Android", "No glyph for " + code + " in font " + font.getName());
 				}
 			}
-			GlyphData glyph = ttf.getGlyph().getGlyph(gid);
-			// Acrobat only draws GID 0 for embedded or "Standard 14" fonts, see PDFBOX-2372
+            Path glyph = vectorFont.getPath(code);
+            // Acrobat only draws GID 0 for embedded or "Standard 14" fonts, see PDFBOX-2372
 			if (gid == 0 && !font.isEmbedded() && !font.isStandard14())
 			{
 				glyph = null;
@@ -124,8 +132,8 @@ final class TTFGlyph2D implements Glyph2D
 			}
 			else
 			{
-				glyphPath = glyph.getPath();
-				if (hasScaling)
+                glyphPath = glyph;
+                if (hasScaling)
 				{
 					AffineTransform atScale = AffineTransform.getScaleInstance(scale, scale);
 					glyphPath.transform(atScale.toMatrix());
@@ -135,7 +143,8 @@ final class TTFGlyph2D implements Glyph2D
 		}
 		return glyphPath != null ? new Path(glyphPath) : null; // todo: expensive
 	}
-	@Override
+
+    @Override
 	public void dispose()
 	{
 		glyphs.clear();

@@ -19,6 +19,7 @@ package com.tom_roush.pdfbox.pdmodel;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.io.RandomAccessBuffer;
 import com.tom_roush.pdfbox.pdfparser.PDFStreamParser;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFDocument;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
@@ -34,7 +35,6 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -279,8 +279,7 @@ public class TestFDF extends TestCase
         List<Object> tokens = null;
         if( string != null )
         {
-            ByteArrayInputStream stream = new ByteArrayInputStream( string.getBytes() );
-            parser = new PDFStreamParser( stream );
+            parser = new PDFStreamParser(new RandomAccessBuffer(string.getBytes()));
             parser.parse();
             tokens = parser.getTokens();
         }

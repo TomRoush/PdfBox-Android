@@ -1,11 +1,13 @@
 package com.tom_roush.pdfbox.text;
 
-import java.text.Normalizer;
-import java.util.HashMap;
-import java.util.Map;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.util.Matrix;
+
+import java.text.Normalizer;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This represents a string and a position on the screen of those characters.
@@ -513,7 +515,13 @@ public final class TextPosition
 
 		for (int i = 0; i < strLen && !wasAdded; i++)
 		{
-			float currCharXEnd = currCharXStart + widths[i];
+            if (i >= widths.length)
+            {
+                Log.i("PdfBox-Android", "diacritic " + diacritic.getUnicode() + " on ligature " +
+                    unicode + " is not supported yet and is ignored (PDFBOX-2831)");
+                break;
+            }
+            float currCharXEnd = currCharXStart + widths[i];
 
 			// this is the case where there is an overlap of the diacritic character with the
 			// current character and the previous character. If no previous character, just append

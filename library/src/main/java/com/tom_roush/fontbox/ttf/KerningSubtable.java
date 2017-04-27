@@ -16,6 +16,8 @@
  */
 package com.tom_roush.fontbox.ttf;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -25,7 +27,7 @@ import java.util.Comparator;
  *
  * @author Glenn Adams
  */
-public class KerningSubtable extends TTFTable
+public class KerningSubtable
 {
     // coverage field bit masks and values
     private static final int COVERAGE_HORIZONTAL = 0x0001;
@@ -47,10 +49,7 @@ public class KerningSubtable extends TTFTable
     // format specific pair data
     private PairData pairs;
 
-    /**
-     * Constructor.
-     */
-    public KerningSubtable()
+    KerningSubtable()
     {
     }
 
@@ -131,22 +130,31 @@ public class KerningSubtable extends TTFTable
      */
     public int[] getKerning(int[] glyphs)
     {
-        int ng = glyphs.length;
-        int[] kerning = new int[ng];
-        for (int i = 0; i < ng; ++i)
+        int[] kerning = null;
+        if (pairs != null)
         {
-            int l = glyphs[i];
-            int r = -1;
-            for (int k = i + 1; k < ng; ++k)
+            int ng = glyphs.length;
+            kerning = new int[ng];
+            for (int i = 0; i < ng; ++i)
             {
-                int g = glyphs[k];
-                if (g >= 0)
+                int l = glyphs[i];
+                int r = -1;
+                for (int k = i + 1; k < ng; ++k)
                 {
-                    r = g;
-                    break;
+                    int g = glyphs[k];
+                    if (g >= 0)
+                    {
+                        r = g;
+                        break;
+                    }
                 }
+                kerning[i] = getKerning(l, r);
             }
-            kerning[i] = getKerning(l, r);
+        }
+        else
+        {
+            Log.w("PdfBox-Android",
+                "No kerning subtable data available due to an unsupported kerning subtable version");
         }
         return kerning;
     }
@@ -160,6 +168,11 @@ public class KerningSubtable extends TTFTable
      */
     public int getKerning(int l, int r)
     {
+        if (pairs == null)
+        {
+            Log.w("PdfBox-Android",
+                "No kerning subtable data available due to an unsupported kerning subtable version");
+        }
         return pairs.getKerning(l, r);
     }
 
@@ -191,11 +204,6 @@ public class KerningSubtable extends TTFTable
             this.crossStream = true;
         }
         int format = getBits(coverage, COVERAGE_FORMAT, COVERAGE_FORMAT_SHIFT);
-        if ((format != 0) && (format != 2))
-        {
-            throw new UnsupportedOperationException("Unsupported kerning sub-table format: "
-                + format);
-        }
         if (format == 0)
         {
             readSubtable0Format0(data);
@@ -203,6 +211,11 @@ public class KerningSubtable extends TTFTable
         else if (format == 2)
         {
             readSubtable0Format2(data);
+        }
+        else
+        {
+            Log.d("PdfBox-Android", "Skipped kerning subtable due to an unsupported kerning" +
+                " subtable version: " + format);
         }
     }
 

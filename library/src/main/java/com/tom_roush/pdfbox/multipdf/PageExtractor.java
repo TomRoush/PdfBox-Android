@@ -1,18 +1,20 @@
-package com.tom_roush.pdfbox.util;
-
-import java.io.IOException;
+package com.tom_roush.pdfbox.multipdf;
 
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
+
+import java.io.IOException;
 
 /**
  * This class will extract one or more sequential pages and create a new document.
  * @author Adam Nichols (adam@apache.org)
  */
 public class PageExtractor {
-	protected PDDocument sourceDocument;
-	protected int startPage = 1; // first page to extract is page 1 (by default)
-	protected int endPage = 0;
+    private PDDocument sourceDocument;
+
+    // first page to extract is page 1 (by default)
+    private int startPage = 1;
+    private int endPage = 0;
 
 	/** 
 	 * Creates a new instance of PageExtractor

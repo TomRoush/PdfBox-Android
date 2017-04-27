@@ -35,6 +35,11 @@ public class HorizontalMetricsTable extends TTFTable
 	private short[] nonHorizontalLeftSideBearing;
 	private int numHMetrics;
 
+    HorizontalMetricsTable(TrueTypeFont font)
+    {
+        super(font);
+    }
+
 	/**
 	 * This will read the required data from the stream.
 	 * 

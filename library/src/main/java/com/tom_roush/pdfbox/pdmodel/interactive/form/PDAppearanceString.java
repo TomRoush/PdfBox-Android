@@ -20,6 +20,7 @@ import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.io.RandomAccessBuffer;
 import com.tom_roush.pdfbox.pdfparser.PDFStreamParser;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
@@ -65,7 +66,8 @@ class PDAppearanceString
         }
 
         ByteArrayInputStream stream = new ByteArrayInputStream(defaultAppearance.getBytes());
-        PDFStreamParser parser = new PDFStreamParser(stream);
+        PDFStreamParser parser = new PDFStreamParser(
+            new RandomAccessBuffer(defaultAppearance.getBytes()));
         parser.parse();
         tokens = parser.getTokens();
 

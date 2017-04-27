@@ -16,8 +16,10 @@
  */
 package com.tom_roush.fontbox.cff;
 
+import com.tom_roush.fontbox.FontBoxFont;
 import com.tom_roush.fontbox.util.BoundingBox;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,7 +31,7 @@ import java.util.Map;
  * @author Villu Ruusmann
  * @author John Hewson
  */
-public abstract class CFFFont
+public abstract class CFFFont implements FontBoxFont
 {
     protected String fontName;
     protected final Map<String, Object> topDict = new LinkedHashMap<String, Object>();
@@ -173,6 +175,14 @@ public abstract class CFFFont
     {
         return globalSubrIndex;
     }
+
+    /**
+     * Returns the Type 2 charstring for the given CID.
+     *
+     * @param cidOrGid CID for CIFFont, or GID for Type 1 font
+     * @throws IOException if the charstring could not be read
+     */
+    public abstract Type2CharString getType2CharString(int cidOrGid) throws IOException;
 
     @Override
     public String toString()

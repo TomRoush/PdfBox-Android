@@ -17,9 +17,10 @@
 
 package com.tom_roush.fontbox.ttf;
 
-import java.io.IOException;
 import com.tom_roush.fontbox.cff.CFFFont;
 import com.tom_roush.fontbox.cff.CFFParser;
+
+import java.io.IOException;
 
 /**
  * PostScript font program (compact font format).
@@ -32,6 +33,11 @@ public class CFFTable extends TTFTable
     public static final String TAG = "CFF ";
 
     private CFFFont cffFont;
+
+    CFFTable(TrueTypeFont font)
+    {
+        super(font);
+    }
 
     /**
      * This will read the required data from the stream.

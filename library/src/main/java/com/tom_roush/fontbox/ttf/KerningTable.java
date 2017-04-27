@@ -16,6 +16,8 @@
  */
 package com.tom_roush.fontbox.ttf;
 
+import android.util.Log;
+
 import java.io.IOException;
 
 /**
@@ -32,6 +34,11 @@ public class KerningTable extends TTFTable
 
     private KerningSubtable[] subtables;
 
+    KerningTable(TrueTypeFont font)
+    {
+        super(font);
+    }
+
     /**
      * This will read the required data from the stream.
      *
@@ -47,25 +54,29 @@ public class KerningTable extends TTFTable
         {
             version = (version << 16) | data.readUnsignedShort();
         }
-        if (version > 1)
-        {
-            throw new UnsupportedOperationException("Unsupported kerning table version: " + version);
-        }
-        int numSubtables;
+        int numSubtables = 0;
         if (version == 0)
         {
             numSubtables = data.readUnsignedShort();
         }
-        else
+        else if (version == 1)
         {
             numSubtables = (int) data.readUnsignedInt();
         }
-        subtables = new KerningSubtable[numSubtables];
-        for (int i = 0; i < numSubtables; ++i)
+        else
         {
-            KerningSubtable subtable = new KerningSubtable();
-            subtable.read(data, version);
-            subtables[i] = subtable;
+            Log.d("PdfBox-Android", "Skipped kerning table due to an unsupported kerning table " +
+                "version: " + version);
+        }
+        if (numSubtables > 0)
+        {
+            subtables = new KerningSubtable[numSubtables];
+            for (int i = 0; i < numSubtables; ++i)
+            {
+                KerningSubtable subtable = new KerningSubtable();
+                subtable.read(data, version);
+                subtables[i] = subtable;
+            }
         }
         initialized = true;
     }
@@ -88,11 +99,14 @@ public class KerningTable extends TTFTable
      */
     public KerningSubtable getHorizontalKerningSubtable(boolean cross)
     {
-        for (KerningSubtable s : subtables)
+        if (subtables != null)
         {
-            if (s.isHorizontalKerning(cross))
+            for (KerningSubtable s : subtables)
             {
-                return s;
+                if (s.isHorizontalKerning(cross))
+                {
+                    return s;
+                }
             }
         }
         return null;

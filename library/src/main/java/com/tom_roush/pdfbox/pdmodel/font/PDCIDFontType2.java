@@ -1,9 +1,12 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import android.graphics.Path;
 import android.util.Log;
 
+import com.tom_roush.fontbox.cff.Type2CharString;
 import com.tom_roush.fontbox.cmap.CMap;
 import com.tom_roush.fontbox.ttf.CmapSubtable;
+import com.tom_roush.fontbox.ttf.GlyphData;
 import com.tom_roush.fontbox.ttf.OTFParser;
 import com.tom_roush.fontbox.ttf.OpenTypeFont;
 import com.tom_roush.fontbox.ttf.TTFParser;
@@ -115,19 +118,24 @@ public class PDCIDFontType2 extends PDCIDFont
 		isDamaged = fontIsDamaged;
 		if (ttfFont == null)
 		{
-			// substitute
-			TrueTypeFont ttfSubstitute = ExternalFonts.getTrueTypeFont(getBaseFont());
-			if (ttfSubstitute != null)
-			{
-				ttfFont = ttfSubstitute;
-			}
+            // find font or substitute
+            CIDFontMapping mapping = FontMapper.getCIDFont(getFontDescriptor(), getCIDSystemInfo());
+
+            if (mapping.isCIDFont())
+            {
+                ttfFont = mapping.getFont();
+            }
 			else
 			{
-				// fallback
-				ttfFont = ExternalFonts.getTrueTypeFallbackFont(getFontDescriptor());
-				Log.w("PdfBox-Android", "Using fallback font '" + ttfFont + "' for '" + getBaseFont() + "'");
-			}
-		}
+                ttfFont = (TrueTypeFont) mapping.getTrueTypeFont();
+            }
+
+            if (mapping.isFallback())
+            {
+                Log.w("PdfBox-Android",
+                    "Using fallback for CID-keyed TrueType font " + getBaseFont());
+            }
+        }
 		ttf = ttfFont;
 		cmap = ttf.getUnicodeCmap(false);
 
@@ -249,8 +257,8 @@ public class PDCIDFontType2 extends PDCIDFont
 					Log.w("PdfBox-Android", "Trying to map multi-byte character using 'cmap', result will be poor");
 				}
 
-				// a non-embedded font always has a cmap (otherwise ExternalFonts won't load it)
-				return cmap.getGlyphId(unicode.codePointAt(0));
+                // a non-embedded font always has a cmap (otherwise FontMapper won't load it)
+                return cmap.getGlyphId(unicode.codePointAt(0));
 			}
 		}
 		else
@@ -368,10 +376,38 @@ public class PDCIDFontType2 extends PDCIDFont
 	}
 
 	/**
-	 * Returns the embedded or substituted TrueType font.
+	 * Returns the embedded or substituted TrueType font. May be an OpenType font if the font is
+     * not embedded.
 	 */
 	public TrueTypeFont getTrueTypeFont()
 	{
 		return ttf;
 	}
+
+    @Override
+    public Path getPath(int code) throws IOException
+    {
+        if (ttf instanceof OpenTypeFont)
+        {
+            int cid = codeToCID(code);
+            Type2CharString charstring = ((OpenTypeFont)ttf).getCFF().getFont().getType2CharString(cid);
+            return charstring.getPath();
+        }
+        else
+        {
+            int gid = codeToGID(code);
+            GlyphData glyph = ttf.getGlyph().getGlyph(gid);
+            if (glyph != null)
+            {
+                return glyph.getPath();
+            }
+            return new Path();
+        }
+    }
+
+    @Override
+    public boolean hasGlyph(int code) throws IOException
+    {
+        return codeToGID(code) != 0;
+    }
 }

@@ -1,17 +1,17 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.RandomAccess;
 import com.tom_roush.pdfbox.io.RandomAccessFile;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * Factory for creating a PDImageXObject containing a CCITT Fax compressed TIFF image.
@@ -185,11 +185,13 @@ public final class CCITTFactory
                 throw new IOException("Not a valid tiff file");
             }
 
-            // Loop through the tags, some will convert to items in the parms dictionary
-            // Other point us to where to find the data stream
-            // The only parm which might change as a result of other options is K, so
-            // We'll deal with that as a special;
-            int k = -1000; // Default Non CCITT compression
+            // Loop through the tags, some will convert to items in the params dictionary
+            // Other point us to where to find the data stream.
+            // The only param which might change as a result of other TIFF tags is K, so
+            // we'll deal with that differently.
+
+            // Default value to detect error
+            int k = -1000;
             int dataoffset = 0;
             int datalength = 0;
 
@@ -330,7 +332,7 @@ public final class CCITTFactory
             reader.seek(dataoffset);
 
             byte[] buf = new byte[8192];
-            int amountRead = -1;
+            int amountRead;
             while ((amountRead = reader.read(buf, 0, Math.min(8192, datalength))) > 0)
             {
                 datalength -= amountRead;

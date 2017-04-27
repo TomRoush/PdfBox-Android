@@ -18,15 +18,17 @@ package com.tom_roush.fontbox.ttf;
 
 import android.graphics.Path;
 
-import com.tom_roush.fontbox.encoding.Encoding;
+import com.tom_roush.fontbox.FontBoxFont;
 import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,7 +36,7 @@ import java.util.Map;
  * 
  * @author Ben Litchfield
  */
-public class TrueTypeFont implements Type1Equivalent, Closeable
+public class TrueTypeFont implements FontBoxFont, Closeable
 {
 	private float version;
 	private int numberOfGlyphs = -1;
@@ -647,12 +649,6 @@ public class TrueTypeFont implements Type1Equivalent, Closeable
 	}
 
 	@Override
-	public Encoding getEncoding()
-	{
-		return null;
-	}
-
-	@Override
 	public BoundingBox getFontBBox() throws IOException
 	{
 		short xMin = getHeader().getXMin();
@@ -662,6 +658,13 @@ public class TrueTypeFont implements Type1Equivalent, Closeable
 		float scale = 1000f / getUnitsPerEm();
 		return new BoundingBox(xMin * scale, yMin * scale, xMax * scale, yMax * scale);
 	}
+
+    @Override
+    public List<Number> getFontMatrix() throws IOException
+    {
+        float scale = 1000f / getUnitsPerEm();
+        return Arrays.<Number>asList(0.001f * scale, 0, 0, 0.001f * scale, 0, 0);
+    }
 
 	@Override
 	public String toString()

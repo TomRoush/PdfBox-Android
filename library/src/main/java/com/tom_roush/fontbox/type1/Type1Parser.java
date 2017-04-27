@@ -17,7 +17,7 @@
 
 package com.tom_roush.fontbox.type1;
 
-import com.tom_roush.fontbox.encoding.CustomEncoding;
+import com.tom_roush.fontbox.encoding.BuiltInEncoding;
 import com.tom_roush.fontbox.encoding.StandardEncoding;
 
 import java.io.IOException;
@@ -221,7 +221,7 @@ final class Type1Parser
                 read(Token.NAME, "put");
                 codeToName.put(code, name);
             }
-            font.encoding = new CustomEncoding(codeToName);
+            font.encoding = new BuiltInEncoding(codeToName);
             readMaybe(Token.NAME, "readonly");
             read(Token.NAME, "def");
         }

@@ -1,7 +1,9 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import android.graphics.Path;
 import android.util.Log;
 
+import com.tom_roush.fontbox.FontBoxFont;
 import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -67,8 +69,23 @@ public class PDType3Font extends PDSimpleFont
 		return false;
 	}
 
-	@Override
-	public Vector getDisplacement(int code) throws IOException
+    @Override
+    public Path getPath(String name) throws IOException
+    {
+        // Type 3 fonts do not use vector paths
+        throw new UnsupportedOperationException("not supported for Type 3 fonts");
+    }
+
+    @Override
+    public FontBoxFont getFontBoxFont()
+    {
+        // Type 3 fonts do not use FontBox fonts
+        throw new UnsupportedOperationException("not supported for Type 3 fonts");
+    }
+
+
+    @Override
+    public Vector getDisplacement(int code) throws IOException
 	{
 		return getFontMatrix().transform(new Vector(getWidth(code), 0));
 	}

@@ -12,14 +12,10 @@ import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSObjectKey;
 import com.tom_roush.pdfbox.cos.COSStream;
-import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdfparser.XrefTrailerResolver.XRefType;
 import com.tom_roush.pdfbox.pdmodel.encryption.SecurityHandler;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,9 +57,16 @@ public class COSParser extends BaseParser
 	private static final char[] XREF_STREAM = new char[] { '/', 'X', 'R', 'e', 'f' };
 	private static final char[] STARTXREF = new char[] { 's','t','a','r','t','x','r','e','f' };
 
+    public static final byte[] ENDSTREAM = new byte[]{E, N, D, S, T, R, E, A, M};
+
+    public static final byte[] ENDOBJ = new byte[]{E, N, D, O, B, J};
+
 	private static final long MINIMUM_SEARCH_OFFSET = 6;
 
 	private static final int X = 'x';
+
+    private static final int STRMBUFLEN = 2048;
+    private final byte[] strmBuf = new byte[STRMBUFLEN];
 
 	/**
 	 * Only parse the PDF file minimally allowing access to basic information.
@@ -146,17 +149,6 @@ public class COSParser extends BaseParser
 	 */
 	public COSParser()
 	{
-	}
-
-	/**
-	 * Constructor.
-	 *
-	 * @param input inputStream of the pdf to be read
-	 * @throws IOException if something went wrong
-	 */
-	public COSParser(InputStream input) throws IOException
-	{
-		super(input);
 	}
 
 	/**
@@ -958,6 +950,114 @@ public class COSParser extends BaseParser
 		return stream;
 	}
 
+    /**
+     * This method will read through the current stream object until
+     * we find the keyword "endstream" meaning we're at the end of this
+     * object. Some pdf files, however, forget to write some endstream tags
+     * and just close off objects with an "endobj" tag so we have to handle
+     * this case as well.
+     *
+     * This method is optimized using buffered IO and reduced number of
+     * byte compare operations.
+     *
+     * @param out stream we write out to.
+     * @throws IOException if something went wrong
+     */
+    private void readUntilEndStream(final OutputStream out) throws IOException
+    {
+        int bufSize;
+        int charMatchCount = 0;
+        byte[] keyw = ENDSTREAM;
+
+        // last character position of shortest keyword ('endobj')
+        final int quickTestOffset = 5;
+
+        // read next chunk into buffer; already matched chars are added to beginning of buffer
+        while ((bufSize = pdfSource.read(strmBuf, charMatchCount, STRMBUFLEN - charMatchCount)) > 0)
+        {
+            bufSize += charMatchCount;
+
+            int bIdx = charMatchCount;
+            int quickTestIdx;
+
+            // iterate over buffer, trying to find keyword match
+            for (int maxQuicktestIdx = bufSize - quickTestOffset; bIdx < bufSize; bIdx++)
+            {
+                // reduce compare operations by first test last character we would have to
+                // match if current one matches; if it is not a character from keywords
+                // we can move behind the test character; this shortcut is inspired by the
+                // Boyer-Moore string search algorithm and can reduce parsing time by approx. 20%
+                quickTestIdx = bIdx + quickTestOffset;
+                if (charMatchCount == 0 && quickTestIdx < maxQuicktestIdx)
+                {
+                    final byte ch = strmBuf[quickTestIdx];
+                    if ((ch > 't') || (ch < 'a'))
+                    {
+                        // last character we would have to match if current character would match
+                        // is not a character from keywords -> jump behind and start over
+                        bIdx = quickTestIdx;
+                        continue;
+                    }
+                }
+
+                // could be negative - but we only compare to ASCII
+                final byte ch = strmBuf[bIdx];
+
+                if (ch == keyw[charMatchCount])
+                {
+                    if (++charMatchCount == keyw.length)
+                    {
+                        // match found
+                        bIdx++;
+                        break;
+                    }
+                }
+                else
+                {
+                    if ((charMatchCount == 3) && (ch == ENDOBJ[charMatchCount]))
+                    {
+                        // maybe ENDSTREAM is missing but we could have ENDOBJ
+                        keyw = ENDOBJ;
+                        charMatchCount++;
+                    }
+                    else
+                    {
+                        // no match; incrementing match start by 1 would be dumb since we already know
+                        // matched chars depending on current char read we may already have beginning
+                        // of a new match: 'e': first char matched; 'n': if we are at match position
+                        // idx 7 we already read 'e' thus 2 chars matched for each other char we have
+                        // to start matching first keyword char beginning with next read position
+                        charMatchCount =
+                            (ch == E) ? 1 : ((ch == N) && (charMatchCount == 7)) ? 2 : 0;
+                        // search again for 'endstream'
+                        keyw = ENDSTREAM;
+                    }
+                }
+            }
+
+            int contentBytes = Math.max(0, bIdx - charMatchCount);
+
+            // write buffer content until first matched char to output stream
+            if (contentBytes > 0)
+            {
+                out.write(strmBuf, 0, contentBytes);
+            }
+            if (charMatchCount == keyw.length)
+            {
+                // keyword matched; unread matched keyword (endstream/endobj) and following buffered content
+                pdfSource.rewind(bufSize - contentBytes);
+                break;
+            }
+            else
+            {
+                // copy matched chars at start of buffer
+                System.arraycopy(keyw, 0, strmBuf, 0, charMatchCount);
+            }
+        }
+        // this writes a lonely CR or drops trailing CR LF and LF
+        out.flush();
+    }
+
 	private void readValidStream(OutputStream out, COSNumber streamLengthObj) throws IOException
 	{
 		long remainBytes = streamLengthObj.longValue();
@@ -984,23 +1084,27 @@ public class COSParser extends BaseParser
         if (expectedEndOfStream > fileLen)
         {
 			streamLengthIsValid = false;
-			Log.e("PdfBox-Android", "The end of the stream is out of range, using workaround to read the stream, " +
-					"found " + originOffset + " but expected " + expectedEndOfStream);
-		}
-		else
-		{
-			pdfSource.seek(expectedEndOfStream);
-			skipSpaces();
-			if (!isString(ENDSTREAM))
-			{
-				streamLengthIsValid = false;
-				Log.e("PdfBox-Android", "The end of the stream doesn't point to the correct offset, using workaround to read the stream, " +
-						"found " + originOffset + " but expected " + expectedEndOfStream);
-			}
-			pdfSource.seek(originOffset);
-		}
-		return streamLengthIsValid;
-	}
+            Log.w("PdfBox-Android",
+                "The end of the stream is out of range, using workaround to read the stream, " +
+                    "stream start position: " + originOffset + ", length: " + streamLength +
+                    ", expected end position: " + expectedEndOfStream);
+        }
+        else
+        {
+            pdfSource.seek(expectedEndOfStream);
+            skipSpaces();
+            if (!isString(ENDSTREAM))
+            {
+                streamLengthIsValid = false;
+                Log.w("PdfBox-Android",
+                    "The end of the stream doesn't point to the correct offset, using workaround to read the stream, " +
+                        "stream start position: " + originOffset + ", length: " + streamLength +
+                        ", expected end position: " + expectedEndOfStream);
+            }
+            pdfSource.seek(originOffset);
+        }
+        return streamLengthIsValid;
+    }
 
 	/**
 	 * Check if the cross reference table/stream can be found at the current offset.
@@ -1877,31 +1981,6 @@ public class COSParser extends BaseParser
 			throw new IOException( "You must call parse() before calling getDocument()" );
 		}
 		return document;
-	}
-
-	/**
-	 * Create a temporary file with the input stream. The caller must take care
-     * to delete this file at end of the parse method.
-	 *
-	 * @param input
-	 * @return the temporary file
-	 * @throws IOException If something went wrong.
-	 */
-	File createTmpFile(InputStream input) throws IOException
-	{
-		FileOutputStream fos = null;
-		try
-		{
-			File tmpFile = File.createTempFile(TMP_FILE_PREFIX, ".pdf");
-			fos = new FileOutputStream(tmpFile);
-			IOUtils.copy(input, fos);
-			return tmpFile;
-		}
-		finally
-		{
-			IOUtils.closeQuietly(input);
-			IOUtils.closeQuietly(fos);
-		}
 	}
 
     /**
