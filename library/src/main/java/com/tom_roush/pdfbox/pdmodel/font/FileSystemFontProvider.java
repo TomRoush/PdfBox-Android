@@ -14,15 +14,22 @@ import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.fontbox.type1.Type1Font;
 import com.tom_roush.fontbox.util.autodetect.FontFileFinder;
 import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.util.Charsets;
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 /**
  * A FontProvider which searches for fonts on the local filesystem.
@@ -31,23 +38,41 @@ import java.util.List;
  */
 final class FileSystemFontProvider extends FontProvider
 {
+    private static final long serialVersionUID = 1;
+
     private final List<FSFontInfo> fontInfoList = new ArrayList<FSFontInfo>();
     private final FontCache cache;
 
-    private class FSFontInfo extends FontInfo
+    private static class FSFontInfo extends FontInfo implements Serializable
     {
         private final String postScriptName;
         private final FontFormat format;
-        private final PDCIDSystemInfo cidSystemInfo;
+        private final CIDSystemInfo cidSystemInfo;
+        private final int usWeightClass;
+        private final int sFamilyClass;
+        private final int ulCodePageRange1;
+        private final int ulCodePageRange2;
+        private final int macStyle;
+        private final PDPanoseClassification panose;
         private final File file;
+        private transient FileSystemFontProvider parent;
 
         private FSFontInfo(File file, FontFormat format, String postScriptName,
-            PDCIDSystemInfo cidSystemInfo)
+            CIDSystemInfo cidSystemInfo, int usWeightClass, int sFamilyClass,
+            int ulCodePageRange1, int ulCodePageRange2, int macStyle, byte[] panose,
+            FileSystemFontProvider parent)
         {
             this.file = file;
             this.format = format;
             this.postScriptName = postScriptName;
             this.cidSystemInfo = cidSystemInfo;
+            this.usWeightClass = usWeightClass;
+            this.sFamilyClass = sFamilyClass;
+            this.ulCodePageRange1 = ulCodePageRange1;
+            this.ulCodePageRange2 = ulCodePageRange2;
+            this.macStyle = macStyle;
+            this.panose = panose != null ? new PDPanoseClassification(panose) : null;
+            this.parent = parent;
         }
 
         @Override
@@ -63,7 +88,7 @@ final class FileSystemFontProvider extends FontProvider
         }
 
         @Override
-        public PDCIDSystemInfo getCIDSystemInfo()
+        public CIDSystemInfo getCIDSystemInfo()
         {
             return cidSystemInfo;
         }
@@ -71,7 +96,7 @@ final class FileSystemFontProvider extends FontProvider
         @Override
         public FontBoxFont getFont()
         {
-            FontBoxFont cached = cache.getFont(this);
+            FontBoxFont cached = parent.cache.getFont(this);
             if (cached != null)
             {
                 return cached;
@@ -82,26 +107,73 @@ final class FileSystemFontProvider extends FontProvider
                 switch (format)
                 {
                     case PFB:
-                        font = getType1Font(postScriptName, file);
+                        font = parent.getType1Font(postScriptName, file);
                         break;
                     case TTF:
-                        font = getTrueTypeFont(postScriptName, file);
+                        font = parent.getTrueTypeFont(postScriptName, file);
                         break;
                     case OTF:
-                        font = getOTFFont(postScriptName, file);
+                        font = parent.getOTFFont(postScriptName, file);
                         break;
                     default:
                         throw new RuntimeException("can't happen");
                 }
-                cache.addFont(this, font);
+                parent.cache.addFont(this, font);
                 return font;
             }
+        }
+
+        @Override
+        public int getFamilyClass()
+        {
+            return sFamilyClass;
+        }
+
+        @Override
+        public int getWeightClass()
+        {
+            return usWeightClass;
+        }
+
+        @Override
+        public int getCodePageRange1()
+        {
+            return ulCodePageRange1;
+        }
+
+        @Override
+        public int getCodePageRange2()
+        {
+            return ulCodePageRange2;
+        }
+
+        @Override
+        public int getMacStyle()
+        {
+            return macStyle;
+        }
+
+        @Override
+        public PDPanoseClassification getPanose()
+        {
+            return panose;
         }
 
         @Override
         public String toString()
         {
             return super.toString() + " " + file;
+        }
+    }
+
+    /**
+     * Represents ignored fonts (i.e. bitmap fonts).
+     */
+    private static final class FSIgnored extends FSFontInfo implements Serializable
+    {
+        private FSIgnored(File file, FontFormat format, String postScriptName)
+        {
+            super(file, format, postScriptName, null, 0, 0, 0, 0, 0, null, null);
         }
     }
 
@@ -113,8 +185,12 @@ final class FileSystemFontProvider extends FontProvider
         this.cache = cache;
 
         // XXX: load in background?
-        if(PDFBoxResourceLoader.LOAD_FONTS == PDFBoxResourceLoader.FontLoadLevel.NONE) return;
-        if(PDFBoxResourceLoader.LOAD_FONTS == PDFBoxResourceLoader.FontLoadLevel.MINIMUM) {
+        if (PDFBoxResourceLoader.LOAD_FONTS == PDFBoxResourceLoader.FontLoadLevel.NONE)
+        {
+            return;
+        }
+        if (PDFBoxResourceLoader.LOAD_FONTS == PDFBoxResourceLoader.FontLoadLevel.MINIMUM)
+        {
             // If MINIMUM, load only Droid fonts
             try
             {
@@ -124,14 +200,16 @@ final class FileSystemFontProvider extends FontProvider
 //                addTrueTypeFont(new File("/system/fonts/DroidSansFallback.ttf"));
                 // XXX: list may need to be expanded for other character sets
                 return;
-            } catch (IOException e)
+            }
+            catch (IOException e)
             {
                 e.printStackTrace();
             }
         }
 
-    	Log.v("PdfBox-Android", "Will search the local system for fonts");
+        Log.v("PdfBox-Android", "Will search the local system for fonts");
 
+        // scan the local system for font files
         List<File> files = new ArrayList<File>();
         FontFileFinder fontFileFinder = new FontFileFinder();
         List<URI> fonts = fontFileFinder.find();
@@ -141,7 +219,22 @@ final class FileSystemFontProvider extends FontProvider
         }
         Log.v("PdfBox-Android", "Found " + files.size() + " fonts on the local system");
 
-        // todo: loading all of these fonts is slow, can we cache this?
+        // load cached FontInfo objects
+        List<FSFontInfo> cachedInfos = loadCache(files);
+        if (cachedInfos != null && cachedInfos.size() > 0)
+        {
+            fontInfoList.addAll(cachedInfos);
+        }
+        else
+        {
+            Log.w("PdfBox-Android", "Building font cache, this may take a while");
+            scanFonts(files);
+            saveCache();
+        }
+    }
+
+    private void scanFonts(List<File> files)
+    {
         for (File file : files)
         {
             try
@@ -166,6 +259,75 @@ final class FileSystemFontProvider extends FontProvider
                 Log.e("PdfBox-Android", "Error parsing font " + file.getPath(), e);
             }
         }
+    }
+
+    private void saveCache()
+    {
+        // Get the preferences database for this package.
+        Preferences prefs = Preferences.userNodeForPackage(FileSystemFontProvider.class);
+
+        // To save, write the object to a byte array.
+        try
+        {
+            for (FSFontInfo fontInfo : fontInfoList)
+            {
+                ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                ObjectOutputStream objectOut = new ObjectOutputStream(byteOut);
+                // write it to the stream
+                objectOut.writeObject(fontInfo);
+                prefs.putByteArray(fontInfo.file.getAbsolutePath(), byteOut.toByteArray());
+            }
+        }
+        catch (IOException e)
+        {
+            Log.e("PdfBox-Android", "Could not write to font cache", e);
+        }
+        Log.w("PdfBox-Android",
+            "Finished building font cache, found " + fontInfoList.size() + " fonts");
+    }
+
+    private List<FSFontInfo> loadCache(List<File> files)
+    {
+        // Get the preferences database for this package.
+        Preferences prefs = Preferences.userNodeForPackage(FileSystemFontProvider.class);
+        List<FSFontInfo> results = new ArrayList<FSFontInfo>();
+        for (File file : files)
+        {
+            // The second argument is the default if the key isn't found.
+            byte[] stored = prefs.getByteArray(file.getAbsolutePath(), null);
+            if (stored != null)
+            {
+                try
+                {
+                    ByteArrayInputStream byteIn = new ByteArrayInputStream(stored);
+                    ObjectInputStream objectIn = new ObjectInputStream(byteIn);
+                    Object object = objectIn.readObject();
+                    if (object instanceof FSFontInfo)
+                    {
+                        FSFontInfo info = (FSFontInfo) object;
+                        info.parent = this;
+                        results.add(info);
+                    }
+                }
+                catch (ClassNotFoundException e)
+                {
+                    Log.e("PdfBox-Android", "Error loading font cache, will be re-built", e);
+                    return null;
+                }
+                catch (IOException e)
+                {
+                    Log.e("PdfBox-Android", "Error loading font cache, will be re-built", e);
+                    return null;
+                }
+            }
+            else
+            {
+                // re-build the entire cache if we encounter un-cached fonts (could be optimised)
+                Log.w("PdfBox-Android", "New fonts found, font cache will be re-built");
+                return null;
+            }
+        }
+        return results;
     }
 
     /**
@@ -236,53 +398,81 @@ final class FileSystemFontProvider extends FontProvider
     {
         try
         {
-        	// check for 'name' table
-        	NamingTable nameTable = null;
+            // read PostScript name, if any
+            if (ttf.getName() != null)
+            {
+                int sFamilyClass = -1;
+                int usWeightClass = -1;
+                int ulCodePageRange1 = 0;
+                int ulCodePageRange2 = 0;
+                byte[] panose = null;
 
-        	// ttf could still be null
-        	if (ttf != null)
-        	{
-                // todo: this is a performance bottleneck, we don't actually need to read this table
-                nameTable = ttf.getNaming();
-            }
-            if (nameTable == null)
-            {
-            	Log.w("PdfBox-Android", "Missing 'name' table in font " + file);
-            }
-            else
-            {
-                // read PostScript name, if any
-                if (ttf.getName() != null)
+                // Apple's AAT fonts don't have an OS/2 table
+                if (ttf.getOS2Windows() != null)
                 {
-                    String format;
-                    if (ttf instanceof OpenTypeFont)
-                    {
-                        format = "OTF";
-                        CFFFont cff = ((OpenTypeFont) ttf).getCFF().getFont();
-                        PDCIDSystemInfo ros = null;
-                        if (cff instanceof CFFCIDFont)
-                        {
-                            CFFCIDFont cidFont = (CFFCIDFont) cff;
-                            String registry = cidFont.getRegistry();
-                            String ordering = cidFont.getOrdering();
-                            int supplement = cidFont.getSupplement();
-                            ros = new PDCIDSystemInfo(registry, ordering, supplement);
-                        }
-                        fontInfoList.add(new FSFontInfo(file, FontFormat.OTF, ttf.getName(), ros));
-                    }
-                    else
-                    {
-                        format = "TTF";
-                        fontInfoList.add(new FSFontInfo(file, FontFormat.TTF, ttf.getName(), null));
-                    }
+                    sFamilyClass = ttf.getOS2Windows().getFamilyClass();
+                    usWeightClass = ttf.getOS2Windows().getWeightClass();
+                    ulCodePageRange1 = (int) ttf.getOS2Windows().getCodePageRange1();
+                    ulCodePageRange2 = (int) ttf.getOS2Windows().getCodePageRange2();
+                    panose = ttf.getOS2Windows().getPanose();
+                }
 
-                    Log.v("PdfBox-Android", format + ": '" + ttf.getName() + "' / '" +
-                        nameTable.getFontFamily() + "' / '" + nameTable.getFontSubFamily() + "'");
+                // ignore bitmap fonts
+                if (ttf.getHeader() == null)
+                {
+                    fontInfoList.add(new FSIgnored(file, FontFormat.TTF, ttf.getName()));
+                    return;
+                }
+                int macStyle = ttf.getHeader().getMacStyle();
+
+                String format;
+                if (ttf instanceof OpenTypeFont && ((OpenTypeFont) ttf).isPostScript())
+                {
+                    format = "OTF";
+                    CFFFont cff = ((OpenTypeFont) ttf).getCFF().getFont();
+                    CIDSystemInfo ros = null;
+                    if (cff instanceof CFFCIDFont)
+                    {
+                        CFFCIDFont cidFont = (CFFCIDFont) cff;
+                        String registry = cidFont.getRegistry();
+                        String ordering = cidFont.getOrdering();
+                        int supplement = cidFont.getSupplement();
+                        ros = new CIDSystemInfo(registry, ordering, supplement);
+                    }
+                    fontInfoList.add(new FSFontInfo(file, FontFormat.OTF, ttf.getName(), ros,
+                        usWeightClass, sFamilyClass, ulCodePageRange1, ulCodePageRange2,
+                        macStyle, panose, this));
                 }
                 else
                 {
-                	Log.w("PdfBox-Android", "Missing 'name' entry for PostScript name in font " + file);
+                    CIDSystemInfo ros = null;
+                    if (ttf.getTableMap().containsKey("gcid"))
+                    {
+                        // Apple's AAT fonts have a "gcid" table with CID info
+                        byte[] bytes = ttf.getTableBytes(ttf.getTableMap().get("gcid"));
+                        String registryName = new String(bytes, 10, 64, Charsets.US_ASCII)
+                            .trim();
+                        String orderName = new String(bytes, 76, 64, Charsets.US_ASCII).trim();
+                        int supplementVersion = bytes[140] << 8 & bytes[141];
+                        ros = new CIDSystemInfo(registryName, orderName, supplementVersion);
+                    }
+
+                    format = "TTF";
+                    fontInfoList.add(new FSFontInfo(file, FontFormat.TTF, ttf.getName(), ros,
+                        usWeightClass, sFamilyClass, ulCodePageRange1, ulCodePageRange2,
+                        macStyle, panose, this));
                 }
+
+                NamingTable name = ttf.getNaming();
+                if (name != null)
+                {
+                    Log.d("PdfBox-Android", format + ": '" + name.getPostScriptName() + "' / '"
+                        + name.getFontFamily() + "' / '" + name.getFontSubFamily() + "'");
+                }
+            }
+            else
+            {
+                Log.w("PdfBox-Android", "Missing 'name' entry for PostScript name in font " + file);
             }
         }
         catch (IOException e)
@@ -308,7 +498,8 @@ final class FileSystemFontProvider extends FontProvider
         {
             Type1Font type1 = Type1Font.createWithPFB(input);
 
-            fontInfoList.add(new FSFontInfo(pfbFile, FontFormat.PFB, type1.getName(), null));
+            fontInfoList.add(new FSFontInfo(pfbFile, FontFormat.PFB, type1.getName(), null, -1, -1,
+                0, 0, -1, null, this));
 
             Log.v("PdfBox-Android", "PFB: '" + type1.getName() + "' / '" + type1.getFamilyName() +
                 "' / '" + type1.getWeight() + "'");

@@ -23,7 +23,6 @@ import com.tom_roush.fontbox.FontBoxFont;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.pdmodel.font.encoding.BuiltInEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.DictionaryEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.GlyphList;
@@ -131,25 +130,8 @@ public abstract class PDSimpleFont extends PDFont
 			this.encoding = readEncodingFromFont();
 		}
 
-        // TTFs have a built-in encoding, but if the font is non-symbolic then we instead
-        // have Standard Encoding
-        if (this.encoding instanceof BuiltInEncoding &&
-            getSymbolicFlag() != null && !getSymbolicFlag())
-        {
-            this.encoding = StandardEncoding.INSTANCE;
-		}
-
 		// normalise the standard 14 name, e.g "Symbol,Italic" -> "Symbol"
 		String standard14Name = Standard14Fonts.getMappedFontName(getName());
-
-        // TTFs may have a built-in encoding, but if the font is standard 14 then we know
-        // it's Standard Encoding
-        if (this.encoding instanceof BuiltInEncoding && isStandard14() &&
-            !standard14Name.equals("Symbol") &&
-			!standard14Name.equals("ZapfDingbats"))
-		{
-			this.encoding = StandardEncoding.INSTANCE;
-		}
 
 		// assign the glyph list based on the font
 		if ("ZapfDingbats".equals(standard14Name))
@@ -444,6 +426,13 @@ public abstract class PDSimpleFont extends PDFont
      * @throws IOException if the path could not be read
      */
     public abstract Path getPath(String name) throws IOException;
+
+    /**
+     * Returns true if the font contains the character with the given name.
+     *
+     * @throws IOException if the path could not be read
+     */
+    public abstract boolean hasGlyph(String name) throws IOException;
 
     /**
      * Returns the embedded or system font used for rendering. This is never null.

@@ -29,6 +29,7 @@ import java.util.Collections;
 public final class PDResources implements COSObjectable
 {
 	private final COSDictionary resources;
+    private final ResourceCache cache;
 
 	/**
 	 * Constructor for embedding.
@@ -36,16 +37,14 @@ public final class PDResources implements COSObjectable
 	public PDResources()
 	{
 		resources = new COSDictionary();
-	}
+        cache = null;
+    }
 
 	/**
 	 * Constructor for reading.
 	 * 
 	 * @param resourceDictionary The cos dictionary for this resource.
 	 */
-	// todo: replace this constructor with a static factory which can cache PDResources at will
-	//       also it should probably take a COSBase so that it is indirect-object aware.
-	//       It might also want to have some context, e.g. knowing what the parent of the resources is?
 	public PDResources(COSDictionary resourceDictionary)
 	{
 		if (resourceDictionary == null)
@@ -53,7 +52,24 @@ public final class PDResources implements COSObjectable
 			throw new IllegalArgumentException("resourceDictionary is null");
 		}
 		resources = resourceDictionary;
-	}
+        cache = null;
+    }
+
+    /**
+     * Constructor for reading.
+     *
+     * @param resourceDictionary The cos dictionary for this resource.
+     * @param resourceCache The document's resource cache, may be null.
+     */
+    public PDResources(COSDictionary resourceDictionary, ResourceCache resourceCache)
+    {
+        if (resourceDictionary == null)
+        {
+            throw new IllegalArgumentException("resourceDictionary is null");
+        }
+        resources = resourceDictionary;
+        cache = resourceCache;
+    }
 
 	/**
 	 * Returns the underlying dictionary.
@@ -71,13 +87,29 @@ public final class PDResources implements COSObjectable
 	 */
 	public PDFont getFont(COSName name) throws IOException
 	{
-		COSDictionary dict = (COSDictionary)get(COSName.FONT, name);
-		if (dict == null)
-		{
-			return null;
-		}
-		return PDFontFactory.createFont(dict);
-	}
+        COSObject indirect = getIndirect(COSName.FONT, name);
+        if (cache != null && indirect != null)
+        {
+            PDFont cached = cache.getFont(indirect);
+            if (cached != null)
+            {
+                return cached;
+            }
+        }
+
+        PDFont font = null;
+        COSDictionary dict = (COSDictionary) get(COSName.FONT, name);
+        if (dict != null)
+        {
+            font = PDFontFactory.createFont(dict);
+        }
+
+        if (cache != null)
+        {
+            cache.put(indirect, font);
+        }
+        return font;
+    }
 
 	/**
 	 * Returns the color space resource with the given name, or null if none exists.
@@ -87,17 +119,34 @@ public final class PDResources implements COSObjectable
 	 */
 	public PDColorSpace getColorSpace(COSName name) throws IOException
 	{
+        COSObject indirect = getIndirect(COSName.FONT, name);
+        if (cache != null && indirect != null)
+        {
+            PDColorSpace cached = cache.getColorSpace(indirect);
+            if (cached != null)
+            {
+                return cached;
+            }
+        }
+
 		// get the instance
-		COSBase object = get(COSName.COLORSPACE, name);
-		if (object != null)
-		{
-			return PDColorSpace.create(object, this);
-		}
-		else
-		{
-			return PDColorSpace.create(name, this);
-		}
-	}
+        PDColorSpace colorSpace;
+        COSBase object = get(COSName.COLORSPACE, name);
+        if (object != null)
+        {
+            colorSpace = PDColorSpace.create(object, this);
+        }
+        else
+        {
+            colorSpace = PDColorSpace.create(name, this);
+        }
+
+        if (cache != null)
+        {
+            cache.put(indirect, colorSpace);
+        }
+        return colorSpace;
+    }
 
 	/**
 	 * Returns true if the given color space name exists in these resources.
@@ -117,13 +166,30 @@ public final class PDResources implements COSObjectable
 	 */
 	public PDExtendedGraphicsState getExtGState(COSName name)
 	{
-		COSDictionary dict = (COSDictionary)get(COSName.EXT_G_STATE, name);
-		if (dict == null)
-		{
-			return null;
-		}
-		return new PDExtendedGraphicsState(dict);
-	}
+        COSObject indirect = getIndirect(COSName.FONT, name);
+        if (cache != null && indirect != null)
+        {
+            PDExtendedGraphicsState cached = cache.getExtGState(indirect);
+            if (cached != null)
+            {
+                return cached;
+            }
+        }
+
+        // get the instance
+        PDExtendedGraphicsState extGState = null;
+        COSDictionary dict = (COSDictionary) get(COSName.EXT_G_STATE, name);
+        if (dict != null)
+        {
+            extGState = new PDExtendedGraphicsState(dict);
+        }
+
+        if (cache != null)
+        {
+            cache.put(indirect, extGState);
+        }
+        return extGState;
+    }
 
 	/**
 	 * Returns the shading resource with the given name, or null if none exists.
@@ -133,13 +199,30 @@ public final class PDResources implements COSObjectable
 	 */
 	public PDShading getShading(COSName name) throws IOException
 	{
-		COSDictionary dict = (COSDictionary)get(COSName.SHADING, name);
-		if (dict == null)
-		{
-			return null;
-		}
-		return PDShading.create(dict);
-	}
+        COSObject indirect = getIndirect(COSName.FONT, name);
+        if (cache != null && indirect != null)
+        {
+            PDShading cached = cache.getShading(indirect);
+            if (cached != null)
+            {
+                return cached;
+            }
+        }
+
+        // get the instance
+        PDShading shading = null;
+        COSDictionary dict = (COSDictionary) get(COSName.SHADING, name);
+        if (dict != null)
+        {
+            shading = PDShading.create(dict);
+        }
+
+        if (cache != null)
+        {
+            cache.put(indirect, shading);
+        }
+        return shading;
+    }
 
 	/**
 	 * Returns the pattern resource with the given name, or null if none exists.
@@ -149,13 +232,30 @@ public final class PDResources implements COSObjectable
 	 */
 	public PDAbstractPattern getPattern(COSName name) throws IOException
 	{
-		COSDictionary dict = (COSDictionary)get(COSName.PATTERN, name);
-		if (dict == null)
-		{
-			return null;
-		}
-		return PDAbstractPattern.create(dict);
-	}
+        COSObject indirect = getIndirect(COSName.FONT, name);
+        if (cache != null && indirect != null)
+        {
+            PDAbstractPattern cached = cache.getPattern(indirect);
+            if (cached != null)
+            {
+                return cached;
+            }
+        }
+
+        // get the instance
+        PDAbstractPattern pattern = null;
+        COSDictionary dict = (COSDictionary) get(COSName.PATTERN, name);
+        if (dict != null)
+        {
+            pattern = PDAbstractPattern.create(dict);
+        }
+
+        if (cache != null)
+        {
+            cache.put(indirect, pattern);
+        }
+        return pattern;
+    }
 
 	/**
 	 * Returns the property list resource with the given name, or null if none exists.
@@ -164,13 +264,30 @@ public final class PDResources implements COSObjectable
 	 */
 	public PDPropertyList getProperties(COSName name)
 	{
-		COSDictionary dict = (COSDictionary)get(COSName.PROPERTIES, name);
-		if (dict == null)
-		{
-			return null;
-		}
-		return PDPropertyList.create(dict);
-	}
+        COSObject indirect = getIndirect(COSName.FONT, name);
+        if (cache != null && indirect != null)
+        {
+            PDPropertyList cached = cache.getProperties(indirect);
+            if (cached != null)
+            {
+                return cached;
+            }
+        }
+
+        // get the instance
+        PDPropertyList propertyList = null;
+        COSDictionary dict = (COSDictionary) get(COSName.PROPERTIES, name);
+        if (dict != null)
+        {
+            propertyList = PDPropertyList.create(dict);
+        }
+
+        if (cache != null)
+        {
+            cache.put(indirect, propertyList);
+        }
+        return propertyList;
+    }
 
 	/**
 	 * Returns the XObject resource with the given name, or null if none exists.
@@ -180,24 +297,56 @@ public final class PDResources implements COSObjectable
 	 */
 	public PDXObject getXObject(COSName name) throws IOException
 	{
-		COSBase value = get(COSName.XOBJECT, name);
-		if (value == null)
-		{
-			return null;
-		}
-		else if (value instanceof COSObject)
-		{
-			COSObject object = (COSObject)value;
-			// add the object number to create an unique identifier
-			String id = name.getName();
-			id += "#" + object.getObjectNumber();
-			return PDXObject.createXObject(object.getObject(), id, this);
-		}
-		else
-		{
-			return PDXObject.createXObject(value, name.getName(), this);
-		}
-	}
+        COSObject indirect = getIndirect(COSName.FONT, name);
+        if (cache != null && indirect != null)
+        {
+            PDXObject cached = cache.getXObject(indirect);
+            if (cached != null)
+            {
+                return cached;
+            }
+        }
+
+        // get the instance
+        PDXObject xobject;
+        COSBase value = get(COSName.XOBJECT, name);
+        if (value == null)
+        {
+            xobject = null;
+        }
+        else if (value instanceof COSObject)
+        {
+            xobject = PDXObject.createXObject(((COSObject) value).getObject(), this);
+        }
+        else
+        {
+            xobject = PDXObject.createXObject(value, this);
+        }
+
+        if (cache != null)
+        {
+            cache.put(indirect, xobject);
+        }
+        return xobject;
+    }
+
+    /**
+     * Returns the resource with the given name and kind as an indirect object, or null.
+     */
+    private COSObject getIndirect(COSName kind, COSName name)
+    {
+        COSDictionary dict = (COSDictionary) resources.getDictionaryObject(kind);
+        if (dict == null)
+        {
+            return null;
+        }
+        COSBase base = dict.getItem(name);
+        if (base instanceof COSObject)
+        {
+            return (COSObject) base;
+        }
+        return null;
+    }
 
 	/**
 	 * Returns the resource with the given name and kind, or null.
@@ -528,4 +677,12 @@ public final class PDResources implements COSObjectable
 	{
 		put(COSName.XOBJECT, name, xobject);
 	}
+
+    /**
+     * Returns the resource cache associated with the Resources, or null if there is none.
+     */
+    public ResourceCache getResourceCache()
+    {
+        return cache;
+    }
 }

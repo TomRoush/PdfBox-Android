@@ -1,11 +1,11 @@
 package com.tom_roush.pdfbox.util;
 
+import android.graphics.PointF;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
-
-import android.graphics.PointF;
 
 /**
  * This class will be used for matrix manipulation.
@@ -21,7 +21,7 @@ public final class Matrix implements Cloneable
 		0,0,1   //  tx ty 1		tx ty 1
 		};
 
-	private float[] single;
+    private final float[] single;
 
 	/**
 	 * Constructor.
@@ -635,13 +635,13 @@ public final class Matrix implements Cloneable
 	public COSArray toCOSArray()
 	{
 		COSArray array = new COSArray();
-		array.add(new COSFloat(0));
-		array.add(new COSFloat(1));
-		array.add(new COSFloat(3));
-		array.add(new COSFloat(4));
-		array.add(new COSFloat(6));
-		array.add(new COSFloat(7));
-		return array;
+        array.add(new COSFloat(single[0]));
+        array.add(new COSFloat(single[1]));
+        array.add(new COSFloat(single[3]));
+        array.add(new COSFloat(single[4]));
+        array.add(new COSFloat(single[6]));
+        array.add(new COSFloat(single[7]));
+        return array;
 	}
 
 	@Override

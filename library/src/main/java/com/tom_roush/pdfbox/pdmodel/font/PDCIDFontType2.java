@@ -119,7 +119,8 @@ public class PDCIDFontType2 extends PDCIDFont
 		if (ttfFont == null)
 		{
             // find font or substitute
-            CIDFontMapping mapping = FontMapper.getCIDFont(getFontDescriptor(), getCIDSystemInfo());
+            CIDFontMapping mapping = FontMapper.getCIDFont(getBaseFont(), getFontDescriptor(),
+                getCIDSystemInfo());
 
             if (mapping.isCIDFont())
             {
@@ -133,7 +134,7 @@ public class PDCIDFontType2 extends PDCIDFont
             if (mapping.isFallback())
             {
                 Log.w("PdfBox-Android",
-                    "Using fallback for CID-keyed TrueType font " + getBaseFont());
+                    "Using fallback font " + ttfFont.getName() + " for CID-keyed TrueType font " + getBaseFont());
             }
         }
 		ttf = ttfFont;
@@ -387,7 +388,7 @@ public class PDCIDFontType2 extends PDCIDFont
     @Override
     public Path getPath(int code) throws IOException
     {
-        if (ttf instanceof OpenTypeFont)
+        if (ttf instanceof OpenTypeFont && ((OpenTypeFont) ttf).isPostScript())
         {
             int cid = codeToCID(code);
             Type2CharString charstring = ((OpenTypeFont)ttf).getCFF().getFont().getType2CharString(cid);

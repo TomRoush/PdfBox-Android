@@ -8,6 +8,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
+import com.tom_roush.pdfbox.pdmodel.ResourceCache;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
@@ -35,10 +36,8 @@ final and all fields private.
  */
 public class PDFormXObject extends PDXObject implements PDContentStream
 {
-	// name of XObject in resources, to prevent recursion
-	private String name;
-
 	private PDGroup group;
+    private final ResourceCache cache;
 
 	/**
 	 * Creates a Form XObject for reading.
@@ -47,18 +46,18 @@ public class PDFormXObject extends PDXObject implements PDContentStream
 	public PDFormXObject(PDStream stream)
 	{
 		super(stream, COSName.FORM);
-	}
+        cache = null;
+    }
 
 	/**
 	 * Creates a Form XObject for reading.
 	 * @param stream The XObject stream
-	 * @param name The name of the form XObject, to prevent recursion.
 	 */
-	public PDFormXObject(PDStream stream, String name)
-	{
+    public PDFormXObject(PDStream stream, ResourceCache cache)
+    {
 		super(stream, COSName.FORM);
-		this.name = name;
-	}
+        this.cache = cache;
+    }
 
 	/**
 	 * Creates a Form Image XObject for writing, in the given document.
@@ -67,7 +66,8 @@ public class PDFormXObject extends PDXObject implements PDContentStream
 	public PDFormXObject(PDDocument document)
 	{
 		super(document, COSName.FORM);
-	}
+        cache = null;
+    }
 
 	/**
 	 * This will get the form type, currently 1 is the only form type.
@@ -123,8 +123,8 @@ public class PDFormXObject extends PDXObject implements PDContentStream
 		COSDictionary resources = (COSDictionary) getCOSStream().getDictionaryObject(COSName.RESOURCES);
 		if (resources != null)
 		{
-			return new PDResources(resources);
-		}
+            return new PDResources(resources, cache);
+        }
 		return null;
 	}
 

@@ -17,42 +17,44 @@
 
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.util.Arrays;
+import java.io.Serializable;
 
 /**
- * Represents the "Panose" entry of a FontDescriptor's Style dictionary. This is a sequence of 12
- * bytes which contain both the TTF sFamilyClass and PANOSE classification bytes.
+ * Represents a CIDSystemInfo for the FontMapper API.
  *
  * @author John Hewson
  */
-public class PDPanose
+public final class CIDSystemInfo implements Serializable
 {
-    private final byte[] bytes;
+    private final String registry;
+    private final String ordering;
+    private final int supplement;
 
-    public PDPanose(byte[] bytes)
+    CIDSystemInfo(String registry, String ordering, int supplement)
     {
-        this.bytes = bytes;
+        this.registry = registry;
+        this.ordering = ordering;
+        this.supplement = supplement;
     }
 
-    /**
-     * The font family class and subclass ID bytes, given in the sFamilyClass field of the
-     * “OS/2” table in a TrueType font.
-     *
-     * {@see http://www.microsoft.com/typography/otspec/ibmfc.htm}
-     */
-    public int getFamilyClass()
+    public String getRegistry()
     {
-        return bytes[0] << 8 | bytes[1];
+        return registry;
     }
 
-    /**
-     * Ten bytes for the PANOSE classification number for the font.
-     *
-     * {@see http://www.monotype.com/services/pan1}
-     */
-    public PDPanoseClassification getPanose()
+    public String getOrdering()
     {
-        byte[] panose = Arrays.copyOfRange(bytes, 2, 12);
-        return new PDPanoseClassification(panose);
+        return ordering;
+    }
+
+    public int getSupplement()
+    {
+        return supplement;
+    }
+
+    @Override
+    public String toString()
+    {
+        return getRegistry() + "-" + getOrdering() + "-" + getSupplement();
     }
 }

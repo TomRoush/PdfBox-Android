@@ -1,8 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.contentstream.PDContentStream;
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -24,7 +22,9 @@ import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDThreadBead;
 import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDTransition;
 import com.tom_roush.pdfbox.util.Matrix;
 
-import android.util.Log;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A page in a PDF document.
@@ -35,7 +35,8 @@ public class PDPage implements COSObjectable, PDContentStream
 {
 	private final COSDictionary page;
 	private PDResources pageResources;
-	private PDRectangle mediaBox;
+    private ResourceCache resourceCache;
+    private PDRectangle mediaBox;
 
 	/**
 	 * Creates a new PDPage instance for embedding, with a size of U.S. Letter (8.5 x 11 inches).
@@ -66,6 +67,17 @@ public class PDPage implements COSObjectable, PDContentStream
 	{
 		page = pageDictionary;
 	}
+
+    /**
+     * Creates a new instance of PDPage for reading.
+     *
+     * @param pageDictionary A page dictionary in a PDF document.
+     */
+    PDPage(COSDictionary pageDictionary, ResourceCache resourceCache)
+    {
+        page = pageDictionary;
+        this.resourceCache = resourceCache;
+    }
 
 	/**
 	 * Convert this standard java object to a COS object.
@@ -107,8 +119,8 @@ public class PDPage implements COSObjectable, PDContentStream
 			// note: it's an error for resources to not be present
 			if (resources != null)
 			{
-				pageResources = new PDResources(resources);
-			}
+                pageResources = new PDResources(resources, resourceCache);
+            }
 		}
 		return pageResources;
 	}
@@ -600,4 +612,12 @@ public class PDPage implements COSObjectable, PDContentStream
 	{
 		return page.hashCode();
 	}
+
+    /**
+     * Returns the resource cache associated with this page, or null if there is none.
+     */
+    public ResourceCache getResourceCache()
+    {
+        return resourceCache;
+    }
 }

@@ -6,7 +6,7 @@ import com.tom_roush.pdfbox.filter.FilterFactory;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.RandomAccess;
 import com.tom_roush.pdfbox.io.RandomAccessBuffer;
-import com.tom_roush.pdfbox.io.RandomAccessFileInputStream;
+import com.tom_roush.pdfbox.io.RandomAccessReadInputStream;
 import com.tom_roush.pdfbox.io.RandomAccessFileOutputStream;
 import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.io.RandomAccessReadWrapper;
@@ -117,7 +117,7 @@ public class COSStream extends COSDictionary implements Closeable
         {
             long position = filteredStream.getPosition();
             long length = filteredStream.getLengthWritten();
-            retval = new BufferedInputStream(new RandomAccessFileInputStream(getFilteredBuffer(),
+            retval = new BufferedInputStream(new RandomAccessReadInputStream(getFilteredBuffer(),
                 position, length), BUFFER_SIZE);
         }
         else
@@ -193,7 +193,7 @@ public class COSStream extends COSDictionary implements Closeable
         {
             long position = unFilteredStream.getPosition();
             long length = unFilteredStream.getLengthWritten();
-            retval = new BufferedInputStream(new RandomAccessFileInputStream(getUnfilteredBuffer(),
+            retval = new BufferedInputStream(new RandomAccessReadInputStream(getUnfilteredBuffer(),
                 position, length), BUFFER_SIZE);
         }
         else
@@ -385,7 +385,7 @@ public class COSStream extends COSDictionary implements Closeable
         try
         {
             input = new BufferedInputStream(
-                new RandomAccessFileInputStream(tempBuffer, 0, tempBuffer.length()), BUFFER_SIZE);
+                new RandomAccessReadInputStream(tempBuffer, 0, tempBuffer.length()), BUFFER_SIZE);
             IOUtils.closeQuietly(unFilteredStream);
             if (destBuffer == null)
             {
@@ -457,7 +457,7 @@ public class COSStream extends COSDictionary implements Closeable
         Filter filter = FilterFactory.INSTANCE.getFilter(filterName);
 
         InputStream input = new BufferedInputStream(
-            new RandomAccessFileInputStream(tempBuffer, 0, tempBuffer.length()), BUFFER_SIZE);
+            new RandomAccessReadInputStream(tempBuffer, 0, tempBuffer.length()), BUFFER_SIZE);
         IOUtils.closeQuietly(filteredStream);
         if (destBuffer == null)
         {

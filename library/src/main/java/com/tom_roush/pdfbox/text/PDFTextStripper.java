@@ -582,8 +582,8 @@ public class PDFTextStripper extends PDFTextStreamEngine
 				// space character with some margin.
 				float wordSpacing = position.getWidthOfSpace();
 				float deltaSpace;
-				if (wordSpacing == 0 || wordSpacing == Float.NaN)
-				{
+                if (wordSpacing == 0 || Float.isNaN(wordSpacing))
+                {
 					deltaSpace = Float.MAX_VALUE;
 				}
 				else

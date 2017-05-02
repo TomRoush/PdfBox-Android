@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.SoftReference;
 import java.util.List;
 
 /**
@@ -32,9 +33,9 @@ import java.util.List;
  */
 public final class PDImageXObject extends PDXObject implements PDImage
 {
-    private Bitmap cachedImage;
+    private SoftReference<Bitmap> cachedImage;
     private PDColorSpace colorSpace;
-    private PDResources resources; // current resource dictionary (has color spaces)
+    private final PDResources resources; // current resource dictionary (has color spaces)
 
     /**
      * Creates a thumbnail Image XObject from the given COSBase and name.
@@ -209,14 +210,18 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
     /**
      * {@inheritDoc}
-     * The returned images are cached for the lifetime of this XObject.
+     * The returned images are cached via a SoftReference.
      */
     @Override
     public Bitmap getImage() throws IOException
     {
         if (cachedImage != null)
         {
-            return cachedImage;
+            Bitmap cached = cachedImage.get();
+            if (cached != null)
+            {
+                return cached;
+            }
         }
 
         // get image as RGB
@@ -238,7 +243,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
             }
         }
 
-        cachedImage = image;
+        cachedImage = new SoftReference<Bitmap>(image);
         return image;
     }
 

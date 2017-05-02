@@ -344,9 +344,19 @@ public final class COSName extends COSBase implements Comparable<COSName>
 	public static final COSName OCGS = new COSName("OCGs");
 	public static final COSName OCPROPERTIES = new COSName("OCProperties");
 	public static final COSName OE = new COSName("OE");
-	public static final COSName OFF = new COSName("OFF");
-	public static final COSName ON = new COSName("ON");
-	public static final COSName OP = new COSName("OP");
+
+    /**
+     * "OFF", to be used for OCGs, not for Acroform
+     */
+    public static final COSName OFF = new COSName("OFF");
+
+    /**
+     * "Off", to be used for Acroform, not for OCGs
+     */
+    public static final COSName Off = new COSName("Off");
+    ;
+    public static final COSName ON = new COSName("ON");
+    public static final COSName OP = new COSName("OP");
 	public static final COSName OP_NS = new COSName("op");
 	public static final COSName OPEN_ACTION = new COSName("OpenAction");
 	public static final COSName OPEN_TYPE = new COSName("OpenType");

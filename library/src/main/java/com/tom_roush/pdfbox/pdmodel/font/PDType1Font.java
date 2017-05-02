@@ -1,6 +1,7 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import android.graphics.Path;
+import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
 
@@ -19,6 +20,7 @@ import com.tom_roush.pdfbox.pdmodel.font.encoding.StandardEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Type1Encoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
 import com.tom_roush.pdfbox.util.Matrix;
+import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,6 +73,7 @@ public class PDType1Font extends PDSimpleFont
     private final boolean isEmbedded;
 	private final boolean isDamaged;
 	private Matrix fontMatrix;
+    private final AffineTransform fontMatrixTransform;
 
 	/**
 	 * Creates a Type 1 standard 14 font for embedding.
@@ -88,7 +91,8 @@ public class PDType1Font extends PDSimpleFont
 
 		// todo: could load the PFB font here if we wanted to support Standard 14 embedding
 		type1font = null;
-        FontMapping<FontBoxFont> mapping = FontMapper.getFontBoxFont(getFontDescriptor());
+        FontMapping<FontBoxFont> mapping = FontMapper.getFontBoxFont(getBaseFont(),
+            getFontDescriptor());
         genericFont = mapping.getFont();
 
         if (mapping.isFallback())
@@ -107,25 +111,47 @@ public class PDType1Font extends PDSimpleFont
         }
         isEmbedded = false;
 		isDamaged = false;
-	}
+        fontMatrixTransform = new AffineTransform();
+    }
 
 	/**
 	 * Creates a new Type 1 font for embedding.
 	 *
 	 * @param doc PDF document to write to
-	 * @param afmIn AFM file stream
 	 * @param pfbIn PFB file stream
 	 * @throws IOException
 	 */
-	public PDType1Font(PDDocument doc, InputStream afmIn, InputStream pfbIn) throws IOException
-	{
-		PDType1FontEmbedder embedder = new PDType1FontEmbedder(doc, dict, afmIn, pfbIn);
-		encoding = embedder.getFontEncoding();
-		type1font = embedder.getType1Font();
+    public PDType1Font(PDDocument doc, InputStream pfbIn) throws IOException
+    {
+        PDType1FontEmbedder embedder = new PDType1FontEmbedder(doc, dict, pfbIn, null);
+        encoding = embedder.getFontEncoding();
+        glyphList = embedder.getGlyphList();
+        type1font = embedder.getType1Font();
         genericFont = embedder.getType1Font();
         isEmbedded = true;
-		isDamaged = false;
-	}
+        isDamaged = false;
+        fontMatrixTransform = new AffineTransform();
+    }
+
+    /**
+     * Creates a new Type 1 font for embedding.
+     *
+     * @param doc PDF document to write to
+     * @param pfbIn PFB file stream
+     * @throws IOException
+     */
+    public PDType1Font(PDDocument doc, InputStream pfbIn, Encoding encoding) throws IOException
+
+    {
+        PDType1FontEmbedder embedder = new PDType1FontEmbedder(doc, dict, pfbIn, encoding);
+        this.encoding = encoding;
+        glyphList = embedder.getGlyphList();
+        type1font = embedder.getType1Font();
+        genericFont = embedder.getType1Font();
+        isEmbedded = true;
+        isDamaged = false;
+        fontMatrixTransform = new AffineTransform();
+    }
 
 	/**
 	 * Creates a Type 1 font from a Font dictionary in a PDF.
@@ -204,7 +230,7 @@ public class PDType1Font extends PDSimpleFont
         }
 		else
 		{
-            FontMapping<FontBoxFont> mapping = FontMapper.getFontBoxFont(fd);
+            FontMapping<FontBoxFont> mapping = FontMapper.getFontBoxFont(getBaseFont(), fd);
             genericFont = mapping.getFont();
 
             if (mapping.isFallback())
@@ -214,7 +240,9 @@ public class PDType1Font extends PDSimpleFont
             }
 		}
 		readEncoding();
-	}
+        fontMatrixTransform = getFontMatrix().createAffineTransform();
+        fontMatrixTransform.scale(1000, 1000);
+    }
 
 	/**
 	 * Some Type 1 fonts have an invalid Length1, which causes the binary segment of the font
@@ -258,10 +286,10 @@ public class PDType1Font extends PDSimpleFont
 	/**
 	 * Returns the PostScript name of the font.
 	 */
-	public String getBaseFont()
-	{
-		return dict.getNameAsString(COSName.BASE_FONT);
-	}
+    public final String getBaseFont()
+    {
+        return dict.getNameAsString(COSName.BASE_FONT);
+    }
 
 	@Override
 	public float getHeight(int code) throws IOException
@@ -274,7 +302,8 @@ public class PDType1Font extends PDSimpleFont
 		}
 		else
 		{
-			RectF bounds = new RectF();
+            // todo: should be scaled by font matrix
+            RectF bounds = new RectF();
             genericFont.getPath(name).computeBounds(bounds, true);
             return bounds.height();
 		}
@@ -311,8 +340,11 @@ public class PDType1Font extends PDSimpleFont
 		{
 			return 250;
 		}
+        float width = genericFont.getWidth(name);
 
-        return genericFont.getWidth(name);
+        PointF p = new PointF(width, 0);
+        fontMatrixTransform.transform(p, p);
+        return p.x;
     }
 
 	@Override
@@ -441,15 +473,21 @@ public class PDType1Font extends PDSimpleFont
 		}
 		else
 		{
-            return genericFont.getPath(name);
+            return genericFont.getPath(getNameInFont(name));
         }
 	}
 
+    @Override
+    public boolean hasGlyph(String name) throws IOException
+    {
+        return genericFont.hasGlyph(getNameInFont(name));
+    }
+
 	@Override
-	public Matrix getFontMatrix()
-	{
-		if (fontMatrix == null)
-		{
+    public final Matrix getFontMatrix()
+    {
+        if (fontMatrix == null)
+        {
 			// PDF specified that Type 1 fonts use a 1000upem matrix, but some fonts specify
 			// their own custom matrix anyway, for example PDFBOX-2298
             List<Number> numbers = null;

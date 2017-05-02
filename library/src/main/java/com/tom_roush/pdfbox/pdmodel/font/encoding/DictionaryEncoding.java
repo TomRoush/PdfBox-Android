@@ -42,7 +42,11 @@ public class DictionaryEncoding extends Encoding
 		{
 			throw new IllegalArgumentException("Invalid encoding: " + baseEncoding);
 		}
-	}
+
+        codeToName.putAll(this.baseEncoding.codeToName);
+        names.addAll(this.baseEncoding.names);
+        applyDifferences();
+    }
 
 	/**
 	 * Creates a new DictionaryEncoding for a Type 3 font from a PDF.

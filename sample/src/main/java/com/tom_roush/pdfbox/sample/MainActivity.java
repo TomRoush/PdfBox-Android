@@ -183,7 +183,7 @@ public class MainActivity extends Activity {
             PDTextField field = (PDTextField) acroForm.getField("TextField");
             field.setValue("Filled Text Field");
 			// Optional: don't allow this field to be edited
-			field.setReadonly(true);
+			field.setReadOnly(true);
 
 			PDField checkbox = acroForm.getField("Checkbox");
 			((PDCheckbox) checkbox).check();

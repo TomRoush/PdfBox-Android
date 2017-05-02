@@ -1,8 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.action;
 
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
-
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
@@ -50,7 +48,7 @@ public class PDWindowsLaunchParams implements COSObjectable
      * @return The cos object that matches this Java object.
      */
     @Override
-    public COSBase getCOSObject()
+    public COSDictionary getCOSObject()
     {
         return params;
     }

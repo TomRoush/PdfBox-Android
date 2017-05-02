@@ -171,7 +171,7 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
         COSBase i = this.getCOSObject().getDictionaryObject("I");
         if (i instanceof COSStream)
         {
-            return new PDFormXObject(new PDStream((COSStream) i), "I");
+            return new PDFormXObject(new PDStream((COSStream) i));
         }
         return null;
     }
@@ -186,7 +186,7 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
         COSBase i = this.getCOSObject().getDictionaryObject("RI");
         if (i instanceof COSStream)
         {
-            return new PDFormXObject(new PDStream((COSStream) i), "RI");
+            return new PDFormXObject(new PDStream((COSStream) i));
         }
         return null;
     }
@@ -201,7 +201,7 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
         COSBase i = this.getCOSObject().getDictionaryObject("IX");
         if (i instanceof COSStream)
         {
-            return new PDFormXObject(new PDStream((COSStream) i), "IX");
+            return new PDFormXObject(new PDStream((COSStream) i));
         }
         return null;
     }

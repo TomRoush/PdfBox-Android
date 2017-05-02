@@ -43,6 +43,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.crypto.Cipher;
@@ -238,8 +239,8 @@ public class TestSymmetricKeyEncryption extends TestCase
         String prefix = "Simple-";
         int numSrcPages = document.getNumberOfPages();
         PDFRenderer pdfRenderer = new PDFRenderer(document);
-        ArrayList<Bitmap> srcImgTab = new ArrayList<Bitmap>();
-        ArrayList<ByteArrayOutputStream> srcContentStreamTab = new ArrayList<ByteArrayOutputStream>();
+        List<Bitmap> srcImgTab = new ArrayList<Bitmap>();
+        List<ByteArrayOutputStream> srcContentStreamTab = new ArrayList<ByteArrayOutputStream>();
         for (int i = 0; i < numSrcPages; ++i)
         {
 //            srcImgTab.add(pdfRenderer.renderImage(i)); TODO: PdfBox-Android

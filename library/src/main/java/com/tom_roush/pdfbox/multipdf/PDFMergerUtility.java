@@ -151,28 +151,29 @@ public class PDFMergerUtility
 	 * Merge the list of source documents, saving the result in the destination
 	 * file.
 	 *
-	 * @throws IOException If there is an error saving the document.
-	 */
-	public void mergeDocuments() throws IOException
-	{
-		PDDocument destination = null;
+     * @param useScratchFiles enables the usage of a scratch file if set to true
+     * @throws IOException If there is an error saving the document.
+     */
+    public void mergeDocuments(boolean useScratchFiles) throws IOException
+    {
+        PDDocument destination = null;
 		InputStream sourceFile;
 		PDDocument source;
 		if (sources != null && sources.size() > 0)
 		{
-			ArrayList<PDDocument> tobeclosed = new ArrayList<PDDocument>();
+            List<PDDocument> tobeclosed = new ArrayList<PDDocument>();
 
 			try
 			{
 				Iterator<InputStream> sit = sources.iterator();
-				destination = new PDDocument();
+                destination = new PDDocument(useScratchFiles);
 
 				while (sit.hasNext())
 				{
 					sourceFile = sit.next();
-					source = PDDocument.load(sourceFile);
-					tobeclosed.add(source);
-					appendDocument(destination, source);
+                    source = PDDocument.load(sourceFile, useScratchFiles);
+                    tobeclosed.add(source);
+                    appendDocument(destination, source);
 				}
 				if (destinationStream == null)
 				{

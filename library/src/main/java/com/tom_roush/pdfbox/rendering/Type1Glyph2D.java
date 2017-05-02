@@ -38,8 +38,8 @@ final class Type1Glyph2D implements Glyph2D
 		try
 		{
             String name = font.getEncoding().getName(code);
-            if (name.equals(".notdef"))
-			{
+            if (!font.hasGlyph(name))
+            {
 				Log.w("PdfBox-Android", "No glyph for " + code + " (" + name + ") in font " + font.getName());
 			}
 			// todo: can this happen? should it be encapsulated?

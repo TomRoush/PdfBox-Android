@@ -415,8 +415,7 @@ public final class TTFSubsetter
 
         writeSInt16(out, os2.getStrikeoutSize());
         writeSInt16(out, os2.getStrikeoutPosition());
-        writeUint8(out, os2.getFamilyClass());
-        writeUint8(out, os2.getFamilySubClass());
+        writeSInt16(out, (short) os2.getFamilyClass());
         out.write(os2.getPanose());
 
         writeUint32(out, 0);
@@ -913,9 +912,15 @@ public final class TTFSubsetter
      *
      * @param os the stream used for writing
      * @throws IOException if something went wrong.
+     * @throws IllegalStateException if the subset is empty.
      */
     public void writeToStream(OutputStream os) throws IOException
     {
+        if (glyphIds.isEmpty() || uniToGID.isEmpty())
+        {
+            throw new IllegalStateException("subset is empty");
+        }
+
         addCompoundReferences();
 
         DataOutputStream out = new DataOutputStream(os);

@@ -11,6 +11,7 @@ import com.tom_roush.pdfbox.cos.COSStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * This will parse a PDF 1.5 (or better) Xref stream and
@@ -59,7 +60,7 @@ public class PDFXrefStreamParser extends BaseParser
             indexArray.add(stream.getDictionaryObject(COSName.SIZE));
         }
 
-        ArrayList<Long> objNums = new ArrayList<Long>();
+        List<Long> objNums = new ArrayList<Long>();
 
         /*
          * Populates objNums with all object numbers available

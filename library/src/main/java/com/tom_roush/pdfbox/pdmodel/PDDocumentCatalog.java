@@ -106,8 +106,8 @@ public class PDDocumentCatalog implements COSObjectable
 	public PDPageTree getPages()
 	{
 		// TODO cache me?
-		return new PDPageTree((COSDictionary)root.getDictionaryObject(COSName.PAGES));
-	}
+        return new PDPageTree((COSDictionary) root.getDictionaryObject(COSName.PAGES), document);
+    }
 
 	/**
 	 * Get the viewer preferences associated with this document or null if they do not exist.

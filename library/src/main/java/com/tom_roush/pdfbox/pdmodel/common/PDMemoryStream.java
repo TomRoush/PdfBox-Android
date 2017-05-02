@@ -1,16 +1,13 @@
 package com.tom_roush.pdfbox.pdmodel.common;
 
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import java.util.List;
-
-import com.tom_roush.pdfbox.cos.COSBase;
-import com.tom_roush.pdfbox.cos.COSStream;
-
-import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
 
 /**
  * A PDStream represents a stream in a PDF document.  Streams are tied to a single
@@ -52,7 +49,7 @@ public class PDMemoryStream extends PDStream
      * @return The cos object that matches this Java object.
      */
     @Override
-    public COSBase getCOSObject()
+    public COSStream getCOSObject()
     {
         throw new UnsupportedOperationException( "not supported for memory stream" );
     }
@@ -94,6 +91,7 @@ public class PDMemoryStream extends PDStream
     @Override
     public InputStream getPartiallyFilteredStream( List stopFilters ) throws IOException
     {
+        // memory streams are not encoded.
         return createInputStream();
     }
 
