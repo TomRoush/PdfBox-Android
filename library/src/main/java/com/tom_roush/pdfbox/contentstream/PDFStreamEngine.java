@@ -57,7 +57,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -141,8 +140,8 @@ public abstract class PDFStreamEngine
 	public void processPage(PDPage page) throws IOException
 	{
 		initPage(page);
-		if (page.getStream() != null)
-		{
+        if (page.hasContents())
+        {
 			isProcessingPage = true;
 			processStream(page);
 			isProcessingPage = false;
@@ -448,11 +447,10 @@ public abstract class PDFStreamEngine
 	private void processStreamOperators(PDContentStream contentStream) throws IOException
 	{
 		List<COSBase> arguments = new ArrayList<COSBase>();
-		PDFStreamParser parser = new PDFStreamParser(contentStream.getContentStream());
-        Iterator<Object> iter = parser.getTokenIterator();
-        while (iter.hasNext())
+        PDFStreamParser parser = new PDFStreamParser(contentStream);
+        Object token = parser.parseNextToken();
+        while (token != null)
         {
-            Object token = iter.next();
             if (token instanceof COSObject)
             {
                 arguments.add(((COSObject) token).getObject());
@@ -466,6 +464,7 @@ public abstract class PDFStreamEngine
             {
                 arguments.add((COSBase) token);
             }
+            token = parser.parseNextToken();
         }
     }
 

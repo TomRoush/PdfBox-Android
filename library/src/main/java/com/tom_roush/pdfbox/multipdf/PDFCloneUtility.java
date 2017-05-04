@@ -8,7 +8,6 @@ import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
-import com.tom_roush.pdfbox.pdmodel.common.COSStreamArray;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 import java.io.IOException;
@@ -91,26 +90,6 @@ class PDFCloneUtility
               }
               retval = newArray;
               clonedVersion.put( base, retval );
-          }
-          else if (base instanceof COSStreamArray)
-          {
-        	  // PDFBOX-2052
-        	  COSStreamArray originalStream = (COSStreamArray) base;
-
-              if (originalStream.size() > 0)
-              {
-                  throw new IllegalStateException("Cannot close stream array with items next to the streams.");
-              }
-
-              COSArray array = new COSArray();
-              for (int i = 0; i < originalStream.getStreamCount(); i++)
-              {
-                  COSBase base2 = originalStream.get(i);
-                  COSBase cloneForNewDocument = cloneForNewDocument(base2);
-                  array.add(cloneForNewDocument);
-              }
-              retval = new COSStreamArray(array);
-              clonedVersion.put(base, retval);
           }
           else if( base instanceof COSStream )
           {

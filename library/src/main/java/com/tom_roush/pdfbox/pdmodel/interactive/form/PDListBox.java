@@ -3,6 +3,8 @@ package com.tom_roush.pdfbox.pdmodel.interactive.form;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 
+import java.io.IOException;
+
 /**
  * A scrollable list box. Contains several text items, one or more of which shall be selected as the
  * field value.
@@ -58,5 +60,13 @@ public final class PDListBox extends PDChoice
         {
             dictionary.removeItem(COSName.TI);
         }
+    }
+
+    @Override
+    void constructAppearances() throws IOException
+    {
+        AppearanceGeneratorHelper apHelper;
+        apHelper = new AppearanceGeneratorHelper(this);
+        apHelper.setAppearanceValue("");
     }
 }

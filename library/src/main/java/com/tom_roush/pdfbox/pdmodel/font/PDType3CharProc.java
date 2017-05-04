@@ -5,7 +5,11 @@ import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.util.Matrix;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * A Type 3 character procedure. This is a standalone PDF content stream.
@@ -34,11 +38,16 @@ public final class PDType3CharProc implements COSObjectable, PDContentStream
 		return font;
 	}
 
+    public PDStream getContentStream()
+    {
+        return new PDStream(charStream);
+    }
+
 	@Override
-	public COSStream getContentStream()
-	{
-		return charStream;
-	}
+    public InputStream getContents() throws IOException
+    {
+        return charStream.getUnfilteredStream();
+    }
 
 	@Override
 	public PDResources getResources()

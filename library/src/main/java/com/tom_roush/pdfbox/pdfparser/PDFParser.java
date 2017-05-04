@@ -10,6 +10,7 @@ import com.tom_roush.pdfbox.cos.COSNull;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.RandomAccessRead;
+import com.tom_roush.pdfbox.io.ScratchFile;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
 import com.tom_roush.pdfbox.pdmodel.encryption.DecryptionMaterial;
@@ -110,12 +111,52 @@ public class PDFParser extends COSParser
     public PDFParser(RandomAccessRead source, String decryptionPassword, InputStream keyStore,
             String alias, boolean useScratchFiles) throws IOException
     {
-        pdfSource = source;
+        super(source);
         fileLen = source.length();
         password = decryptionPassword;
         keyStoreInputStream = keyStore;
         keyAlias = alias;
         init(useScratchFiles);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param source input representing the pdf.
+     * @param decryptionPassword password to be used for decryption.
+     * @param keyStore key store to be used for decryption when using public key security
+     * @param alias alias to be used for decryption when using public key security
+     * @param scratchFile buffer handler for temporary storage; it will be closed on
+     * {@link COSDocument#close()}
+     * @throws IOException If something went wrong.
+     */
+    public PDFParser(RandomAccessRead source, String decryptionPassword, InputStream keyStore,
+        String alias, ScratchFile scratchFile) throws IOException
+    {
+        super(source);
+        fileLen = source.length();
+        password = decryptionPassword;
+        keyStoreInputStream = keyStore;
+        keyAlias = alias;
+        init(scratchFile);
+    }
+
+    private void init(ScratchFile scratchFile) throws IOException
+    {
+        String eofLookupRangeStr = System.getProperty(SYSPROP_EOFLOOKUPRANGE);
+        if (eofLookupRangeStr != null)
+        {
+            try
+            {
+                setEOFLookupRange(Integer.parseInt(eofLookupRangeStr));
+            }
+            catch (NumberFormatException nfe)
+            {
+                Log.w("PdfBox-Android", "System property " + SYSPROP_EOFLOOKUPRANGE
+                    + " does not contain an integer value, but: '" + eofLookupRangeStr + "'");
+            }
+        }
+        document = new COSDocument(scratchFile);
     }
 
     private void init(boolean useScratchFiles) throws IOException
@@ -146,7 +187,7 @@ public class PDFParser extends COSParser
      */
     public PDDocument getPDDocument() throws IOException
     {
-        return new PDDocument(getDocument(), pdfSource, accessPermission);
+        return new PDDocument(getDocument(), source, accessPermission);
     }
 
     /**

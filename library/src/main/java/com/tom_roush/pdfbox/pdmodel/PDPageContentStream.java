@@ -4,9 +4,9 @@ import android.graphics.Path;
 import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdfwriter.COSWriter;
-import com.tom_roush.pdfbox.pdmodel.common.COSStreamArray;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
@@ -29,8 +29,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Stack;
 
@@ -71,12 +69,13 @@ public final class PDPageContentStream implements Closeable
      *
      * @param document The document the page is part of.
      * @param sourcePage The page to write the contents to.
-     * @param appendContent Indicates whether content will be overwritten. If false all previous content is deleted.
+     * @param appendContent Indicates whether content will be overwritten. If false all previous
+     * content is deleted.
      * @param compress Tell if the content stream should compress the page contents.
      * @throws IOException If there is an error writing to the page contents.
      */
-    public PDPageContentStream(PDDocument document, PDPage sourcePage, boolean appendContent, boolean compress)
-            throws IOException
+    public PDPageContentStream(PDDocument document, PDPage sourcePage, boolean appendContent,
+        boolean compress) throws IOException
     {
         this(document, sourcePage, appendContent, compress, false);
     }
@@ -86,104 +85,101 @@ public final class PDPageContentStream implements Closeable
      *
      * @param document The document the page is part of.
      * @param sourcePage The page to write the contents to.
-     * @param appendContent Indicates whether content will be overwritten. If false all previous content is deleted.
+     * @param appendContent Indicates whether content will be overwritten. If false all previous
+     * content is deleted.
      * @param compress Tell if the content stream should compress the page contents.
      * @param resetContext Tell if the graphic context should be reseted.
      * @throws IOException If there is an error writing to the page contents.
      */
-    public PDPageContentStream(PDDocument document, PDPage sourcePage, boolean appendContent, boolean compress,
-            boolean resetContext) throws IOException
+    public PDPageContentStream(PDDocument document, PDPage sourcePage, boolean appendContent,
+        boolean compress, boolean resetContext) throws IOException
     {
     	this.document = document;
-    	
-        // Get the pdstream from the source page instead of creating a new one
-        PDStream contents = sourcePage.getStream();
-        boolean hasContent = contents != null;
 
         // If request specifies the need to append to the document
-        if (appendContent && hasContent)
+        if (appendContent && sourcePage.hasContents())
         {
-
-            // Create a pdstream to append new content
+            // Create a stream to append new content
             PDStream contentsToAppend = new PDStream(document);
 
-            // This will be the resulting COSStreamArray after existing and new streams are merged
-            COSStreamArray compoundStream;
-
-            // If contents is already an array, a new stream is simply appended to it
-            if (contents.getStream() instanceof COSStreamArray)
+            // Add new stream to contents array
+            COSBase contents = sourcePage.getCOSObject().getDictionaryObject(COSName.CONTENTS);
+            COSArray array;
+            if (contents instanceof COSArray)
             {
-                compoundStream = (COSStreamArray) contents.getStream();
-                compoundStream.appendStream(contentsToAppend.getStream());
+                // If contents is already an array, a new stream is simply appended to it
+                array = (COSArray) contents;
+                array.add(contentsToAppend);
             }
             else
             {
-                // Creates the COSStreamArray and adds the current stream plus a new one to it
-                COSArray newArray = new COSArray();
-                newArray.add(contents.getCOSObject());
-                newArray.add(contentsToAppend.getCOSObject());
-                compoundStream = new COSStreamArray(newArray);
+                // Creates a new array and adds the current stream plus a new one to it
+                array = new COSArray();
+                array.add(contents);
+                array.add(contentsToAppend);
             }
 
             if (compress)
             {
-                List<COSName> filters = new ArrayList<COSName>();
-                filters.add(COSName.FLATE_DECODE);
-                contentsToAppend.setFilters(filters);
+                contentsToAppend.addCompression();
             }
 
+            // save the initial/unmodified graphics context
             if (resetContext)
             {
                 // create a new stream to encapsulate the existing stream
                 PDStream saveGraphics = new PDStream(document);
                 output = saveGraphics.createOutputStream();
+
                 // save the initial/unmodified graphics context
                 saveGraphicsState();
                 close();
+
                 if (compress)
                 {
-                    List<COSName> filters = new ArrayList<COSName>();
-                    filters.add(COSName.FLATE_DECODE);
-                    saveGraphics.setFilters(filters);
+                    saveGraphics.addCompression();
                 }
+
                 // insert the new stream at the beginning
-                compoundStream.insertCOSStream(saveGraphics);
+                array.add(0, saveGraphics.getStream());
             }
 
             // Sets the compoundStream as page contents
-            sourcePage.setContents(new PDStream(compoundStream));
+            sourcePage.getCOSObject().setItem(COSName.CONTENTS, array);
             output = contentsToAppend.createOutputStream();
+
+            // restore the initial/unmodified graphics context
             if (resetContext)
             {
-                // restore the initial/unmodified graphics context
                 restoreGraphicsState();
             }
         }
         else
         {
-            if (hasContent)
+            if (sourcePage.hasContents())
             {
             	Log.w("PdfBox-Android", "You are overwriting an existing content, you should use the append mode");
             }
-            contents = new PDStream(document);
+            PDStream contents = new PDStream(document);
             if (compress)
             {
-                List<COSName> filters = new ArrayList<COSName>();
-                filters.add(COSName.FLATE_DECODE);
-                contents.setFilters(filters);
+                contents.addCompression();
             }
             sourcePage.setContents(contents);
             output = contents.createOutputStream();
         }
-        formatDecimal.setMaximumFractionDigits(10);
-        formatDecimal.setGroupingUsed(false);
-        // this has to be done here, as the resources will be set to null when reseting the content stream
+        // this has to be done here, as the resources will be set to null when resetting the content
+        // stream
         resources = sourcePage.getResources();
         if (resources == null)
         {
             resources = new PDResources();
             sourcePage.setResources(resources);
         }
+
+        // configure NumberFormat
+        formatDecimal.setMaximumFractionDigits(10);
+        formatDecimal.setGroupingUsed(false);
     }
 
     /**

@@ -3,7 +3,6 @@ package com.tom_roush.pdfbox.text;
 import android.graphics.RectF;
 
 import com.tom_roush.pdfbox.pdmodel.PDPage;
-import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -102,14 +101,12 @@ public class PDFTextStripperByArea extends PDFTextStripper
             regionText.put( regionName, new StringWriter() );
         }
 
-        PDStream contentStream = page.getStream();
-        if( contentStream != null )
+        if (page.hasContents())
         {
         	processPage( page );
         }
     }
 
-    
     /**
      * {@inheritDoc}
      */

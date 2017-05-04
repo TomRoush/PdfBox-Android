@@ -5,7 +5,6 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.ResourceCache;
@@ -14,6 +13,9 @@ import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /*
 TODO There are further Form XObjects to implement:
@@ -105,10 +107,15 @@ public class PDFormXObject extends PDXObject implements PDContentStream
 		return group;
 	}
 
+	public PDStream getContentStream()
+    {
+        return new PDStream(getCOSStream());
+    }
+
 	@Override
-	public COSStream getContentStream()
+    public InputStream getContents() throws IOException
 	{
-		return getCOSStream();
+		return getCOSStream().getUnfilteredStream();
 	}
 
 	/**

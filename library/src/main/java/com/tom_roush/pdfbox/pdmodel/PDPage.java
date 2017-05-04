@@ -12,7 +12,6 @@ import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
-import com.tom_roush.pdfbox.pdmodel.common.COSStreamArray;
 import com.tom_roush.pdfbox.pdmodel.common.PDMetadata;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
@@ -22,8 +21,13 @@ import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDThreadBead;
 import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDTransition;
 import com.tom_roush.pdfbox.util.Matrix;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -90,24 +94,76 @@ public class PDPage implements COSObjectable, PDContentStream
 		return page;
 	}
 
+    /**
+     * Returns the content streams which make up this page.
+     *
+     * @return content stream iterator
+     */
+    public Iterator<PDStream> getContentStreams()
+    {
+        List<PDStream> streams = new ArrayList<PDStream>();
+        COSBase base = page.getDictionaryObject(COSName.CONTENTS);
+        if (base instanceof COSStream)
+        {
+            streams.add(new PDStream((COSStream) base));
+        }
+        else if (base instanceof COSArray && ((COSArray) base).size() > 0)
+        {
+            COSArray array = (COSArray) base;
+            for (int i = 0; i < streams.size(); i++)
+            {
+                COSStream stream = (COSStream) array.getObject(i);
+                streams.add(new PDStream(stream));
+            }
+        }
+        return streams.iterator();
+    }
+
 	@Override
-	public COSStream getContentStream()
-	{
-		COSBase base = page.getDictionaryObject(COSName.CONTENTS);
+    public InputStream getContents() throws IOException
+    {
+        COSBase base = page.getDictionaryObject(COSName.CONTENTS);
 		if (base instanceof COSStream)
 		{
-			return (COSStream)base;
-		}
-		else if (base instanceof COSArray && ((COSArray)base).size() > 0)
+            return ((COSStream) base).getUnfilteredStream();
+        }
+        else if (base instanceof COSArray && ((COSArray)base).size() > 0)
 		{
-			return new COSStreamArray((COSArray)base);
-		}
-		return null;
+            COSArray streams = (COSArray) base;
+            byte[] delimiter = new byte[]{'\n'};
+            List<InputStream> inputStreams = new ArrayList<InputStream>();
+            for (int i = 0; i < streams.size(); i++)
+            {
+                COSStream stream = (COSStream) streams.getObject(i);
+                inputStreams.add(stream.getUnfilteredStream());
+                inputStreams.add(new ByteArrayInputStream(delimiter));
+            }
+            return new SequenceInputStream(Collections.enumeration(inputStreams));
+        }
+        return null;
 	}
 
-	/**
-	 * A dictionary containing any resources required by the page.
-	 */
+    /**
+     * Returns true if this page has contents.
+     */
+    public boolean hasContents()
+    {
+        COSBase contents = page.getDictionaryObject(COSName.CONTENTS);
+        if (contents instanceof COSStream)
+        {
+            return ((COSStream) contents).size() > 0;
+        }
+        else if (contents instanceof COSArray)
+        {
+            return ((COSArray) contents).size() > 0;
+        }
+        return false;
+    }
+
+
+    /**
+     * A dictionary containing any resources required by the page.
+     */
 	@Override
 	public PDResources getResources()
 	{
@@ -412,31 +468,34 @@ public class PDPage implements COSObjectable, PDContentStream
 		page.setInt(COSName.ROTATE, rotation);
 	}
 
-	/**
-	 * This will get the contents of the PDF Page, in the case that the contents of the page is an
-	 * array then then the entire array of streams will be be wrapped and appear as a single stream.
-	 * 
-	 * @return The page content stream.
-	 * 
-	 * @throws IOException If there is an error obtaining the stream.
-	 */
-	public PDStream getStream() throws IOException
-	{
-		return PDStream.createFromCOS(page.getDictionaryObject(COSName.CONTENTS));
-	}
+    /**
+     * This will set the contents of this page.
+     *
+     * @param contents The new contents of the page.
+     */
+    public void setContents(PDStream contents)
+    {
+        page.setItem(COSName.CONTENTS, contents);
+    }
 
-	/**
-	 * This will set the contents of this page.
-	 * 
-	 * @param contents The new contents of the page.
-	 */
-	public void setContents(PDStream contents)
-	{
-		page.setItem(COSName.CONTENTS, contents);
-	}
+    /**
+     * This will set the contents of this page.
+     *
+     * @param contents Array of new contents of the page.
+     */
+    public void setContents(List<PDStream> contents)
+    {
+        COSArray array = new COSArray();
+        for (PDStream stream : contents)
+        {
+            array.add(stream);
+        }
+        page.setItem(COSName.CONTENTS, array);
+    }
 
-	/**
-	 * This will get a list of PDThreadBead objects, which are article threads in the document.
+
+    /**
+     * This will get a list of PDThreadBead objects, which are article threads in the document.
 	 * This will return an empty list of there are no thread beads.
 	 * 
 	 * @return A list of article threads on this page.

@@ -263,22 +263,25 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public void beginText() throws IOException
     {
         setClip();
+        beginTextClip();
+    }
+
+    @Override
+    public void endText() throws IOException
+    {
+        endTextClip();
     }
 
     @Override
     public void showTextString(byte[] string) throws IOException
     {
-        beginTextClip();
         super.showTextString(string);
-        endTextClip();
     }
 
     @Override
     public void showTextStrings(COSArray array) throws IOException
     {
-        beginTextClip();
         super.showTextStrings(array);
-        endTextClip();
     }
 
     /**
@@ -286,14 +289,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
      */
     private void beginTextClip()
     {
-        PDGraphicsState state = getGraphicsState();
-        RenderingMode renderingMode = state.getTextState().getRenderingMode();
-
         // buffer the text clip because it represents a single clipping area
-        if (renderingMode.isClip())
-        {
-            textClippingArea = new Region();
-        }
+        textClippingArea = new Region();
     }
 
     /**
@@ -305,7 +302,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         RenderingMode renderingMode = state.getTextState().getRenderingMode();
 
         // apply the buffered clip as one area
-        if (renderingMode.isClip())
+        if (renderingMode.isClip() && !textClippingArea.isEmpty())
         {
             state.intersectClippingPath(textClippingArea);
             textClippingArea = null;
@@ -608,6 +605,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 //                                      RenderingHints.VALUE_ANTIALIAS_OFF);
         }
+
+        // TODO: PdfBox-Android: Commit 7f5861f9559e30ad68f0bcbce5b9dd2e7c2621b5 ?
 
         paint.setStyle(Paint.Style.FILL);
         canvas.drawPath(linePath, paint);     

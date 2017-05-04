@@ -18,7 +18,6 @@ package com.tom_roush.pdfbox.pdmodel;
 
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSFloat;
-import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdfparser.PDFStreamParser;
 
 import junit.framework.TestCase;
@@ -43,8 +42,7 @@ public class TestPDPageContentStream extends TestCase
         contentStream.close();
 
         // now read the PDF stream and verify that the CMYK values are correct
-        COSStream stream = page.getStream().getStream();
-        PDFStreamParser parser = new PDFStreamParser(stream);
+        PDFStreamParser parser = new PDFStreamParser(page);
         parser.parse();
         java.util.List<Object>  pageTokens = parser.getTokens();
         // expected five tokens :
@@ -69,8 +67,7 @@ public class TestPDPageContentStream extends TestCase
         contentStream.close();
 
         // now read the PDF stream and verify that the CMYK values are correct
-        stream = page.getStream().getStream();
-        parser = new PDFStreamParser(stream);
+        parser = new PDFStreamParser(page);
         parser.parse();
         pageTokens = parser.getTokens();
         // expected five tokens  :

@@ -65,8 +65,8 @@ public class COSDocument extends COSBase implements Closeable
 	 */
 	public COSDocument(boolean useScratchFiles) 
 	{
-		this(null, useScratchFiles);
-	}
+        this((File) null, useScratchFiles);
+    }
 
 	/**
 	 * Constructor that will use a temporary file in the given directory
@@ -93,8 +93,19 @@ public class COSDocument extends COSBase implements Closeable
         }
     }
 
-	/**
-	 * Constructor. Uses memory to store stream.
+    /**
+     * Constructor that will use the provide memory handler for storage of the
+     * PDF streams.
+     *
+     * @param scratchFiles memory handler for storage of PDF streams
+     */
+    public COSDocument(ScratchFile scratchFile)
+    {
+        this.scratchFile = scratchFile;
+    }
+
+    /**
+     * Constructor. Uses memory to store stream.
 	 */
 	public COSDocument()
 	{

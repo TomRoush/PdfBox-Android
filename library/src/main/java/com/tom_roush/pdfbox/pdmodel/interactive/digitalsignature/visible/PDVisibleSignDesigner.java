@@ -1,13 +1,15 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible;
 
-import java.io.InputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Builder for visible signature design.
@@ -34,7 +36,7 @@ public class PDVisibleSignDesigner
      *
      * @param filename Path of the PDF file
      * @param jpegStream JPEG image as a stream
-     * @param page The page are you going to add visible signature
+     * @param page The 1-based page number for which the page size should be calculated.
      * @throws IOException
      */
     public PDVisibleSignDesigner(String filename, InputStream jpegStream, int page)
@@ -48,7 +50,7 @@ public class PDVisibleSignDesigner
      *
      * @param documentStream Original PDF document as stream
      * @param jpegStream JPEG image as a stream
-     * @param page The page are you going to add visible signature
+     * @param page The 1-based page number for which the page size should be calculated.
      * @throws IOException
      */
     public PDVisibleSignDesigner(InputStream documentStream, InputStream jpegStream, int page)
@@ -60,7 +62,7 @@ public class PDVisibleSignDesigner
         // create PD document
         PDDocument document = PDDocument.load(documentStream);
 
-        // calculate height an width of document
+        // calculate height and width of document page
         calculatePageSize(document, page);
 
         document.close();
@@ -71,7 +73,7 @@ public class PDVisibleSignDesigner
      *
      * @param doc - Already created PDDocument of your PDF document
      * @param jpegStream
-     * @param page
+     * @param page The 1-based page number for which the page size should be calculated.
      * @throws IOException - If we can't read, flush, or can't close stream
      */
     public PDVisibleSignDesigner(PDDocument doc, InputStream jpegStream, int page) throws IOException
@@ -81,10 +83,11 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * Each page of document can be different sizes.
+     * Each page of document can be different sizes. This method calculates the page size based on
+     * the page media box.
      * 
      * @param document
-     * @param page
+     * @param page The 1-based page number for which the page size should be calculated.
      */
     private void calculatePageSize(PDDocument document, int page)
     {

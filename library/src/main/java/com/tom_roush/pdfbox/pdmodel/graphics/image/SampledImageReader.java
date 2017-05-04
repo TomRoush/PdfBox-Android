@@ -8,12 +8,10 @@ import android.util.Log;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.io.IOUtils;
-import com.tom_roush.pdfbox.io.RandomAccessBuffer;
-import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.pdmodel.common.PDMemoryStream;
-import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 /**
@@ -220,16 +218,7 @@ final class SampledImageReader
     private static Bitmap from8bit(PDImage pdImage, Bitmap raster)
             throws IOException
     {
-        RandomAccessRead input;
-        PDStream stream = pdImage.getStream();
-        if (stream instanceof PDMemoryStream)
-        {
-            input = new RandomAccessBuffer(stream.getByteArray());
-        }
-        else
-        {
-            input = stream.getStream().getUnfilteredRandomAccess();
-        }
+        InputStream input = pdImage.getStream().createInputStream();
         try
         {
             // get the raster's underlying byte buffer

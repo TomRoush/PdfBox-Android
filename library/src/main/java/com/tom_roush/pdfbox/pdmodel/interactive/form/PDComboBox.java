@@ -3,6 +3,9 @@ package com.tom_roush.pdfbox.pdmodel.interactive.form;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 
+import java.io.IOException;
+import java.util.List;
+
 /**
  * A combo box consisting of a drop-down list.
  * May be accompanied by an editable text box in which non-predefined values may be entered.
@@ -54,5 +57,22 @@ public final class PDComboBox extends PDChoice
     public void setEdit(boolean edit)
     {
         dictionary.setFlag(COSName.FF, FLAG_EDIT, edit);
+    }
+
+    @Override
+    void constructAppearances() throws IOException
+    {
+        AppearanceGeneratorHelper apHelper;
+        apHelper = new AppearanceGeneratorHelper(this);
+        List<String> values = getValue();
+
+        if (!values.isEmpty())
+        {
+            apHelper.setAppearanceValue(values.get(0));
+        }
+        else
+        {
+            apHelper.setAppearanceValue("");
+        }
     }
 }

@@ -7,6 +7,10 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * A tiling pattern dictionary.
@@ -149,10 +153,16 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
 		return yStep == Short.MAX_VALUE ? 0 : yStep;
 	}
 
+    public PDStream getContentStream()
+    {
+        return new PDStream((COSStream) getCOSObject());
+    }
+
 	@Override
-	public COSStream getContentStream() {
-		return (COSStream)getCOSObject();
-	}
+    public InputStream getContents() throws IOException
+    {
+        return ((COSStream) getCOSObject()).getUnfilteredStream();
+    }
 
 	/**
 	 * This will get the resources for this pattern.

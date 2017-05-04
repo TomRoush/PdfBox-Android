@@ -11,10 +11,12 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.io.MemoryUsageSetting;
 import com.tom_roush.pdfbox.io.RandomAccessBuffer;
 import com.tom_roush.pdfbox.io.RandomAccessBufferedFileInputStream;
 import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.io.RandomAccessReadInputStream;
+import com.tom_roush.pdfbox.io.ScratchFile;
 import com.tom_roush.pdfbox.pdfparser.PDFParser;
 import com.tom_roush.pdfbox.pdfwriter.COSWriter;
 import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
@@ -27,7 +29,6 @@ import com.tom_roush.pdfbox.pdmodel.encryption.SecurityHandler;
 import com.tom_roush.pdfbox.pdmodel.encryption.SecurityHandlerFactory;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
-import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
@@ -106,7 +107,56 @@ public class PDDocument implements Closeable
      */
     public PDDocument(boolean useScratchFiles)
     {
-        document = new COSDocument(useScratchFiles);
+        this(useScratchFiles, null);
+    }
+
+    /**
+     * Creates an empty PDF document.
+     * You need to add at least one page for the document to be valid.
+     *
+     * @param memUsageSetting defines how memory is used for buffering PDF streams
+     */
+    public PDDocument(MemoryUsageSetting memUsageSetting)
+    {
+        this(true, memUsageSetting);
+    }
+
+    /**
+     * Internal constructor which support setting scratch file usage
+     * via boolean parameter or directly (new). This will be only needed
+     * as long as the new ScratchFile handling is tested.
+     *
+     * <p>You need to add at least one page for the document to be valid.</p>
+     *
+     * @param useScratchFiles enables the usage of a scratch file if set to true
+     * @param memUsageSetting defines how memory is used for buffering PDF streams
+     */
+    private PDDocument(boolean useScratchFiles, MemoryUsageSetting memUsageSetting)
+    {
+        ScratchFile scratchFile = null;
+        if (memUsageSetting != null)
+        {
+            try
+            {
+                scratchFile = new ScratchFile(memUsageSetting);
+            }
+            catch (IOException ioe)
+            {
+                Log.w("PdfBox-Android", "Error initializing scratch file: " + ioe.getMessage() +
+                    ". Fall back to main memory usage only.");
+                try
+                {
+                    scratchFile = new ScratchFile(MemoryUsageSetting.setupMainMemoryOnly());
+                }
+                catch (IOException ioe2)
+                {
+                }
+            }
+        }
+
+
+        document = scratchFile != null ? new COSDocument(scratchFile) :
+            new COSDocument(useScratchFiles);
         pdfSource = null;
 
 		// First we need a trailer
@@ -227,17 +277,14 @@ public class PDDocument implements Closeable
 		if (signatureField == null)
 		{
             signatureField = new PDSignatureField(acroForm);
-            // set visibility flags
-            if (options.getVisualSignature() == null)
-            {
-                signatureField.getWidgets().get(0).setAnnotationFlags(
-                    PDAnnotationWidget.FLAG_NO_VIEW);
-            }
             // append the signature object
             signatureField.setValue(sigObject);
             // backward linking
             signatureField.getWidgets().get(0).setPage(page);
         }
+        // to conform PDF/A-1 requirement:
+        // The /F key's Print flag bit shall be set to 1 and its Hidden, Invisible and NoView flag bits shall be set to 0
+        signatureField.getWidgets().get(0).setPrinted(true);
 
 		// Set the AcroForm Fields
 		List<PDField> acroFormFields = acroForm.getFields();
@@ -493,35 +540,25 @@ public class PDDocument implements Closeable
 	public PDPage importPage(PDPage page) throws IOException
 	{
         PDPage importedPage = new PDPage(new COSDictionary(page.getCOSObject()), resourceCache);
-        InputStream is = null;
-        OutputStream os = null;
+        InputStream in = null;
         try
 		{
-			PDStream src = page.getStream();
-			if (src != null)
-			{
-				PDStream dest = new PDStream(document.createCOSStream());
-				dest.addCompression();
-				importedPage.setContents(dest);
-				is = src.createInputStream();
-				os = dest.createOutputStream();
-				IOUtils.copy(is, os);
+            in = page.getContents();
+            if (in != null)
+            {
+                PDStream dest = new PDStream(document, page.getContents());
+                dest.addCompression();
+                importedPage.setContents(dest);
 			}
 			addPage(importedPage);
 		}
-		finally
-		{
-			if (is != null)
-			{
-				is.close();
-			}
-			if (os != null)
-			{
-				os.close();
-			}
-		}
-		return importedPage;
-	}
+        catch (IOException e)
+        {
+            IOUtils.closeQuietly(in);
+        }
+
+        return importedPage;
+    }
 
 	/**
 	 * Constructor that uses an existing document. The COSDocument that is passed in must be valid.
@@ -760,6 +797,19 @@ public class PDDocument implements Closeable
 		return load(file, "", null, null, useScratchFiles);
 	}
 
+    /**
+     * Parses a PDF.
+     *
+     * @param file file to be loaded
+     * @param memUsageSetting defines how memory is used for buffering PDF streams
+     * @return loaded document
+     * @throws IOException in case of a file reading or parsing error
+     */
+    public static PDDocument load(File file, MemoryUsageSetting memUsageSetting) throws IOException
+    {
+        return load(file, "", null, null, memUsageSetting);
+    }
+
 	/**
      * Parses a PDF.
      *
@@ -789,6 +839,21 @@ public class PDDocument implements Closeable
 	public static PDDocument load(File file, String password, boolean useScratchFiles) throws IOException
 	{
 		return load(file, password, null, null, useScratchFiles);
+    }
+
+    /**
+     * Parses a PDF.
+     *
+     * @param file file to be loaded
+     * @param password password to be used for decryption
+     * @param memUsageSetting defines how memory is used for buffering PDF streams
+     * @return loaded document
+     * @throws IOException in case of a file reading or parsing error
+     */
+    public static PDDocument load(File file, String password, MemoryUsageSetting memUsageSetting)
+        throws IOException
+    {
+        return load(file, password, null, null, memUsageSetting);
     }
 
     /**
@@ -831,6 +896,27 @@ public class PDDocument implements Closeable
         return parser.getPDDocument();
     }
 
+    /**
+     * Parses a PDF.
+     *
+     * @param file file to be loaded
+     * @param password password to be used for decryption
+     * @param keyStore key store to be used for decryption when using public key security
+     * @param alias alias to be used for decryption when using public key security
+     * @param memUsageSetting defines how memory is used for buffering PDF streams
+     * @return loaded document
+     * @throws IOException in case of a file reading or parsing error
+     */
+    public static PDDocument load(File file, String password, InputStream keyStore, String alias,
+        MemoryUsageSetting memUsageSetting) throws IOException
+    {
+        RandomAccessBufferedFileInputStream raFile = new RandomAccessBufferedFileInputStream(file);
+        PDFParser parser = new PDFParser(raFile, password, keyStore, alias,
+            new ScratchFile(memUsageSetting));
+        parser.parse();
+        return parser.getPDDocument();
+    }
+
 	/**
      * Parses a PDF. The given input stream is copied to the memory to enable random access to the pdf.
      *
@@ -861,6 +947,22 @@ public class PDDocument implements Closeable
 	{
 		return load(input, "", null, null, useScratchFiles);
 	}
+
+    /**
+     * Parses a PDF. Depending on the parameter useScratchFiles the given input
+     * stream is either copied to the memory or to a temporary file to enable
+     * random access to the pdf.
+     *
+     * @param input stream that contains the document.
+     * @param memUsageSetting defines how memory is used for buffering input stream and PDF streams
+     * @return loaded document
+     * @throws IOException in case of a file reading or parsing error
+     */
+    public static PDDocument load(InputStream input, MemoryUsageSetting memUsageSetting)
+        throws IOException
+    {
+        return load(input, "", null, null, memUsageSetting);
+    }
 
 	/**
      * Parses a PDF. The given input stream is copied to the memory to enable random access to the pdf.
@@ -911,18 +1013,24 @@ public class PDDocument implements Closeable
 	 */
 	public static PDDocument load(InputStream input, String password, boolean useScratchFiles) throws IOException
 	{
-        RandomAccessRead source = null;
-        if (useScratchFiles)
-        {
-            source = new RandomAccessBufferedFileInputStream(input);
-        }
-        else
-        {
-            source = new RandomAccessBuffer(input);
-        }
-        PDFParser parser = new PDFParser(source, password, null, null, useScratchFiles);
-        parser.parse();
-        return parser.getPDDocument();
+        return load(input, password, null, null, useScratchFiles);
+    }
+
+    /**
+     * Parses a PDF. Depending on the parameter useScratchFiles the given input
+     * stream is either copied to the memory or to a temporary file to enable
+     * random access to the pdf.
+     *
+     * @param input stream that contains the document.
+     * @param password password to be used for decryption
+     * @param memUsageSetting defines how memory is used for buffering input stream and PDF streams
+     * @return loaded document
+     * @throws IOException in case of a file reading or parsing error
+     */
+    public static PDDocument load(InputStream input, String password,
+        MemoryUsageSetting memUsageSetting) throws IOException
+    {
+        return load(input, password, null, null, memUsageSetting);
     }
 
     /**
@@ -943,7 +1051,7 @@ public class PDDocument implements Closeable
     public static PDDocument load(InputStream input, String password, InputStream keyStore,
     		String alias, boolean useScratchFiles) throws IOException
     {
-        RandomAccessRead source = null;
+        RandomAccessRead source;
         if (useScratchFiles)
         {
             source = new RandomAccessBufferedFileInputStream(input);
@@ -953,6 +1061,29 @@ public class PDDocument implements Closeable
             source = new RandomAccessBuffer(input);
         }
         PDFParser parser = new PDFParser(source, password, keyStore, alias, useScratchFiles);
+        parser.parse();
+        return parser.getPDDocument();
+    }
+
+    /**
+     * Parses a PDF. Depending on the parameter useScratchFiles the given input
+     * stream is either copied to the memory or to a temporary file to enable
+     * random access to the pdf.
+     *
+     * @param input stream that contains the document.
+     * @param password password to be used for decryption
+     * @param keyStore key store to be used for decryption when using public key security
+     * @param alias alias to be used for decryption when using public key security
+     * @param memUsageSetting defines how memory is used for buffering input stream and PDF streams
+     * @return loaded document
+     * @throws IOException in case of a file reading or parsing error
+     */
+    public static PDDocument load(InputStream input, String password, InputStream keyStore,
+        String alias, MemoryUsageSetting memUsageSetting) throws IOException
+    {
+        ScratchFile scratchFile = new ScratchFile(memUsageSetting);
+        RandomAccessRead source = scratchFile.createBuffer(input);
+        PDFParser parser = new PDFParser(source, password, keyStore, alias, scratchFile);
         parser.parse();
         return parser.getPDDocument();
     }
@@ -1135,31 +1266,40 @@ public class PDDocument implements Closeable
     }
 
     /**
-     * Protects the document with the protection policy pp. The document content will be really encrypted when it will
-	 * be saved. This method only marks the document for encryption.
-	 *
-	 * @see com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy
-	 * @see com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyProtectionPolicy
-	 *
-	 * @param policy The protection policy.
-	 *
-	 * @throws IOException if there isn't any suitable security handler.
-	 */
-	public void protect(ProtectionPolicy policy) throws IOException
-	{
-		if (!isEncrypted())
-		{
-			encryption = new PDEncryption();
-		}
+     * Protects the document with a protection policy. The document content will be really
+     * encrypted when it will be saved. This method only marks the document for encryption. It also
+     * calls {@link setAllSecurityToBeRemoved(false)} if it was set to true previously and logs a
+     * warning.
+     *
+     * @see com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy
+     * @see com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyProtectionPolicy
+     *
+     * @param policy The protection policy.
+     * @throws IOException if there isn't any suitable security handler.
+     */
+    public void protect(ProtectionPolicy policy) throws IOException
+    {
+        if (isAllSecurityToBeRemoved())
+        {
+            Log.w("PdfBox-Android", "do not call setAllSecurityToBeRemoved(true) before calling" +
+                "protect() as protect() implies setAllSecurityToBeRemoved(false)");
+            setAllSecurityToBeRemoved(false);
+        }
 
-		SecurityHandler securityHandler = SecurityHandlerFactory.INSTANCE.newSecurityHandlerForPolicy(policy);
-		if (securityHandler == null)
-		{
-			throw new IOException("No security handler for policy " + policy);
-		}
+        if (!isEncrypted())
+        {
+            encryption = new PDEncryption();
+        }
 
-		getEncryption().setSecurityHandler(securityHandler);
-	}
+        SecurityHandler securityHandler = SecurityHandlerFactory.INSTANCE
+            .newSecurityHandlerForPolicy(policy);
+        if (securityHandler == null)
+        {
+            throw new IOException("No security handler for policy " + policy);
+        }
+
+        getEncryption().setSecurityHandler(securityHandler);
+    }
 
 	/**
 	 * Returns the access permissions granted when the document was decrypted. If the document was not decrypted this

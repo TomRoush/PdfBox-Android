@@ -4,7 +4,6 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageTree;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
-import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDThreadBead;
 import com.tom_roush.pdfbox.util.QuickSort;
@@ -285,10 +284,9 @@ public class PDFTextStripper extends PDFTextStreamEngine
 
 		for (PDPage page : pages)
 		{
-			PDStream contentStream = page.getStream();
 			currentPageNo++;
-			if (contentStream != null)
-			{
+            if (page.hasContents())
+            {
 				processPage(page);
 			}
 		}

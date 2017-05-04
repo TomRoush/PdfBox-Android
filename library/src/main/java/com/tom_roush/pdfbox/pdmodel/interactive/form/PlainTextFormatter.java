@@ -17,7 +17,6 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
-import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PlainText.Line;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PlainText.Paragraph;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PlainText.TextAttribute;
@@ -179,8 +178,30 @@ class PlainTextFormatter
 				}
 				else
 				{
-					contents.showText(paragraph.getText());
-				}
+                    float startOffset = 0f;
+
+                    float lineWidth = appearanceStyle.getFont().getStringWidth(
+                        paragraph.getText()) * appearanceStyle.getFontSize() / 1000f;
+
+                    if (lineWidth < width)
+                    {
+                        switch (textAlignment)
+                        {
+                            case CENTER:
+                                startOffset = (width - lineWidth) / 2;
+                                break;
+                            case RIGHT:
+                                startOffset = width - lineWidth;
+                                break;
+                            case JUSTIFY:
+                            default:
+                                startOffset = 0f;
+                        }
+                    }
+
+                    contents.newLineAtOffset(horizontalOffset + startOffset, verticalOffset);
+                    contents.showText(paragraph.getText());
+                }
 			}
 		}
 	}
@@ -196,7 +217,6 @@ class PlainTextFormatter
 	 */
 	private void processLines(List<Line> lines) throws IOException
 	{
-		PDFont font = appearanceStyle.getFont();
 		float wordWidth = 0f;
 
 		float lastPos = 0f;

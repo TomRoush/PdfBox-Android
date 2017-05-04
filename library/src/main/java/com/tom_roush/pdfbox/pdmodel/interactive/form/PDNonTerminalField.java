@@ -116,7 +116,10 @@ public class PDNonTerminalField extends PDField
         {
             PDField field = PDField
                 .fromDictionary(acroForm, (COSDictionary) kids.getObject(i), this);
-            children.add(field);
+            if (field != null)
+            {
+                children.add(field);
+            }
         }
         return children;
     }
