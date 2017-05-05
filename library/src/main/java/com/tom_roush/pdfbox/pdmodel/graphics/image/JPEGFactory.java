@@ -44,63 +44,19 @@ public final class JPEGFactory
 		ByteArrayInputStream byteStream = new ByteArrayInputStream(IOUtils.toByteArray(stream));
 
 		// read image
-		Bitmap awtImage = readJPEG(byteStream);
+		BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inJustDecodeBounds = true;
+		BitmapFactory.decodeStream(byteStream, null, options);
 		byteStream.reset();
 
 		// create Image XObject from stream
-		PDImageXObject pdImage = new PDImageXObject(document, byteStream, 
-				COSName.DCT_DECODE, awtImage.getWidth(), awtImage.getHeight(), 
+		PDImageXObject pdImage = new PDImageXObject(document, byteStream,
+				COSName.DCT_DECODE, options.outWidth, options.outHeight,
 				8, //awtImage.getColorModel().getComponentSize(0),
-		PDDeviceRGB.INSTANCE //getColorSpaceFromAWT(awtImage));
-				);
-		// no alpha
-		if (awtImage.hasAlpha())
-		{
-			throw new UnsupportedOperationException("alpha channel not implemented");
-		}
+				PDDeviceRGB.INSTANCE //getColorSpaceFromAWT(awtImage));
+		);
 
 		return pdImage;
-	}
-
-	private static Bitmap readJPEG(InputStream stream) throws IOException
-	{
-		return BitmapFactory.decodeStream(stream);
-
-		//        // find suitable image reader
-		//        Iterator readers = ImageIO.getImageReadersByFormatName("JPEG");
-		//        ImageReader reader = null;
-		//        while (readers.hasNext())
-		//        {
-		//            reader = (ImageReader) readers.next();
-		//            if (reader.canReadRaster())
-		//            {
-		//                break;
-		//            }
-		//        }
-		//
-		//        if (reader == null)
-		//        {
-		//            throw new MissingImageReaderException("Cannot read JPEG image: " +
-		//                    "a suitable JAI I/O image filter is not installed");
-		//        }
-		//
-		//        ImageInputStream iis = null;
-		//        try
-		//        {
-		//            iis = ImageIO.createImageInputStream(stream);
-		//            reader.setInput(iis);
-		//
-		//            ImageIO.setUseCache(false);
-		//            return reader.read(0);
-		//        }
-		//        finally
-		//        {
-		//            if (iis != null)
-		//            {
-		//                iis.close();
-		//            }
-		//            reader.dispose();
-		//        }
 	}
 
 	/**
