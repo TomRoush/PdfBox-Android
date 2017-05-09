@@ -5,7 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
- * A RandomAccess implementation whcih allows data to be stored in a scratch file on the disk to
+ * A RandomAccess implementation which allows data to be stored in a scratch file on the disk to
  * reduce memory consumption.
  *
  * @author Ben Litchfield
@@ -27,9 +27,6 @@ public class RandomAccessFile implements RandomAccess
         ras = new java.io.RandomAccessFile(file, mode);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void close() throws IOException
     {
@@ -37,9 +34,6 @@ public class RandomAccessFile implements RandomAccess
         isClosed = true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void clear() throws IOException
     {
@@ -48,9 +42,6 @@ public class RandomAccessFile implements RandomAccess
         ras.setLength(0);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void seek(long position) throws IOException
     {
@@ -58,9 +49,6 @@ public class RandomAccessFile implements RandomAccess
         ras.seek(position);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public long getPosition() throws IOException
     {
@@ -68,18 +56,12 @@ public class RandomAccessFile implements RandomAccess
         return ras.getFilePointer();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int read() throws IOException
     {
         return ras.read();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int read(byte[] b) throws IOException
     {
@@ -87,9 +69,6 @@ public class RandomAccessFile implements RandomAccess
         return ras.read(b);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int read(byte[] b, int offset, int length) throws IOException
     {
@@ -97,9 +76,6 @@ public class RandomAccessFile implements RandomAccess
         return ras.read(b, offset, length);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public long length() throws IOException
     {
@@ -126,9 +102,6 @@ public class RandomAccessFile implements RandomAccess
         return isClosed;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void write(byte[] b, int offset, int length) throws IOException
     {
@@ -136,18 +109,12 @@ public class RandomAccessFile implements RandomAccess
         ras.write(b, offset, length);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void write(byte[] b) throws IOException
     {
         write(b, 0, b.length);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void write(int b) throws IOException
     {
@@ -155,9 +122,6 @@ public class RandomAccessFile implements RandomAccess
         ras.write(b);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public int peek() throws IOException
     {

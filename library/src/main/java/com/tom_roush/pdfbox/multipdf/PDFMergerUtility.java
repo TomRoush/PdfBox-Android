@@ -50,9 +50,10 @@ public class PDFMergerUtility
 	private static final String STRUCTURETYPE_DOCUMENT = "Document";
 
 	private final List<InputStream> sources;
-	private String destinationFileName;
-	private OutputStream destinationStream;
-	private boolean ignoreAcroFormErrors = false;
+    private final List<FileInputStream> fileInputStreams;
+    private String destinationFileName;
+    private OutputStream destinationStream;
+    private boolean ignoreAcroFormErrors = false;
 
 	/**
 	 * Instantiate a new PDFMergerUtility.
@@ -60,7 +61,8 @@ public class PDFMergerUtility
 	public PDFMergerUtility()
 	{
 		sources = new ArrayList<InputStream>();
-	}
+        fileInputStreams = new ArrayList<FileInputStream>();
+    }
 
 	/**
 	 * Get the name of the destination file.
@@ -79,8 +81,8 @@ public class PDFMergerUtility
 	 */
 	public void setDestinationFileName(String destination)
 	{
-		this.destinationFileName = destination;
-	}
+        destinationFileName = destination;
+    }
 
 	/**
 	 * Get the destination OutputStream.
@@ -111,8 +113,8 @@ public class PDFMergerUtility
 	 */
 	public void addSource(String source) throws FileNotFoundException
 	{
-		sources.add(new FileInputStream(new File(source)));
-	}
+        addSource(new File(source));
+    }
 
 	/**
 	 * Add a source file to the list of files to merge.
@@ -123,8 +125,10 @@ public class PDFMergerUtility
 	 */
 	public void addSource(File source) throws FileNotFoundException
 	{
-		sources.add(new FileInputStream(source));
-	}
+        FileInputStream stream = new FileInputStream(source);
+        sources.add(stream);
+        fileInputStreams.add(stream);
+    }
 
 	/**
 	 * Add a source to the list of documents to merge.
@@ -194,9 +198,13 @@ public class PDFMergerUtility
 				{
 					doc.close();
 				}
-			}
-		}
-	}
+                for (FileInputStream stream : fileInputStreams)
+                {
+                    stream.close();
+                }
+            }
+        }
+    }
 
 	/**
 	 * append all pages from source to destination.
@@ -380,10 +388,10 @@ public class PDFMergerUtility
 		COSStream srcMetadata = (COSStream) srcCatalog.getCOSObject().getDictionaryObject(COSName.METADATA);
 		if (destMetadata == null && srcMetadata != null)
 		{
-			PDStream newStream = new PDStream(destination, srcMetadata.getUnfilteredStream(), false);
-			newStream.getStream().mergeInto(srcMetadata);
-			newStream.addCompression();
-			destCatalog.getCOSObject().setItem(COSName.METADATA, newStream);
+            PDStream newStream = new PDStream(destination, srcMetadata.createInputStream(),
+                COSName.FLATE_DECODE);
+            newStream.getStream().mergeInto(srcMetadata);
+            destCatalog.getCOSObject().setItem(COSName.METADATA, newStream);
 		}
 
 		// merge logical structure hierarchy if logical structure information is available in both source pdf and

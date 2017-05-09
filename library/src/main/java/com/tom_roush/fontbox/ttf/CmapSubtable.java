@@ -337,14 +337,21 @@ public class CmapSubtable
 	{
 		int firstCode = data.readUnsignedShort();
 		int entryCount = data.readUnsignedShort();
-		glyphIdToCharacterCode = newGlyphIdToCharacterCode(numGlyphs);
-		int[] glyphIdArray = data.readUnsignedShortArray(entryCount);
+        Map<Integer, Integer> tmpGlyphToChar = new HashMap<Integer, Integer>();
+        int[] glyphIdArray = data.readUnsignedShortArray(entryCount);
 		for (int i = 0; i < entryCount; i++)
 		{
-			glyphIdToCharacterCode[glyphIdArray[i]] = firstCode + i;
-			characterCodeToGlyphId.put((firstCode + i), glyphIdArray[i]);
+            tmpGlyphToChar.put(glyphIdArray[i], firstCode + i);
+            characterCodeToGlyphId.put((firstCode + i), glyphIdArray[i]);
 		}
-	}
+        glyphIdToCharacterCode = newGlyphIdToCharacterCode(
+            Collections.max(tmpGlyphToChar.keySet()) + 1);
+        for (Entry<Integer, Integer> entry : tmpGlyphToChar.entrySet())
+        {
+            // link the glyphId with the right character code
+            glyphIdToCharacterCode[entry.getKey()] = entry.getValue();
+        }
+    }
 
 	/**
 	 * Reads a format 4 subtable.

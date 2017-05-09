@@ -15,14 +15,38 @@ public final class PDDeviceRGB extends PDDeviceColorSpace {
      */
     public static final PDDeviceRGB INSTANCE = new PDDeviceRGB();
 
-    //    private final ColorSpace colorSpaceRGB = ColorSpace.getInstance(ColorSpace.CS_sRGB)
     private final PDColor initialColor = new PDColor(new float[]{0, 0, 0}, this);
 
-    private PDDeviceRGB() {
-        // there is a JVM bug which results in a CMMException which appears to be a race
-        // condition caused by lazy initialization of the color transform, so we perform
-        // an initial color conversion while we're still in a static context, see PDFBOX-2184
-//        colorSpaceRGB.toRGB(new float[]{0, 0, 0});TODO: PdfBox-Android
+//    private volatile ColorSpace awtColorSpace;
+
+    private PDDeviceRGB()
+    {
+    }
+
+    /**
+     * Lazy setting of the AWT color space due to JDK race condition.
+     */
+    private void init()
+    {
+        // no need to synchronize this check as it is atomic
+//        if (awtColorSpace != null)
+//        {
+//            return;
+//        }
+        synchronized (this)
+        {
+            // we might have been waiting for another thread, so check again
+//            if (awtColorSpace != null)
+//            {
+//                return;
+//            }
+//            awtColorSpace = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+
+            // there is a JVM bug which results in a CMMException which appears to be a race
+            // condition caused by lazy initialization of the color transform, so we perform
+            // an initial color conversion while we're still synchronized, see PDFBOX-2184
+//            awtColorSpace.toRGB(new float[] { 0, 0, 0, 0 });
+        }
     }
 
     @Override
@@ -53,6 +77,8 @@ public final class PDDeviceRGB extends PDDeviceColorSpace {
         if (value.length == 3) {
             return value;
         } else {
+//            init();
+//            return awtColorSpace.toRGB(value);
             return initialColor.getComponents();
         }
     }
@@ -60,7 +86,8 @@ public final class PDDeviceRGB extends PDDeviceColorSpace {
 //    @Override
 //    public BufferedImage toRGBImage(WritableRaster raster) throws IOException
 //    {
-//        ColorModel colorModel = new ComponentColorModel(colorSpaceRGB,
+//        inti();
+//        ColorModel colorModel = new ComponentColorModel(awtColorSpace,
 //                false, false, Transparency.OPAQUE, raster.getDataBuffer().getDataType());
 //
 //        return new BufferedImage(colorModel, raster, false, null);

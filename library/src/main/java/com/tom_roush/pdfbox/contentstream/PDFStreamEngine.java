@@ -679,8 +679,12 @@ public abstract class PDFStreamEngine
 
 			// process the decoded glyph
 			saveGraphicsState();
-			showGlyph(textRenderingMatrix, font, code, unicode, w);
-			restoreGraphicsState();
+            Matrix textMatrixOld = textMatrix;
+            Matrix textLineMatrixOld = textLineMatrix;
+            showGlyph(textRenderingMatrix, font, code, unicode, w);
+            textMatrix = textMatrixOld;
+            textLineMatrix = textLineMatrixOld;
+            restoreGraphicsState();
 
 			// calculate the combined displacements
 			float tx, ty;

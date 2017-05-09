@@ -3,6 +3,7 @@ package com.tom_roush.pdfbox.rendering;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
@@ -11,7 +12,6 @@ import android.graphics.Region;
 import android.util.Log;
 
 import com.tom_roush.pdfbox.contentstream.PDFGraphicsStreamEngine;
-import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType0;
@@ -21,6 +21,7 @@ import com.tom_roush.pdfbox.pdmodel.font.PDTrueTypeFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType0Font;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1CFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
+import com.tom_roush.pdfbox.pdmodel.graphics.PDLineDashPattern;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
@@ -187,7 +188,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //        graphics = oldGraphics;
 //        linePath = oldLinePath;
 //        lastClip = oldLastClip;
-//    }
+//    } TODO: PdfBox-Android
 
     /**
      * Returns an AWT paint for the given PDColor.
@@ -233,7 +234,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //					shadingPattern.getMatrix()));
 //            }
 //        }
-//    }
+//    } TODO: PdfBox-Android
 
     // returns an integer for color that Android understands from the PDColor
 	// TODO: alpha?
@@ -270,18 +271,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public void endText() throws IOException
     {
         endTextClip();
-    }
-
-    @Override
-    public void showTextString(byte[] string) throws IOException
-    {
-        super.showTextString(string);
-    }
-
-    @Override
-    public void showTextStrings(COSArray array) throws IOException
-    {
-        super.showTextStrings(array);
     }
 
     /**
@@ -492,19 +481,25 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //        {
 //            throw new IOException("Invalid soft mask subtype.");
 //        }
-//    }
+//    } TODO: PdfBox-Android
 
 //    private Paint applySoftMaskToPaint(Paint parentPaint, PDSoftMask softMask) throws IOException
 //    {
-//        if (softMask != null) 
+//        if (softMask != null)
 //        {
+//            //TODO PDFBOX-2934
+//            if (COSName.ALPHA.equals(softMask.getSubType()))
+//            {
+//                Log.i("PdfBox-Android", "alpha smask not implemented yet, is ignored");
+//                return parentPaint;
+//            }
 //            return new SoftMaskPaint(parentPaint, createSoftMaskRaster(softMask));
 //        }
-//        else 
+//        else
 //        {
 //            return parentPaint;
 //        }
-//    }
+//    } TODO: PdfBox-Android
 
     // returns the stroking AWT Paint
 //    private Paint getStrokingPaint() throws IOException
@@ -512,7 +507,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //        return applySoftMaskToPaint(
 //                getPaint(getGraphicsState().getStrokingColor()),
 //                getGraphicsState().getSoftMask());
-//    }
+//    } TODO: PdfBox-Android
 
     private int getStrokingColor() throws IOException {
         return getColor(getGraphicsState().getStrokingColor());
@@ -522,7 +517,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //    private Paint getNonStrokingPaint() throws IOException
 //    {
 //        return getPaint(getGraphicsState().getNonStrokingColor());
-//    }
+//    } TODO: PdfBox-Android
     
     private int getNonStrokingColor() throws IOException {
         return getColor(getGraphicsState().getNonStrokingColor());
@@ -542,31 +537,34 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             lineWidth = 0.25f;
         }
 
-//        PDLineDashPattern dashPattern = state.getLineDashPattern();
-//        int phaseStart = dashPattern.getPhase();
-//        float[] dashArray = dashPattern.getDashArray();
-//        if (dashArray != null)
-//        {
-//        	// apply the CTM
-//        	for (int i = 0; i < dashArray.length; ++i)
-//        	{
-//        		// minimum line dash width avoids JVM crash, see PDFBOX-2373
-//        		dashArray[i] = Math.max(transformWidth(dashArray[i]), 0.016f);
-//        	}
-//        	phaseStart = (int)transformWidth(phaseStart);
-//
-//        	// empty dash array is illegal
-//        	if (dashArray.length == 0)
-//        	{
-//        		dashArray = null;
-//        	}
-//        }
-//        return new BasicStroke(lineWidth, state.getLineCap(), state.getLineJoin(),
-//        		state.getMiterLimit(), dashArray, phaseStart);
+        PDLineDashPattern dashPattern = state.getLineDashPattern();
+        int phaseStart = dashPattern.getPhase();
+        float[] dashArray = dashPattern.getDashArray();
+        if (dashArray != null)
+        {
+            // apply the CTM
+            for (int i = 0; i < dashArray.length; ++i)
+            {
+                // minimum line dash width avoids JVM crash, see PDFBOX-2373
+                float w = transformWidth(dashArray[i]);
+                if (w != 0)
+                {
+                    dashArray[i] = Math.max(w, 0.016f);
+                }
+            }
+            phaseStart = (int) transformWidth(phaseStart);
+
+            // empty dash array is illegal
+            if (dashArray.length == 0)
+            {
+                dashArray = null;
+            }
+        }
 
         paint.setStrokeWidth(lineWidth);
         paint.setStrokeCap(state.getLineCap());
         paint.setStrokeJoin(state.getLineJoin());
+        paint.setPathEffect(new DashPathEffect(dashArray, phaseStart));
     }
 
     @Override
@@ -675,7 +673,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //                   ys[0] == ys[1] || ys[0] == ys[3];
 //        }
 //        return false;
-//    }
+//    } TODO: PdfBox-Android
 
     /**
      * Fills and then strokes the path.
@@ -898,7 +896,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //        private final int minX;
 //        private final int minY;
 //        private final int width;
-//        private final int height;
+//        private final int height; TODO: PdfBox-Android
 
         /**
          * Creates a buffered image for a transparency group result.

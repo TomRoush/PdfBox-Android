@@ -1,7 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.graphics;
 
-import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -10,6 +8,8 @@ import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDFontFactory;
+
+import java.io.IOException;
 
 /**
  * This class represents a font setting used for the graphics state.  A font setting is a font and a
@@ -44,6 +44,7 @@ public class PDFontSetting implements COSObjectable
     /**
      * {@inheritDoc}
      */
+    @Override
     public COSBase getCOSObject()
     {
         return fontSetting;
@@ -59,7 +60,7 @@ public class PDFontSetting implements COSObjectable
     public PDFont getFont() throws IOException
     {
         PDFont retval = null;
-        COSBase font = fontSetting.get( 0 );
+        COSBase font = fontSetting.getObject(0);
         if( font instanceof COSDictionary )
         {
             retval = PDFontFactory.createFont( (COSDictionary)font );

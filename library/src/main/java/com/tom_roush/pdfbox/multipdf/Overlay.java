@@ -1,15 +1,5 @@
 package com.tom_roush.pdfbox.multipdf;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -20,9 +10,18 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
-import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Adds an overlay to an existing PDF document.
@@ -262,10 +261,10 @@ public class Overlay
 		List<COSStream> contentStreams = createContentStreamList(contents);
 		// concatenate streams
 		COSStream concatStream = new COSStream();
-		OutputStream out = concatStream.createUnfilteredStream();
-		for (COSStream contentStream : contentStreams)
-		{
-			InputStream in = contentStream.getUnfilteredStream();
+        OutputStream out = concatStream.createOutputStream(COSName.FLATE_DECODE);
+        for (COSStream contentStream : contentStreams)
+        {
+            InputStream in = contentStream.getUnfilteredStream();
 			byte[] buf = new byte[2048];
 			int n;
 			while ((n = in.read(buf)) > 0)
@@ -275,7 +274,6 @@ public class Overlay
 			out.flush();
 		}
 		out.close();
-		concatStream.setFilters(COSName.FLATE_DECODE);
 		return concatStream;
 	}
 
@@ -401,10 +399,10 @@ public class Overlay
 
 	private COSName createOverlayXObject(PDPage page, LayoutPage layoutPage, COSStream contentStream)
 	{
-		PDFormXObject xobjForm = new PDFormXObject(new PDStream(contentStream));
-		xobjForm.setResources(new PDResources(layoutPage.overlayResources));
-		xobjForm.setFormType(1);
-		xobjForm.setBBox( layoutPage.overlayMediaBox.createRetranslatedRectangle());
+        PDFormXObject xobjForm = new PDFormXObject(contentStream);
+        xobjForm.setResources(new PDResources(layoutPage.overlayResources));
+        xobjForm.setFormType(1);
+        xobjForm.setBBox( layoutPage.overlayMediaBox.createRetranslatedRectangle());
 		xobjForm.setMatrix(new AffineTransform());
 		PDResources resources = page.getResources();
 		return resources.add(xobjForm, "OL");
@@ -448,11 +446,10 @@ public class Overlay
 	private COSStream createStream(String content) throws IOException
 	{
 		COSStream stream = new COSStream();
-		OutputStream out = stream.createUnfilteredStream();
-		out.write(content.getBytes("ISO-8859-1"));
-		out.close();
-		stream.setFilters(COSName.FLATE_DECODE);
-		return stream;
+        OutputStream out = stream.createOutputStream(COSName.FLATE_DECODE);
+        out.write(content.getBytes("ISO-8859-1"));
+        out.close();
+        return stream;
 	}
 
 	/**

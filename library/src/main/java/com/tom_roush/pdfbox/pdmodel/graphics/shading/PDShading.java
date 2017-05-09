@@ -317,8 +317,8 @@ public abstract class PDShading implements COSObjectable
     /**
      * Provide the function(s) of the shading dictionary as array.
      *
-     * @return an array containing the function(s)
-     * @throws IOException if something went wrong
+     * @return an array containing the function(s).
+     * @throws IOException if we were unable to create a function.
      */
     private PDFunction[] getFunctionsArray() throws IOException
     {
@@ -330,7 +330,7 @@ public abstract class PDShading implements COSObjectable
                 functionArray = new PDFunction[1];
                 functionArray[0] = PDFunction.create(functionObject);
             }
-            else
+            else if (functionObject instanceof COSArray)
             {
                 COSArray functionCOSArray = (COSArray) functionObject;
                 int numberOfFunctions = functionCOSArray.size();
@@ -339,6 +339,11 @@ public abstract class PDShading implements COSObjectable
                 {
                     functionArray[i] = PDFunction.create(functionCOSArray.get(i));
                 }
+            }
+            else
+            {
+                throw new IOException(
+                    "mandatory /Function element must be a dictionary or an array");
             }
         }
         return functionArray;

@@ -221,8 +221,8 @@ public abstract class PDSimpleFont extends PDFont
 			}
 			else
 			{
-				// unless we can prove that the font is symbolic, we assume that it is not
-				isSymbolic = true;
+                // unless we can prove that the font is non-symbolic, we assume that it is not
+                isSymbolic = true;
 			}
 		}
 		return isSymbolic;

@@ -8,6 +8,8 @@ import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 /**
  * An image in a PDF document.
@@ -34,10 +36,33 @@ public interface PDImage extends COSObjectable
 //    BufferedImage getStencilImage(Paint paint) throws IOException;TODO: PdfBox-Android
 
     /**
-     * Returns a stream containing this image's data.
-     * @throws IOException if the
+     * Returns a stream containing this image's data. Null for inline images.
+     * @throws IOException if the stream could not be read.
      */
     PDStream getStream() throws IOException;
+
+    /**
+     * Returns an InputStream containing the image data, irrespective of whether this is an
+     * inline image or an image XObject.
+     *
+     * @return Decoded stream\
+     * @throws IOException if the data could not be read.
+     */
+    InputStream createInputStream() throws IOException;
+
+    /**
+     * Returns an InputStream containing the image data, irrespective of whether this is an
+     * inline image or an image XObject. The given filters will not be decoded.
+     *
+     * @return Decoded stream
+     * @throws IOException if the data could not be read.
+     */
+    InputStream createInputStream(List<String> stopFilters) throws IOException;
+
+    /**
+     * Returns true if the image has no data.
+     */
+    boolean isEmpty();
 
     /**
      * Returns true if the image is a stencil mask.

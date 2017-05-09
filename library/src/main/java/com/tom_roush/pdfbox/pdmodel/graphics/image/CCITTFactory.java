@@ -116,9 +116,9 @@ public final class CCITTFactory
         {
             return null;
         }
-        ByteArrayInputStream filteredByteStream = new ByteArrayInputStream(bos.toByteArray());
-        PDImageXObject pdImage = new PDImageXObject(document, 
-                filteredByteStream, 
+        ByteArrayInputStream encodedByteStream = new ByteArrayInputStream(bos.toByteArray());
+        PDImageXObject pdImage = new PDImageXObject(document,
+            encodedByteStream,
                 COSName.CCITTFAX_DECODE, 
                 decodeParms.getInt(COSName.COLUMNS), 
                 decodeParms.getInt(COSName.ROWS),

@@ -394,8 +394,16 @@ public abstract class SecurityHandler
 		decryptDictionary(stream, objNum, genNum);
 		byte[] encrypted = IOUtils.toByteArray(stream.getFilteredStream());
 		ByteArrayInputStream encryptedStream = new ByteArrayInputStream(encrypted);
-		encryptData(objNum, genNum, encryptedStream, stream.createFilteredStream(), true /* decrypt */);
-	}
+        OutputStream output = stream.createRawOutputStream();
+        try
+        {
+            encryptData(objNum, genNum, encryptedStream, output, true /* decrypt */);
+        }
+        finally
+        {
+            output.close();
+        }
+    }
 
 	/**
 	 * This will encrypt a stream, but not the dictionary as the dictionary is
@@ -410,10 +418,18 @@ public abstract class SecurityHandler
 	 */
 	public void encryptStream(COSStream stream, long objNum, int genNum) throws IOException
 	{
-		byte[] rawData = IOUtils.toByteArray(stream.getFilteredStream());
-		ByteArrayInputStream encryptedStream = new ByteArrayInputStream(rawData);
-		encryptData(objNum, genNum, encryptedStream, stream.createFilteredStream(), false /* encrypt */);
-	}
+        byte[] rawData = IOUtils.toByteArray(stream.createRawInputStream());
+        ByteArrayInputStream encryptedStream = new ByteArrayInputStream(rawData);
+        OutputStream output = stream.createRawOutputStream();
+        try
+        {
+            encryptData(objNum, genNum, encryptedStream, output, false /* encrypt */);
+        }
+        finally
+        {
+            output.close();
+        }
+    }
 
 	/**
 	 * This will decrypt a dictionary.

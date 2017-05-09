@@ -476,10 +476,10 @@ class AppearanceGeneratorHelper
 	 */
 	private void writeToStream(byte[] data, PDAppearanceStream appearanceStream) throws IOException
 	{
-		OutputStream out = appearanceStream.getCOSStream().createUnfilteredStream();
-		out.write(data);
-		out.flush();
-	}
+        OutputStream out = appearanceStream.getCOSStream().createOutputStream();
+        out.write(data);
+        out.close();
+    }
 
 	/**
 	 * My "not so great" method for calculating the fontsize. It does not work superb, but it

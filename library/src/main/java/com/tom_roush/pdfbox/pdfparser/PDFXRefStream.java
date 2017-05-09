@@ -1,5 +1,14 @@
 package com.tom_roush.pdfbox.pdfparser;
 
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSInteger;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSObject;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.pdfwriter.COSWriterXRefEntry;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.LinkedList;
@@ -9,15 +18,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-
-import com.tom_roush.pdfbox.cos.COSArray;
-import com.tom_roush.pdfbox.cos.COSBase;
-import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.cos.COSInteger;
-import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.cos.COSObject;
-import com.tom_roush.pdfbox.cos.COSStream;
-import com.tom_roush.pdfbox.pdfwriter.COSWriterXRefEntry;
 
 /**
  * @author Alexander Funk
@@ -44,7 +44,7 @@ public class PDFXRefStream implements PDFXRef
      */
     public PDFXRefStream()
     {
-        this.stream = new COSStream(new COSDictionary());
+        this.stream = new COSStream();
         streamData = new TreeMap<Long, Object>();
         objectNumbers = new TreeSet<Long>();
     }
@@ -62,36 +62,36 @@ public class PDFXRefStream implements PDFXRef
             throw new IllegalArgumentException("size is not set in xrefstream");
         }
         stream.setLong(COSName.SIZE, getSizeEntry());
-        stream.setFilters(COSName.FLATE_DECODE);
 
+        List<Long> indexEntry = getIndexEntry();
+        COSArray indexAsArray = new COSArray();
+        for (Long i : indexEntry)
         {
-            List<Long> indexEntry = getIndexEntry();
-            COSArray indexAsArray = new COSArray();
-            for ( Long i : indexEntry )
-            {
-                indexAsArray.add(COSInteger.get(i));
-            }
-            stream.setItem(COSName.INDEX, indexAsArray);
+            indexAsArray.add(COSInteger.get(i));
         }
+        stream.setItem(COSName.INDEX, indexAsArray);
+
+        int[] wEntry = getWEntry();
+        COSArray wAsArray = new COSArray();
+        for (int i = 0; i < wEntry.length; i++)
         {
-            int[] wEntry = getWEntry();
-            COSArray wAsArray = new COSArray();
-            for ( int i = 0; i < wEntry.length; i++ )
-            {
-                int j = wEntry[i];
-                wAsArray.add(COSInteger.get(j));
-            }
-            stream.setItem(COSName.W, wAsArray);
-            OutputStream unfilteredStream = stream.createUnfilteredStream();
-            writeStreamData(unfilteredStream, wEntry);
+            int j = wEntry[i];
+            wAsArray.add(COSInteger.get(j));
         }
-        Set<COSName> keySet = stream.keySet();
+        stream.setItem(COSName.W, wAsArray);
+
+        OutputStream outputStream = this.stream.createOutputStream(COSName.FLATE_DECODE);
+        writeStreamData(outputStream, wEntry);
+        outputStream.flush();
+        outputStream.close();
+
+        Set<COSName> keySet = this.stream.keySet();
         for ( COSName cosName : keySet )
         {
-            COSBase dictionaryObject = stream.getDictionaryObject(cosName);
+            COSBase dictionaryObject = this.stream.getDictionaryObject(cosName);
             dictionaryObject.setDirect(true);
         }
-        return stream;
+        return this.stream;
     }
 
     /**
@@ -283,8 +283,6 @@ public class PDFXRefStream implements PDFXRef
                 throw new RuntimeException("unexpected reference type");
             }
         }
-        os.flush();
-        os.close();
     }
 
     /**

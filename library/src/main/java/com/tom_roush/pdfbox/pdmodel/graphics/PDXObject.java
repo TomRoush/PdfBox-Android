@@ -53,11 +53,11 @@ public class PDXObject implements COSObjectable
         if (COSName.FORM.getName().equals(subtype))
         {
             ResourceCache cache = resources != null ? resources.getResourceCache() : null;
-            return new PDFormXObject(new PDStream(stream), cache);
+            return new PDFormXObject(stream, cache);
         }
         else if (COSName.PS.getName().equals(subtype))
         {
-            return new PDPostScriptXObject(new PDStream(stream));
+            return new PDPostScriptXObject(stream);
         }
         else
         {
@@ -67,6 +67,20 @@ public class PDXObject implements COSObjectable
 
     /**
      * Creates a new XObject from the given stream and subtype.
+     *
+     * @param stream The stream to read.
+     */
+    protected PDXObject(COSStream stream, COSName subtype)
+    {
+        this.stream = new PDStream(stream);
+        // could be used for writing:
+        stream.setName(COSName.TYPE, COSName.XOBJECT.getName());
+        stream.setName(COSName.SUBTYPE, subtype.getName());
+    }
+
+    /**
+     * Creates a new XObject from the given stream and subtype.
+     *
      * @param stream The stream to read.
      */
     protected PDXObject(PDStream stream, COSName subtype)
@@ -111,8 +125,20 @@ public class PDXObject implements COSObjectable
     /**
      * Returns the stream.
      * @return The stream for this object.
+     * @deprecated Use {@link #getStream()} instead.
      */
+    @Deprecated
     public final PDStream getPDStream()
+    {
+        return stream;
+    }
+
+    /**
+     * Returns the stream.
+     *
+     * @return The stream for this object.
+     */
+    public final PDStream getStream()
     {
         return stream;
     }

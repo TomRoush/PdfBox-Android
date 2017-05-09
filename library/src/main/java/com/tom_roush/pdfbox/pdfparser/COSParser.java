@@ -676,6 +676,27 @@ public class COSParser extends BaseParser
 					+ objKey.getNumber() + ":" + objKey.getGeneration());
 			}
 
+            // maybe something is wrong with the xref table -> perform brute force search for all objects
+            if (offsetOrObjstmObNr == null && isLenient && bfSearchCOSObjectKeyOffsets == null)
+            {
+                bfSearchForObjects();
+                if (bfSearchCOSObjectKeyOffsets != null && !bfSearchCOSObjectKeyOffsets.isEmpty())
+                {
+                    Log.d("PdfBox-Android",
+                        "Add all new read objects from brute force search to the xref table");
+                    Map<COSObjectKey, Long> xrefOffset = xrefTrailerResolver.getXrefTable();
+                    for (COSObjectKey key : bfSearchCOSObjectKeyOffsets.keySet())
+                    {
+                        // add all missing objects to the xref table
+                        if (!xrefOffset.containsKey(key))
+                        {
+                            xrefOffset.put(key, bfSearchCOSObjectKeyOffsets.get(key));
+                        }
+                    }
+                    offsetOrObjstmObNr = xrefOffset.get(objKey);
+                }
+            }
+
 			if (offsetOrObjstmObNr == null)
 			{
 				// not defined object -> NULL object (Spec. 1.7, chap. 3.2.9)
@@ -871,73 +892,89 @@ public class COSParser extends BaseParser
 	 */
 	protected COSStream parseCOSStream(COSDictionary dic) throws IOException
 	{
-		final COSStream stream = document.createCOSStream(dic);
-		OutputStream out = null;
-		try
-		{
-			// read 'stream'; this was already tested in parseObjectsDynamically()
-			readString();
-			skipWhiteSpace();
+        COSStream stream = document.createCOSStream(dic);
 
-			/*
-			 * This needs to be dic.getItem because when we are parsing, the underlying object might still be null.
-			 */
-            COSNumber streamLengthObj = getLength(dic.getItem(COSName.LENGTH),
-                dic.getCOSName(COSName.TYPE));
-            if (streamLengthObj == null)
+        // read 'stream'; this was already tested in parseObjectsDynamically()
+        readString();
+
+        skipWhiteSpace();
+
+        /*
+         * This needs to be dic.getItem because when we are parsing, the underlying object might still be null.
+         */
+        COSNumber streamLengthObj = getLength(dic.getItem(COSName.LENGTH),
+            dic.getCOSName(COSName.TYPE));
+        if (streamLengthObj == null)
+        {
+            if (isLenient)
             {
-                if (isLenient)
+                Log.w("PdfBox-Android", "The stream doesn't provide any stream length," +
+                    " using fallback readUntilEnd, at offset " + source.getPosition());
+            }
+            else
+            {
+                throw new IOException("Missing length for stream.");
+            }
+        }
+
+        // get output stream to copy data to
+        if (streamLengthObj != null && validateStreamLength(streamLengthObj.longValue()))
+        {
+            OutputStream out = stream.createRawOutputStream();
+            try
+            {
+                readValidStream(out, streamLengthObj);
+            }
+            finally
+            {
+                out.close();
+                // restore original (possibly incorrect) length
+                stream.setItem(COSName.LENGTH, streamLengthObj);
+            }
+        }
+        else
+        {
+            OutputStream out = stream.createRawOutputStream();
+            try
+            {
+                readUntilEndStream(new EndstreamOutputStream(out));
+            }
+            finally
+            {
+                out.close();
+                // restore original (possibly incorrect) length
+                if (streamLengthObj != null)
                 {
-					Log.w("PdfBox-Android", "The stream doesn't provide any stream length, using fallback readUntilEnd, at offset "
-                        + source.getPosition());
+                    stream.setItem(COSName.LENGTH, streamLengthObj);
                 }
                 else
                 {
-					throw new IOException("Missing length for stream.");
-				}
-			}
-
-			// get output stream to copy data to
-			if (streamLengthObj != null && validateStreamLength(streamLengthObj.longValue()))
-			{
-				out = stream.createFilteredStream(streamLengthObj);
-				readValidStream(out, streamLengthObj);
-			}
-			else
-			{
-				out = stream.createFilteredStream();
-				readUntilEndStream(new EndstreamOutputStream(out));
-			}
-			String endStream = readString();
-			if (endStream.equals(ENDOBJ_STRING) && isLenient)
-			{
-				Log.w("PdfBox-Android", "stream ends with 'endobj' instead of 'endstream' at offset "
-                    + source.getPosition());
-                // avoid follow-up warning about missing endobj
-                source.rewind(ENDOBJ.length);
+                    stream.removeItem(COSName.LENGTH);
+                }
             }
-            else if (endStream.length() > 9 && isLenient &&
-                endStream.substring(0, 9).equals(ENDSTREAM_STRING))
-            {
-				Log.w("PdfBox-Android", "stream ends with '" + endStream + "' instead of 'endstream' at offset "
-                    + source.getPosition());
-                // unread the "extra" bytes
-                source.rewind(endStream.substring(9).getBytes(ISO_8859_1).length);
-            }
-            else if (!endStream.equals(ENDSTREAM_STRING))
-            {
-				throw new IOException(
-						"Error reading stream, expected='endstream' actual='"
-                            + endStream + "' at offset " + source.getPosition());
-            }
-        }
-        finally
-		{
-			if (out != null)
-			{
-				out.close();
-			}
 		}
+        String endStream = readString();
+        if (endStream.equals("endobj") && isLenient)
+        {
+            Log.w("PdfBox-Android", "stream ends with 'endobj' instead of 'endstream' at offset " +
+                source.getPosition());
+            // avoid follow-up warning about missing endobj
+            source.rewind(ENDOBJ.length);
+        }
+        else if (endStream.length() > 9 && isLenient && endStream.substring(0, 9).equals(
+            ENDSTREAM_STRING))
+        {
+            Log.w("PdfBox-Android", "stream ends with '" + endStream +
+                "' instead of 'endstream' at offset " + source.getPosition());
+            // unread the "extra" bytes
+            source.rewind(endStream.substring(9).getBytes(ISO_8859_1).length);
+        }
+        else if (!endStream.equals(ENDSTREAM_STRING))
+        {
+            throw new IOException("Error reading stream, expected='endstream' actual='" +
+                endStream + "' at offset " + source.getPosition());
+        }
+
 		return stream;
 	}
 

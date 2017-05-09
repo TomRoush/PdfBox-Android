@@ -6,11 +6,12 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
-import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,15 +95,16 @@ class PDFCloneUtility
           else if( base instanceof COSStream )
           {
               COSStream originalStream = (COSStream)base;
-              PDStream stream = new PDStream( destination, originalStream.getFilteredStream(), true );
-              clonedVersion.put( base, stream.getStream() );
+              COSStream stream = destination.getDocument().createCOSStream();
+              OutputStream output = stream.createOutputStream(originalStream.getFilters());
+              IOUtils.copy(originalStream.createInputStream(), output);
+              output.close();
+              clonedVersion.put(base, stream);
               for( Map.Entry<COSName, COSBase> entry :  originalStream.entrySet() )
               {
-                  stream.getStream().setItem(
-                          entry.getKey(),
-                          cloneForNewDocument(entry.getValue()));
+                  stream.setItem(entry.getKey(), cloneForNewDocument(entry.getValue()));
               }
-              retval = stream.getStream();
+              retval = stream;
           }
           else if( base instanceof COSDictionary )
           {
@@ -175,15 +177,16 @@ class PDFCloneUtility
           {
             // does that make sense???
               COSStream originalStream = (COSStream)base;
-              PDStream stream = new PDStream( destination, originalStream.getFilteredStream(), true );
-              clonedVersion.put( base, stream.getStream() );
+              COSStream stream = destination.getDocument().createCOSStream();
+              OutputStream output = stream.createOutputStream(originalStream.getFilters());
+              IOUtils.copy(originalStream.createInputStream(), output);
+              output.close();
+              clonedVersion.put(base, stream);
               for( Map.Entry<COSName, COSBase> entry : originalStream.entrySet() )
               {
-                  stream.getStream().setItem(
-                          entry.getKey(),
-                          cloneForNewDocument(entry.getValue()));
+                  stream.setItem(entry.getKey(), cloneForNewDocument(entry.getValue()));
               }
-              retval = stream.getStream();
+              retval = stream;
           }
           else if( base instanceof COSDictionary )
           {

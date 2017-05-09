@@ -8,7 +8,6 @@ import android.util.Log;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.io.IOUtils;
-import com.tom_roush.pdfbox.pdmodel.common.PDMemoryStream;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,15 +83,7 @@ final class SampledImageReader
      */
     public static Bitmap getRGBImage(PDImage pdImage, COSArray colorKey) throws IOException
     {
-        if (pdImage.getStream() instanceof PDMemoryStream)
-        {
-            // for inline images
-            if (pdImage.getStream().getLength() == 0)
-            {
-                throw new IOException("Image stream is empty");
-            }
-        }
-        else if (pdImage.getStream().getStream().getFilteredLength() == 0)
+        if (pdImage.isEmpty())
         {
             throw new IOException("Image stream is empty");
         }
@@ -149,7 +140,7 @@ final class SampledImageReader
 //        try
 //        {
 //            // create stream
-//            iis = pdImage.getStream().createInputStream();
+//            iis = pdImage.createInputStream();
 //            final boolean isIndexed = colorSpace instanceof PDIndexed;
 //
 //            int rowLen = width / 8;
@@ -218,7 +209,7 @@ final class SampledImageReader
     private static Bitmap from8bit(PDImage pdImage, Bitmap raster)
             throws IOException
     {
-        InputStream input = pdImage.getStream().createInputStream();
+        InputStream input = pdImage.createInputStream();
         try
         {
             // get the raster's underlying byte buffer
@@ -276,7 +267,7 @@ final class SampledImageReader
 //        try
 //        {
 //            // create stream
-//            iis = new MemoryCacheImageInputStream(pdImage.getStream().createInputStream());
+//            iis = new MemoryCacheImageInputStream(pdImage.createInputStream());
 //            final float sampleMax = (float)Math.pow(2, bitsPerComponent) - 1f;
 //            final boolean isIndexed = colorSpace instanceof PDIndexed;
 //

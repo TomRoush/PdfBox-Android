@@ -19,6 +19,9 @@ import java.io.OutputStream;
  */
 public abstract class Filter
 {
+    /**
+     * Constructor.
+     */
     protected Filter()
     {
     }

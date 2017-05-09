@@ -16,18 +16,18 @@
  */
 package com.tom_roush.fontbox.cff;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import android.graphics.Path;
+import android.graphics.PointF;
+import android.graphics.RectF;
+import android.util.Log;
 
 import com.tom_roush.fontbox.encoding.StandardEncoding;
 import com.tom_roush.fontbox.type1.Type1CharStringReader;
 import com.tom_roush.pdfbox.util.awt.AffineTransform;
 
-import android.graphics.Path;
-import android.graphics.PointF;
-import android.graphics.RectF;
-import android.util.Log;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class represents and renders a Type 1 CharString.
@@ -153,94 +153,135 @@ public class Type1CharString
 
 		if ("rmoveto".equals(name))
 		{
-			if (isFlex)
-			{
-				flexPoints.add(new PointF(numbers.get(0), numbers.get(1)));
-			}
-			else
-			{
-				rmoveTo(numbers.get(0), numbers.get(1));
-			}
-		}
+            if (numbers.size() >= 2)
+            {
+                if (isFlex)
+                {
+                    flexPoints.add(new PointF(numbers.get(0), numbers.get(1)));
+                }
+                else
+                {
+                    rmoveTo(numbers.get(0), numbers.get(1));
+                }
+            }
+        }
 		else if ("vmoveto".equals(name))
 		{
-			if (isFlex)
-			{
-				// not in the Type 1 spec, but exists in some fonts
-				flexPoints.add(new PointF(0, numbers.get(0)));
-			}
-			else
-			{
-				rmoveTo(0, numbers.get(0));
-			}
-		}
+            if (numbers.size() >= 1)
+            {
+                if (isFlex)
+                {
+                    // not in the Type 1 spec, but exists in some fonts
+                    flexPoints.add(new PointF(0, numbers.get(0)));
+                }
+                else
+                {
+                    rmoveTo(0, numbers.get(0));
+                }
+            }
+        }
 		else if ("hmoveto".equals(name))
 		{
-			if (isFlex)
-			{
-				// not in the Type 1 spec, but exists in some fonts
-				flexPoints.add(new PointF(numbers.get(0), 0));
-			}
-			else
-			{
-				rmoveTo(numbers.get(0), 0);
-			}
-		}
+            if (numbers.size() >= 1)
+            {
+                if (isFlex)
+                {
+                    // not in the Type 1 spec, but exists in some fonts
+                    flexPoints.add(new PointF(numbers.get(0), 0));
+                }
+                else
+                {
+                    rmoveTo(numbers.get(0), 0);
+                }
+            }
+        }
 		else if ("rlineto".equals(name))
 		{
-			rlineTo(numbers.get(0), numbers.get(1));
-		}
+            if (numbers.size() >= 2)
+            {
+                rlineTo(numbers.get(0), numbers.get(1));
+            }
+        }
 		else if ("hlineto".equals(name))
 		{
-			rlineTo(numbers.get(0), 0);
-		}
+            if (numbers.size() >= 1)
+            {
+                rlineTo(numbers.get(0), 0);
+            }
+        }
 		else if ("vlineto".equals(name))
 		{
-			rlineTo(0, numbers.get(0));
-		}
+            if (numbers.size() >= 1)
+            {
+                rlineTo(0, numbers.get(0));
+            }
+        }
 		else if ("rrcurveto".equals(name))
 		{
-			rrcurveTo(numbers.get(0), numbers.get(1), numbers.get(2),
-					numbers.get(3), numbers.get(4), numbers.get(5));
-		}
+            if (numbers.size() >= 6)
+            {
+                rrcurveTo(numbers.get(0), numbers.get(1), numbers.get(2), numbers.get(3),
+                    numbers.get(4), numbers.get(5));
+            }
+        }
 		else if ("closepath".equals(name))
 		{
 			closepath();
 		}
 		else if ("sbw".equals(name))
 		{
-			leftSideBearing = new PointF(numbers.get(0), numbers.get(1));
-			width = numbers.get(2);
-			current.set(leftSideBearing);
-		}
+            if (numbers.size() >= 3)
+            {
+                leftSideBearing = new PointF(numbers.get(0), numbers.get(1));
+                width = numbers.get(2);
+                current.set(leftSideBearing);
+            }
+        }
 		else if ("hsbw".equals(name))
 		{
-			leftSideBearing = new PointF(numbers.get(0), 0);
-			width = numbers.get(1);
-			current.set(leftSideBearing);
-		}
+            if (numbers.size() >= 2)
+            {
+                leftSideBearing = new PointF(numbers.get(0), 0);
+                width = numbers.get(1);
+                current.set(leftSideBearing);
+            }
+        }
 		else if ("vhcurveto".equals(name))
 		{
-			rrcurveTo(0, numbers.get(0), numbers.get(1),
-					numbers.get(2), numbers.get(3), 0);
-		}
+            if (numbers.size() >= 4)
+            {
+                rrcurveTo(0, numbers.get(0), numbers.get(1), numbers.get(2), numbers.get(3), 0);
+            }
+        }
 		else if ("hvcurveto".equals(name))
 		{
-			rrcurveTo(numbers.get(0), 0, numbers.get(1),
-					numbers.get(2), 0, numbers.get(3));
-		}
+            if (numbers.size() >= 4)
+            {
+                rrcurveTo(numbers.get(0), 0, numbers.get(1), numbers.get(2), 0, numbers.get(3));
+            }
+        }
 		else if ("seac".equals(name))
 		{
-			seac(numbers.get(0), numbers.get(1), numbers.get(2), numbers.get(3), numbers.get(4));
-		}
+            if (numbers.size() >= 6)
+            {
+                seac(numbers.get(0), numbers.get(1), numbers.get(2), numbers.get(3),
+                    numbers.get(4));
+            }
+        }
 		else if ("setcurrentpoint".equals(name))
 		{
-			setcurrentpoint(numbers.get(0), numbers.get(1));
-		}
+            if (numbers.size() >= 2)
+            {
+                setcurrentpoint(numbers.get(0), numbers.get(1));
+            }
+        }
 		else if ("callothersubr".equals(name))
 		{
-			callothersubr(numbers.get(0));
-		}
+            if (numbers.size() >= 1)
+            {
+                callothersubr(numbers.get(0));
+            }
+        }
 		else if ("div".equals(name))
 		{
 			int b = numbers.get(numbers.size() -1);
@@ -263,7 +304,13 @@ public class Type1CharString
 		{
 			// end
 		}
-		else if (name != null)
+        else if ("return".equals(name))
+        {
+            // indicates an invalid charstring
+            Log.w("PdfBox-Android", "Unexpected charstring command: " + command.getKey() +
+                " in glyph " + glyphName + " of font " + fontName);
+        }
+        else if (name != null)
 		{
 			// indicates a PDFBox bug
 			throw new IllegalArgumentException("Unhandled command: " + name);
@@ -271,8 +318,9 @@ public class Type1CharString
 		else
 		{
 			// indicates an invalid charstring
-			Log.w("PdfBox-Android", "Unknown charstring command: " + command.getKey());
-		}
+            Log.w("PdfBox-Android", "Unknown charstring command: " + command.getKey() + " in glyph "
+                + glyphName + " of font " + fontName);
+        }
 		return null;
 	}
 

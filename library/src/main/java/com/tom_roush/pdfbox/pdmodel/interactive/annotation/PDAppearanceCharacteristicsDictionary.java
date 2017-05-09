@@ -6,7 +6,6 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
-import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
@@ -171,7 +170,7 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
         COSBase i = this.getCOSObject().getDictionaryObject("I");
         if (i instanceof COSStream)
         {
-            return new PDFormXObject(new PDStream((COSStream) i));
+            return new PDFormXObject((COSStream) i);
         }
         return null;
     }
@@ -186,7 +185,7 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
         COSBase i = this.getCOSObject().getDictionaryObject("RI");
         if (i instanceof COSStream)
         {
-            return new PDFormXObject(new PDStream((COSStream) i));
+            return new PDFormXObject((COSStream) i);
         }
         return null;
     }
@@ -201,7 +200,7 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
         COSBase i = this.getCOSObject().getDictionaryObject("IX");
         if (i instanceof COSStream)
         {
-            return new PDFormXObject(new PDStream((COSStream) i));
+            return new PDFormXObject((COSStream) i);
         }
         return null;
     }

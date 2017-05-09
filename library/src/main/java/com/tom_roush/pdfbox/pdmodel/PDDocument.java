@@ -14,8 +14,8 @@ import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.MemoryUsageSetting;
 import com.tom_roush.pdfbox.io.RandomAccessBuffer;
 import com.tom_roush.pdfbox.io.RandomAccessBufferedFileInputStream;
+import com.tom_roush.pdfbox.io.RandomAccessInputStream;
 import com.tom_roush.pdfbox.io.RandomAccessRead;
-import com.tom_roush.pdfbox.io.RandomAccessReadInputStream;
 import com.tom_roush.pdfbox.io.ScratchFile;
 import com.tom_roush.pdfbox.pdfparser.PDFParser;
 import com.tom_roush.pdfbox.pdfwriter.COSWriter;
@@ -38,7 +38,6 @@ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
 
-import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -546,8 +545,7 @@ public class PDDocument implements Closeable
             in = page.getContents();
             if (in != null)
             {
-                PDStream dest = new PDStream(document, page.getContents());
-                dest.addCompression();
+                PDStream dest = new PDStream(this, page.getContents(), COSName.FLATE_DECODE);
                 importedPage.setContents(dest);
 			}
 			addPage(importedPage);
@@ -1200,8 +1198,7 @@ public class PDDocument implements Closeable
 	 */
 	public void saveIncremental(OutputStream output) throws IOException
 	{
-        InputStream input = new BufferedInputStream(
-            new RandomAccessReadInputStream(pdfSource, 0, pdfSource.length()));
+        InputStream input = new RandomAccessInputStream(pdfSource);
         COSWriter writer = null;
         try
         {
@@ -1268,8 +1265,8 @@ public class PDDocument implements Closeable
     /**
      * Protects the document with a protection policy. The document content will be really
      * encrypted when it will be saved. This method only marks the document for encryption. It also
-     * calls {@link setAllSecurityToBeRemoved(false)} if it was set to true previously and logs a
-     * warning.
+     * calls {@link #setAllSecurityToBeRemoved(boolean)} with a false argument if it was set to true
+     * previously and logs a warning.
      *
      * @see com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy
      * @see com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyProtectionPolicy

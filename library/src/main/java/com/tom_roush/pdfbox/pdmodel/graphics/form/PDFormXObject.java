@@ -5,6 +5,7 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.ResourceCache;
@@ -55,7 +56,18 @@ public class PDFormXObject extends PDXObject implements PDContentStream
 	 * Creates a Form XObject for reading.
 	 * @param stream The XObject stream
 	 */
-    public PDFormXObject(PDStream stream, ResourceCache cache)
+    public PDFormXObject(COSStream stream)
+    {
+        super(stream, COSName.FORM);
+        cache = null;
+    }
+
+    /**
+     * Creates a Form XObject for reading.
+     *
+     * @param stream The XObject stream
+     */
+    public PDFormXObject(COSStream stream, ResourceCache cache)
     {
 		super(stream, COSName.FORM);
         this.cache = cache;

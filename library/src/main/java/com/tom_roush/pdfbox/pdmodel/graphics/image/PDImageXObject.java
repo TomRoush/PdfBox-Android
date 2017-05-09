@@ -7,9 +7,10 @@ import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSInputStream;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
-import com.tom_roush.pdfbox.filter.DecodeResult;
+import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDMetadata;
@@ -22,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.SoftReference;
 import java.util.List;
 
@@ -63,7 +65,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
     /**
      * Creates an Image XObject in the given document using the given filtered stream.
      * @param document the current document
-     * @param filteredStream a filtered stream of image data
+     * @param encodedStream an encoded stream of image data
      * @param cosFilter the filter or a COSArray of filters
      * @param width the image width
      * @param height the image height
@@ -71,11 +73,10 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * @param initColorSpace the color space
      * @throws IOException if there is an error creating the XObject.
      */
-    public PDImageXObject(PDDocument document, InputStream filteredStream, 
-    		COSBase cosFilter, int width, int height, int bitsPerComponent , 
-            PDColorSpace initColorSpace) throws IOException
+    public PDImageXObject(PDDocument document, InputStream encodedStream, COSBase cosFilter,
+        int width, int height, int bitsPerComponent, PDColorSpace initColorSpace) throws IOException
     {
-        super(new PDStream(document, filteredStream, true), COSName.IMAGE);
+        super(createRawStream(document, encodedStream), COSName.IMAGE);
         getCOSStream().setItem(COSName.FILTER, cosFilter);
         resources = null;
         colorSpace = null;
@@ -86,6 +87,29 @@ public final class PDImageXObject extends PDXObject implements PDImage
     }
 
     /**
+     * Creates a COS stream from raw (encoded) data.
+     */
+    private static COSStream createRawStream(PDDocument document, InputStream rawInput)
+        throws IOException
+    {
+        COSStream stream = document.getDocument().createCOSStream();
+        OutputStream output = null;
+        try
+        {
+            output = stream.createRawOutputStream();
+            IOUtils.copy(rawInput, output);
+        }
+        finally
+        {
+            if (output != null)
+            {
+                output.close();
+            }
+        }
+        return stream;
+    }
+
+    /**
      * Creates an Image XObject with the given stream as its contents and current color spaces.
      * @param stream the XObject stream to read
      * @param resources the current resources
@@ -93,7 +117,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
      */
     public PDImageXObject(PDStream stream, PDResources resources) throws IOException
     {
-        this(stream, resources, stream.getStream().getDecodeResult());
+        this(stream, resources, stream.createInputStream());
     }
 
     /**
@@ -152,18 +176,17 @@ public final class PDImageXObject extends PDXObject implements PDImage
     }
 
     // repairs parameters using decode result
-    private PDImageXObject(PDStream stream, PDResources resources,
-                           DecodeResult decodeResult)
+    private PDImageXObject(PDStream stream, PDResources resources, COSInputStream input)
     {
-        super(repair(stream, decodeResult), COSName.IMAGE);
+        super(repair(stream, input), COSName.IMAGE);
         this.resources = resources;
-//        this.colorSpace = decodeResult.getJPXColorSpace();TODO: PdfBox-Android
+//        this.colorSpace = input.getDecodeResult().getJPXColorSpace();TODO: PdfBox-Android
     }
 
     // repairs parameters using decode result
-    private static PDStream repair(PDStream stream, DecodeResult decodeResult)
+    private static PDStream repair(PDStream stream, COSInputStream input)
     {
-        stream.getStream().addAll(decodeResult.getParameters());
+        stream.getStream().addAll(input.getDecodeResult().getParameters());
         return stream;
     }
 
@@ -423,9 +446,21 @@ public final class PDImageXObject extends PDXObject implements PDImage
     }
 
     @Override
-    public PDStream getStream() throws IOException
+    public InputStream createInputStream() throws IOException
     {
-        return getPDStream();
+        return getStream().createInputStream();
+    }
+
+    @Override
+    public InputStream createInputStream(List<String> stopFilters) throws IOException
+    {
+        return createInputStream();
+    }
+
+    @Override
+    public boolean isEmpty()
+    {
+        return getStream().getStream().getLength() == 0;
     }
 
     @Override
@@ -506,7 +541,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
     @Override
     public String getSuffix()
     {
-        List<COSName> filters = getPDStream().getFilters();
+        List<COSName> filters = getStream().getFilters();
 
         if (filters == null)
         {

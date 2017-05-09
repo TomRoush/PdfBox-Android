@@ -1,5 +1,12 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSInteger;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -7,13 +14,6 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.tom_roush.pdfbox.cos.COSArray;
-import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.cos.COSInteger;
-import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.pdmodel.PDDocument;
-import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 /**
  * Embedded PDCIDFontType2 builder. Helper class to populate a PDCIDFontType2 and its parent
@@ -139,8 +139,7 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
         toUniWriter.writeTo(out);
         InputStream cMapStream = new ByteArrayInputStream(out.toByteArray());
 
-        PDStream stream = new PDStream(document, cMapStream, false);
-        stream.addCompression();
+        PDStream stream = new PDStream(document, cMapStream, COSName.FLATE_DECODE);
 
         // surrogate code points, requires PDF 1.5
         if (hasSurrogates)
@@ -220,9 +219,8 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
         }
 
         InputStream input = new ByteArrayInputStream(out.toByteArray());
-        PDStream stream = new PDStream(document, input, false);
-        stream.getStream().setInt(COSName.LENGTH1, stream.getByteArray().length);
-        stream.addCompression();
+        PDStream stream = new PDStream(document, input, COSName.FLATE_DECODE);
+        stream.getStream().setInt(COSName.LENGTH1, stream.toByteArray().length);
 
         cidFont.setItem(COSName.CID_TO_GID_MAP, stream);
     }
@@ -240,8 +238,7 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
     	}
 
     	InputStream input = new ByteArrayInputStream(bytes);
-    	PDStream stream = new PDStream(document, input);
-    	stream.addCompression();
+        PDStream stream = new PDStream(document, input, COSName.FLATE_DECODE);
 
     	fontDescriptor.setCIDSet(stream);
     }
