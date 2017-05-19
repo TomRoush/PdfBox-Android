@@ -85,7 +85,7 @@ public class ValidateXImage
 
     // write image twice (overlapped) in document, close document and re-read PDF
     static void doWritePDF(PDDocument document, PDImageXObject ximage, File testResultsDir, String filename)
-            throws IOException
+        throws IOException
     {
         File pdfFile = new File(testResultsDir, filename);
 

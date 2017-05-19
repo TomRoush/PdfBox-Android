@@ -23,6 +23,7 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
 import com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyProtectionPolicy;
 import com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyRecipient;
+import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -80,6 +81,7 @@ public class TestPublicKeyEncryption
         }
 
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
+        PDFBoxResourceLoader.init(testContext);
 
         permission1 = new AccessPermission();
         permission1.setCanAssembleDocument(false);

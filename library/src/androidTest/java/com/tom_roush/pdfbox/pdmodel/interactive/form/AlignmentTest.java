@@ -14,10 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
+import android.content.Context;
+import android.support.test.InstrumentationRegistry;
+
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import org.junit.After;
 import org.junit.Before;
@@ -26,16 +29,14 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 
-public class MultilineFieldsTest
+public class AlignmentTest
 {
-    private static final File OUT_DIR = new File("target/test-output");
-    private static final File IN_DIR = new File(
-        "src/test/resources/pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/form");
-    private static final String NAME_OF_PDF = "MultilineFields.pdf";
-    private static final String TEST_VALUE =
-        "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, " +
-            "sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam";
+    private static File OUT_DIR;
+    private static final String IN_DIR = "pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/form";
+    private static final String NAME_OF_PDF = "AlignmentTests.pdf";
+    private static final String TEST_VALUE = "sdfASDF1234äöü";
 
+    Context testContext;
 
     private PDDocument document;
     private PDAcroForm acroForm;
@@ -43,9 +44,11 @@ public class MultilineFieldsTest
     @Before
     public void setUp() throws IOException
     {
-        System.out.println("Working Directory = " + System.getProperty("user.dir"));
-        document = PDDocument.load(new File(IN_DIR, NAME_OF_PDF));
+        testContext = InstrumentationRegistry.getInstrumentation().getContext();
+        PDFBoxResourceLoader.init(testContext);
+        document = PDDocument.load(testContext.getAssets().open(IN_DIR + "/" + NAME_OF_PDF));
         acroForm = document.getDocumentCatalog().getAcroForm();
+        OUT_DIR = new File(android.os.Environment.getExternalStorageDirectory(), "Download/pdfbox-test-output");
         OUT_DIR.mkdirs();
     }
 
@@ -55,37 +58,55 @@ public class MultilineFieldsTest
         PDTextField field = (PDTextField) acroForm.getField("AlignLeft");
         field.setValue(TEST_VALUE);
 
-        field = (PDTextField) acroForm.getField("AlignMiddle");
-        field.setValue(TEST_VALUE);
-
-        field = (PDTextField) acroForm.getField("AlignRight");
-        field.setValue(TEST_VALUE);
-
         field = (PDTextField) acroForm.getField("AlignLeft-Border_Small");
-        field.setValue(TEST_VALUE);
-
-        field = (PDTextField) acroForm.getField("AlignMiddle-Border_Small");
-        field.setValue(TEST_VALUE);
-
-        field = (PDTextField) acroForm.getField("AlignRight-Border_Small");
         field.setValue(TEST_VALUE);
 
         field = (PDTextField) acroForm.getField("AlignLeft-Border_Medium");
         field.setValue(TEST_VALUE);
 
-        field = (PDTextField) acroForm.getField("AlignMiddle-Border_Medium");
-        field.setValue(TEST_VALUE);
-
-        field = (PDTextField) acroForm.getField("AlignRight-Border_Medium");
-        field.setValue(TEST_VALUE);
-
         field = (PDTextField) acroForm.getField("AlignLeft-Border_Wide");
+        field.setValue(TEST_VALUE);
+
+        field = (PDTextField) acroForm.getField("AlignLeft-Border_Wide_Clipped");
+        field.setValue(TEST_VALUE);
+
+        field = (PDTextField) acroForm.getField("AlignLeft-Border_Small_Outside");
+        field.setValue(TEST_VALUE);
+
+        field = (PDTextField) acroForm.getField("AlignMiddle");
+        field.setValue(TEST_VALUE);
+
+        field = (PDTextField) acroForm.getField("AlignMiddle-Border_Small");
+        field.setValue(TEST_VALUE);
+
+        field = (PDTextField) acroForm.getField("AlignMiddle-Border_Medium");
         field.setValue(TEST_VALUE);
 
         field = (PDTextField) acroForm.getField("AlignMiddle-Border_Wide");
         field.setValue(TEST_VALUE);
 
+        field = (PDTextField) acroForm.getField("AlignMiddle-Border_Wide_Clipped");
+        field.setValue(TEST_VALUE);
+
+        field = (PDTextField) acroForm.getField("AlignMiddle-Border_Medium_Outside");
+        field.setValue(TEST_VALUE);
+
+        field = (PDTextField) acroForm.getField("AlignRight");
+        field.setValue(TEST_VALUE);
+
+        field = (PDTextField) acroForm.getField("AlignRight-Border_Small");
+        field.setValue(TEST_VALUE);
+
+        field = (PDTextField) acroForm.getField("AlignRight-Border_Medium");
+        field.setValue(TEST_VALUE);
+
         field = (PDTextField) acroForm.getField("AlignRight-Border_Wide");
+        field.setValue(TEST_VALUE);
+
+        field = (PDTextField) acroForm.getField("AlignRight-Border_Wide_Clipped");
+        field.setValue(TEST_VALUE);
+
+        field = (PDTextField) acroForm.getField("AlignRight-Border_Wide_Outside");
         field.setValue(TEST_VALUE);
 
         // compare rendering
@@ -96,7 +117,7 @@ public class MultilineFieldsTest
 //        {
 //            // don't fail, rendering is different on different systems, result must be viewed manually
 //            System.err.println ("Rendering of " + file + " failed or is not identical to expected rendering in " + IN_DIR + " directory");
-//        } TODO: PdfBox-Android
+//        }
     }
 
     @After
