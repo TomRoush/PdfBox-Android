@@ -17,8 +17,8 @@ package com.tom_roush.pdfbox.filter;
 
 import android.util.Log;
 
-import com.tom_roush.javax.imageio.stream.MemoryCacheImageInputStream;
-import com.tom_roush.javax.imageio.stream.MemoryCacheImageOutputStream;
+import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageInputStream;
+import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageOutputStream;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 
@@ -219,7 +219,7 @@ public class LZWFilter extends Filter
 
         // must do or file will be empty :-(
         out.flush();
-//        out.close();
+        out.close();
     }
 
     /**
