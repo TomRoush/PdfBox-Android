@@ -17,7 +17,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
 import com.tom_roush.pdfbox.util.Matrix;
-import com.tom_roush.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 
 import java.io.IOException;
 import java.io.OutputStream;

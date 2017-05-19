@@ -33,7 +33,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.state.RenderingMode;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
-import com.tom_roush.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 
 import java.io.IOException;
 import java.util.HashMap;

@@ -19,7 +19,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.P
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDNamedDestination;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageXYZDestination;
-import com.tom_roush.pdfbox.util.awt.AWTColor;
+import com.tom_roush.harmony.awt.AWTColor;
 
 import java.io.IOException;
 

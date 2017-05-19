@@ -17,7 +17,7 @@ import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.StandardEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Type1Encoding;
 import com.tom_roush.pdfbox.util.Matrix;
-import com.tom_roush.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 
 import java.io.IOException;
 import java.io.InputStream;

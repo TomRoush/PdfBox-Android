@@ -22,8 +22,8 @@ import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import com.tom_roush.pdfbox.util.Charsets;
 import com.tom_roush.pdfbox.util.Matrix;
-import com.tom_roush.pdfbox.util.awt.AWTColor;
-import com.tom_roush.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.harmony.awt.AWTColor;
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 
 import java.io.Closeable;
 import java.io.IOException;

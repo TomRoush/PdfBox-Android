@@ -14,7 +14,7 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDBorderEffectDictionary;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
 import com.tom_roush.pdfbox.util.DateConverter;
-import com.tom_roush.pdfbox.util.awt.AWTColor;
+import com.tom_roush.harmony.awt.AWTColor;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;

@@ -22,7 +22,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
-import com.tom_roush.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 
 import java.io.IOException;
 import java.io.OutputStream;

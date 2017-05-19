@@ -27,7 +27,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
-import com.tom_roush.pdfbox.util.awt.AWTColor;
+import com.tom_roush.harmony.awt.AWTColor;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

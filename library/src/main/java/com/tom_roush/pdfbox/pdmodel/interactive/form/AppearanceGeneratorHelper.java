@@ -12,7 +12,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceEntry;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
-import com.tom_roush.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -23,7 +23,7 @@ import android.util.Log;
 
 import com.tom_roush.fontbox.encoding.StandardEncoding;
 import com.tom_roush.fontbox.type1.Type1CharStringReader;
-import com.tom_roush.pdfbox.util.awt.AffineTransform;
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 
 import java.io.IOException;
 import java.util.ArrayList;
