@@ -29,7 +29,6 @@ import java.util.TimeZone;
  */
 public class TestTTFParser extends TestCase
 {
-
     /**
      * Check whether the creation date is UTC
      *
@@ -52,5 +51,4 @@ public class TestTTFParser extends TestCase
         target.set(Calendar.MILLISECOND, 0);
         assertEquals(target, created);
     }
-
 }

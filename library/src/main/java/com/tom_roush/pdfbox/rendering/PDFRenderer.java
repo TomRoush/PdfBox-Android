@@ -42,6 +42,32 @@ public class PDFRenderer
 	{
 		return renderImage(pageIndex, 1, Bitmap.Config.ARGB_8888);
 	}
+
+    /**
+     * Returns the given page as an RGB image at the given DPI.
+     * @param pageIndex the zero-based index of the page to be converted
+     * @param dpi the DPI (dots per inch) to render at
+     * @return the rendered page image
+     * @throws IOException if the PDF cannot be read
+     */
+    public Bitmap renderImageWithDPI(int pageIndex, float dpi) throws IOException
+    {
+        return renderImage(pageIndex, dpi / 72f, Bitmap.Config.ARGB_8888);
+    }
+
+    /**
+     * Returns the given page as an RGB image at the given DPI.
+     * @param pageIndex the zero-based index of the page to be converted
+     * @param dpi the DPI (dots per inch) to render at
+     * @param imageType the type of image to return
+     * @return the rendered page image
+     * @throws IOException if the PDF cannot be read
+     */
+    public Bitmap renderImageWithDPI(int pageIndex, float dpi, Bitmap.Config imageType)
+        throws IOException
+    {
+        return renderImage(pageIndex, dpi / 72f, imageType);
+    }
 	
 	/**
 	 * Returns the given page as an RGB image at the given scale.

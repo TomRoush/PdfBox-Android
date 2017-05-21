@@ -95,5 +95,4 @@ public class EndstreamOutputStreamTest extends TestCase
         byte[] expectedResult5 = { 1, 2, 3, 4, '\r', '\n', 5, 6, 7, '\r', 8, 9, '\n', '\r'};
         Assert.assertArrayEquals(expectedResult5, baos.toByteArray());
     }
-
 }

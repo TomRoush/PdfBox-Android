@@ -27,7 +27,6 @@ import java.io.IOException;
  */
 public class TestRandomAccessBuffer extends TestCase
 {
-
 	private static final int CHUNK_SIZE = 1024;
 
     /**

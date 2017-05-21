@@ -31,7 +31,6 @@ import junit.framework.TestCase;
  */
 public class PageExtractorTest extends TestCase
 {
-
     public PageExtractorTest(String testName)
     {
         super(testName);

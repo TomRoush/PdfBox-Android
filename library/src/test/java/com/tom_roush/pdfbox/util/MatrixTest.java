@@ -27,7 +27,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class MatrixTest
 {
-
     /**
      * Test of PDFBOX-2872 bug
      */

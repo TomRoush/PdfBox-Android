@@ -27,7 +27,6 @@ import java.util.List;
  */
 public class TestQuickSort extends TestCase
 {
-
     <T extends Comparable<T>> void doTest(T[] input, T[] expected)
     {
         List<T> list = Arrays.asList(input);
@@ -43,7 +42,6 @@ public class TestQuickSort extends TestCase
      */
     public void testSort()
     {
-
         {
             Integer[] input = new Integer[] { 9, 8, 7, 6, 5, 4, 3, 2, 1 };
             Integer[] expected = new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -79,6 +77,5 @@ public class TestQuickSort extends TestCase
             Integer[] expected = new Integer[] { 5, 6 };
             doTest(input, expected);
         }
-
     }
 }

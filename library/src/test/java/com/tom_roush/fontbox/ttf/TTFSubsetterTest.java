@@ -83,5 +83,4 @@ public class TTFSubsetterTest
         ttfSubsetter.add('a');
         ttfSubsetter.writeToStream(new ByteArrayOutputStream());
     }
-
 }

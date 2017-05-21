@@ -51,5 +51,4 @@ public class TestMemoryTTFDataStream extends TestCase
             }
         }
     }
-
 }

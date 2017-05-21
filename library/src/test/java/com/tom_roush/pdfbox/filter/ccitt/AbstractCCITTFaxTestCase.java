@@ -26,7 +26,6 @@ import junit.framework.TestCase;
  */
 public abstract class AbstractCCITTFaxTestCase extends TestCase
 {
-
     /**
      * Visualizes a packed bitmap and dumps it on System.out.
      * @param data the bitmap
@@ -63,5 +62,4 @@ public abstract class AbstractCCITTFaxTestCase extends TestCase
     {
         return PackedBitArray.toBitString(data);
     }
-
 }

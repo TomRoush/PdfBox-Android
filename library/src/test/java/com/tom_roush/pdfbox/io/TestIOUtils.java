@@ -30,7 +30,6 @@ import java.io.InputStream;
  */
 public class TestIOUtils extends TestCase
 {
-
 	/**
 	 * Tests {@link IOUtils#populateBuffer(java.io.InputStream, byte[]).
 	 * @throws IOException if an I/O error occursn
@@ -55,5 +54,4 @@ public class TestIOUtils extends TestCase
 		assertEquals(12, count);
 		assertEquals(-1, in.read()); //EOD reached
 	}
-
 }

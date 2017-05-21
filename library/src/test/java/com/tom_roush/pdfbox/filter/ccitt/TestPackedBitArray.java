@@ -26,7 +26,6 @@ import junit.framework.TestCase;
  */
 public class TestPackedBitArray extends TestCase
 {
-
     /**
      * Tests the {@link PackedBitArray} class.
      */
@@ -77,5 +76,4 @@ public class TestPackedBitArray extends TestCase
             //good
         }
     }
-
 }

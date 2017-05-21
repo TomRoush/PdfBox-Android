@@ -31,7 +31,6 @@ import static org.junit.Assert.assertArrayEquals;
  */
 public class PDFStreamParserTest extends TestCase
 {
-
     /**
      * Tests for inline images, whether the EI is correctly identified as
      * ending. To test hasNoFollowingBinData(), the amount of data after EI nust
@@ -119,5 +118,4 @@ public class PDFStreamParserTest extends TestCase
         pdfStreamParser.parse();
         return pdfStreamParser.getTokens();
     }
-
 }

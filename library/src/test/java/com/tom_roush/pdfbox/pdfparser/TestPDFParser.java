@@ -38,7 +38,6 @@ import static org.junit.Assert.assertNotNull;
 
 public class TestPDFParser
 {
-
     private static final String PATH_OF_PDF = "/pdfbox/input/yaddatest.pdf";
     private static File tmpDirectory = new File(System.getProperty("java.io.tmpdir"));
 
@@ -135,5 +134,4 @@ public class TestPDFParser
         // number tmp file must be the same
         assertEquals(numberOfTmpFiles, getNumberOfTempFile());
     }
-
 }

@@ -715,20 +715,19 @@ public class AffineTransform implements Cloneable, Serializable
         android.graphics.Matrix retval = new android.graphics.Matrix();
         retval.setValues(new float[]{
             (float) m00, (float) m01, (float) m02,
-            (float) m10, (float) m11, (float) m12
+            (float) m10, (float) m11, (float) m12,
+            0.0f, 0.0f, 1.0f
         });
         return retval;
     }
 
     public class NoninvertibleTransformException extends java.lang.Exception
     {
-
         private static final long serialVersionUID = 6137225240503990466L;
 
         public NoninvertibleTransformException(String s)
         {
             super(s);
         }
-
     }
 }

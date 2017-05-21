@@ -30,7 +30,6 @@ import java.io.IOException;
  */
 public class TestCCITTFaxG31DDecodeInputStream extends AbstractCCITTFaxTestCase
 {
-
     private static final boolean DEBUG = false;
 
     private static final String EOL = "000000000001";
@@ -191,5 +190,4 @@ public class TestCCITTFaxG31DDecodeInputStream extends AbstractCCITTFaxTestCase
         }
         return baout.toByteArray();
     }
-
 }
