@@ -685,12 +685,15 @@ public class COSParser extends BaseParser
                     Log.d("PdfBox-Android",
                         "Add all new read objects from brute force search to the xref table");
                     Map<COSObjectKey, Long> xrefOffset = xrefTrailerResolver.getXrefTable();
-                    for (COSObjectKey key : bfSearchCOSObjectKeyOffsets.keySet())
+                    final Set<Map.Entry<COSObjectKey, Long>> entries = bfSearchCOSObjectKeyOffsets
+                        .entrySet();
+                    for (Entry<COSObjectKey, Long> entry : entries)
                     {
+                        COSObjectKey key = entry.getKey();
                         // add all missing objects to the xref table
                         if (!xrefOffset.containsKey(key))
                         {
-                            xrefOffset.put(key, bfSearchCOSObjectKeyOffsets.get(key));
+                            xrefOffset.put(key, entry.getValue());
                         }
                     }
                     offsetOrObjstmObNr = xrefOffset.get(objKey);
@@ -1611,17 +1614,17 @@ public class COSParser extends BaseParser
 		if (bfSearchCOSObjectKeyOffsets != null)
 		{
 			xrefTrailerResolver.nextXrefObj( 0, XRefType.TABLE );
-			for (COSObjectKey objectKey : bfSearchCOSObjectKeyOffsets.keySet())
-			{
-				xrefTrailerResolver.setXRef(objectKey, bfSearchCOSObjectKeyOffsets.get(objectKey));
-			}
-			xrefTrailerResolver.setStartxref(0);
+            for (Entry<COSObjectKey, Long> entry : bfSearchCOSObjectKeyOffsets.entrySet())
+            {
+                xrefTrailerResolver.setXRef(entry.getKey(), entry.getValue());
+            }
+            xrefTrailerResolver.setStartxref(0);
 			trailer = xrefTrailerResolver.getTrailer();
 			getDocument().setTrailer(trailer);
 			// search for the different parts of the trailer dictionary
-			for(COSObjectKey key : bfSearchCOSObjectKeyOffsets.keySet())
-			{
-				Long offset = bfSearchCOSObjectKeyOffsets.get(key);
+            for (Entry<COSObjectKey, Long> entry : bfSearchCOSObjectKeyOffsets.entrySet())
+            {
+                Long offset = entry.getValue();
                 source.seek(offset);
                 readObjectNumber();
                 readGenerationNumber();
@@ -1634,9 +1637,10 @@ public class COSParser extends BaseParser
 						// document catalog
 						if (COSName.CATALOG.equals(dictionary.getCOSName(COSName.TYPE)))
 						{
-							trailer.setItem(COSName.ROOT, document.getObjectFromPool(key));
-						}
-						// info dictionary
+                            trailer.setItem(COSName.ROOT,
+                                document.getObjectFromPool(entry.getKey()));
+                        }
+                        // info dictionary
 						else if (dictionary.containsKey(COSName.TITLE)
 								|| dictionary.containsKey(COSName.AUTHOR)
 								|| dictionary.containsKey(COSName.SUBJECT)
@@ -1645,15 +1649,17 @@ public class COSParser extends BaseParser
 								|| dictionary.containsKey(COSName.PRODUCER)
 								|| dictionary.containsKey(COSName.CREATION_DATE))
 						{
-							trailer.setItem(COSName.INFO, document.getObjectFromPool(key));
-						}
-						// TODO encryption dictionary
+                            trailer.setItem(COSName.INFO,
+                                document.getObjectFromPool(entry.getKey()));
+                        }
+                        // TODO encryption dictionary
 					}
 				}
 				catch(IOException exception)
 				{
-					Log.d("PdfBox-Android", "Skipped object "+key+", either it's corrupt or not a dictionary");
-				}
+                    Log.d("PdfBox-Android", "Skipped object " + entry.getKey() +
+                        ", either it's corrupt or not a dictionary");
+                }
 			}
 		}
 		return trailer;

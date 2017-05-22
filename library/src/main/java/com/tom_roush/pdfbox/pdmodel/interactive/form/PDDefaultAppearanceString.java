@@ -40,8 +40,13 @@ import java.util.List;
  *
  * Note: This class is not yet public, as its API is still unstable.
  */
-class PDAppearanceString
+class PDDefaultAppearanceString
 {
+    /**
+     * The default font size used by Acrobat.
+     */
+    private static final float DEFAULT_FONT_SIZE = 12;
+
     private final List<Object> tokens;
     private final PDResources defaultResources;
 
@@ -52,7 +57,8 @@ class PDAppearanceString
      * @param defaultAppearance DA entry
      * @throws IOException If the DA could not be parsed
      */
-    PDAppearanceString(COSString defaultAppearance, PDResources defaultResources) throws IOException
+    PDDefaultAppearanceString(COSString defaultAppearance, PDResources defaultResources)
+        throws IOException
     {
         if (defaultAppearance == null)
         {
@@ -89,7 +95,7 @@ class PDAppearanceString
         }
 
         // default font size is 12 in Acrobat
-        return 12;
+        return DEFAULT_FONT_SIZE;
     }
 
     /**

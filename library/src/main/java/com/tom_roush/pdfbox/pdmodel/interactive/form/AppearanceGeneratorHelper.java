@@ -7,11 +7,14 @@ import com.tom_roush.pdfbox.pdfwriter.ContentStreamWriter;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceCharacteristicsDictionary;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceEntry;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 
 import java.io.ByteArrayOutputStream;
@@ -31,7 +34,7 @@ class AppearanceGeneratorHelper
     private static final Operator EMC = Operator.getOperator("EMC");
 
 	private final PDVariableText field;
-    private final PDAppearanceString defaultAppearance;
+    private final PDDefaultAppearanceString defaultAppearance;
     private String value;
 
     /**
@@ -52,6 +55,11 @@ class AppearanceGeneratorHelper
      * The default font size used for multiline text
      */
     private static final float DEFAULT_FONT_SIZE = 12;
+
+    /**
+     * The default padding applied by Acrobat to the fields bbox.
+     */
+    private static final float DEFAULT_PADDING = 0.5f;
 
     /**
      * Constructs a COSAppearance from the given field.
@@ -105,9 +113,72 @@ class AppearanceGeneratorHelper
                     // TODO support appearances other than "normal"
                 }
 
+                /*
+                 * Adobe Acrobat always recreates the complete appearance stream if there is an appearance characteristics
+                 * entry (the widget dictionaries MK entry). In addition if there is no content yet also create the apperance
+                 * stream from the entries.
+                 *
+                 */
+                if (widget.getAppearanceCharacteristics() != null ||
+                    appearanceStream.getContentStream().getLength() == 0)
+                {
+                    initializeAppearanceContent(widget, appearanceStream);
+                }
+
                 setAppearanceContent(widget, appearanceStream);
             }
         }
+    }
+
+    /**
+     * Initialize the content of the appearance stream.
+     *
+     * Get settings like border style, border width and colors to be used to draw a rectangle and background color
+     * around the widget
+     *
+     * @param widget the field widget
+     * @param appearanceStream the appearance stream to be used
+     * @throws IOException in case we can't write to the appearance stream
+     */
+    private void initializeAppearanceContent(PDAnnotationWidget widget,
+        PDAppearanceStream appearanceStream) throws IOException
+    {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        PDPageContentStream contents = new PDPageContentStream(field.getAcroForm().getDocument(),
+            appearanceStream, output);
+        PDAppearanceCharacteristicsDictionary appearanceCharacteristics = widget
+            .getAppearanceCharacteristics();
+
+        // TODO: support more entries like patterns, background color etc.
+        if (appearanceCharacteristics != null)
+        {
+            float lineWidth = 0f;
+            PDColor borderColour = appearanceCharacteristics.getBorderColour();
+            if (borderColour != null)
+            {
+                contents.setNonStrokingColor(borderColour);
+                lineWidth = 1f;
+            }
+            PDBorderStyleDictionary borderStyle = widget.getBorderStyle();
+            if (borderStyle != null && borderStyle.getWidth() > 0)
+            {
+                lineWidth = borderStyle.getWidth();
+            }
+
+            if (lineWidth > 0)
+            {
+                contents.setLineWidth(lineWidth);
+                PDRectangle bbox = resolveBoundingBox(widget, appearanceStream);
+                PDRectangle clipRect = applyPadding(bbox, Math.max(DEFAULT_PADDING, lineWidth / 2));
+                contents.addRect(clipRect.getLowerLeftX(), clipRect.getLowerLeftY(),
+                    clipRect.getWidth(), clipRect.getHeight());
+                contents.closeAndStroke();
+            }
+        }
+
+        contents.close();
+        output.close();
+        writeToStream(output.toByteArray(), appearanceStream);
     }
 
     /**

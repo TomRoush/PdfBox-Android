@@ -107,7 +107,7 @@ public class COSStream extends COSDictionary implements Closeable
      *
      * @return the bytes of the physical (encoded) stream
      * @throws IOException when encoding causes an exception
-     * @deprecated Use {@link #createInputStream()} instead.
+     * @deprecated Use {@link #createRawInputStream()} instead.
      */
     @Deprecated
     public InputStream getFilteredStream() throws IOException
@@ -116,9 +116,9 @@ public class COSStream extends COSDictionary implements Closeable
     }
 
     /**
-     * Returns a new InputStream which reads the decoded stream data.
+     * Returns a new InputStream which reads the encoded PDF stream data. Experts only!
      *
-     * @return InputStream containing decoded stream data.
+     * @return InputStream containing raw, encoded PDF stream data.
      * @throws IOException If the stream could not be read.
      */
     public InputStream createRawInputStream() throws IOException
@@ -136,7 +136,7 @@ public class COSStream extends COSDictionary implements Closeable
      *
      * @return the bytes of the logical (decoded) stream
      * @throws IOException when decoding causes an exception
-     * @deprecated Use {@link #createRawInputStream()} instead.
+     * @deprecated Use {@link #createInputStream()} instead.
      */
     @Deprecated
     public InputStream getUnfilteredStream() throws IOException
@@ -145,9 +145,9 @@ public class COSStream extends COSDictionary implements Closeable
     }
 
     /**
-     * Returns a new InputStream which reads the encoded PDF stream data. Experts only!
+     * Returns a new InputStream which reads the decoded stream data.
      *
-     * @return InputStream containing raw, encoded PDF stream data.
+     * @return InputStream containing raw, decoded stream data.
      * @throws IOException If the stream could not be read.
      */
     public COSInputStream createInputStream() throws IOException
