@@ -1,8 +1,10 @@
 language: android
 android:
   components:
-    - platform-tools
     - tools
+    - tools
+    - platform-tools
+
     - build-tools-25.0.3
     - android-21
     - sys-img-armeabi-v7a-android-21
@@ -27,5 +29,7 @@ before_script:
   - echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a --sdcard 200M
   - emulator -avd test -no-audio -no-window &
   - android-wait-for-emulator
+  - adb shell input keyevent 82 &
 
-script: ./gradlew build test connectedCheck
+# travis_wait to allow for slow instrumentation tests
+script: travis_wait 60 ./gradlew build test connectedCheck
