@@ -41,7 +41,7 @@ public class TestEmbeddedFiles extends TestCase
         boolean ok = false;
         try
         {
-            PDDocument doc = PDDocument.load(TestEmbeddedFiles.class.getResourceAsStream(
+            PDDocument doc = PDDocument.load(getClass().getResourceAsStream(
                 "/pdfbox/com/tom_roush/pdfbox/pdmodel/common/null_PDComplexFileSpecification.pdf"));
 
             PDDocumentCatalog catalog = doc.getDocumentCatalog();
