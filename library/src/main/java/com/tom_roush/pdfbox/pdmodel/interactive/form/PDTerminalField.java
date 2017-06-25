@@ -216,7 +216,10 @@ public abstract class PDTerminalField extends PDField
      */
     protected final void applyChange() throws IOException
     {
-        constructAppearances();
+        if(!acroForm.getNeedAppearances())
+        {
+            constructAppearances();
+        }
     }
     // if we supported JavaScript we would raise a field changed event here
 

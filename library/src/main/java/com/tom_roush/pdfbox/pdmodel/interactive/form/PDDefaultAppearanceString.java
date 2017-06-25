@@ -26,7 +26,6 @@ import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -70,7 +69,6 @@ class PDDefaultAppearanceString
             throw new IllegalArgumentException("/DR is a required entry");
         }
 
-        ByteArrayInputStream stream = new ByteArrayInputStream(defaultAppearance.getBytes());
         PDFStreamParser parser = new PDFStreamParser(defaultAppearance.getBytes());
         parser.parse();
         tokens = parser.getTokens();
@@ -94,7 +92,6 @@ class PDDefaultAppearanceString
             }
         }
 
-        // default font size is 12 in Acrobat
         return DEFAULT_FONT_SIZE;
     }
 
