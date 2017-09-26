@@ -1,0 +1,576 @@
+diff --git a/library/src/main/java/com/tom_roush/pdfbox/pdfwriter/COSWriter.java b/library/src/main/java/com/tom_roush/pdfbox/pdfwriter/COSWriter.java
+index cd4c8a0..a4bc2b3 100644
+--- a/library/src/main/java/com/tom_roush/pdfbox/pdfwriter/COSWriter.java
++++ b/library/src/main/java/com/tom_roush/pdfbox/pdfwriter/COSWriter.java
+@@ -19,15 +19,18 @@ import com.tom_roush.pdfbox.cos.COSString;
+ import com.tom_roush.pdfbox.cos.COSUpdateInfo;
+ import com.tom_roush.pdfbox.cos.ICOSVisitor;
+ import com.tom_roush.pdfbox.io.IOUtils;
++import com.tom_roush.pdfbox.io.RandomAccessBuffer;
++import com.tom_roush.pdfbox.io.RandomAccessInputStream;
++import com.tom_roush.pdfbox.io.RandomAccessRead;
+ import com.tom_roush.pdfbox.pdfparser.PDFXRefStream;
+ import com.tom_roush.pdfbox.pdmodel.PDDocument;
+ import com.tom_roush.pdfbox.pdmodel.encryption.SecurityHandler;
+ import com.tom_roush.pdfbox.pdmodel.fdf.FDFDocument;
++import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.COSFilterInputStream;
+ import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
+ import com.tom_roush.pdfbox.util.Charsets;
+ import com.tom_roush.pdfbox.util.Hex;
+ 
+-import java.io.ByteArrayInputStream;
+ import java.io.ByteArrayOutputStream;
+ import java.io.Closeable;
+ import java.io.IOException;
+@@ -192,9 +195,11 @@ public class COSWriter implements ICOSVisitor, Closeable
+ 	private boolean reachedSignature = false;
+ 	private long signatureOffset, signatureLength;
+ 	private long byteRangeOffset, byteRangeLength;
+-	private InputStream incrementalInput;
+-	private OutputStream incrementalOutput;
++    private RandomAccessRead incrementalInput;
++    private RandomAccessRead tempIncInput;
++    private OutputStream incrementalOutput;
+ 	private SignatureInterface signatureInterface;
++    private byte[] incrementPart;
+ 
+ 	/**
+ 	 * COSWriter constructor comment.
+@@ -221,18 +226,37 @@ public class COSWriter implements ICOSVisitor, Closeable
+ 	public COSWriter(OutputStream outputStream, InputStream inputStream) throws IOException
+ 	{
+ 		super();
++        tempIncInput = new RandomAccessBuffer(inputStream);
++        initWriter(outputStream, tempIncInput);
++    }
+ 
+-		// write to buffer instead of output
+-		setOutput(new ByteArrayOutputStream());
+-		setStandardOutput(new COSStandardOutputStream(output, inputStream.available()));
++    /**
++     * COSWriter constructor for incremental updates.
++     *
++     * @param outputStream output stream where the new PDF data will be written
++     * @param inputData random access read containing source PDF data
++     * @throws IOException if something went wrong
++     */
++    public COSWriter(OutputStream outputStream, RandomAccessRead inputData) throws IOException
++    {
++        super();
++        initWriter(outputStream, inputData);
++    }
+ 
+-		incrementalInput = inputStream;
+-		incrementalOutput = outputStream;
+-		incrementalUpdate = true;
++    private void initWriter(OutputStream outputStream, RandomAccessRead inputData)
++        throws IOException
++    {
++        // write to buffer instead of output
++        setOutput(new ByteArrayOutputStream());
++        setStandardOutput(new COSStandardOutputStream(output, (int) inputData.length()));
+ 
+-		formatDecimal.setMaximumFractionDigits( 10 );
+-		formatDecimal.setGroupingUsed( false );
+-	}
++        incrementalInput = inputData;
++        incrementalOutput = outputStream;
++        incrementalUpdate = true;
++
++        formatDecimal.setMaximumFractionDigits(10);
++        formatDecimal.setGroupingUsed(false);
++    }
+ 
+ 	private void prepareIncrement(PDDocument doc)
+ 	{
+@@ -669,75 +693,122 @@ public class COSWriter implements ICOSVisitor, Closeable
+ 	 }
+ 
+ 	 private void doWriteSignature() throws IOException
+-	 {
+-		 if (signatureOffset == 0 || byteRangeOffset == 0)
+-		 {
+-			 return;
+-		 }
++     {
++         if (signatureOffset == 0 || byteRangeOffset == 0)
++         {
++             return;
++         }
+ 
+-		 // calculate the ByteRange values
+-		 long inLength = incrementalInput.available();
+-		 long beforeLength = signatureOffset;
+-		 long afterOffset = signatureOffset + signatureLength;
+-		 long afterLength = getStandardOutput().getPos() - (inLength + signatureLength) - (signatureOffset - inLength);
++         // calculate the ByteRange values
++         long inLength = incrementalInput.available();
++         long beforeLength = signatureOffset;
++         long afterOffset = signatureOffset + signatureLength;
++         long afterLength = getStandardOutput().getPos() - (inLength + signatureLength) -
++             (signatureOffset - inLength);
+ 
+-		 String byteRange = "0 " + beforeLength + " " + afterOffset + " " + afterLength + "]";
+-		 if (byteRangeLength - byteRange.length() < 0)
+-		 {
+-			 throw new IOException("Can't write new ByteRange, not enough space");
+-		 }
++         String byteRange = "0 " + beforeLength + " " + afterOffset + " " + afterLength + "]";
++         if (byteRangeLength - byteRange.length() < 0)
++         {
++             throw new IOException("Can't write new ByteRange, not enough space");
++         }
+ 
+-		 // copy the new incremental data into a buffer (e.g. signature dict, trailer)
+-		 ByteArrayOutputStream byteOut = (ByteArrayOutputStream) output;
+-		 byteOut.flush();
+-		 byte[] buffer = byteOut.toByteArray();
++         // copy the new incremental data into a buffer (e.g. signature dict, trailer)
++         ByteArrayOutputStream byteOut = (ByteArrayOutputStream) output;
++         byteOut.flush();
++         incrementPart = byteOut.toByteArray();
+ 
+-		 // overwrite the ByteRange in the buffer
+-		 byte[] byteRangeBytes = byteRange.getBytes();
+-		 for (int i = 0; i < byteRangeLength; i++)
+-		 {
+-			 if (i >= byteRangeBytes.length)
+-			 {
+-				 buffer[(int)(byteRangeOffset + i - inLength)] = 0x20; // SPACE
+-			 }
+-			 else
+-			 {
+-				 buffer[(int)(byteRangeOffset + i - inLength)] = byteRangeBytes[i];
+-			 }
+-		 }
++         // overwrite the ByteRange in the buffer
++         byte[] byteRangeBytes = byteRange.getBytes();
++         for (int i = 0; i < byteRangeLength; i++)
++         {
++             if (i >= byteRangeBytes.length)
++             {
++                 incrementPart[(int) (byteRangeOffset + i - inLength)] = 0x20; // SPACE
++             }
++             else
++             {
++                 incrementPart[(int) (byteRangeOffset + i - inLength)] = byteRangeBytes[i];
++             }
++         }
+ 
+-		 // get the input PDF bytes
+-		 byte[] inputBytes = IOUtils.toByteArray(incrementalInput);
++         if (signatureInterface != null)
++         {
++             // data to be signed
++             final InputStream dataToSign = getDataToSign();
++             // sign the bytes
++             byte[] signatureBytes = signatureInterface.sign(dataToSign);
++             writeExternalSignature(signatureBytes);
++         }
++         // else signature should created externally and set via writeSignature()
++     }
+ 
+-		 // get only the incremental bytes to be signed (includes /ByteRange but not /Contents)
+-		 byte[] signBuffer = new byte[buffer.length - (int)signatureLength];
+-		 int bufSignatureOffset = (int)(signatureOffset - inLength);
+-		 System.arraycopy(buffer, 0, signBuffer, 0, bufSignatureOffset);
+-		 System.arraycopy(buffer, bufSignatureOffset + (int)signatureLength,
+-				 signBuffer, bufSignatureOffset, buffer.length - bufSignatureOffset - (int)signatureLength);
++    /**
++     * Return the stream of PDF data to be signed. Clients should use this method only to create
++     * signatures externally. {@link #write(PDDocument)} method should have been called prior. The
++     * created signature should be set using {@link #writeExternalSignature(byte[])}.
++     * <p>
++     * When {@link SignatureInterface} instance is used, COSWriter obtains and writes the signature
++     * itsef.
++     * </p>
++     * Note that caller must close the obtained stream.
++     *
++     * @return data stream to be signed
++     * @throws IllegalStateException if PDF is not prepared for external signing
++     * @throws IOException if input data is closed
++     */
++    public InputStream getDataToSign() throws IOException
++    {
++        if (incrementPart == null || incrementalInput == null)
++        {
++            throw new IllegalStateException("PDF not prepared for signing");
++        }
++        // range of incremental bytes to be signed (includes /ByteRange but not /Contents)
++        int incPartSigOffset = (int) (signatureOffset - incrementalInput.length());
++        int afterSigOffset = incPartSigOffset + (int) signatureLength;
++        int[] range =
++        {
++            0, incPartSigOffset, afterSigOffset, incrementPart.length - afterSigOffset
++        };
+ 
+-		 SequenceInputStream signStream = new SequenceInputStream(new ByteArrayInputStream(inputBytes),
+-				 new ByteArrayInputStream(signBuffer));
++        return new SequenceInputStream(new RandomAccessInputStream(incrementalInput),
++            new COSFilterInputStream(incrementPart, range));
++    }
+ 
+-		 // sign the bytes
+-		 byte[] sign = signatureInterface.sign(signStream);
+-		 String signature = new COSString(sign).toHexString();
+-		 // substract 2 bytes because of the enclosing "<>"
+-		 if (signature.length() > signatureLength - 2)
+-		 {
+-			 throw new IOException("Can't write signature, not enough space");
+-		 }
++    /**
++     * Write externally created signature of PDF data obtained via {@link #getDataToSign()} method.
++     *
++     * @param cmsSignature CMS signature byte array
++     * @throws IllegalStateException if PDF is not prepared for external signing
++     * @throws IOException if source data stream is closed
++     */
++    public void writeExternalSignature(byte[] cmsSignature) throws IOException
++    {
++        if (incrementPart == null || incrementalInput == null)
++        {
++            throw new IllegalStateException("PDF not prepared for setting signature");
++        }
++        byte[] signatureBytes = Hex.getBytes(cmsSignature);
+ 
+-		 // overwrite the signature Contents in the buffer
+-		 byte[] signatureBytes = signature.getBytes();
+-		 System.arraycopy(signatureBytes, 0, buffer, bufSignatureOffset + 1, signatureBytes.length);
++        // substract 2 bytes because of the enclosing "<>"
++        if (signatureBytes.length > signatureLength - 2)
++        {
++            throw new IOException("Can't write signature, not enough space");
++        }
+ 
+-		 // write the data to the incremental output stream
+-		 incrementalOutput.write(inputBytes);
+-		 incrementalOutput.write(buffer);
+-	 }
++        // overwrite the signature Contents in the buffer
++        int incPartSigOffset = (int) (signatureOffset - incrementalInput.length());
++        System.arraycopy(signatureBytes, 0, incrementPart, incPartSigOffset + 1,
++            signatureBytes.length);
+ 
+-	 private void writeXrefRange(long x, long y) throws IOException
++        // write the data to the incremental output stream
++        IOUtils.copy(new RandomAccessInputStream(incrementalInput), incrementalOutput);
++        incrementalOutput.write(incrementPart);
++
++        // prevent further use
++        incrementPart = null;
++    }
++
++    private void writeXrefRange(long x, long y) throws IOException
+ 	 {
+          getStandardOutput().write(String.valueOf(x).getBytes(Charsets.ISO_8859_1));
+          getStandardOutput().write(SPACE);
+@@ -1163,9 +1234,10 @@ public class COSWriter implements ICOSVisitor, Closeable
+ 	 }
+ 
+ 	 /**
+-	  * This will write the pdf document.
+-	  *
+-	  * @param doc The document to write.
++      * This will write the pdf document. If signature should be created externally,
++      * {@link #writeExternalSignature(byte[])} should be invoked to set signature after calling this method.
++      *
++      * @param doc The document to write.
+ 	  *
+ 	  * @throws IOException If an error occurs while generating the data.
+ 	  */
+@@ -1175,12 +1247,14 @@ public class COSWriter implements ICOSVisitor, Closeable
+ 	 }
+ 
+ 	 /**
+-	  * This will write the pdf document.
+-	  *
+-	  * @param doc The document to write.
+-	  * @param signInterface class to be used for signing
+-	  *
+-	  * @throws IOException If an error occurs while generating the data.
++      * This will write the pdf document. If signature should be created externally,
++      * {@link #writeExternalSignature(byte[])} should be invoked to set signature after calling this method.
++      *
++      * @param doc The document to write.
++      * @param signInterface class to be used for signing {@code null} if external signing would be performed
++      * or there will be no signing at all
++      *
++      * @throws IOException If an error occurs while generating the data.
+ 	  * @throws IllegalStateException If the document has an encryption dictionary but no protection
+ 	  * policy.
+ 	  */
+diff --git a/library/src/main/java/com/tom_roush/pdfbox/pdmodel/PDDocument.java b/library/src/main/java/com/tom_roush/pdfbox/pdmodel/PDDocument.java
+index 2132e4a..51b2d36 100644
+--- a/library/src/main/java/com/tom_roush/pdfbox/pdmodel/PDDocument.java
++++ b/library/src/main/java/com/tom_roush/pdfbox/pdmodel/PDDocument.java
+@@ -31,9 +31,11 @@ import com.tom_roush.pdfbox.pdmodel.font.PDFont;
+ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
+ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
++import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.ExternalSigningSupport;
+ import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
+ import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
+ import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
++import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.SigningSupport;
+ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
+ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
+ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
+@@ -86,6 +88,9 @@ public class PDDocument implements Closeable
+ 	// Signature interface
+ 	private SignatureInterface signInterface;
+ 
++    // helper class used to create external signature
++    private SigningSupport signingSupport;
++
+     // document-wide cached resources
+     private ResourceCache resourceCache = new DefaultResourceCache();
+ 
+@@ -188,8 +193,35 @@ public class PDDocument implements Closeable
+ 		getPages().add(page);
+ 	}
+ 
+-	/**
+-	 * Add a signature.
++    /**
++     * Add parameters of signature to be created externally using default signature options. See
++     * {@link #saveIncrementalForExternalSigning(OutputStream)} method description on external
++     * signature creation scenario details.
++     *
++     * @param sigObject is the PDSignatureField model
++     * @throws IOException if there is an error creating required fields
++     */
++    public void addSignature(PDSignature sigObject) throws IOException
++    {
++        addSignature(sigObject, new SignatureOptions());
++    }
++
++    /**
++     * Add parameters of signature to be created externally. See
++     * {@link #saveIncrementalForExternalSigning(OutputStream)} method description on external
++     * signature creation scenario details.
++     *
++     * @param sigObject is the PDSignatureField model
++     * @param options signature options
++     * @throws IOException if there is an error creating required fields
++     */
++    public void addSignature(PDSignature sigObject, SignatureOptions options) throws IOException
++    {
++        addSignature(sigObject, null, options);
++    }
++
++    /**
++     * Add a signature to be created using the instance of given interface.
+ 	 *
+ 	 * @param sigObject is the PDSignatureField model
+ 	 * @param signatureInterface is a interface which provides signing capabilities
+@@ -1215,6 +1247,52 @@ public class PDDocument implements Closeable
+ 		}
+ 	}
+ 
++    /**
++     * Save PDF incrementally without closing for external signature creation scenario. The general
++     * sequence is:
++     * <pre>
++     *    PDDocument pdDocument = ...;
++     *    OutputStream outputStream = ...;
++     *    SignatureOptions signatureOptions = ...; // options to specify fine tuned signature options or null for defaults
++     *    PDSignature pdSignature = ...;
++     *
++     *    // add signature parameters to be used when creating signature dictionary
++     *    pdDocument.addSignature(pdSignature, signatureOptions);
++     *    // prepare PDF for signing and obtain helper class to be used
++     *    ExternalSigningSupport externalSigningSupport = pdDocument.saveIncrementalForExternalSigning(outputStream);
++     *    // get data to be signed
++     *    InputStream dataToBeSigned = externalSigningSupport.getContent();
++     *    // invoke signature service
++     *    byte[] signature = sign(dataToBeSigned);
++     *    // set resulted CMS signature
++     *    externalSigningSupport.setSignature(signature);
++     *
++     *    // last step is to close the document
++     *    pdDocument.close();
++     * </pre>
++     * <p>
++     * Note that after calling this method, only {@code close()} method may invoked for
++     * {@code PDDocument} instance and only AFTER {@link ExternalSigningSupport} instance is used.
++     * </p>
++     *
++     * @param output stream to write final PDF
++     * @return instance to be used for external signing and setting CMS signature
++     * @throws IOException if the output could not be written
++     * @throws IllegalStateException if the document was not loaded from a file or a stream or
++     * signature optionss were not set.
++     */
++    public ExternalSigningSupport saveIncrementalForExternalSigning(OutputStream output) throws IOException
++    {
++        if (pdfSource == null)
++        {
++            throw new IllegalStateException("document was not loaded from a file or a stream");
++        }
++        COSWriter writer = new COSWriter(output, pdfSource);
++        writer.write(this);
++        signingSupport = new SigningSupport(writer);
++        return signingSupport;
++    }
++
+ 	/**
+ 	 * Returns the page at the given index.
+ 	 *
+@@ -1251,6 +1329,12 @@ public class PDDocument implements Closeable
+ 	{
+ 		if (!document.isClosed())
+ 		{
++            // close resources and COSWriter
++            if (signingSupport != null)
++            {
++                signingSupport.close();
++            }
++
+ 			// close all intermediate I/O streams
+ 			document.close();
+ 
+diff --git a/library/src/main/java/com/tom_roush/pdfbox/pdmodel/interactive/digitalsignature/ExternalSigningSupport.java b/library/src/main/java/com/tom_roush/pdfbox/pdmodel/interactive/digitalsignature/ExternalSigningSupport.java
+new file mode 100644
+index 0000000..cc4ae85
+--- /dev/null
++++ b/library/src/main/java/com/tom_roush/pdfbox/pdmodel/interactive/digitalsignature/ExternalSigningSupport.java
+@@ -0,0 +1,30 @@
++package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature;
++
++import java.io.IOException;
++import java.io.InputStream;
++
++/**
++ * Interface for external signature creation scenarios. It contains method for retrieving PDF data
++ * to be sign and setting created CMS signature to the PDF.
++ *
++ */
++public interface ExternalSigningSupport
++{
++	/**
++	 * Get PDF content to be signed. Obtained InputStream must be closed after use.
++	 *
++	 * @return content stream
++	 *
++	 * @throws java.io.IOException
++	 */
++	InputStream getContent() throws IOException;
++
++	/**
++	 * Set CMS signature bytes to PDF.
++	 *
++	 * @param signature CMS signature as byte array
++	 *
++	 * @throws IOException if exception occured during PDF writing
++	 */
++	void setSignature(byte[] signature) throws IOException;
++}
+diff --git a/library/src/main/java/com/tom_roush/pdfbox/pdmodel/interactive/digitalsignature/SigningSupport.java b/library/src/main/java/com/tom_roush/pdfbox/pdmodel/interactive/digitalsignature/SigningSupport.java
+new file mode 100644
+index 0000000..11cf25e
+--- /dev/null
++++ b/library/src/main/java/com/tom_roush/pdfbox/pdmodel/interactive/digitalsignature/SigningSupport.java
+@@ -0,0 +1,40 @@
++package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature;
++
++import com.tom_roush.pdfbox.pdfwriter.COSWriter;
++
++import java.io.Closeable;
++import java.io.IOException;
++import java.io.InputStream;
++
++/**
++ * Class to be used when creating PDF signatures externally. COSWriter is used to obtain data to be
++ * signed and set the resulted CMS signature.
++ */
++public class SigningSupport implements ExternalSigningSupport, Closeable {
++	private COSWriter cosWriter;
++
++	public SigningSupport(COSWriter cosWriter) {
++		this.cosWriter = cosWriter;
++	}
++
++	@Override
++	public InputStream getContent() throws IOException {
++		return cosWriter.getDataToSign();
++	}
++
++	@Override
++	public void setSignature(byte[] signature) throws IOException {
++		cosWriter.writeExternalSignature(signature);
++	}
++
++	@Override
++	public void close() throws IOException {
++		if(cosWriter != null) {
++			try {
++				cosWriter.close();
++			} finally {
++				cosWriter = null;
++			}
++		}
++	}
++}
+diff --git a/library/src/main/java/com/tom_roush/pdfbox/util/Hex.java b/library/src/main/java/com/tom_roush/pdfbox/util/Hex.java
+index f5e9a51..bd08322 100644
+--- a/library/src/main/java/com/tom_roush/pdfbox/util/Hex.java
++++ b/library/src/main/java/com/tom_roush/pdfbox/util/Hex.java
+@@ -7,6 +7,16 @@ package com.tom_roush.pdfbox.util;
+  */
+ public final class Hex
+ {
++    /**
++     * for hex conversion.
++     *
++     * https://stackoverflow.com/questions/2817752/java-code-to-convert-byte-to-hexadecimal
++     */
++    private static final byte[] HEX_BYTES = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A',
++        'B', 'C', 'D', 'E', 'F'};
++    private static final char[] HEX_CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A',
++        'B', 'C', 'D', 'E', 'F'};
++
+     private Hex() {}
+ 
+     /**
+@@ -24,4 +34,40 @@ public final class Hex
+     {
+         return getString(b).getBytes(Charsets.US_ASCII);
+     }
++
++    /**
++     * Returns the bytes corresponding to the ASCII hex encoding of the given bytes.
++     */
++    public static byte[] getBytes(byte[] bytes)
++    {
++        byte[] asciiBytes = new byte[bytes.length * 2];
++        for (int i = 0; i < bytes.length; i++)
++        {
++            asciiBytes[i * 2] = HEX_BYTES[getHighNibble(bytes[i])];
++            asciiBytes[i * 2 + 1] = HEX_BYTES[getLowNibble(bytes[i])];
++        }
++        return asciiBytes;
++    }
++
++    /**
++     * Get the high nibble of the given byte.
++     *
++     * @param b the given byte
++     * @return the high nibble
++     */
++    private static int getHighNibble(byte b)
++    {
++        return (b & 0xF0) >> 4;
++    }
++
++    /**
++     * Get the low nibble of the given byte.
++     *
++     * @param b the given byte
++     * @return the low nibble
++     */
++    private static int getLowNibble(byte b)
++    {
++        return b & 0x0F;
++    }
+ }
+\ No newline at end of file
