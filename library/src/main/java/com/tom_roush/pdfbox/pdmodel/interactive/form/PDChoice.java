@@ -174,7 +174,7 @@ public abstract class PDChoice extends PDVariableText
 	public List<String> getOptionsDisplayValues()
 	{
 		COSBase values = dictionary.getDictionaryObject(COSName.OPT);
-		return FieldUtils.getPairableItems(values, 0);
+		return FieldUtils.getPairableItems(values, 1);
 	}
 
 	/**
