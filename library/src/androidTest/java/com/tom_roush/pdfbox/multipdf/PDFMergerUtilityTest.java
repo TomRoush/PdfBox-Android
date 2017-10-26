@@ -155,11 +155,16 @@ public class PDFMergerUtilityTest
         assertEquals(bim1.getWidth(), bim2.getWidth());
         int w = bim1.getWidth();
         int h = bim1.getHeight();
+
+        int[] bim1Pixels = new int[w * h];
+        bim1.getPixels(bim1Pixels, 0, w, 0, 0, w, h);
+        int[] bim2Pixels = new int[w * h];
+        bim2.getPixels(bim2Pixels, 0, w, 0, 0, w, h);
         for (int i = 0; i < w; ++i)
         {
             for (int j = 0; j < h; ++j)
             {
-                assertEquals(bim1.getPixel(i, j), bim2.getPixel(i, j));
+                assertEquals(bim1Pixels[i + w * j], bim2Pixels[i + w * j]);
             }
         }
     }

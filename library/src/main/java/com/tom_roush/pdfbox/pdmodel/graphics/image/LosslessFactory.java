@@ -18,6 +18,8 @@ package com.tom_roush.pdfbox.pdmodel.graphics.image;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
+import com.tom_roush.harmony.awt.AWTColor;
+import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageOutputStream;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.filter.Filter;
@@ -27,7 +29,6 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
-import com.tom_roush.harmony.awt.AWTColor;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -62,44 +63,52 @@ public final class LosslessFactory
         int height = image.getHeight();
         int width = image.getWidth();
 
+        if (image.getConfig() == Bitmap.Config.ALPHA_8)
 //        if ((image.getType() == BufferedImage.TYPE_BYTE_GRAY && image.getColorModel().getPixelSize() <= 8)
 //                || (image.getType() == BufferedImage.TYPE_BYTE_BINARY && image.getColorModel().getPixelSize() == 1))
-//        {
-//            MemoryCacheImageOutputStream mcios = new MemoryCacheImageOutputStream(bos);
-//
-//            // grayscale images need one color per sample
+        {
+            MemoryCacheImageOutputStream mcios = new MemoryCacheImageOutputStream(bos);
+
+            // grayscale images need one color per sample
 //            bpc = image.getColorModel().getPixelSize();
-//            deviceColorSpace = PDDeviceGray.INSTANCE;
-//            for (int y = 0; y < height; ++y)
-//            {
-//                for (int x = 0; x < width; ++x)
-//                {
-//                    mcios.writeBits(image.getRGB(x, y) & 0xFF, bpc);
-//                }
-//                while (mcios.getBitOffset() != 0)
-//                {
-//                    mcios.writeBit(0);
-//                }
-//            }
-//            mcios.flush();
-//            mcios.close();
-//        }
-//        else
-//        {
-            // RGB
             bpc = 8;
-            deviceColorSpace = PDDeviceRGB.INSTANCE;
+            deviceColorSpace = PDDeviceGray.INSTANCE;
+
+            int[] imagePixels = new int[width * height];
+            image.getPixels(imagePixels, 0, width, 0, 0, width, height);
             for (int y = 0; y < height; ++y)
             {
                 for (int x = 0; x < width; ++x)
                 {
-                    AWTColor color = new AWTColor(image.getPixel(x, y));
-                    bos.write(color.getAlpha() == 0 ? 255 : color.getRed());
-                    bos.write(color.getAlpha() == 0 ? 255 : color.getGreen());
-                    bos.write(color.getAlpha() == 0 ? 255 : color.getBlue());
+                    mcios.writeBits(imagePixels[x + width * y] & 0xFF, bpc);
+                }
+                while (mcios.getBitOffset() != 0)
+                {
+                    mcios.writeBit(0);
                 }
             }
-//        } TODO: PdfBox-Android
+            mcios.flush();
+            mcios.close();
+        }
+        else
+        {
+            // RGB
+            bpc = 8;
+            deviceColorSpace = PDDeviceRGB.INSTANCE;
+
+            int[] imagePixels = new int[width * height];
+            image.getPixels(imagePixels, 0, width, 0, 0, width, height);
+            for (int y = 0; y < height; ++y)
+            {
+                for (int x = 0; x < width; ++x)
+                {
+                    AWTColor color = new AWTColor(imagePixels[x + width * y]);
+                    bos.write(color.getAlpha() == 0 ? 0 : color.getRed());
+                    bos.write(color.getAlpha() == 0 ? 0 : color.getGreen());
+                    bos.write(color.getAlpha() == 0 ? 0 : color.getBlue());
+                }
+            }
+        }
 
         PDImageXObject pdImage = prepareImageXObject(document, bos.toByteArray(), 
                 image.getWidth(), image.getHeight(), bpc, deviceColorSpace);
@@ -150,14 +159,7 @@ public final class LosslessFactory
 //                alphaRaster.getSampleModel().getHeight(),
 //                (int[]) null);
         int[] pixels = new int[image.getHeight() * image.getWidth()];
-        
-//        image.getPixels(pixels, 0, image.getWidth(), 0, 0, image.getHeight(), image.getWidth());
-        for(int y = 0; y < image.getHeight(); y++) {
-        	for(int x = 0; x < image.getWidth(); x++) {
-        		pixels[x + y * image.getWidth()] = image.getPixel(x, y);
-        	}
-        } 
-        
+        image.getPixels(pixels, 0, image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
         
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int bpc;

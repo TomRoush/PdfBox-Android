@@ -51,10 +51,10 @@ public final class JPEGFactory
 
 		// create Image XObject from stream
 		PDImageXObject pdImage = new PDImageXObject(document, byteStream,
-				COSName.DCT_DECODE, options.outWidth, options.outHeight,
-				8, //awtImage.getColorModel().getComponentSize(0),
-				PDDeviceRGB.INSTANCE //getColorSpaceFromAWT(awtImage));
-		);
+            COSName.DCT_DECODE, options.outWidth, options.outHeight,
+            8, //awtImage.getColorModel().getComponentSize(0),
+            PDDeviceRGB.INSTANCE //getColorSpaceFromAWT(awtImage)); // TODO: PdfBox-Android
+        );
 
 		return pdImage;
 	}

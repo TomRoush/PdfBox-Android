@@ -328,23 +328,31 @@ public final class PDImageXObject extends PDXObject implements PDImage
         	mask = Bitmap.createScaledBitmap(mask, width, height, true);
         }
 
+        int[] imagePixels = new int[width * height];
+        image.getPixels(imagePixels, 0, width, 0, 0, width, height);
+
+        int[] maskPixels = new int[width * height];
+        mask.getPixels(maskPixels, 0, width, 0, 0, width, height);
+
         int alphaPixel;
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
-                int color = image.getPixel(x, y);
+                int color = imagePixels[x + width * y];
                 
                 // Greyscale, any rgb component should do
-                alphaPixel = Color.red(mask.getPixel(x, y));
+                alphaPixel = Color.red(maskPixels[x + width * y]);
                 if (!isSoft)
                 {
                     alphaPixel = 255 - alphaPixel;
                 }
 
-                masked.setPixel(x, y, Color.argb(alphaPixel, Color.red(color), Color.green(color), Color.blue(color)));
+                maskPixels[x + width * y] = Color.argb(alphaPixel, Color.red(color),
+                    Color.green(color), Color.blue(color));
             }
         }
+        masked.setPixels(maskPixels, 0, width, 0, 0, width, height);
 
         return masked;
     }

@@ -230,16 +230,19 @@ final class SampledImageReader
                 }
             }
             */
+            int[] rasterPixels = new int[width * height];
+            raster.getPixels(rasterPixels, 0, width, 0, 0, width, height);
             for(int y = 0; y < height; y++) {
             	for(int x = 0; x < width; x++) {
             		if(numComponents == 1) {
             			int in = input.read();
-            			raster.setPixel(x, y, Color.argb(255, in, in, in));
+            			rasterPixels[x + width * y] = Color.argb(255, in, in, in);
             		} else {
-            			raster.setPixel(x, y, Color.argb(255, input.read(), input.read(), input.read()));
+            			rasterPixels[x + width * y] = Color.argb(255, input.read(), input.read(), input.read());
             		}
             	}
             }
+            raster.setPixels(rasterPixels, 0, width, 0 ,0, width, height);
 
 //            // use the color space to convert the image to RGB
 //            return pdImage.getColorSpace().toRGBImage(raster);
