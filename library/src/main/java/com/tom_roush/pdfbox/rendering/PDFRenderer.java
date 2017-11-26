@@ -119,6 +119,8 @@ public class PDFRenderer
     public void renderPage(PDPage page, Paint paint, Canvas canvas, int width, int height, float scaleX,
                             float scaleY) throws IOException
     {
+        canvas.scale(scaleX, scaleY);
+
         PDRectangle cropBox = page.getCropBox();
         int rotationAngle = page.getRotation();
 
