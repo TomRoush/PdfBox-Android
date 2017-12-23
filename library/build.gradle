@@ -68,13 +68,13 @@ tasks.withType(Test) {
 }
 
 dependencies {
-    compile 'com.madgag.spongycastle:core:1.54.0.0'
+    compile 'com.madgag.spongycastle:core:1.58.0.0'
     compile 'com.madgag.spongycastle:pkix:1.54.0.0'
-    compile 'com.madgag.spongycastle:prov:1.54.0.0'
+    compile 'com.madgag.spongycastle:prov:1.58.0.0'
 
     // Test dependencies
     testCompile 'junit:junit:4.12'
-    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support.test:runner:1.0.1'
 }
 
 apply from: 'android-release-jar.gradle'
