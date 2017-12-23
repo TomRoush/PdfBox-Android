@@ -144,6 +144,8 @@ public class PDFRenderer
             canvas.translate(translateX, translateY);
             canvas.rotate((float) Math.toRadians(rotationAngle));
         }
+	    
+	canvas.scale(scaleX,scaleY);
 
         // the end-user may provide a custom PageDrawer
         PageDrawerParameters parameters = new PageDrawerParameters(this, page);
