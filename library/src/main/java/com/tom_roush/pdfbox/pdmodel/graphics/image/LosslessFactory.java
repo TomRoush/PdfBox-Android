@@ -114,7 +114,7 @@ public final class LosslessFactory
                 image.getWidth(), image.getHeight(), bpc, deviceColorSpace);
 
         // alpha -> soft mask
-        PDImage xAlpha = createAlphaFromARGBImage(document, image);
+        PDImage xAlpha = createAlphaFromARGBImage(document, image); // TODO: PdfBox-Android - simplify with extract alpha?
         if (xAlpha != null)
         {
             pdImage.getCOSStream().setItem(COSName.SMASK, xAlpha);
