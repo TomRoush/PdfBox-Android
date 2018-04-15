@@ -14,7 +14,7 @@ Add the following to dependency to `build.gradle`:
 
 ```gradle
 dependencies {
-    compile 'com.tom_roush:pdfbox-android:1.8.9.1'
+    compile 'com.tom_roush:pdfbox-android:1.8.10.0'
 }
 ```
 
@@ -29,10 +29,10 @@ An example app is located in the `sample` directory and includes examples of com
 Important notes
 ==============
 
--Currently based on PdfBox v1.8.9
+-Currently based on PdfBox v1.8.10
 
--This is still a work in progress
+-Requires API 19 or greater for full functionality
 
-Libraries
+Dependencies
 ==============
 PDFBox-Android depends on the following libraries: SpongyCastle core, prov, and pkix: https://github.com/rtyley/spongycastle/
