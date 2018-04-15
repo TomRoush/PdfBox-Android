@@ -24,7 +24,7 @@ android {
 }
 
 dependencies {
-    compile project(':library')
-//    compile 'com.tom_roush:pdfbox-android:1.8.9.1'
-    compile 'com.android.support:appcompat-v7:21.0.3'
+    implementation project(':library')
+//    implementation 'com.tom_roush:pdfbox-android:1.8.9.1'
+    implementation 'com.android.support:appcompat-v7:21.0.3'
 }

@@ -6,9 +6,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
+import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.filter.Filter;
+import com.tom_roush.pdfbox.filter.FilterFactory;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 
@@ -116,46 +120,117 @@ public final class JPEGFactory
     private static PDImageXObject createJPEG(PDDocument document, Bitmap image,
             float quality, int dpi) throws IOException
     {
-        Bitmap whiteImage = Bitmap.createBitmap(image.getWidth(), image.getHeight(),image.getConfig()); 
-        Bitmap alphaImage = getAlphaImage(image);
-
-        whiteImage.eraseColor(Color.WHITE);
-        Canvas canvas = new Canvas(whiteImage);
-        canvas.drawBitmap(image, 0f, 0f, null);
-        image.recycle();
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream(); 
-        whiteImage.compress(Bitmap.CompressFormat.JPEG, (int)(quality * 100), bos); 
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, (int)(quality * 100), bos);
         byte[] bitmapData = bos.toByteArray();
         ByteArrayInputStream byteStream = new ByteArrayInputStream(bitmapData);
 
         PDImageXObject pdImage = new PDImageXObject(document, byteStream, 
-                COSName.DCT_DECODE, whiteImage.getWidth(), whiteImage.getHeight(), 
+                COSName.DCT_DECODE, image.getWidth(), image.getHeight(),
                 8, 
                 PDDeviceRGB.INSTANCE 
         );
 
         // alpha -> soft mask
-        if (alphaImage != null)
+        if (image.hasAlpha())
         {
-            ByteArrayOutputStream aBos = new ByteArrayOutputStream(); 
-            // This is problematic at the moment as
-            // compress does not seem to support ALPHA_8 as returned by getAlphaImage()
-            boolean ok = alphaImage.compress(Bitmap.CompressFormat.JPEG, (int)(quality * 100), aBos); 
-            System.err.println("Compressing alpha image: " + String.valueOf(ok) + " " + alphaImage.getConfig().toString());
-            byte[] aBitmapData = aBos.toByteArray();
-            ByteArrayInputStream aByteStream = new ByteArrayInputStream(aBitmapData);
-
-            PDImageXObject xAlpha = new PDImageXObject(document, aByteStream, 
-                    COSName.DCT_DECODE, alphaImage.getWidth(), alphaImage.getHeight(), 
-                    8, 
-                    PDDeviceGray.INSTANCE 
-            );
+            PDImageXObject xAlpha = createAlphaFromARGBImage(document, image);
 
             pdImage.getCOSStream().setItem(COSName.SMASK, xAlpha);
         }
 	    return pdImage;
 	}
+
+	// createAlphaFromARGBImage and prepareImageXObject taken from LosslessFactory
+    /**
+     * Creates a grayscale Flate encoded PDImageXObject from the alpha channel
+     * of an image.
+     *
+     * @param document the document where the image will be created.
+     * @param image an ARGB image.
+     *
+     * @return the alpha channel of an image as a grayscale image.
+     *
+     * @throws IOException if something goes wrong
+     */
+    private static PDImageXObject createAlphaFromARGBImage(PDDocument document, Bitmap image)
+        throws IOException
+    {
+        // this implementation makes the assumption that the raster uses
+        // SinglePixelPackedSampleModel, i.e. the values can be used 1:1 for
+        // the stream.
+        // Sadly the type of the databuffer is TYPE_INT and not TYPE_BYTE.
+        if (!image.hasAlpha())
+        {
+            return null;
+        }
+
+        int[] pixels = new int[image.getHeight() * image.getWidth()];
+        image.getPixels(pixels, 0, image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        int bpc;
+//        if (image.getTransparency() == Transparency.BITMASK)
+//        {
+//            bpc = 1;
+//            MemoryCacheImageOutputStream mcios = new MemoryCacheImageOutputStream(bos);
+//            int width = alphaRaster.getSampleModel().getWidth();
+//            int p = 0;
+//            for (int pixel : pixels)
+//            {
+//                mcios.writeBit(pixel);
+//                ++p;
+//                if (p % width == 0)
+//                {
+//                    while (mcios.getBitOffset() != 0)
+//                    {
+//                        mcios.writeBit(0);
+//                    }
+//                }
+//            }
+//            mcios.flush();
+//            mcios.close();
+//        }
+//        else
+//        {
+        bpc = 8;
+        for (int pixel : pixels)
+        {
+            bos.write(Color.alpha(pixel));
+        }
+//        }
+
+        PDImageXObject pdImage = prepareImageXObject(document, bos.toByteArray(),
+            image.getWidth(), image.getHeight(), bpc, PDDeviceGray.INSTANCE);
+        return pdImage;
+    }
+
+    /**
+     * Create a PDImageXObject while making a decision whether not to
+     * compress, use Flate filter only, or Flate and LZW filters.
+     *
+     * @param document The document.
+     * @param byteArray array with data.
+     * @param width the image width
+     * @param height the image height
+     * @param bitsPerComponent the bits per component
+     * @param initColorSpace the color space
+     * @return the newly created PDImageXObject with the data compressed.
+     * @throws IOException
+     */
+    private static PDImageXObject prepareImageXObject(PDDocument document,
+        byte [] byteArray, int width, int height, int bitsPerComponent,
+        PDColorSpace initColorSpace) throws IOException
+    {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        Filter filter = FilterFactory.INSTANCE.getFilter(COSName.FLATE_DECODE);
+        filter.encode(new ByteArrayInputStream(byteArray), baos, new COSDictionary(), 0);
+
+        ByteArrayInputStream encodedByteStream = new ByteArrayInputStream(baos.toByteArray());
+        return new PDImageXObject(document, encodedByteStream, COSName.FLATE_DECODE, // TODO: PdfBox-Android should be DCT
+            width, height, bitsPerComponent, initColorSpace);
+    }
 
 //	private static void encodeImageToJPEGStream(BufferedImage image, float quality, int dpi,
 //			OutputStream out) throws IOException
