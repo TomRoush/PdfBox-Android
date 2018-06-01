@@ -520,7 +520,11 @@ public class PDFMergerUtility
 		List<PDField> srcFields = srcAcroForm.getFields();
 		if (srcFields != null)
 		{
-			List<COSDictionary> destFields = new ArrayList<COSDictionary>();
+			// keep fields from previous merged parts
+			COSArray destFields = (COSArray) destAcroForm.getCOSObject().getItem(COSName.FIELDS);
+			if ( destFields == null ) {
+				destFields = new COSArray();
+			}
 			// fixme: we're only iterating over the root fields, names of kids aren't being checked
 			for (PDField srcField : srcFields)
 			{
@@ -533,8 +537,7 @@ public class PDFMergerUtility
 				}
 				destFields.add(dstField);
 			}
-			destAcroForm.getCOSObject().setItem(COSName.FIELDS,
-				COSArrayList.converterToCOSArray(destFields));
+			destAcroForm.getCOSObject().setItem(COSName.FIELDS,destFields);
 		}
 	}
 
