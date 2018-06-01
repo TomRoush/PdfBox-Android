@@ -563,7 +563,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         paint.setStrokeWidth(lineWidth);
         paint.setStrokeCap(state.getLineCap());
         paint.setStrokeJoin(state.getLineJoin());
-        paint.setPathEffect(new DashPathEffect(dashArray, phaseStart));
+        if (dashArray != null)
+        {
+            paint.setPathEffect(new DashPathEffect(dashArray, phaseStart));
+        }
     }
 
     @Override
