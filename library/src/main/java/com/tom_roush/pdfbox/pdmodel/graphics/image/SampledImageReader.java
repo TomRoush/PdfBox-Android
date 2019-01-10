@@ -8,6 +8,7 @@ import android.util.Log;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,8 +90,8 @@ final class SampledImageReader
         }
 
         // get parameters, they must be valid or have been repaired
-//        final PDColorSpace colorSpace = pdImage.getColorSpace();
-//        final int numComponents = colorSpace.getNumberOfComponents();
+        final PDColorSpace colorSpace = pdImage.getColorSpace();
+        final int numComponents = colorSpace.getNumberOfComponents();
         final int width = pdImage.getWidth();
         final int height = pdImage.getHeight();
         final int bitsPerComponent = pdImage.getBitsPerComponent();
@@ -102,27 +103,28 @@ final class SampledImageReader
         // in depth to 8bpc as they will be drawn to TYPE_INT_RGB images anyway. All code
         // in PDColorSpace#toRGBImage expects and 8-bit range, i.e. 0-255.
         //
-        Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+//        Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
         // convert image, faster path for non-decoded, non-colormasked 8-bit images
         final float[] defaultDecode = pdImage.getColorSpace().getDefaultDecode(8);
-        if(pdImage.getSuffix().equals("jpg")) {
+        if (pdImage.getSuffix() != null && pdImage.getSuffix().equals("jpg"))
+        {
         	return BitmapFactory.decodeStream(pdImage.getStream().createInputStream());
         }
         else if (bitsPerComponent == 8 && Arrays.equals(decode, defaultDecode) && colorKey == null)
         {
-            return from8bit(pdImage, raster);
+            return from8bit(pdImage);
         }
         else if (bitsPerComponent == 1 && colorKey == null)
         {
 //            return from1Bit(pdImage, raster);
-            return from8bit(pdImage, raster);
+            return from8bit(pdImage);
         }
         else
         {
         	Log.e("PdfBox-Android", "Trying to create other-bit image not supported");
 //            return fromAny(pdImage, raster, colorKey);
-            return from8bit(pdImage, raster);
+            return from8bit(pdImage);
         }
     }
     
@@ -206,30 +208,18 @@ final class SampledImageReader
 //    }TODO: PdfBox-Android
 
     // faster, 8-bit non-decoded, non-colormasked image conversion
-    private static Bitmap from8bit(PDImage pdImage, Bitmap raster)
+    private static Bitmap from8bit(PDImage pdImage)
             throws IOException
     {
         InputStream input = pdImage.createInputStream();
         try
         {
             // get the raster's underlying byte buffer
-//            byte[][] banks = ((DataBufferByte) raster.getDataBuffer()).getBankData();
-
             final int width = pdImage.getWidth();
             final int height = pdImage.getHeight();
             final int numComponents = pdImage.getColorSpace().getNumberOfComponents();
-//            int max = width * height;
-/*
-            byte[] tempBytes = new byte[numComponents];
-            for (int i = 0; i < max; i++)
-            {
-                input.read(tempBytes);
-                for (int c = 0; c < numComponents; c++)
-                {
-                    banks[c][i] = tempBytes[0+c];
-                }
-            }
-            */
+
+            Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             int[] rasterPixels = new int[width * height];
             raster.getPixels(rasterPixels, 0, width, 0, 0, width, height);
             for(int y = 0; y < height; y++) {
@@ -245,7 +235,8 @@ final class SampledImageReader
             raster.setPixels(rasterPixels, 0, width, 0 ,0, width, height);
 
 //            // use the color space to convert the image to RGB
-//            return pdImage.getColorSpace().toRGBImage(raster);
+            // Guaranteed to be ARGB_8888 for now
+//            return pdImage.getColorSpace().toRGBImage(raster); TODO: PdfBox-Android
             return raster;
         }
         finally

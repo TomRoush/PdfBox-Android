@@ -1,5 +1,6 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -173,6 +174,8 @@ public abstract class PDColorSpace implements COSObjectable {
 //     * @throws IOException if the color conversion fails
 //     */
 //    public abstract Bitmap toRGBImage(WritableRaster raster) throws IOException; TODO: PdfBox-Android
+
+    public abstract Bitmap toRGBImage(Bitmap raster) throws IOException;
 
 //    /**
 //     * Returns the (A)RGB equivalent of the given raster, using the given AWT color space

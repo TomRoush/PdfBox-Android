@@ -55,7 +55,7 @@ public class LosslessFactoryTest
     private Context testContext;
 
     @Before
-    public void setUp() throws Exception
+    public void setUp()
     {
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);

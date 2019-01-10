@@ -103,9 +103,9 @@ public final class LosslessFactory
                 for (int x = 0; x < width; ++x)
                 {
                     AWTColor color = new AWTColor(imagePixels[x + width * y]);
-                    bos.write(color.getAlpha() == 0 ? 0 : color.getRed());
-                    bos.write(color.getAlpha() == 0 ? 0 : color.getGreen());
-                    bos.write(color.getAlpha() == 0 ? 0 : color.getBlue());
+                    bos.write(color.getRed());
+                    bos.write(color.getGreen());
+                    bos.write(color.getBlue());
                 }
             }
         }

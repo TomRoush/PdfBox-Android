@@ -1,6 +1,11 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
+import android.graphics.Bitmap;
+import android.util.Log;
+
 import com.tom_roush.pdfbox.cos.COSName;
+
+import java.io.IOException;
 
 /**
  * Colours in the DeviceRGB colour space are specified according to the additive
@@ -83,13 +88,19 @@ public final class PDDeviceRGB extends PDDeviceColorSpace {
         }
     }
 
-//    @Override
-//    public BufferedImage toRGBImage(WritableRaster raster) throws IOException
-//    {
+    @Override
+    public Bitmap toRGBImage(Bitmap raster) throws IOException
+    {
+        if (raster.getConfig() == Bitmap.Config.ALPHA_8)
+        {
+            Log.e("PdfBox-Android", "Raster in PDDeviceRGB was ALPHA_8");
+        }
+        return raster;
+
 //        inti();
 //        ColorModel colorModel = new ComponentColorModel(awtColorSpace,
 //                false, false, Transparency.OPAQUE, raster.getDataBuffer().getDataType());
 //
-//        return new BufferedImage(colorModel, raster, false, null);
-//    }TODO: PdfBox-Android
+//        return new BufferedImage(colorModel, raster, false, null); TODO: PdfBox-Android
+    }
 }

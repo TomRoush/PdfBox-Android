@@ -47,11 +47,10 @@ import static org.junit.Assert.assertTrue;
 public class JPEGFactoryTest
 {
     private File testResultsDir;
-
-    Context testContext;
+    private Context testContext;
 
     @Before
-    public void setUp() throws Exception
+    public void setUp()
     {
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);

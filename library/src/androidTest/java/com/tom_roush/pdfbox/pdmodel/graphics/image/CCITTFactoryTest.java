@@ -26,8 +26,6 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
-import junit.framework.TestCase;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,19 +33,20 @@ import java.io.File;
 import java.io.IOException;
 
 import static com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage.validate;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Unit tests for CCITTFactory
  *
  * @author Tilman Hausherr
  */
-public class CCITTFactoryTest extends TestCase
+public class CCITTFactoryTest
 {
     private File testResultsDir;
-    Context testContext;
+    private Context testContext;
 
     @Before
-    public void setUp() throws Exception
+    public void setUp()
     {
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
@@ -102,6 +101,7 @@ public class CCITTFactoryTest extends TestCase
      * Tests CCITTFactory#createFromRandomAccess(PDDocument document,
      * RandomAccess reader) with a multi page TIFF
      */
+    @Test
     public void testCreateFromRandomAccessMulti() throws IOException
     {
         String tiffPath = "pdfbox/com/tom_roush/pdfbox/pdmodel/graphics/image/ccittg4multi.tif";

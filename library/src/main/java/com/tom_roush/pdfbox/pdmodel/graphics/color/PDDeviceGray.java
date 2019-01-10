@@ -1,6 +1,13 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.util.Log;
+
 import com.tom_roush.pdfbox.cos.COSName;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 /**
  * A color space with black, white, and intermediate shades of gray.
@@ -49,28 +56,35 @@ public final class PDDeviceGray extends PDDeviceColorSpace
         return new float[] { value[0], value[0], value[0] };
     }
 
-//    @Override
-//    public Bitmap toRGBImage(WritableRaster raster) throws IOException
-//    {
-//        int width = raster.getWidth();
-//        int height = raster.getHeight();
-//
-//        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-//
-//        int[] gray = new int[1];
-//        int[] rgb = new int[3];
-//        for (int y = 0; y < height; y++)
-//        {
-//            for (int x = 0; x < width; x++)
-//            {
-//                raster.getPixel(x, y, gray);
-//                rgb[0] = gray[0];
-//                rgb[1] = gray[0];
-//                rgb[2] = gray[0];
-//                image.getRaster().setPixel(x, y, rgb);
-//            }
-//        }
-//
-//        return image;
-//    } TODO: PdfBox-Android
+    @Override
+    public Bitmap toRGBImage(Bitmap raster) throws IOException
+    {
+        if (raster.getConfig() != Bitmap.Config.ALPHA_8)
+        {
+            Log.e("PdfBox-Android", "Raster in PDDevicGrey was not ALPHA_8");
+        }
+
+        int width = raster.getWidth();
+        int height = raster.getHeight();
+
+        Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+        ByteBuffer buffer = ByteBuffer.allocate(raster.getRowBytes() * height);
+        raster.copyPixelsToBuffer(buffer);
+        byte[] gray = buffer.array();
+
+        int[] rgb = new int[width * height];
+        image.getPixels(rgb, 0, width, 0, 0, width, height);
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                int idx = x + width * y;
+                int value = gray[idx];
+                rgb[idx] = Color.argb(255, value, value, value);
+            }
+        }
+        image.setPixels(rgb, 0, width, 0, 0, width, height);
+        return image;
+    }
 }

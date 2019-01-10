@@ -69,7 +69,7 @@ tasks.withType(Test) {
 
 dependencies {
     api 'com.madgag.spongycastle:core:1.58.0.0'
-    api 'com.madgag.spongycastle:pkix:1.54.0.0'
+    api 'com.madgag.spongycastle:bcpkix-jdk15on:1.58.0.0'
     api 'com.madgag.spongycastle:prov:1.58.0.0'
 
     // Test dependencies
