@@ -2,7 +2,9 @@ package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -12,6 +14,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /**
@@ -31,47 +34,40 @@ final class SampledImageReader
      * @throws IOException if the image cannot be read
      * @throws IllegalStateException if the image is not a stencil.
      */
-//    public static BufferedImage getStencilImage(PDImage pdImage, Paint paint) throws IOException
-//    {
-//        // get mask (this image)
-//        BufferedImage mask = getRGBImage(pdImage, null);
-//
-//        // compose to ARGB
-//        BufferedImage masked = new BufferedImage(mask.getWidth(), mask.getHeight(),
-//                BufferedImage.TYPE_INT_ARGB);
-//        Graphics2D g = masked.createGraphics();
-//
-//        // draw the mask
-//        //g.drawImage(mask, 0, 0, null);
-//
-//        // fill with paint using src-in
-//        //g.setComposite(AlphaComposite.SrcIn);
-//        g.setPaint(paint);
-//        g.fillRect(0, 0, mask.getWidth(), mask.getHeight());
-//        g.dispose();
-//
-//        // set the alpha
-//        int width = masked.getWidth();
-//        int height = masked.getHeight();
-//        WritableRaster raster = masked.getRaster();
-//        WritableRaster alpha = mask.getRaster();
-//
-//        final float[] transparent = new float[4];
-//        float[] alphaPixel = null;
-//        for (int y = 0; y < height; y++)
-//        {
-//            for (int x = 0; x < width; x++)
-//            {
-//                alphaPixel = alpha.getPixel(x, y, alphaPixel);
-//                if (alphaPixel[0] == 255)
-//                {
-//                    raster.setPixel(x, y, transparent);
-//                }
-//            }
-//        }
-//
-//        return masked;
-//    }TODO: PdfBox-Android
+    public static Bitmap getStencilImage(PDImage pdImage, Paint paint) throws IOException
+    {
+        // get mask (this image)
+        Bitmap mask = getRGBImage(pdImage, null);
+
+        // compose to ARGB
+        Bitmap masked = Bitmap.createBitmap(mask.getWidth(), mask.getHeight(),
+            Bitmap.Config.ARGB_8888);
+        Canvas g = new Canvas(masked);
+
+        // fill with paint using src-in
+        g.drawRect(0, 0, mask.getWidth(), mask.getHeight(), paint);
+
+        // set the alpha
+        int width = masked.getWidth();
+        int height = masked.getHeight();
+        int[] raster = new int[width * height];
+        masked.getPixels(raster, 0, width, 0, 0, width, height);
+        int[] alpha = new int[width * height];
+        mask.getPixels(alpha, 0, width, 0, 0, width, height);
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (Color.red(alpha[x + width * y]) == 255)
+                {
+                    raster[x + width * y] = Color.TRANSPARENT;
+                }
+            }
+        }
+        masked.setPixels(raster, 0, width, 0, 0, width, height);
+        return masked;
+    }
 
 	/**
      * Returns the content of the given image as an AWT buffered image with an RGB color space.
@@ -117,8 +113,7 @@ final class SampledImageReader
         }
         else if (bitsPerComponent == 1 && colorKey == null)
         {
-//            return from1Bit(pdImage, raster);
-            return from8bit(pdImage);
+            return from1Bit(pdImage);
         }
         else
         {
@@ -127,85 +122,88 @@ final class SampledImageReader
             return from8bit(pdImage);
         }
     }
-    
-//    private static BufferedImage from1Bit(PDImage pdImage, WritableRaster raster)
-//            throws IOException
-//    {
-//        final PDColorSpace colorSpace = pdImage.getColorSpace();
-//        final int width = pdImage.getWidth();
-//        final int height = pdImage.getHeight();
-//        final float[] decode = getDecodeArray(pdImage);
-//        byte[] output = ((DataBufferByte) raster.getDataBuffer()).getData();
-//
-//        // read bit stream
-//        InputStream iis = null;
-//        try
-//        {
-//            // create stream
-//            iis = pdImage.createInputStream();
-//            final boolean isIndexed = colorSpace instanceof PDIndexed;
-//
-//            int rowLen = width / 8;
-//            if (width % 8 > 0)
-//            {
-//                rowLen++;
-//            }
-//
-//            // read stream
-//            byte value0;
-//            byte value1;
-//            if (isIndexed || decode[0] < decode[1])
-//            {
-//                value0 = 0;
-//                value1 = (byte) 255;
-//            }
-//            else
-//            {
-//                value0 = (byte) 255;
-//                value1 = 0;
-//            }
-//            byte[] buff = new byte[rowLen];
-//            int idx = 0;
-//            for (int y = 0; y < height; y++)
-//            {
-//                int x = 0;
-//                int readLen = iis.read(buff);
-//                for (int r = 0; r < rowLen && r < readLen; r++)
-//                {
-//                    int value = buff[r];
-//                    int mask = 128;
-//                    for (int i = 0; i < 8; i++)
-//                    {
-//                        int bit = value & mask;
-//                        mask >>= 1;
-//                        output[idx++] = bit == 0 ? value0 : value1;
-//                        x++;
-//                        if (x == width)
-//                        {
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//            if (readLen != rowLen)
-//            {
-//                Log.w("PdfBox-Android", "premature EOF, image will be incomplete");
-//                break;
-//            }
-//
-//            // use the color space to convert the image to RGB
-//            BufferedImage rgbImage = colorSpace.toRGBImage(raster);
-//
-//            return rgbImage;
-//        }
-//        finally
-//        {
-//            if (iis != null)
-//            {
-//                iis.close();
-//            }
-//        }
-//    }TODO: PdfBox-Android
+
+    private static Bitmap from1Bit(PDImage pdImage) throws IOException
+    {
+        final PDColorSpace colorSpace = pdImage.getColorSpace();
+        final int width = pdImage.getWidth();
+        final int height = pdImage.getHeight();
+        Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8);
+        final float[] decode = getDecodeArray(pdImage);
+        ByteBuffer buffer = ByteBuffer.allocate(raster.getRowBytes() * height);
+        raster.copyPixelsToBuffer(buffer);
+        byte[] output = buffer.array();
+
+        // read bit stream
+        InputStream iis = null;
+        try
+        {
+            // create stream
+            iis = pdImage.createInputStream();
+            final boolean isIndexed =
+                false; // TODO: PdfBox-Android colorSpace instanceof PDIndexed;
+
+            int rowLen = width / 8;
+            if (width % 8 > 0)
+            {
+                rowLen++;
+            }
+
+            // read stream
+            byte value0;
+            byte value1;
+            if (isIndexed || decode[0] < decode[1])
+            {
+                value0 = 0;
+                value1 = (byte) 255;
+            }
+            else
+            {
+                value0 = (byte) 255;
+                value1 = 0;
+            }
+            byte[] buff = new byte[rowLen];
+            int idx = 0;
+            for (int y = 0; y < height; y++)
+            {
+                int x = 0;
+                int readLen = iis.read(buff);
+                for (int r = 0; r < rowLen && r < readLen; r++)
+                {
+                    int value = buff[r];
+                    int mask = 128;
+                    for (int i = 0; i < 8; i++)
+                    {
+                        int bit = value & mask;
+                        mask >>= 1;
+                        output[idx++] = bit == 0 ? value0 : value1;
+                        x++;
+                        if (x == width)
+                        {
+                            break;
+                        }
+                    }
+                }
+                if (readLen != rowLen)
+                {
+                    Log.w("PdfBox-Android", "premature EOF, image will be incomplete");
+                    break;
+                }
+            }
+
+
+            buffer.rewind();
+            raster.copyPixelsFromBuffer(buffer);
+            // use the color space to convert the image to RGB
+            return colorSpace.toRGBImage(raster);
+        } finally
+        {
+            if (iis != null)
+            {
+                iis.close();
+            }
+        }
+    }
 
     // faster, 8-bit non-decoded, non-colormasked image conversion
     private static Bitmap from8bit(PDImage pdImage)

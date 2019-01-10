@@ -1,6 +1,7 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
 import android.graphics.Bitmap;
+import android.graphics.Paint;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
@@ -33,7 +34,7 @@ public interface PDImage extends COSObjectable
      * @throws IOException if the image cannot be read
      * @throws IllegalStateException if the image is not a stencil.
      */
-//    BufferedImage getStencilImage(Paint paint) throws IOException;TODO: PdfBox-Android
+    Bitmap getStencilImage(Paint paint) throws IOException;
 
     /**
      * Returns a stream containing this image's data. Null for inline images.

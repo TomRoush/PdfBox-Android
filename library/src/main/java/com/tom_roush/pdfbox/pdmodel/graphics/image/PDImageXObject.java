@@ -3,6 +3,7 @@ package com.tom_roush.pdfbox.pdmodel.graphics.image;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -274,15 +275,15 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * {@inheritDoc}
      * The returned images are not cached.
      */
-//    @Override
-//    public BufferedImage getStencilImage(Paint paint) throws IOException
-//    {
-//        if (!isStencil())
-//        {
-//            throw new IllegalStateException("Image is not a stencil");
-//        }
-//        return SampledImageReader.getStencilImage(this, paint);
-//    }TODO: PdfBox-Android
+    @Override
+    public Bitmap getStencilImage(Paint paint) throws IOException
+    {
+        if (!isStencil())
+        {
+            throw new IllegalStateException("Image is not a stencil");
+        }
+        return SampledImageReader.getStencilImage(this, paint);
+    }
 
     /**
      * Returns an RGB buffered image containing the opaque image stream without any masks applied.

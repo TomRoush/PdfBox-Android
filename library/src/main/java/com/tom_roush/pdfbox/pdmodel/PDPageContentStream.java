@@ -3,9 +3,12 @@ package com.tom_roush.pdfbox.pdmodel;
 import android.graphics.Path;
 import android.util.Log;
 
+import com.tom_roush.harmony.awt.AWTColor;
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.pdfwriter.COSWriter;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
@@ -17,13 +20,12 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDInlineImage;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import com.tom_roush.pdfbox.util.Charsets;
 import com.tom_roush.pdfbox.util.Matrix;
-import com.tom_roush.harmony.awt.AWTColor;
-import com.tom_roush.harmony.awt.geom.AffineTransform;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -526,11 +528,11 @@ public final class PDPageContentStream implements Closeable
      * @throws IOException If there is an error writing to the stream.
      * @deprecated Use {@link #drawImage(PDInlineImage, float, float)} instead.
      */
-//    @Deprecated
-//    public void drawInlineImage(PDInlineImage inlineImage, float x, float y) throws IOException
-//    {
-//    	drawImage(inlineImage, x, y, inlineImage.getWidth(), inlineImage.getHeight());
-//    } TODO: PdfBox-Android
+    @Deprecated
+    public void drawInlineImage(PDInlineImage inlineImage, float x, float y) throws IOException
+    {
+        drawImage(inlineImage, x, y, inlineImage.getWidth(), inlineImage.getHeight());
+    }
 
     /**
      * Draw an inline image at the x,y coordinates, with the default size of the image.
@@ -541,10 +543,10 @@ public final class PDPageContentStream implements Closeable
      *
      * @throws IOException If there is an error writing to the stream.
      */
-//    public void drawImage(PDInlineImage inlineImage, float x, float y) throws IOException
-//    {
-//    	drawImage(inlineImage, x, y, inlineImage.getWidth(), inlineImage.getHeight());
-//    } TODO: PdfBox-Android
+    public void drawImage(PDInlineImage inlineImage, float x, float y) throws IOException
+    {
+        drawImage(inlineImage, x, y, inlineImage.getWidth(), inlineImage.getHeight());
+    }
 
     /**
      * Draw an inline image at the x,y coordinates and a certain width and height.
@@ -558,11 +560,12 @@ public final class PDPageContentStream implements Closeable
      * @throws IOException If there is an error writing to the stream.
      * @deprecated Use {@link #drawImage(PDInlineImage, float, float, float, float)} instead.
      */
-//    @Deprecated
-//    public void drawInlineImage(PDInlineImage inlineImage, float x, float y, float width, float height) throws IOException
-//    {
-//    	drawImage(inlineImage, x, y, width, height);
-//    } TODO: PdfBox-Android
+    @Deprecated
+    public void drawInlineImage(PDInlineImage inlineImage, float x, float y, float width,
+        float height) throws IOException
+    {
+        drawImage(inlineImage, x, y, width, height);
+    }
 
     /**
      * Draw an inline image at the x,y coordinates and a certain width and height.
@@ -576,59 +579,63 @@ public final class PDPageContentStream implements Closeable
      * @throws IOException If there is an error writing to the stream.
      * @throws IllegalStateException If the method was called within a text block.
      */
-//    public void drawImage(PDInlineImage inlineImage, float x, float y, float width, float height) throws IOException
-//    {
-//    	if (inTextMode)
-//    	{
-//    		throw new IllegalStateException("Error: drawImage is not allowed within a text block.");
-//    	}
-//    	saveGraphicsState();
-//    	transform(new Matrix(width, 0, 0, height, x, y));
-//    
-//    	// create the image dictionary
-//    	StringBuilder sb = new StringBuilder();
-//    	sb.append("BI");
-//
-//    	sb.append("\n /W ");
-//    	sb.append(inlineImage.getWidth());
-//
-//    	sb.append("\n /H ");
-//    	sb.append(inlineImage.getHeight());
-//
-//    	sb.append("\n /CS ");
-//    	sb.append("/");
-//    	sb.append(inlineImage.getColorSpace().getName());
-//    	
-//    	if (inlineImage.getDecode() != null && inlineImage.getDecode().size() > 0)
-//    	{
-//    		sb.append("\n /D ");
-//    		sb.append("[");
-//    		for (COSBase base : inlineImage.getDecode())
-//    		{
-//    			sb.append(((COSNumber)base).intValue());
-//    			sb.append(" ");
-//    		}
-//    		sb.append("]");
-//    	}
-//    	
-//    	if (inlineImage.isStencil())
-//    	{
-//    		sb.append("\n /IM true");
-//    	}
-//    	sb.append("\n /BPC ");
-//    	sb.append(inlineImage.getBitsPerComponent());
-//
-//    	// image dictionary
-//    	write(sb.toString());
-//    	writeLine();
-//    	
-//    	// binary data
-//    	writeOperator("ID");
-//    	write(inlineImage.getData());
-//    	writeLine();
-//    	writeOperator("EI");
-//    	restoreGraphicsState();
-//    } TODO: PdfBox-Android
+    public void drawImage(PDInlineImage inlineImage, float x, float y, float width, float height)
+        throws IOException
+    {
+        if (inTextMode)
+        {
+            throw new IllegalStateException("Error: drawImage is not allowed within a text block.");
+        }
+
+        saveGraphicsState();
+        transform(new Matrix(width, 0, 0, height, x, y));
+
+        // create the image dictionary
+        StringBuilder sb = new StringBuilder();
+        sb.append("BI");
+
+        sb.append("\n /W ");
+        sb.append(inlineImage.getWidth());
+
+        sb.append("\n /H ");
+        sb.append(inlineImage.getHeight());
+
+        sb.append("\n /CS ");
+        sb.append("/");
+        sb.append(inlineImage.getColorSpace().getName());
+
+        if (inlineImage.getDecode() != null && inlineImage.getDecode().size() > 0)
+        {
+            sb.append("\n /D ");
+            sb.append("[");
+            for (COSBase base : inlineImage.getDecode())
+            {
+                sb.append(((COSNumber) base).intValue());
+                sb.append(" ");
+            }
+            sb.append("]");
+        }
+
+        if (inlineImage.isStencil())
+        {
+            sb.append("\n /IM true");
+        }
+
+        sb.append("\n /BPC ");
+        sb.append(inlineImage.getBitsPerComponent());
+
+        // image dictionary
+        write(sb.toString());
+        writeLine();
+
+        // binary data
+        writeOperator("ID");
+        writeBytes(inlineImage.getData());
+        writeLine();
+        writeOperator("EI");
+
+        restoreGraphicsState();
+    }
 
     /**
      * Draw an xobject(form or image) at the x,y coordinates and a certain width and height.
