@@ -19,14 +19,6 @@ package com.tom_roush.fontbox.type1;
 
 import android.graphics.Path;
 
-import com.tom_roush.fontbox.EncodedFont;
-import com.tom_roush.fontbox.FontBoxFont;
-import com.tom_roush.fontbox.cff.Type1CharString;
-import com.tom_roush.fontbox.cff.Type1CharStringParser;
-import com.tom_roush.fontbox.encoding.Encoding;
-import com.tom_roush.fontbox.pfb.PfbParser;
-import com.tom_roush.fontbox.util.BoundingBox;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -35,6 +27,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.tom_roush.fontbox.EncodedFont;
+import com.tom_roush.fontbox.FontBoxFont;
+import com.tom_roush.fontbox.cff.Type1CharString;
+import com.tom_roush.fontbox.cff.Type1CharStringParser;
+import com.tom_roush.fontbox.encoding.Encoding;
+import com.tom_roush.fontbox.pfb.PfbParser;
+import com.tom_roush.fontbox.util.BoundingBox;
 
 /**
  * Represents an Adobe Type 1 (.pfb) font. Thread safe.
@@ -57,7 +57,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
         Type1Parser parser = new Type1Parser();
         return parser.parse(pfb.getSegment1(), pfb.getSegment2());
     }
-    
+
     /**
      * Constructs a new Type1Font object from a .pfb stream.
      *
@@ -68,9 +68,9 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
      */
     public static Type1Font createWithPFB(byte[] pfbBytes) throws IOException
     {
-    	PfbParser pfb = new PfbParser(pfbBytes);
-    	Type1Parser parser = new Type1Parser();
-    	return parser.parse(pfb.getSegment1(), pfb.getSegment2());
+        PfbParser pfb = new PfbParser(pfbBytes);
+        Type1Parser parser = new Type1Parser();
+        return parser.parse(pfb.getSegment1(), pfb.getSegment2());
     }
 
     /**

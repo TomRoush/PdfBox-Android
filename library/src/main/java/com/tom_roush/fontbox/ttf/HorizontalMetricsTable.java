@@ -20,89 +20,89 @@ import java.io.IOException;
 
 /**
  * A table in a true type font.
- * 
+ *
  * @author Ben Litchfield
  */
 public class HorizontalMetricsTable extends TTFTable
 {
-	/**
-	 * A tag that identifies this table type.
-	 */
-	public static final String TAG = "hmtx";
+    /**
+     * A tag that identifies this table type.
+     */
+    public static final String TAG = "hmtx";
 
-	private int[] advanceWidth;
-	private short[] leftSideBearing;
-	private short[] nonHorizontalLeftSideBearing;
-	private int numHMetrics;
+    private int[] advanceWidth;
+    private short[] leftSideBearing;
+    private short[] nonHorizontalLeftSideBearing;
+    private int numHMetrics;
 
     HorizontalMetricsTable(TrueTypeFont font)
     {
         super(font);
     }
 
-	/**
-	 * This will read the required data from the stream.
-	 * 
-	 * @param ttf The font that is being read.
-	 * @param data The stream to read the data from.
-	 * @throws IOException If there is an error reading the data.
-	 */
-	public void read(TrueTypeFont ttf, TTFDataStream data) throws IOException
-	{
-		HorizontalHeaderTable hHeader = ttf.getHorizontalHeader();
-		numHMetrics = hHeader.getNumberOfHMetrics();
-		int numGlyphs = ttf.getNumberOfGlyphs();
+    /**
+     * This will read the required data from the stream.
+     *
+     * @param ttf The font that is being read.
+     * @param data The stream to read the data from.
+     * @throws IOException If there is an error reading the data.
+     */
+    public void read(TrueTypeFont ttf, TTFDataStream data) throws IOException
+    {
+        HorizontalHeaderTable hHeader = ttf.getHorizontalHeader();
+        numHMetrics = hHeader.getNumberOfHMetrics();
+        int numGlyphs = ttf.getNumberOfGlyphs();
 
-		int bytesRead = 0;
-		advanceWidth = new int[ numHMetrics ];
-		leftSideBearing = new short[ numHMetrics ];
-		for( int i=0; i<numHMetrics; i++ )
-		{
-			advanceWidth[i] = data.readUnsignedShort();
-			leftSideBearing[i] = data.readSignedShort();
-			bytesRead += 4;
-		}
+        int bytesRead = 0;
+        advanceWidth = new int[ numHMetrics ];
+        leftSideBearing = new short[ numHMetrics ];
+        for( int i=0; i<numHMetrics; i++ )
+        {
+            advanceWidth[i] = data.readUnsignedShort();
+            leftSideBearing[i] = data.readSignedShort();
+            bytesRead += 4;
+        }
 
-		if (bytesRead < getLength())
-		{
-			int numberNonHorizontal = numGlyphs - numHMetrics;
+        if (bytesRead < getLength())
+        {
+            int numberNonHorizontal = numGlyphs - numHMetrics;
 
-			// handle bad fonts with too many hmetrics
-			if (numberNonHorizontal < 0)
-			{
-				numberNonHorizontal = numGlyphs;
-			}
+            // handle bad fonts with too many hmetrics
+            if (numberNonHorizontal < 0)
+            {
+                numberNonHorizontal = numGlyphs;
+            }
 
-			nonHorizontalLeftSideBearing = new short[ numberNonHorizontal ];
-			for( int i=0; i<numberNonHorizontal; i++ )
-			{
-				if (bytesRead < getLength())
-				{
-					nonHorizontalLeftSideBearing[i] = data.readSignedShort();
-					bytesRead += 2;
-				}
-			}
-		}
+            nonHorizontalLeftSideBearing = new short[ numberNonHorizontal ];
+            for( int i=0; i<numberNonHorizontal; i++ )
+            {
+                if (bytesRead < getLength())
+                {
+                    nonHorizontalLeftSideBearing[i] = data.readSignedShort();
+                    bytesRead += 2;
+                }
+            }
+        }
 
-		initialized = true;
-	}
+        initialized = true;
+    }
 
-	/**
-	 * Returns the advance width for the given GID.
-	 *
-	 * @param gid GID
-	 */
-	public int getAdvanceWidth(int gid)
-	{
-		if (gid < numHMetrics)
-		{
-			return advanceWidth[gid];
-		}
-		else
-		{
-			// monospaced fonts may not have a width for every glyph
-			// the last one is for subsequent glyphs
-			return advanceWidth[advanceWidth.length -1];
-		}
-	}
+    /**
+     * Returns the advance width for the given GID.
+     *
+     * @param gid GID
+     */
+    public int getAdvanceWidth(int gid)
+    {
+        if (gid < numHMetrics)
+        {
+            return advanceWidth[gid];
+        }
+        else
+        {
+            // monospaced fonts may not have a width for every glyph
+            // the last one is for subsequent glyphs
+            return advanceWidth[advanceWidth.length -1];
+        }
+    }
 }
