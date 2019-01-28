@@ -24,9 +24,9 @@ package com.tom_roush.pdfbox.contentstream.operator.graphics;
  */
 public final class LegacyFillNonZeroRule extends FillNonZeroRule
 {
-	@Override
-	public String getName()
-	{
-		return "F";
-	}
+    @Override
+    public String getName()
+    {
+        return "F";
+    }
 }

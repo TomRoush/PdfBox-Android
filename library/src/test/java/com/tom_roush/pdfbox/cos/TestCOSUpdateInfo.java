@@ -17,9 +17,9 @@
 
 package com.tom_roush.pdfbox.cos;
 
-import org.junit.Test;
-
 import java.io.IOException;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -31,33 +31,34 @@ import static org.junit.Assert.fail;
 public class TestCOSUpdateInfo
 {
 
-	/**
-	 * Tests isNeedToBeUpdate() and setNeedToBeUpdate() - tests the getter/setter methods.
-	 */
-	@Test
-	public void testIsSetNeedToBeUpdate()
-	{
-		// COSDictionary
-		COSUpdateInfo testCOSDictionary = new COSDictionary();
-		testCOSDictionary.setNeedToBeUpdated(true);
-		assertTrue(testCOSDictionary.isNeedToBeUpdated());
-		testCOSDictionary.setNeedToBeUpdated(false);
-		assertFalse(testCOSDictionary.isNeedToBeUpdated());
+    /**
+     * Tests isNeedToBeUpdate() and setNeedToBeUpdate() - tests the getter/setter methods.
+     */
+    @Test
+    public void testIsSetNeedToBeUpdate()
+    {
+        // COSDictionary
+        COSUpdateInfo testCOSDictionary = new COSDictionary();
+        testCOSDictionary.setNeedToBeUpdated(true);
+        assertTrue(testCOSDictionary.isNeedToBeUpdated());
+        testCOSDictionary.setNeedToBeUpdated(false);
+        assertFalse(testCOSDictionary.isNeedToBeUpdated());
 
-		// COSObject
-		COSUpdateInfo testCOSObject;
-		try
-		{
-			testCOSObject = new COSObject(null);
-			testCOSObject.setNeedToBeUpdated(true);
-			assertTrue(testCOSObject.isNeedToBeUpdated());
-			testCOSObject.setNeedToBeUpdated(false);
-			assertFalse(testCOSObject.isNeedToBeUpdated());
-		}
-		catch (IOException e)
-		{
-			fail(e.getMessage());
-		}
-	}
+        // COSObject
+        COSUpdateInfo testCOSObject;
+        try
+        {
+            testCOSObject = new COSObject(null);
+            testCOSObject.setNeedToBeUpdated(true);
+            assertTrue(testCOSObject.isNeedToBeUpdated());
+            testCOSObject.setNeedToBeUpdated(false);
+            assertFalse(testCOSObject.isNeedToBeUpdated());
+        }
+        catch (IOException e)
+        {
+            fail(e.getMessage());
+        }
+    }
 
 }
+

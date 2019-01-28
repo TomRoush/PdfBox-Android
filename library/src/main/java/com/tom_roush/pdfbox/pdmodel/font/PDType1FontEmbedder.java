@@ -1,5 +1,11 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.tom_roush.fontbox.afm.FontMetrics;
 import com.tom_roush.fontbox.pfb.PfbParser;
 import com.tom_roush.fontbox.type1.Type1Font;
@@ -14,12 +20,6 @@ import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.GlyphList;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Type1Encoding;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Embedded PDType1Font builder. Helper class to populate a PDType1Font from a PFB and AFM.
  *
@@ -27,17 +27,17 @@ import java.util.List;
  */
 class PDType1FontEmbedder
 {
-	private final Encoding fontEncoding;
-	private final Type1Font type1;
+    private final Encoding fontEncoding;
+    private final Type1Font type1;
 
-	/**
+    /**
      * This will load a PFB to be embedded into a document.
      *
-	 * @param doc The PDF document that will hold the embedded font.
-	 * @param dict The Font dictionary to write to.
-	 * @param pfbStream The pfb input.
-	 * @throws IOException If there is an error loading the data.
-	 */
+     * @param doc The PDF document that will hold the embedded font.
+     * @param dict The Font dictionary to write to.
+     * @param pfbStream The pfb input.
+     * @throws IOException If there is an error loading the data.
+     */
     PDType1FontEmbedder(PDDocument doc, COSDictionary dict, InputStream pfbStream,
         Encoding encoding) throws IOException
     {
@@ -62,17 +62,17 @@ class PDType1FontEmbedder
 
         PDStream fontStream = new PDStream(doc, pfbParser.getInputStream(), COSName.FLATE_DECODE);
         fontStream.getStream().setInt("Length", pfbParser.size());
-		for (int i = 0; i < pfbParser.getLengths().length; i++)
-		{
-			fontStream.getStream().setInt("Length" + (i + 1), pfbParser.getLengths()[i]);
-		}
-		fd.setFontFile(fontStream);
+        for (int i = 0; i < pfbParser.getLengths().length; i++)
+        {
+            fontStream.getStream().setInt("Length" + (i + 1), pfbParser.getLengths()[i]);
+        }
+        fd.setFontFile(fontStream);
 
-		// set the values
-		dict.setItem(COSName.FONT_DESC, fd);
+        // set the values
+        dict.setItem(COSName.FONT_DESC, fd);
         dict.setName(COSName.BASE_FONT, type1.getName());
 
-		// widths
+        // widths
         List<Integer> widths = new ArrayList<Integer>(256);
         for (int code = 0; code <= 255; code++)
         {
@@ -81,10 +81,10 @@ class PDType1FontEmbedder
             widths.add(width);
         }
 
-		dict.setInt(COSName.FIRST_CHAR, 0);
-		dict.setInt(COSName.LAST_CHAR, 255);
-		dict.setItem(COSName.WIDTHS, COSArrayList.converterToCOSArray(widths));
-	}
+        dict.setInt(COSName.FIRST_CHAR, 0);
+        dict.setInt(COSName.LAST_CHAR, 255);
+        dict.setItem(COSName.WIDTHS, COSArrayList.converterToCOSArray(widths));
+    }
 
     /**
      * Returns a PDFontDescriptor for the given PFB.
@@ -108,39 +108,39 @@ class PDType1FontEmbedder
         return fd;
     }
 
-	/**
+    /**
      * Returns a PDFontDescriptor for the given AFM. Used only for Standard 14 fonts.
      *
-	 * @param metrics AFM
-	 */
-	static PDFontDescriptor buildFontDescriptor(FontMetrics metrics)
-	{
-		boolean isSymbolic = metrics.getEncodingScheme().equals("FontSpecific");
-		
-		PDFontDescriptor fd = new PDFontDescriptor();
-		fd.setFontName(metrics.getFontName());
-		fd.setFontFamily(metrics.getFamilyName());
-		fd.setNonSymbolic(!isSymbolic);
-		fd.setSymbolic(isSymbolic);
-		fd.setFontBoundingBox(new PDRectangle(metrics.getFontBBox()));
-		fd.setItalicAngle(metrics.getItalicAngle());
-		fd.setAscent(metrics.getAscender());
-		fd.setDescent(metrics.getDescender());
-		fd.setCapHeight(metrics.getCapHeight());
-		fd.setXHeight(metrics.getXHeight());
-		fd.setAverageWidth(metrics.getAverageCharacterWidth());
-		fd.setCharacterSet(metrics.getCharacterSet());
-		fd.setStemV(0); // for PDF/A
-		return fd;
-	}
+     * @param metrics AFM
+     */
+    static PDFontDescriptor buildFontDescriptor(FontMetrics metrics)
+    {
+        boolean isSymbolic = metrics.getEncodingScheme().equals("FontSpecific");
 
-	/**
-	 * Returns the font's encoding.
-	 */
-	public Encoding getFontEncoding()
-	{
-		return fontEncoding;
-	}
+        PDFontDescriptor fd = new PDFontDescriptor();
+        fd.setFontName(metrics.getFontName());
+        fd.setFontFamily(metrics.getFamilyName());
+        fd.setNonSymbolic(!isSymbolic);
+        fd.setSymbolic(isSymbolic);
+        fd.setFontBoundingBox(new PDRectangle(metrics.getFontBBox()));
+        fd.setItalicAngle(metrics.getItalicAngle());
+        fd.setAscent(metrics.getAscender());
+        fd.setDescent(metrics.getDescender());
+        fd.setCapHeight(metrics.getCapHeight());
+        fd.setXHeight(metrics.getXHeight());
+        fd.setAverageWidth(metrics.getAverageCharacterWidth());
+        fd.setCharacterSet(metrics.getCharacterSet());
+        fd.setStemV(0); // for PDF/A
+        return fd;
+    }
+
+    /**
+     * Returns the font's encoding.
+     */
+    public Encoding getFontEncoding()
+    {
+        return fontEncoding;
+    }
 
     /**
      * Returns the font's glyph list.
@@ -150,11 +150,11 @@ class PDType1FontEmbedder
         return GlyphList.getAdobeGlyphList();
     }
 
-	/**
-	 * Returns the Type 1 font.
-	 */
-	public Type1Font getType1Font()
-	{
-		return type1;
-	}
+    /**
+     * Returns the Type 1 font.
+     */
+    public Type1Font getType1Font()
+    {
+        return type1;
+    }
 }

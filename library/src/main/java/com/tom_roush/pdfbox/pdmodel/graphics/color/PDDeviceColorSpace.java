@@ -10,15 +10,15 @@ import com.tom_roush.pdfbox.cos.COSName;
  */
 public abstract class PDDeviceColorSpace extends PDColorSpace
 {
-	@Override
-	public String toString()
-	{
-		return getName();
-	}
+    @Override
+    public String toString()
+    {
+        return getName();
+    }
 
-	@Override
-	public COSBase getCOSObject()
-	{
-		return COSName.getPDFName(getName());
-	}
+    @Override
+    public COSBase getCOSObject()
+    {
+        return COSName.getPDFName(getName());
+    }
 }

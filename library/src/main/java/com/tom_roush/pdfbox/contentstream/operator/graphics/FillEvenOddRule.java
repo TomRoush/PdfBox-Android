@@ -16,13 +16,13 @@
  */
 package com.tom_roush.pdfbox.contentstream.operator.graphics;
 
+import android.graphics.Path;
+
 import java.io.IOException;
 import java.util.List;
 
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSBase;
-
-import android.graphics.Path;
 
 /**
  * f* Fill path using even odd rule.
@@ -31,15 +31,15 @@ import android.graphics.Path;
  */
 public final class FillEvenOddRule extends GraphicsOperatorProcessor
 {
-	@Override
-	public void process(Operator operator, List<COSBase> operands) throws IOException
-	{
-		context.fillPath(Path.FillType.EVEN_ODD);
-	}
+    @Override
+    public void process(Operator operator, List<COSBase> operands) throws IOException
+    {
+        context.fillPath(Path.FillType.EVEN_ODD);
+    }
 
-	@Override
-	public String getName()
-	{
-		return "f*";
-	}
+    @Override
+    public String getName()
+    {
+        return "f*";
+    }
 }

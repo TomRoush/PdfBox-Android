@@ -25,14 +25,16 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
  *
  * @author John Hewson
  */
-public class SetStrokingColor extends SetColor {
+public class SetStrokingColor extends SetColor
+{
     /**
      * Returns the stroking color.
      *
      * @return The stroking color.
      */
     @Override
-    protected PDColor getColor() {
+    protected PDColor getColor()
+    {
         return context.getGraphicsState().getStrokingColor();
     }
 
@@ -42,7 +44,8 @@ public class SetStrokingColor extends SetColor {
      * @param color The new stroking color.
      */
     @Override
-    protected void setColor(PDColor color) {
+    protected void setColor(PDColor color)
+    {
         context.getGraphicsState().setStrokingColor(color);
     }
 
@@ -52,12 +55,14 @@ public class SetStrokingColor extends SetColor {
      * @return The stroking color space.
      */
     @Override
-    protected PDColorSpace getColorSpace() {
+    protected PDColorSpace getColorSpace()
+    {
         return context.getGraphicsState().getStrokingColorSpace();
     }
 
     @Override
-    public String getName() {
+    public String getName()
+    {
         return "SC";
     }
 }

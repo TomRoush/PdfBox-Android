@@ -1,11 +1,11 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNumber;
-
-import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * A color value, consisting of one or more color components, or for pattern color spaces,
@@ -18,112 +18,112 @@ import java.util.Arrays;
  */
 public final class PDColor
 {
-	private final float[] components;
-	private final COSName patternName;
-	private final PDColorSpace colorSpace;
+    private final float[] components;
+    private final COSName patternName;
+    private final PDColorSpace colorSpace;
 
-	/**
-	 * Creates a PDColor containing the given color value.
-	 * @param array a COS array containing the color value
-	 * @param colorSpace color space in which the color value is defined
-	 */
-	public PDColor(COSArray array, PDColorSpace colorSpace)
-	{
-		if (array.size() > 0 && array.get(array.size() - 1) instanceof COSName)
-		{
+    /**
+     * Creates a PDColor containing the given color value.
+     * @param array a COS array containing the color value
+     * @param colorSpace color space in which the color value is defined
+     */
+    public PDColor(COSArray array, PDColorSpace colorSpace)
+    {
+        if (array.size() > 0 && array.get(array.size() - 1) instanceof COSName)
+        {
             // color components (optional), for the color of an uncoloured tiling pattern
             components = new float[array.size() - 1];
             for (int i = 0; i < array.size() - 1; i++)
             {
-				components[i] = ((COSNumber)array.get(i)).floatValue();
-			}
+                components[i] = ((COSNumber)array.get(i)).floatValue();
+            }
 
-			// pattern name (required)
-			patternName = (COSName)array.get(array.size() - 1);
-		}
-		else
-		{
-			// color components only
-			components = new float[array.size()];
-			for (int i = 0; i < array.size(); i++)
-			{
-				components[i] = ((COSNumber)array.get(i)).floatValue();
-			}
-			patternName = null;
-		}
-		this.colorSpace = colorSpace;
-	}
+            // pattern name (required)
+            patternName = (COSName)array.get(array.size() - 1);
+        }
+        else
+        {
+            // color components only
+            components = new float[array.size()];
+            for (int i = 0; i < array.size(); i++)
+            {
+                components[i] = ((COSNumber)array.get(i)).floatValue();
+            }
+            patternName = null;
+        }
+        this.colorSpace = colorSpace;
+    }
 
-	/**
-	 * Creates a PDColor containing the given color component values.
-	 * @param components array of color component values
-	 * @param colorSpace color space in which the components are defined
-	 */
-	public PDColor(float[] components, PDColorSpace colorSpace)
-	{
-		this.components = components.clone();
-		this.patternName = null;
-		this.colorSpace = colorSpace;
-	}
+    /**
+     * Creates a PDColor containing the given color component values.
+     * @param components array of color component values
+     * @param colorSpace color space in which the components are defined
+     */
+    public PDColor(float[] components, PDColorSpace colorSpace)
+    {
+        this.components = components.clone();
+        this.patternName = null;
+        this.colorSpace = colorSpace;
+    }
 
-	/**
-	 * Creates a PDColor containing the given pattern name.
-	 * @param patternName the name of a pattern in a pattern dictionary
-	 * @param colorSpace color space in which the pattern is defined
-	 */
-	public PDColor(COSName patternName, PDColorSpace colorSpace)
-	{
-		this.components = new float[0];
-		this.patternName = patternName;
-		this.colorSpace = colorSpace;
-	}
+    /**
+     * Creates a PDColor containing the given pattern name.
+     * @param patternName the name of a pattern in a pattern dictionary
+     * @param colorSpace color space in which the pattern is defined
+     */
+    public PDColor(COSName patternName, PDColorSpace colorSpace)
+    {
+        this.components = new float[0];
+        this.patternName = patternName;
+        this.colorSpace = colorSpace;
+    }
 
-	/**
-	 * Creates a PDColor containing the given color component values and pattern name.
-	 * @param components array of color component values
-	 * @param patternName the name of a pattern in a pattern dictionary
-	 * @param colorSpace color space in which the pattern/components are defined
-	 */
-	public PDColor(float[] components, COSName patternName, PDColorSpace colorSpace)
-	{
-		this.components = components.clone();
-		this.patternName = patternName;
-		this.colorSpace = colorSpace;
-	}
+    /**
+     * Creates a PDColor containing the given color component values and pattern name.
+     * @param components array of color component values
+     * @param patternName the name of a pattern in a pattern dictionary
+     * @param colorSpace color space in which the pattern/components are defined
+     */
+    public PDColor(float[] components, COSName patternName, PDColorSpace colorSpace)
+    {
+        this.components = components.clone();
+        this.patternName = patternName;
+        this.colorSpace = colorSpace;
+    }
 
-	/**
-	 * Returns the components of this color value.
-	 * @return the components of this color value
-	 */
-	public float[] getComponents()
-	{
-		return components.clone();
-	}
+    /**
+     * Returns the components of this color value.
+     * @return the components of this color value
+     */
+    public float[] getComponents()
+    {
+        return components.clone();
+    }
 
-	/**
-	 * Returns the pattern name from this color value.
-	 * @return the pattern name from this color value
-	 */
-	public COSName getPatternName()
-	{
-		return patternName;
-	}
+    /**
+     * Returns the pattern name from this color value.
+     * @return the pattern name from this color value
+     */
+    public COSName getPatternName()
+    {
+        return patternName;
+    }
 
-	/**
-	 * Returns true if this color value is a pattern.
-	 * @return true if this color value is a pattern
-	 */
-	public boolean isPattern()
-	{
-		return patternName != null;
-	}
+    /**
+     * Returns true if this color value is a pattern.
+     * @return true if this color value is a pattern
+     */
+    public boolean isPattern()
+    {
+        return patternName != null;
+    }
 
-	/**
-	 * Returns the packed RGB value for this color, if any.
-	 * @return RGB
-	 * @throws IOException if the color conversion fails
-	 * @throws IllegalStateException if this color value is a pattern.
-	 */
+    /**
+     * Returns the packed RGB value for this color, if any.
+     * @return RGB
+     * @throws IOException if the color conversion fails
+     * @throws IllegalStateException if this color value is a pattern.
+     */
     public int toRGB() throws IOException
     {
         float[] floats = colorSpace.toRGB(components);
@@ -136,33 +136,33 @@ public final class PDColor
         return rgb;
     }
 
-	/**
+    /**
      * Returns the color component values as a COS array
      * @return the color component values as a COS array
      */
     public COSArray toCOSArray()
-	{
-		COSArray array = new COSArray();
-		array.setFloatArray(components);
+    {
+        COSArray array = new COSArray();
+        array.setFloatArray(components);
         if (patternName != null)
         {
             array.add(patternName);
         }
         return array;
-	}
+    }
 
-	/**
-	 * Returns the color space in which this color value is defined.
-	 */
-	public PDColorSpace getColorSpace()
-	{
-		return colorSpace;
-	}
+    /**
+     * Returns the color space in which this color value is defined.
+     */
+    public PDColorSpace getColorSpace()
+    {
+        return colorSpace;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "PDColor{components=" + Arrays.toString(components) +
-				", patternName=" + patternName + "}";
-	}
+    @Override
+    public String toString()
+    {
+        return "PDColor{components=" + Arrays.toString(components) +
+            ", patternName=" + patternName + "}";
+    }
 }

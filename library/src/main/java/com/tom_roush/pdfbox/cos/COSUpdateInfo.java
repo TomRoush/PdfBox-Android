@@ -16,20 +16,20 @@
  */
 package com.tom_roush.pdfbox.cos;
 
-public interface COSUpdateInfo 
+public interface COSUpdateInfo
 {
-	/**
-	 * Get the update state for the COSWriter.
-	 * 
-	 * @return the update state.
-	 */
-	boolean isNeedToBeUpdated();
+    /**
+     * Get the update state for the COSWriter.
+     *
+     * @return the update state.
+     */
+    boolean isNeedToBeUpdated();
 
-	/**
-	 * Set the update state of the dictionary for the COSWriter.
-	 * 
-	 * @param flag the update state.
-	 */
-	void setNeedToBeUpdated(boolean flag);
+    /**
+     * Set the update state of the dictionary for the COSWriter.
+     *
+     * @param flag the update state.
+     */
+    void setNeedToBeUpdated(boolean flag);
 
 }

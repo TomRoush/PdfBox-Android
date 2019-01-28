@@ -16,13 +16,13 @@
  */
 package com.tom_roush.pdfbox.contentstream.operator.graphics;
 
+import android.graphics.Path;
+
 import java.io.IOException;
 import java.util.List;
 
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSBase;
-
-import android.graphics.Path;
 
 /**
  * W Set the clipping path using non zero winding rule.
@@ -31,15 +31,15 @@ import android.graphics.Path;
  */
 public class ClipNonZeroRule extends GraphicsOperatorProcessor
 {
-	@Override
-	public void process(Operator operator, List<COSBase> operands) throws IOException
-	{
-		context.clip(Path.FillType.WINDING);
-	}
+    @Override
+    public void process(Operator operator, List<COSBase> operands) throws IOException
+    {
+        context.clip(Path.FillType.WINDING);
+    }
 
-	@Override
-	public String getName()
-	{
-		return "W";
-	}
+    @Override
+    public String getName()
+    {
+        return "W";
+    }
 }

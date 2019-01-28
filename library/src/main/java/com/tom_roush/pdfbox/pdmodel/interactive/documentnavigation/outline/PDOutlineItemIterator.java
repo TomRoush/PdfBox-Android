@@ -20,45 +20,45 @@ import java.util.Iterator;
 
 /**
  * Iterator over the linked list of {@link PDOutlineItem} siblings.
- * 
+ *
  * @author Andrea Vacondio
  *
  */
 class PDOutlineItemIterator implements Iterator<PDOutlineItem>
 {
-	private PDOutlineItem currentItem;
-	private final PDOutlineItem startingItem;
+    private PDOutlineItem currentItem;
+    private final PDOutlineItem startingItem;
 
-	PDOutlineItemIterator(PDOutlineItem startingItem)
-	{
-		this.startingItem = startingItem;
-	}
+    PDOutlineItemIterator(PDOutlineItem startingItem)
+    {
+        this.startingItem = startingItem;
+    }
 
-	@Override
-	public boolean hasNext()
-	{
-		return startingItem != null
-				&& (currentItem == null || (currentItem.getNextSibling() != null && !startingItem
-				.equals(currentItem.getNextSibling())));
-	}
+    @Override
+    public boolean hasNext()
+    {
+        return startingItem != null
+            && (currentItem == null || (currentItem.getNextSibling() != null && !startingItem
+            .equals(currentItem.getNextSibling())));
+    }
 
-	@Override
-	public PDOutlineItem next()
-	{
-		if (currentItem == null)
-		{
-			currentItem = startingItem;
-		}
-		else
-		{
-			currentItem = currentItem.getNextSibling();
-		}
-		return currentItem;
-	}
+    @Override
+    public PDOutlineItem next()
+    {
+        if (currentItem == null)
+        {
+            currentItem = startingItem;
+        }
+        else
+        {
+            currentItem = currentItem.getNextSibling();
+        }
+        return currentItem;
+    }
 
-	@Override
-	public void remove()
-	{
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public void remove()
+    {
+        throw new UnsupportedOperationException();
+    }
 }

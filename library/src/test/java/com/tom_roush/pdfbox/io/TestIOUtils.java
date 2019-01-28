@@ -19,39 +19,39 @@
 
 package com.tom_roush.pdfbox.io;
 
-import junit.framework.TestCase;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import junit.framework.TestCase;
 
 /**
  * This is a unit test for {@link IOUtils}.
  */
 public class TestIOUtils extends TestCase
 {
-	/**
-	 * Tests {@link IOUtils#populateBuffer(java.io.InputStream, byte[]).
-	 * @throws IOException if an I/O error occursn
-	 */
-	public void testPopulateBuffer() throws IOException
-	{
-		byte[] data = "Hello World!".getBytes();
-		byte[] buffer = new byte[data.length];
-		long count = IOUtils.populateBuffer(new ByteArrayInputStream(data), buffer);
-		assertEquals(12, count);
+    /**
+     * Tests {@link IOUtils#populateBuffer(java.io.InputStream, byte[]).
+     * @throws IOException if an I/O error occursn
+     */
+    public void testPopulateBuffer() throws IOException
+    {
+        byte[] data = "Hello World!".getBytes();
+        byte[] buffer = new byte[data.length];
+        long count = IOUtils.populateBuffer(new ByteArrayInputStream(data), buffer);
+        assertEquals(12, count);
 
-		buffer = new byte[data.length - 2]; //Buffer too small
-		InputStream in = new ByteArrayInputStream(data);
-		count = IOUtils.populateBuffer(in, buffer);
-		assertEquals(10, count);
-		byte[] leftOver = IOUtils.toByteArray(in);
-		assertEquals(2, leftOver.length);
+        buffer = new byte[data.length - 2]; //Buffer too small
+        InputStream in = new ByteArrayInputStream(data);
+        count = IOUtils.populateBuffer(in, buffer);
+        assertEquals(10, count);
+        byte[] leftOver = IOUtils.toByteArray(in);
+        assertEquals(2, leftOver.length);
 
-		buffer = new byte[data.length + 2]; //Buffer too big
-		in = new ByteArrayInputStream(data);
-		count = IOUtils.populateBuffer(in, buffer);
-		assertEquals(12, count);
-		assertEquals(-1, in.read()); //EOD reached
-	}
+        buffer = new byte[data.length + 2]; //Buffer too big
+        in = new ByteArrayInputStream(data);
+        count = IOUtils.populateBuffer(in, buffer);
+        assertEquals(12, count);
+        assertEquals(-1, in.read()); //EOD reached
+    }
 }

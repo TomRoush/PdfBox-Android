@@ -17,6 +17,9 @@
 
 package com.tom_roush.pdfbox.contentstream.operator.color;
 
+import java.io.IOException;
+import java.util.List;
+
 import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
@@ -26,20 +29,20 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceColorSpace;
 
-import java.io.IOException;
-import java.util.List;
-
 /**
  * sc,scn,SC,SCN: Sets the color to use for stroking or non-stroking operations.
  *
  * @author John Hewson
  */
-public abstract class SetColor extends OperatorProcessor {
+public abstract class SetColor extends OperatorProcessor
+{
     @Override
-    public void process(Operator operator, List<COSBase> arguments) throws IOException {
+    public void process(Operator operator, List<COSBase> arguments) throws IOException
+    {
         PDColorSpace colorSpace = getColorSpace();
         if (colorSpace instanceof PDDeviceColorSpace &&
-                arguments.size() < colorSpace.getNumberOfComponents()) {
+            arguments.size() < colorSpace.getNumberOfComponents())
+        {
             throw new MissingOperandException(operator, arguments);
         }
         COSArray array = new COSArray();

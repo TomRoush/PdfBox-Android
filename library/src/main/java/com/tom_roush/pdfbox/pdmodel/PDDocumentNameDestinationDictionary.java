@@ -15,12 +15,12 @@
  */
 package com.tom_roush.pdfbox.pdmodel;
 
+import java.io.IOException;
+
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
-
-import java.io.IOException;
 
 /**
  * This encapsulates the "dictionary of names and corresponding destinations" for the /Dest entry in

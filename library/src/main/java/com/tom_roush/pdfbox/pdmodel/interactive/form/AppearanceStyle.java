@@ -23,80 +23,80 @@ import com.tom_roush.pdfbox.pdmodel.font.PDFont;
  */
 class AppearanceStyle
 {
-	private PDFont font;
+    private PDFont font;
 
-	/**
-	 * The font size to be used for text formatting.
-	 *
-	 * Defaulting to 12 to match Acrobats default.
-	 */
-	private float fontSize = 12.0f;
+    /**
+     * The font size to be used for text formatting.
+     *
+     * Defaulting to 12 to match Acrobats default.
+     */
+    private float fontSize = 12.0f;
 
-	/**
-	 * The leading (distance between lines) to be used for text formatting.
-	 *
-	 * Defaulting to 1.2*fontSize to match Acrobats default.
-	 */
-	private float leading = 14.4f;
+    /**
+     * The leading (distance between lines) to be used for text formatting.
+     *
+     * Defaulting to 1.2*fontSize to match Acrobats default.
+     */
+    private float leading = 14.4f;
 
-	/**
-	 * Get the font used for text formatting.
-	 *
-	 * @return the font used for text formatting.
-	 */
-	PDFont getFont()
-	{
-		return font;
-	}
+    /**
+     * Get the font used for text formatting.
+     *
+     * @return the font used for text formatting.
+     */
+    PDFont getFont()
+    {
+        return font;
+    }
 
-	/**
-	 * Set the font to be used for text formatting.
-	 *
-	 * @param font the font to be used.
-	 */
-	void setFont(PDFont font)
-	{
-		this.font = font;
-	}
+    /**
+     * Set the font to be used for text formatting.
+     *
+     * @param font the font to be used.
+     */
+    void setFont(PDFont font)
+    {
+        this.font = font;
+    }
 
-	/**
-	 * Get the fontSize used for text formatting.
-	 *
-	 * @return the fontSize used for text formatting.
-	 */
-	float getFontSize()
-	{
-		return fontSize;
-	}
+    /**
+     * Get the fontSize used for text formatting.
+     *
+     * @return the fontSize used for text formatting.
+     */
+    float getFontSize()
+    {
+        return fontSize;
+    }
 
-	/**
-	 * Set the font size to be used for formatting.
-	 *
-	 * @param fontSize the font size.
-	 */
-	void setFontSize(float fontSize)
-	{
-		this.fontSize = fontSize;
-		leading = fontSize * 1.2f;
-	}
+    /**
+     * Set the font size to be used for formatting.
+     *
+     * @param fontSize the font size.
+     */
+    void setFontSize(float fontSize)
+    {
+        this.fontSize = fontSize;
+        leading = fontSize * 1.2f;
+    }
 
-	/**
-	 * Get the leading used for text formatting.
-	 *
-	 * @return the leading used for text formatting.
-	 */
-	float getLeading()
-	{
-		return leading;
-	}
+    /**
+     * Get the leading used for text formatting.
+     *
+     * @return the leading used for text formatting.
+     */
+    float getLeading()
+    {
+        return leading;
+    }
 
-	/**
-	 * Set the leading used for text formatting.
-	 *
-	 * @param leading the leading to be used.
-	 */
-	void setLeading(float leading)
-	{
-		this.leading = leading;
-	}
+    /**
+     * Set the leading used for text formatting.
+     *
+     * @param leading the leading to be used.
+     */
+    void setLeading(float leading)
+    {
+        this.leading = leading;
+    }
 }
