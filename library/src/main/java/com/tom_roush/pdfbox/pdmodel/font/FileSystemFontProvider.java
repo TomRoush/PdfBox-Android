@@ -1,6 +1,36 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import android.util.Log;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.prefs.Preferences;
 
 import com.tom_roush.fontbox.FontBoxFont;
 import com.tom_roush.fontbox.cff.CFFCIDFont;
@@ -16,20 +46,6 @@ import com.tom_roush.fontbox.util.autodetect.FontFileFinder;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.util.Charsets;
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.prefs.Preferences;
 
 /**
  * A FontProvider which searches for fonts on the local filesystem.

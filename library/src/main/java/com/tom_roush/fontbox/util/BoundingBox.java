@@ -16,7 +16,6 @@
  */
 package com.tom_roush.fontbox.util;
 
-
 import java.util.List;
 
 /**
@@ -189,6 +188,7 @@ public class BoundingBox
      *
      * @return This object as a string.
      */
+    @Override
     public String toString()
     {
         return "[" + getLowerLeftX() + "," + getLowerLeftY() + "," +
