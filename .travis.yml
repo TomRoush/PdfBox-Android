@@ -35,3 +35,9 @@ script:
   - adb logcat *:S TestRunner:V & LOGCAT_PID=$!
   - ./gradlew build test connectedCheck
   - if [ -n "$LOGCAT_PID" ] ; then kill $LOGCAT_PID; fi
+
+after_success:
+  - if [[ $TRAVIS_REPO_SLUG == 'TomRoush/PdfBox-Android' && $TRAVIS_BRANCH == 'master' &&
+    $TRAVIS_PULL_REQUEST == 'false' ]] && ! grep -q SNAPSHOT gradle.properties; then
+    ./gradlew bintrayUpload;
+    fi;

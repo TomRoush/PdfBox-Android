@@ -1,4 +1,6 @@
-apply plugin: 'com.android.library'
+plugins {
+    id 'com.android.library'
+}
 
 ext {
     PUBLISH_GROUP_ID = 'com.tom_roush'
@@ -38,6 +40,15 @@ android {
             assets.srcDirs = ['src/test/resources'];
         }
     }
+
+    // Rename the output aars
+    android.libraryVariants.all { variant ->
+        variant.outputs.all { output ->
+            if (outputFileName.endsWith('.aar')) {
+                outputFileName = "pdfbox-android-${variant.name}-${defaultConfig.versionName}.aar"
+            }
+        }
+    }
 }
 
 // Test output from https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time
@@ -45,6 +56,11 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 tasks.withType(Test) {
+    // Performance improvements for tests
+    maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
+    reports.html.enabled = false
+    reports.junitXml.enabled = false
+
     testLogging {
         // set options for log level LIFECYCLE
         events TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED, TestLogEvent.STANDARD_OUT, TestLogEvent.STANDARD_ERROR
@@ -77,4 +93,4 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
 }
 
-apply from: 'android-release-jar.gradle'
+apply from: 'bintray-release.gradle'

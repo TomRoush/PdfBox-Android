@@ -1,0 +1,115 @@
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'maven-publish'
+
+task copyResources(type: Copy) {
+    from fileTree('src/main/resources') //.files
+    into 'src/main/assets'
+    include('**/*')
+}
+
+preBuild.dependsOn copyResources
+
+clean {
+    delete 'src/main/assets'
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+
+    dryRun = false
+    publish = false
+    override = false
+
+    pkg {
+        repo = 'PdfBox-Android'
+        name = 'PdfBox-Android'
+
+        version {
+            name = project.VERSION_NAME
+        }
+    }
+
+    publications = ['Production']
+}
+
+task androidJavadocs(type: Javadoc) {
+    failOnError false
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+
+    // disable the crazy super-strict doclint tool in Java 8
+    if (JavaVersion.current().isJava8Compatible()) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+    if (JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+
+    options.encoding = "UTF-8"
+    options.docTitle("PdfBox-Android")
+    options.links("https://docs.oracle.com/javase/8/docs/api/")
+    options.linksOffline('http://developer.android.com/reference/', "${android.sdkDirectory}/docs/reference")
+
+    exclude '**/BuildConfig.java'
+    exclude '**/R.java'
+}
+
+afterEvaluate {
+    androidJavadocs.classpath += files(android.libraryVariants.collect { variant ->
+        variant.javaCompileProvider.get().classpath.files
+    })
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    classifier = 'javadoc'
+    from androidJavadocs.destinationDir
+}
+
+task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+def pomConfig = {
+    licenses {
+        license {
+            name "The Apache Software License, Version 2.0"
+            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            distribution "repo"
+        }
+    }
+
+    scm {
+        url "https://github.com/TomRoush/PdfBox-Android"
+    }
+}
+
+publishing {
+    publications {
+        Production(MavenPublication) {
+            artifact "$buildDir/outputs/aar/pdfbox-android-release-${project.VERSION_NAME}.aar"
+            artifact androidJavadocsJar
+            artifact androidSourcesJar
+
+            groupId project.PUBLISH_GROUP_ID
+            artifactId project.PUBLISH_ARTIFACT_ID
+            version project.PUBLISH_VERSION
+
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('name', 'PdfBox-Android')
+                root.children().last() + pomConfig
+
+                // Manually add all the pom nodes for dependencies
+                def dependenciesNode = asNode().appendNode('dependencies')
+                configurations.api.allDependencies.each {
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', it.group)
+                    dependencyNode.appendNode('artifactId', it.name)
+                    dependencyNode.appendNode('version', it.version)
+                }
+            }
+        }
+    }
+}
