@@ -1,10 +1,16 @@
 package com.tom_roush.pdfbox.sample;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
@@ -74,9 +80,18 @@ public class MainActivity extends Activity {
         // Enable Android-style asset loading (highly recommended)
         PDFBoxResourceLoader.init(getApplicationContext());
         // Find the root of the external storage.
-        root = android.os.Environment.getExternalStorageDirectory();
+        root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         assetManager = getAssets();
         tv = (TextView) findViewById(R.id.statusTextView);
+
+        // Need to ask for write permissions on SDK 23 and up, this is ignored on older versions
+        if (ContextCompat.checkSelfPermission(MainActivity.this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+        {
+
+            ActivityCompat.requestPermissions(MainActivity.this,
+                new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+        }
     }
 
     /**
@@ -90,11 +105,16 @@ public class MainActivity extends Activity {
         // Create a new font object selecting one of the PDF base fonts
         PDFont font = PDType1Font.HELVETICA;
         // Or a custom font
-        //		try {
-        //			PDType0Font font = PDType0Font.load(document, assetManager.open("MyFontFile.TTF"));
-        //		} catch(IOException e) {
-        //			e.printStackTrace();
-        //		}
+//        try
+//        {
+//            // Replace MyFontFile with the path to the asset font you'd like to use.
+//            // Or use LiberationSans "com/tom_roush/pdfbox/resources/ttf/LiberationSans-Regular.ttf"
+//            font = PDType0Font.load(document, assetManager.open("MyFontFile.TTF"));
+//        }
+//        catch (IOException e)
+//        {
+//            Log.e("PdfBox-Android-Sample", "Could not load font", e);
+//        }
 
         PDPageContentStream contentStream;
 
@@ -132,13 +152,13 @@ public class MainActivity extends Activity {
             contentStream.close();
 
             // Save the final pdf document to a file
-            String path = root.getAbsolutePath() + "/Download/Created.pdf";
+            String path = root.getAbsolutePath() + "/Created.pdf";
             document.save(path);
             document.close();
             tv.setText("Successfully wrote PDF to " + path);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("PdfBox-Android-Sample", "Exception thrown while creating PDF", e);
         }
     }
 
@@ -156,7 +176,7 @@ public class MainActivity extends Activity {
             pageImage = renderer.renderImage(0, 1, Bitmap.Config.RGB_565);
 
             // Save the render result to an image
-            String path = root.getAbsolutePath() + "/Download/render.jpg";
+            String path = root.getAbsolutePath() + "/render.jpg";
             File renderFile = new File(path);
             FileOutputStream fileOut = new FileOutputStream(renderFile);
             pageImage.compress(Bitmap.CompressFormat.JPEG, 100, fileOut);
@@ -164,8 +184,10 @@ public class MainActivity extends Activity {
             tv.setText("Successfully rendered image to " + path);
             // Optional: display the render result on screen
             displayRenderedImage();
-        } catch(Exception e) {
-            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            Log.e("PdfBox-Android-Sample", "Exception thrown while rendering file", e);
         }
     }
 
@@ -200,12 +222,12 @@ public class MainActivity extends Activity {
             PDField dropdown = acroForm.getField("Dropdown");
             ((PDComboBox) dropdown).setValue("Hello");
 
-            String path = root.getAbsolutePath() + "/Download/FilledForm.pdf";
+            String path = root.getAbsolutePath() + "/FilledForm.pdf";
             tv.setText("Saved filled form to " + path);
             document.save(path);
             document.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("PdfBox-Android-Sample", "Exception thrown while filling form fields", e);
         }
     }
 
@@ -218,7 +240,7 @@ public class MainActivity extends Activity {
         try {
             document = PDDocument.load(assetManager.open("Hello.pdf"));
         } catch(IOException e) {
-            e.printStackTrace();
+            Log.e("PdfBox-Android-Sample", "Exception thrown while loading document to strip", e);
         }
 
         try {
@@ -226,24 +248,28 @@ public class MainActivity extends Activity {
             pdfStripper.setStartPage(0);
             pdfStripper.setEndPage(1);
             parsedText = "Parsed text: " + pdfStripper.getText(document);
-        } catch (Exception e) {
-            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            Log.e("PdfBox-Android-Sample", "Exception thrown while stripping text", e);
         } finally {
             try {
                 if (document != null) document.close();
-            } catch (Exception e) {
-                e.printStackTrace();
+            }
+            catch (IOException e)
+            {
+                Log.e("PdfBox-Android-Sample", "Exception thrown while closing document", e);
             }
         }
         tv.setText(parsedText);
     }
 
     /**
-     * Creates a simple pdf and encrypts
+     * Creates a simple pdf and encrypts it
      */
-    public void createEncryptedPdf()
+    public void createEncryptedPdf(View v)
     {
-        String path = root.getAbsolutePath() + "/Download/crypt.pdf";
+        String path = root.getAbsolutePath() + "/crypt.pdf";
 
         int keyLength = 128; // 128 bit is the highest currently supported
 
@@ -283,11 +309,12 @@ public class MainActivity extends Activity {
             document.protect(spp); // Apply the protections to the PDF
             document.save(path);
             document.close();
+            tv.setText("Successfully wrote PDF to " + path);
 
         }
         catch (IOException e)
         {
-            e.printStackTrace();
+            Log.e("PdfBox-Android-Sample", "Exception thrown while creating PDF for encryption", e);
         }
     }
 
