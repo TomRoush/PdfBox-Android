@@ -154,10 +154,10 @@ public class COSWriter implements ICOSVisitor, Closeable
      */
     public static final byte[] ENDSTREAM = "endstream".getBytes(Charsets.US_ASCII);
 
-    private final NumberFormat formatXrefOffset = new DecimalFormat("0000000000");
+    private final NumberFormat formatXrefOffset = NumberFormat.getNumberInstance(Locale.US);
 
     // the decimal format for the xref object generation number data
-    private final NumberFormat formatXrefGeneration = new DecimalFormat("00000");
+    private final NumberFormat formatXrefGeneration = NumberFormat.getNumberInstance(Locale.US);
 
     private final NumberFormat formatDecimal = NumberFormat.getNumberInstance( Locale.US );
 
@@ -224,6 +224,8 @@ public class COSWriter implements ICOSVisitor, Closeable
         setStandardOutput(new COSStandardOutputStream(output));
         formatDecimal.setMaximumFractionDigits( 10 );
         formatDecimal.setGroupingUsed( false );
+        ((DecimalFormat)formatXrefOffset).applyPattern("0000000000");
+        ((DecimalFormat)formatXrefGeneration).applyPattern("00000");
     }
 
     /**
@@ -248,6 +250,8 @@ public class COSWriter implements ICOSVisitor, Closeable
 
         formatDecimal.setMaximumFractionDigits( 10 );
         formatDecimal.setGroupingUsed( false );
+        ((DecimalFormat)formatXrefOffset).applyPattern("0000000000");
+        ((DecimalFormat)formatXrefGeneration).applyPattern("00000");
     }
 
     private void prepareIncrement(PDDocument doc)
