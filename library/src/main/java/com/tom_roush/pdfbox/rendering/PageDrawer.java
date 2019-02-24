@@ -91,6 +91,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     // glyph cache
     private final Map<PDFont, Glyph2D> fontGlyph2D = new HashMap<PDFont, Glyph2D>();
 
+    private PointF currentPoint = new PointF();
+
 	/**
 	 * Constructor.
 	 *
@@ -719,27 +721,31 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public void moveTo(float x, float y)
     {
+        currentPoint.x = x;
+        currentPoint.y = y;
         linePath.moveTo(x, y);
     }
 
     @Override
     public void lineTo(float x, float y)
     {
+        currentPoint.x = x;
+        currentPoint.y = y;
         linePath.lineTo(x, y);
     }
 
     @Override
     public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3)
     {
+        currentPoint.x = x3;
+        currentPoint.y = y3;
         linePath.cubicTo(x1, y1, x2, y2, x3, y3); // TODO: check if this should be relative
     }
 
     @Override
     public PointF getCurrentPoint()
     {
-    	Log.d("PdfBox-Android", "PageDrawer.getCurrentPoint does not return the right value");
-    	return new PointF();
-//        return linePath.getCurrentPoint();
+    	return currentPoint;
     }
 
     @Override
