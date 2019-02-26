@@ -16,13 +16,14 @@
  */
 package com.tom_roush.fontbox.afm;
 
-import com.tom_roush.fontbox.util.BoundingBox;
-
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
+
+import com.tom_roush.fontbox.util.BoundingBox;
+import com.tom_roush.fontbox.util.Charsets;
 
 /**
  * This class is used to parse AFM(Adobe Font Metrics) documents.
@@ -289,35 +290,6 @@ public class AFMParser
     private final InputStream input;
 
     /**
-     * A method to test parsing of all AFM documents in the resources
-     * directory.
-     *
-     * @param args Ignored.
-     *
-     * @throws IOException If there is an error parsing one of the documents.
-     */
-    public static void main( String[] args ) throws IOException
-    {
-        java.io.File afmDir = new java.io.File( "Resources/afm" );
-        java.io.File[] files = afmDir.listFiles();
-        if (files != null)
-        {
-        	for (File file : files)
-        	{
-        		if (file.getPath().toUpperCase().endsWith(".AFM"))
-        		{
-        			long start = System.currentTimeMillis();
-        			FileInputStream input = new FileInputStream(file);
-        			AFMParser parser = new AFMParser(input);
-        			parser.parse();
-        			long stop = System.currentTimeMillis();
-        			System.out.println("Parsing:" + file.getPath() + " " + (stop - start));
-        		}
-        	}
-        }
-    }
-
-    /**
      * Constructor.
      *
      * @param in The input stream to read the AFM document from.
@@ -328,7 +300,7 @@ public class AFMParser
     }
 
     /**
-     * This will parse the AFM document.  This will close the Input stream
+     * This will parse the AFM document.  The input stream is closed
      * when the parsing is finished.
      *
      * @return the parsed FontMetric
@@ -337,7 +309,20 @@ public class AFMParser
      */
     public FontMetrics parse() throws IOException
     {
-    	return parseFontMetric();
+        return parseFontMetric(false);
+    }
+
+    /**
+     * This will parse the AFM document. The input stream is closed
+     * when the parsing is finished.
+     *
+     * @param reducedDataset parse a reduced subset of data if set to true
+     * @return the parsed FontMetric
+     * @throws IOException If there is an IO error reading the document.
+     */
+    public FontMetrics parse(boolean reducedDataset) throws IOException
+    {
+        return parseFontMetric(reducedDataset);
     }
 
     /**
@@ -347,7 +332,7 @@ public class AFMParser
      *
      * @throws IOException If there is an error reading the AFM file.
      */
-    private FontMetrics parseFontMetric() throws IOException
+    private FontMetrics parseFontMetric(boolean reducedDataset) throws IOException
     {
         FontMetrics fontMetrics = new FontMetrics();
         String startFontMetrics = readString();
@@ -358,6 +343,7 @@ public class AFMParser
         }
         fontMetrics.setAFMVersion( readFloat() );
         String nextCommand;
+        boolean charMetricsRead = false;
         while( !END_FONT_METRICS.equals( (nextCommand = readString() ) ) )
         {
             if( FONT_NAME.equals( nextCommand ) )
@@ -482,10 +468,11 @@ public class AFMParser
             else if( START_CHAR_METRICS.equals( nextCommand ) )
             {
                 int count = readInt();
+                List<CharMetric> charMetrics = new ArrayList<CharMetric>(count);
                 for( int i=0; i<count; i++ )
                 {
                     CharMetric charMetric = parseCharMetric();
-                    fontMetrics.addCharMetric( charMetric );
+                    charMetrics.add(charMetric);
                 }
                 String end = readString();
                 if( !end.equals( END_CHAR_METRICS ) )
@@ -493,8 +480,10 @@ public class AFMParser
                     throw new IOException( "Error: Expected '" + END_CHAR_METRICS + "' actual '" +
                                                 end + "'" );
                 }
+                charMetricsRead = true;
+                fontMetrics.setCharMetrics(charMetrics);
             }
-            else if( START_COMPOSITES.equals( nextCommand ) )
+            else if (!reducedDataset && START_COMPOSITES.equals(nextCommand))
             {
                 int count = readInt();
                 for( int i=0; i<count; i++ )
@@ -509,12 +498,16 @@ public class AFMParser
                                                 end + "'" );
                 }
             }
-            else if( START_KERN_DATA.equals( nextCommand ) )
+            else if (!reducedDataset && START_KERN_DATA.equals(nextCommand))
             {
                 parseKernData( fontMetrics );
             }
             else
             {
+                if (reducedDataset && charMetricsRead)
+                {
+                    break;
+                }
                 throw new IOException( "Unknown AFM key '" + nextCommand + "'" );
             }
         }
@@ -699,7 +692,7 @@ public class AFMParser
                 throw new IOException( "Error parsing AFM file:" + e );
             }
         }
-        return new String( data, "ISO-8859-1" );
+        return new String(data, Charsets.ISO_8859_1);
     }
 
     /**
@@ -982,7 +975,7 @@ public class AFMParser
     private String readLine() throws IOException
     {
         //First skip the whitespace
-        StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder(60);
         int nextByte = input.read();
         while( isWhitespace( nextByte ) )
         {
@@ -1009,7 +1002,7 @@ public class AFMParser
     private String readString() throws IOException
     {
         //First skip the whitespace
-        StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder(24);
         int nextByte = input.read();
         while( isWhitespace( nextByte ) )
         {
