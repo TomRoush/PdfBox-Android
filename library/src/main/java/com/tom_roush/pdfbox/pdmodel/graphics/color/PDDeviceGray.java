@@ -91,14 +91,10 @@ public final class PDDeviceGray extends PDDeviceColorSpace
 
         int[] rgb = new int[width * height];
         image.getPixels(rgb, 0, width, 0, 0, width, height);
-        for (int y = 0; y < height; y++)
+        for (int pixelIdx = 0; pixelIdx < width * height; pixelIdx++)
         {
-            for (int x = 0; x < width; x++)
-            {
-                int idx = x + width * y;
-                int value = gray[idx];
-                rgb[idx] = Color.argb(255, value, value, value);
-            }
+            int value = gray[pixelIdx];
+            rgb[pixelIdx] = Color.argb(255, value, value, value);
         }
         image.setPixels(rgb, 0, width, 0, 0, width, height);
         return image;

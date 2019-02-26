@@ -18,7 +18,10 @@ package com.tom_roush.pdfbox.pdmodel.graphics.image;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 
-import com.tom_roush.harmony.awt.AWTColor;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageOutputStream;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -29,10 +32,6 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 /**
  * Factory for creating a PDImageXObject containing a lossless compressed image.
@@ -59,58 +58,62 @@ public final class LosslessFactory
         int bpc;
         PDDeviceColorSpace deviceColorSpace;
 
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int height = image.getHeight();
         int width = image.getWidth();
+        byte[] imageData;
 
         if (image.getConfig() == Bitmap.Config.ALPHA_8)
 //        if ((image.getType() == BufferedImage.TYPE_BYTE_GRAY && image.getColorModel().getPixelSize() <= 8)
 //                || (image.getType() == BufferedImage.TYPE_BYTE_BINARY && image.getColorModel().getPixelSize() == 1))
         {
-            MemoryCacheImageOutputStream mcios = new MemoryCacheImageOutputStream(bos);
-
             // grayscale images need one color per sample
 //            bpc = image.getColorModel().getPixelSize();
             bpc = 8;
             deviceColorSpace = PDDeviceGray.INSTANCE;
 
+            ByteArrayOutputStream bos = new ByteArrayOutputStream(
+                (width * bpc / 8) + (width * bpc % 8 != 0 ? 1 : 0) * height);
+            MemoryCacheImageOutputStream mcios = new MemoryCacheImageOutputStream(bos);
+
             int[] imagePixels = new int[width * height];
             image.getPixels(imagePixels, 0, width, 0, 0, width, height);
             for (int y = 0; y < height; ++y)
             {
-                for (int x = 0; x < width; ++x)
+                for (int pixelIdx = width * y; pixelIdx < (y + 1) * width; ++pixelIdx)
                 {
-                    mcios.writeBits(imagePixels[x + width * y] & 0xFF, bpc);
+                    mcios.writeBits(imagePixels[pixelIdx] & 0xFF, bpc);
                 }
-                while (mcios.getBitOffset() != 0)
+
+                int bitOffset = mcios.getBitOffset();
+                if (bitOffset != 0)
                 {
-                    mcios.writeBit(0);
+                    mcios.writeBits(0, 8 - bitOffset);
                 }
             }
             mcios.flush();
             mcios.close();
+
+            imageData = bos.toByteArray();
         }
         else
         {
             // RGB
             bpc = 8;
             deviceColorSpace = PDDeviceRGB.INSTANCE;
+            imageData = new byte[width * height * 3];
+            int byteIdx = 0;
 
             int[] imagePixels = new int[width * height];
             image.getPixels(imagePixels, 0, width, 0, 0, width, height);
-            for (int y = 0; y < height; ++y)
+            for (int pixel : imagePixels)
             {
-                for (int x = 0; x < width; ++x)
-                {
-                    AWTColor color = new AWTColor(imagePixels[x + width * y]);
-                    bos.write(color.getRed());
-                    bos.write(color.getGreen());
-                    bos.write(color.getBlue());
-                }
+                imageData[byteIdx++] = (byte)((pixel >> 16) & 0xFF);
+                imageData[byteIdx++] = (byte)((pixel >> 8) & 0xFF);
+                imageData[byteIdx++] = (byte)(pixel & 0xFF);
             }
         }
 
-        PDImageXObject pdImage = prepareImageXObject(document, bos.toByteArray(), 
+        PDImageXObject pdImage = prepareImageXObject(document, imageData,
                 image.getWidth(), image.getHeight(), bpc, deviceColorSpace);
 
         // alpha -> soft mask
@@ -259,7 +262,8 @@ public final class LosslessFactory
             byte [] byteArray, int width, int height, int bitsPerComponent, 
             PDColorSpace initColorSpace) throws IOException
     {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // Pre-size the output stream to half of the input
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(byteArray.length / 2);
 
         Filter filter = FilterFactory.INSTANCE.getFilter(COSName.FLATE_DECODE);
         filter.encode(new ByteArrayInputStream(byteArray), baos, new COSDictionary(), 0);

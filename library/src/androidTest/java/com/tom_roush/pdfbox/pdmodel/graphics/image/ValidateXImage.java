@@ -17,18 +17,18 @@ package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
 import android.graphics.Bitmap;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -96,12 +96,9 @@ public class ValidateXImage
 
         int[] bimPixels = new int[w * h];
         bim.getPixels(bimPixels, 0, w, 0, 0, w, h);
-        for (int y = 0; y < h; y++)
+        for (int pixel : bimPixels)
         {
-            for (int x = 0; x < w; x++)
-            {
-                colors.add(bimPixels[x + w * y]);
-            }
+            colors.add(pixel);
         }
         return colors.size();
     }

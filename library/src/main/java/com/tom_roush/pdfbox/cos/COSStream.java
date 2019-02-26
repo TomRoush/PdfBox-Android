@@ -16,15 +16,6 @@
  */
 package com.tom_roush.pdfbox.cos;
 
-import com.tom_roush.pdfbox.filter.Filter;
-import com.tom_roush.pdfbox.filter.FilterFactory;
-import com.tom_roush.pdfbox.io.IOUtils;
-import com.tom_roush.pdfbox.io.RandomAccess;
-import com.tom_roush.pdfbox.io.RandomAccessBuffer;
-import com.tom_roush.pdfbox.io.RandomAccessInputStream;
-import com.tom_roush.pdfbox.io.RandomAccessOutputStream;
-import com.tom_roush.pdfbox.io.ScratchFile;
-
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.FilterOutputStream;
@@ -33,6 +24,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.tom_roush.pdfbox.filter.Filter;
+import com.tom_roush.pdfbox.filter.FilterFactory;
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.io.RandomAccess;
+import com.tom_roush.pdfbox.io.RandomAccessBuffer;
+import com.tom_roush.pdfbox.io.RandomAccessInputStream;
+import com.tom_roush.pdfbox.io.RandomAccessOutputStream;
+import com.tom_roush.pdfbox.io.ScratchFile;
 
 /**
  * This class represents a stream object in a PDF document.
@@ -211,6 +211,12 @@ public class COSStream extends COSDictionary implements Closeable
         return new FilterOutputStream(cosOut)
         {
             @Override
+            public void write(byte[] b, int off, int len) throws IOException
+            {
+                this.out.write(b, off, len);
+            }
+
+            @Override
             public void close() throws IOException
             {
                 super.close();
@@ -253,6 +259,12 @@ public class COSStream extends COSDictionary implements Closeable
         isWriting = true;
         return new FilterOutputStream(out)
         {
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException
+            {
+                this.out.write(b, off, len);
+            }
+
             @Override
             public void close() throws IOException
             {

@@ -22,6 +22,14 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.ref.SoftReference;
+import java.util.List;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSInputStream;
@@ -35,14 +43,6 @@ import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.ref.SoftReference;
-import java.util.List;
 
 /**
  * An Image XObject.
@@ -352,22 +352,19 @@ public final class PDImageXObject extends PDXObject implements PDImage
         mask.getPixels(maskPixels, 0, width, 0, 0, width, height);
 
         int alphaPixel;
-        for (int y = 0; y < height; y++)
+        for (int pixelIdx = 0; pixelIdx < width * height; pixelIdx++)
         {
-            for (int x = 0; x < width; x++)
-            {
-                int color = imagePixels[x + width * y];
-                
-                // Greyscale, any rgb component should do
-                alphaPixel = Color.red(maskPixels[x + width * y]);
-                if (!isSoft)
-                {
-                    alphaPixel = 255 - alphaPixel;
-                }
+            int color = imagePixels[pixelIdx];
 
-                maskPixels[x + width * y] = Color.argb(alphaPixel, Color.red(color),
-                    Color.green(color), Color.blue(color));
+            // Greyscale, any rgb component should do
+            alphaPixel = Color.red(maskPixels[pixelIdx]);
+            if (!isSoft)
+            {
+                alphaPixel = 255 - alphaPixel;
             }
+
+            maskPixels[pixelIdx] = Color.argb(alphaPixel, Color.red(color), Color.green(color),
+                Color.blue(color));
         }
         masked.setPixels(maskPixels, 0, width, 0, 0, width, height);
 

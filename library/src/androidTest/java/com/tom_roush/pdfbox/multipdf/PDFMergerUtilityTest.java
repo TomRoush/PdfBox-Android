@@ -19,15 +19,15 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.test.InstrumentationRegistry;
 
+import java.io.File;
+import java.io.IOException;
+
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -160,12 +160,9 @@ public class PDFMergerUtilityTest
         bim1.getPixels(bim1Pixels, 0, w, 0, 0, w, h);
         int[] bim2Pixels = new int[w * h];
         bim2.getPixels(bim2Pixels, 0, w, 0, 0, w, h);
-        for (int i = 0; i < w; ++i)
+        for (int pixelIdx = 0; pixelIdx < w * h; pixelIdx++)
         {
-            for (int j = 0; j < h; ++j)
-            {
-                assertEquals(bim1Pixels[i + w * j], bim2Pixels[i + w * j]);
-            }
+            assertEquals(bim1Pixels[pixelIdx], bim2Pixels[pixelIdx]);
         }
     }
 }

@@ -71,14 +71,11 @@ final class SampledImageReader
         int[] alpha = new int[width * height];
         mask.getPixels(alpha, 0, width, 0, 0, width, height);
 
-        for (int y = 0; y < height; y++)
+        for (int pixelIdx = 0; pixelIdx < width * height; pixelIdx++)
         {
-            for (int x = 0; x < width; x++)
+            if (Color.red(alpha[pixelIdx]) == 255)
             {
-                if (Color.red(alpha[x + width * y]) == 255)
-                {
-                    raster[x + width * y] = Color.TRANSPARENT;
-                }
+                raster[pixelIdx] = Color.TRANSPARENT;
             }
         }
         masked.setPixels(raster, 0, width, 0, 0, width, height);
@@ -236,15 +233,18 @@ final class SampledImageReader
             Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             int[] rasterPixels = new int[width * height];
             raster.getPixels(rasterPixels, 0, width, 0, 0, width, height);
-            for(int y = 0; y < height; y++) {
-            	for(int x = 0; x < width; x++) {
-            		if(numComponents == 1) {
-            			int in = input.read();
-            			rasterPixels[x + width * y] = Color.argb(255, in, in, in);
-            		} else {
-            			rasterPixels[x + width * y] = Color.argb(255, input.read(), input.read(), input.read());
-            		}
-            	}
+            for (int pixelIdx = 0; pixelIdx < width * height; pixelIdx++)
+            {
+                if (numComponents == 1)
+                {
+                    int in = input.read();
+                    rasterPixels[pixelIdx] = Color.argb(255, in, in, in);
+                }
+                else
+                {
+                    rasterPixels[pixelIdx] = Color.argb(255, input.read(), input.read(),
+                        input.read());
+                }
             }
             raster.setPixels(rasterPixels, 0, width, 0 ,0, width, height);
 
