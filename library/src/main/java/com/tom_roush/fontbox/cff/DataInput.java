@@ -19,6 +19,8 @@ package com.tom_roush.fontbox.cff;
 import java.io.EOFException;
 import java.io.IOException;
 
+import com.tom_roush.fontbox.util.Charsets;
+
 /**
  * This class contains some functionality to read a byte buffer.
  * 
@@ -73,7 +75,7 @@ public class DataInput
      */
     public String getString() throws IOException
     {
-        return new String(inputBuffer, "ISO-8859-1");
+        return new String(inputBuffer, Charsets.ISO_8859_1);
     }
 
     /**
@@ -83,7 +85,16 @@ public class DataInput
      */
     public byte readByte() throws IOException
     {
-        return (byte) readUnsignedByte();
+        try
+        {
+            byte value = inputBuffer[bufferPosition];
+            bufferPosition++;
+            return value;
+        }
+        catch (RuntimeException re)
+        {
+            return -1;
+        }
     }
 
     /**
@@ -168,11 +179,13 @@ public class DataInput
      */
     public byte[] readBytes(int length) throws IOException
     {
-        byte[] bytes = new byte[length];
-        for (int i = 0; i < length; i++)
+        if (inputBuffer.length - bufferPosition < length)
         {
-            bytes[i] = readByte();
+            throw new EOFException();
         }
+        byte[] bytes = new byte[length];
+        System.arraycopy(inputBuffer, bufferPosition, bytes, 0, length);
+        bufferPosition += length;
         return bytes;
     }
 
@@ -205,6 +218,6 @@ public class DataInput
     
     public int length()
     {
-    	return inputBuffer.length;
+        return inputBuffer.length;
     }
 }

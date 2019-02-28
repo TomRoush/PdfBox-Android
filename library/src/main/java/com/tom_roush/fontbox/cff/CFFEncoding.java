@@ -16,10 +16,10 @@
  */
 package com.tom_roush.fontbox.cff;
 
-import com.tom_roush.fontbox.encoding.Encoding;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.tom_roush.fontbox.encoding.Encoding;
 
 /**
  * A CFF Type 1-equivalent Encoding. An encoding is an array of codes associated with some or all
@@ -29,7 +29,7 @@ import java.util.Map;
  */
 public abstract class CFFEncoding extends Encoding
 {
-    private final Map<Integer, String> codeToName = new HashMap<Integer, String>();
+    private final Map<Integer, String> codeToName = new HashMap<Integer, String>(250);
 
     /**
      * Package-private constructor for subclasses.

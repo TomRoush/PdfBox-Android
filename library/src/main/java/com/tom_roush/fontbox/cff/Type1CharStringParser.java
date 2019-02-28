@@ -78,7 +78,15 @@ public class Type1CharStringParser
             if (b0 == CALLSUBR)
             {
                 // callsubr command
-                Integer operand=(Integer)sequence.remove(sequence.size()-1);
+                Object obj = sequence.remove(sequence.size() - 1);
+                if (!(obj instanceof Integer))
+                {
+                    Log.w("PdfBox-Android", "Parameter " + obj +
+                        " for CALLSUBR is ignored, integer expected in glyph '" + glyphName +
+                        "' of font " + fontName);
+                    continue;
+                }
+                Integer operand = (Integer)obj;
 
                 if (operand >= 0 && operand < subrs.size())
                 {
@@ -127,8 +135,7 @@ public class Type1CharStringParser
                     // all remaining othersubrs use this fallback mechanism
                     for (int i = 0; i < numArgs; i++)
                     {
-                        Integer arg = removeInteger(sequence);
-                        results.push(arg);
+                        results.push(removeInteger(sequence));
                     }
                 }
 
@@ -137,8 +144,7 @@ public class Type1CharStringParser
                 {
                     input.readByte(); // B0_POP
                     input.readByte(); // B1_POP
-                    Integer val = results.pop();
-                    sequence.add(val);
+                    sequence.add(results.pop());
                 }
 
                 if (results.size() > 0)
@@ -164,23 +170,23 @@ public class Type1CharStringParser
 
     // this method is a workaround for the fact that Type1CharStringParser assumes that subrs and
     // othersubrs can be unrolled without executing the 'div' operator, which isn't true
-    private Integer removeInteger(List<Object> sequence) throws IOException
+    private static Integer removeInteger(List<Object> sequence) throws IOException
     {
-    	Object item = sequence.remove(sequence.size() - 1);
-    	if (item instanceof Integer)
-    	{
-    		return (Integer)item;
-    	}
-    	CharStringCommand command = (CharStringCommand)item;
+        Object item = sequence.remove(sequence.size() - 1);
+        if (item instanceof Integer)
+        {
+            return (Integer)item;
+        }
+        CharStringCommand command = (CharStringCommand)item;
 
-    	// div
-    	if (command.getKey().getValue()[0] == 12 && command.getKey().getValue()[1] == 12)
-    	{
-    		int a = (Integer)sequence.remove(sequence.size() - 1);
-    		int b = (Integer)sequence.remove(sequence.size() - 1);
-    		return b / a;
-    	}
-    	throw new IOException("Unexpected char string command: " + command.getKey());
+        // div
+        if (command.getKey().getValue()[0] == 12 && command.getKey().getValue()[1] == 12)
+        {
+            int a = (Integer)sequence.remove(sequence.size() - 1);
+            int b = (Integer)sequence.remove(sequence.size() - 1);
+            return b / a;
+        }
+        throw new IOException("Unexpected char string command: " + command.getKey());
     }
 
     private CharStringCommand readCommand(DataInput input, int b0) throws IOException
@@ -211,12 +217,7 @@ public class Type1CharStringParser
         } 
         else if (b0 == 255)
         {
-            int b1 = input.readUnsignedByte();
-            int b2 = input.readUnsignedByte();
-            int b3 = input.readUnsignedByte();
-            int b4 = input.readUnsignedByte();
-
-            return b1 << 24 | b2 << 16 | b3 << 8 | b4;
+            return input.readInt();
         } 
         else
         {
