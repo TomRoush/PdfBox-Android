@@ -21,9 +21,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * A TrueType Collection, now more properly known as a "Font Collection" as it may contain either
@@ -34,7 +31,8 @@ import java.util.List;
 public class TrueTypeCollection implements Closeable
 {
     private final TTFDataStream stream;
-    private final List<TrueTypeFont> fonts;
+    private final int numFonts;
+    private final long[] fontOffsets;
 
     /**
      * Creates a new TrueTypeCollection from a .ttc file.
@@ -75,48 +73,78 @@ public class TrueTypeCollection implements Closeable
             throw new IOException("Missing TTC header");
         }
         float version = stream.read32Fixed();
-        int numFonts = (int) stream.readUnsignedInt();
-        long[] fontOffsets = new long[numFonts];
+        numFonts = (int)stream.readUnsignedInt();
+        fontOffsets = new long[numFonts];
         for (int i = 0; i < numFonts; i++)
         {
             fontOffsets[i] = stream.readUnsignedInt();
         }
         if (version >= 2)
         {
+            // not used at this time
             int ulDsigTag = stream.readUnsignedShort();
             int ulDsigLength = stream.readUnsignedShort();
             int ulDsigOffset = stream.readUnsignedShort();
         }
-
-        // lazy-load the fonts
-        List<TrueTypeFont> fonts = new ArrayList<TrueTypeFont>();
-        for (int i = 0; i < numFonts; i++)
-        {
-            stream.seek(fontOffsets[i]);
-            if (stream.readTag().equals("OTTO"))
-            {
-                stream.seek(fontOffsets[i]);
-                OTFParser parser = new OTFParser(false, true);
-                OpenTypeFont otf = parser.parse(new TTCDataStream(stream));
-                fonts.add(otf);
-            }
-            else
-            {
-                stream.seek(fontOffsets[i]);
-                TTFParser parser = new TTFParser(false, true);
-                TrueTypeFont ttf = parser.parse(new TTCDataStream(stream));
-                fonts.add(ttf);
-            }
-        }
-        this.fonts = Collections.unmodifiableList(fonts);
     }
 
     /**
-     * Returns the fonts in the collection, these may be {@link OpenTypeFont} instances.
+     * Run the callback for each TT font in the collection.
+     *
+     * @param trueTypeFontProcessor the object with the callback method.
+     * @throws IOException
      */
-    public List<TrueTypeFont> getFonts()
+    public void processAllFonts(TrueTypeFontProcessor trueTypeFontProcessor) throws IOException
     {
-        return fonts;
+        for (int i = 0; i < numFonts; i++)
+        {
+            TrueTypeFont font = getFontAtIndex(i);
+            trueTypeFontProcessor.process(font);
+        }
+    }
+
+    private TrueTypeFont getFontAtIndex(int idx) throws IOException
+    {
+        stream.seek(fontOffsets[idx]);
+        TTFParser parser;
+        if (stream.readTag().equals("OTTO"))
+        {
+            parser = new OTFParser(false, true);
+        }
+        else
+        {
+            parser = new TTFParser(false, true);
+        }
+        stream.seek(fontOffsets[idx]);
+        return parser.parse(new TTCDataStream(stream));
+    }
+
+    /**
+     * Get a TT font from a collection.
+     *
+     * @param name The postscript name of the font.
+     * @return The found font, nor null if none is found.
+     * @throws IOException
+     */
+    public TrueTypeFont getFontByName(String name) throws IOException
+    {
+        for (int i = 0; i < numFonts; i++)
+        {
+            TrueTypeFont font = getFontAtIndex(i);
+            if (font.getName().equals(name))
+            {
+                return font;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Implement the callback method to call {@link TrueTypeCollection#processAllFonts(TrueTypeFontProcessor)}.
+     */
+    public interface TrueTypeFontProcessor
+    {
+        void process(TrueTypeFont ttf) throws IOException;
     }
 
     @Override

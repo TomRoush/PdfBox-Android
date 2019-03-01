@@ -85,14 +85,14 @@ public final class WGL4Names
 
     static
     {
-        MAC_GLYPH_NAMES_INDICES = new HashMap<String,Integer>();
+        MAC_GLYPH_NAMES_INDICES = new HashMap<String, Integer>(NUMBER_OF_MAC_GLYPHS);
         for (int i = 0; i < NUMBER_OF_MAC_GLYPHS; ++i)
         {
             MAC_GLYPH_NAMES_INDICES.put(MAC_GLYPH_NAMES[i],i);
         }
     }
-    
-    private WGL4Names ()
+
+    private WGL4Names()
     {
     }
 }

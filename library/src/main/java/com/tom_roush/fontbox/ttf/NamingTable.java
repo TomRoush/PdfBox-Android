@@ -17,10 +17,13 @@
 package com.tom_roush.fontbox.ttf;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.tom_roush.fontbox.util.Charsets;
 
 /**
  * A table in a true type font.
@@ -34,10 +37,9 @@ public class NamingTable extends TTFTable
      */
     public static final String TAG = "name";
 
-    private final List<NameRecord> nameRecords = new ArrayList<NameRecord>();
+    private List<NameRecord> nameRecords;
 
-    private final Map<Integer, Map<Integer, Map<Integer, Map<Integer, String>>>> lookupTable =
-            new HashMap<Integer, Map<Integer, Map<Integer, Map<Integer, String>>>>();
+    private Map<Integer, Map<Integer, Map<Integer, Map<Integer, String>>>> lookupTable;
 
     private String fontFamily = null;
     private String fontSubFamily = null;
@@ -55,11 +57,13 @@ public class NamingTable extends TTFTable
      * @param data The stream to read the data from.
      * @throws IOException If there is an error reading the data.
      */
+    @Override
     public void read(TrueTypeFont ttf, TTFDataStream data) throws IOException
     {
         int formatSelector = data.readUnsignedShort();
         int numberOfNameRecords = data.readUnsignedShort();
         int offsetToStartOfStringStorage = data.readUnsignedShort();
+        nameRecords = new ArrayList<NameRecord>(numberOfNameRecords);
         for (int i=0; i< numberOfNameRecords; i++)
         {
             NameRecord nr = new NameRecord();
@@ -67,39 +71,39 @@ public class NamingTable extends TTFTable
             nameRecords.add(nr);
         }
 
-        for (int i=0; i<numberOfNameRecords; i++)
+        for (NameRecord nr : nameRecords)
         {
-            NameRecord nr = nameRecords.get(i);
-            
             // don't try to read invalid offsets, see PDFBOX-2608
             if (nr.getStringOffset() > getLength())
             {
-            	nr.setString(null);
-            	continue;
+                nr.setString(null);
+                continue;
             }
             
             data.seek(getOffset() + (2*3)+numberOfNameRecords*2*6+nr.getStringOffset());
             int platform = nr.getPlatformId();
             int encoding = nr.getPlatformEncodingId();
-            String charset = "ISO-8859-1";
-            if (platform == 3 && (encoding == 1 || encoding == 0))
+            Charset charset = Charsets.ISO_8859_1;
+            if (platform == NameRecord.PLATFORM_WINDOWS &&
+                (encoding == NameRecord.ENCODING_WINDOWS_SYMBOL ||
+                    encoding == NameRecord.ENCODING_WINDOWS_UNICODE_BMP))
             {
-                charset = "UTF-16";
+                charset = Charsets.UTF_16;
             }
-            else if (platform == 2)
+            else if (platform == NameRecord.PLATFORM_ISO)
             {
                 if (encoding == 0)
                 {
-                    charset = "US-ASCII";
+                    charset = Charsets.US_ASCII;
                 }
                 else if (encoding == 1)
                 {
                     //not sure is this is correct??
-                    charset = "ISO-10646-1";
+                    charset = Charsets.ISO_10646;
                 }
                 else if (encoding == 2)
                 {
-                    charset = "ISO-8859-1";
+                    charset = Charsets.ISO_8859_1;
                 }
             }
             
@@ -108,33 +112,35 @@ public class NamingTable extends TTFTable
         }
 
         // build multi-dimensional lookup table
+        lookupTable = new HashMap<Integer, Map<Integer, Map<Integer, Map<Integer, String>>>>(
+            nameRecords.size());
         for (NameRecord nr : nameRecords)
         {
             // name id
-            if (!lookupTable.containsKey(nr.getNameId()))
+            Map<Integer, Map<Integer, Map<Integer, String>>> platformLookup = lookupTable.get(
+                nr.getNameId());
+            if (platformLookup == null)
             {
-                lookupTable.put(nr.getNameId(),
-                        new HashMap<Integer, Map<Integer, Map<Integer, String>>>());
+                platformLookup = new HashMap<Integer, Map<Integer, Map<Integer, String>>>();
+                lookupTable.put(nr.getNameId(), platformLookup);
             }
-            Map<Integer, Map<Integer, Map<Integer, String>>> platformLookup =
-                    lookupTable.get(nr.getNameId());
 
             // platform id
-            if (!platformLookup.containsKey(nr.getPlatformId()))
+            Map<Integer, Map<Integer, String>> encodingLookup = platformLookup.get(
+                nr.getPlatformId());
+            if (encodingLookup == null)
             {
-                platformLookup.put(nr.getPlatformId(),
-                                   new HashMap<Integer, Map<Integer, String>>());
+                encodingLookup = new HashMap<Integer, Map<Integer, String>>();
+                platformLookup.put(nr.getPlatformId(), encodingLookup);
             }
-            Map<Integer, Map<Integer, String>> encodingLookup =
-                    platformLookup.get(nr.getPlatformId());
 
             // encoding id
-            if (!encodingLookup.containsKey(nr.getPlatformEncodingId()))
-            {
-               encodingLookup.put(nr.getPlatformEncodingId(),
-                                  new HashMap<Integer, String>());
-            }
             Map<Integer, String> languageLookup = encodingLookup.get(nr.getPlatformEncodingId());
+            if (languageLookup == null)
+            {
+                languageLookup = new HashMap<Integer, String>();
+                encodingLookup.put(nr.getPlatformEncodingId(), languageLookup);
+            }
 
             // language id / string
             languageLookup.put(nr.getLanguageId(), nr.getString());
@@ -157,6 +163,11 @@ public class NamingTable extends TTFTable
                              NameRecord.LANGUGAE_WINDOWS_EN_US);
         }
 
+        if (psName != null)
+        {
+            psName = psName.trim();
+        }
+
         initialized = true;
     }
 
@@ -166,7 +177,7 @@ public class NamingTable extends TTFTable
     private String getEnglishName(int nameId)
     {
         // Unicode, Full, BMP, 1.1, 1.0
-        for (int i = 4; i <= 0; i--)
+        for (int i = 4; i >= 0; i--)
         {
             String nameUni =
                     getName(nameId,

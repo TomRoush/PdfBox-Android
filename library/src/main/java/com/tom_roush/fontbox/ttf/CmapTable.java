@@ -46,6 +46,7 @@ public class CmapTable extends TTFTable
     public static final int ENCODING_WIN_PRC = 4;
     public static final int ENCODING_WIN_WANSUNG = 5;
     public static final int ENCODING_WIN_JOHAB = 6;
+    public static final int ENCODING_WIN_UNICODE_FULL = 10; // Unicode Full (UCS-4)
 
     // Unicode encodings
     public static final int ENCODING_UNICODE_1_0 = 0;
