@@ -40,25 +40,26 @@ public class FontFileFinder
     private FontDirFinder determineDirFinder()
     {
     	// Should only return with an Android Font Directory
-    	
-//        final String osName = System.getProperty("os.name");
-//        if (osName.startsWith("Windows"))
-//        {
-//            return new WindowsFontDirFinder();
-//        }
-//        else
-//        {
-//            if (osName.startsWith("Mac"))
-//            {
-//                return new MacFontDirFinder();
-//            }
-//            else
-//            {
     	if(System.getProperty("java.vendor").equals("The Android Project")) {
     		return new AndroidFontDirFinder();
     	} else {
-                return new UnixFontDirFinder(); // Just in case
-//            }
+            // Should never happen, but it's here just in case
+            final String osName = System.getProperty("os.name");
+            if (osName.startsWith("Windows"))
+            {
+                return new WindowsFontDirFinder();
+            }
+            else
+            {
+                if (osName.startsWith("Mac"))
+                {
+                    return new MacFontDirFinder();
+                }
+                else
+                {
+                    return new UnixFontDirFinder();
+                }
+            }
         }
     }
 
