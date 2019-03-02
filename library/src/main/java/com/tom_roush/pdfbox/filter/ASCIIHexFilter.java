@@ -18,12 +18,12 @@ package com.tom_roush.pdfbox.filter;
 
 import android.util.Log;
 
-import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.util.Hex;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.util.Hex;
 
 /**
  * Decodes data encoded in an ASCII hexadecimal form, reproducing the original binary data.
@@ -114,7 +114,7 @@ final class ASCIIHexFilter extends Filter
         int byteRead;
         while ((byteRead = input.read()) != -1)
         {
-        	encoded.write(Hex.getBytes((byte)byteRead));
+            encoded.write(Hex.getBytes((byte)byteRead));
         }
         encoded.flush();
     }

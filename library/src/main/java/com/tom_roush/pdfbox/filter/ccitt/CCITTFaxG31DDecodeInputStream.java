@@ -119,14 +119,14 @@ public final class CCITTFaxG31DDecodeInputStream extends InputStream
         }
         if (this.bits < 0)
         {
-        	//Shortcut after EOD
+            //Shortcut after EOD
             return false;
         }
         this.y++;
         int x = 0;
         if (this.rows > 0 && this.y >= this.rows)
         {
-        	//All rows decoded, ignore further bits
+            //All rows decoded, ignore further bits
             return false;
         }
         this.decodedLine.clear();
@@ -157,12 +157,12 @@ public final class CCITTFaxG31DDecodeInputStream extends InputStream
                 expectRTC--;
                 if (expectRTC == 0)
                 {
-                	//Return to Control = End Of Data
+                    //Return to Control = End Of Data
                     return false;
                 }
                 if (x == 0)
                 {
-                	//Ignore leading EOL
+                    //Ignore leading EOL
                     continue;
                 }
             }
@@ -307,10 +307,8 @@ public final class CCITTFaxG31DDecodeInputStream extends InputStream
     /** Interface for code words. */
     private interface CodeWord
     {
-
         int getType();
         int execute(CCITTFaxG31DDecodeInputStream decoder) throws IOException;
-
     }
 
     /** Non-leaf nodes that hold a child node for both the 0 and 1 cases for the lookup tree. */
@@ -434,8 +432,8 @@ public final class CCITTFaxG31DDecodeInputStream extends InputStream
             int bit;
             do
             {
-            	bit = decoder.readBit();
-            	//bit 1 finishes the EOL, any number of bit 0 allowed as fillers
+                bit = decoder.readBit();
+                //bit 1 finishes the EOL, any number of bit 0 allowed as fillers
             } while (bit == 0);
             if (bit < 0)
             {
