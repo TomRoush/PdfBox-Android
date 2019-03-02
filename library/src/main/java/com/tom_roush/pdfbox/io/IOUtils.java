@@ -92,7 +92,7 @@ public final class IOUtils
         }
         return buffer.length - remaining;
     }
-    
+
     /**
      * Null safe close of the given {@link Closeable} suppressing any exception.
      *
@@ -100,16 +100,16 @@ public final class IOUtils
      */
     public static void closeQuietly(Closeable closeable)
     {
-    	try
-    	{
-    		if (closeable != null)
-    		{
-    			closeable.close();
-    		}
-    	}
-    	catch (IOException ioe)
-    	{
-    		// ignore
-    	}
+        try
+        {
+            if (closeable != null)
+            {
+                closeable.close();
+            }
+        }
+        catch (IOException ioe)
+        {
+            // ignore
+        }
     }
 }
