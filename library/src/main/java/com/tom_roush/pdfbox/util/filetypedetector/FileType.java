@@ -14,28 +14,49 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tom_roush.pdfbox.exceptions;
-
-import java.io.IOException;
+package com.tom_roush.pdfbox.util.filetypedetector;
 
 /**
- * This exception will be thrown when a local destination(page within the same PDF) is required
- * but the bookmark(PDOutlineItem) refers to an external destination or an action that does not
- * point to a page.
+ * @author Drew Noakes
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.2 $
+ * code taken from https://github.com/drewnoakes/metadata-extractor
+ *
+ * 2016-01-04
+ *
+ * latest commit number 73f1a48
+ *
+ * Enumeration of supported image file formats.
  */
-public class OutlineNotLocalException extends IOException
+public enum FileType
 {
+    UNKNOWN, JPEG, TIFF, PSD, PNG, BMP, GIF, ICO, PCX, RIFF,
 
     /**
-     * Constructor.
-     *
-     * @param msg An error message.
+     * Sony camera raw.
      */
-    public OutlineNotLocalException( String msg )
-    {
-        super( msg );
-    }
+    ARW,
+    /**
+     * Canon camera raw, version 1.
+     */
+    CRW,
+    /**
+     * Canon camera raw, version 2.
+     */
+    CR2,
+    /**
+     * Nikon camera raw.
+     */
+    NEF,
+    /**
+     * Olympus camera raw.
+     */
+    ORF,
+    /**
+     * FujiFilm camera raw.
+     */
+    RAF,
+    /**
+     * Panasonic camera raw.
+     */
+    RW2
 }

@@ -93,7 +93,6 @@ public final class Matrix implements Cloneable
         single[7] = (float)at.getTranslateY();
     }
 
-
     /**
      * This method resets the numbers in this Matrix to the original values, which are
      * the values that a newly constructed Matrix would have.
@@ -135,7 +134,6 @@ public final class Matrix implements Cloneable
         single[6] = (float)af.getTranslateX();
         single[7] = (float)af.getTranslateY();
     }
-
 
     /**
      * This will get a matrix value at some point.
@@ -261,7 +259,7 @@ public final class Matrix implements Cloneable
     }
 
     /**
-     * This will take the current matrix and multipy it with a matrix that is passed in.
+     * This will take the current matrix and multiply it with a matrix that is passed in.
      *
      * @param b The matrix to multiply by.
      *
@@ -457,7 +455,9 @@ public final class Matrix implements Cloneable
      * @param tx The x translating operator.
      * @param ty The y translating operator.
      * @return A new matrix with just the x/y translating.
+     * @deprecated Use {@link #getTranslateInstance} instead.
      */
+    @Deprecated
     public static Matrix getTranslatingInstance(float tx, float ty)
     {
         return getTranslateInstance(tx, ty);
@@ -576,7 +576,7 @@ public final class Matrix implements Cloneable
     }
 
     /**
-     *  * Returns the x-scaling element of this matrix.
+     * Returns the x-scaling element of this matrix.
      */
     public float getScaleX()
     {
@@ -625,6 +625,7 @@ public final class Matrix implements Cloneable
 
     /**
      * Get the x position in the matrix. This method is deprecated as it is incorrectly named.
+     *
      * @return The x-position.
      * @deprecated Use {@link #getTranslateX} instead
      */
@@ -636,6 +637,7 @@ public final class Matrix implements Cloneable
 
     /**
      * Get the y position. This method is deprecated as it is incorrectly named.
+     *
      * @return The y position.
      * @deprecated Use {@link #getTranslateY} instead
      */
