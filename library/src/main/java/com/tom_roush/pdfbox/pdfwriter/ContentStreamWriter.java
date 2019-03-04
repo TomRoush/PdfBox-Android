@@ -115,7 +115,7 @@ public class ContentStreamWriter
     {
         if( o instanceof COSString )
         {
-        	COSWriter.writeString((COSString)o, output);
+            COSWriter.writeString((COSString)o, output);
             output.write(SPACE);
         }
         else if( o instanceof COSFloat )

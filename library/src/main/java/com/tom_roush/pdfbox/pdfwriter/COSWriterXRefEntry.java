@@ -35,8 +35,8 @@ public class COSWriterXRefEntry implements Comparable<COSWriterXRefEntry>
 
     static
     {
-    	NULLENTRY = new COSWriterXRefEntry(0, null, new COSObjectKey(0, 65535));
-    	NULLENTRY.setFree(true);
+        NULLENTRY = new COSWriterXRefEntry(0, null, new COSObjectKey(0, 65535));
+        NULLENTRY.setFree(true);
     }
 
     /**
@@ -45,19 +45,19 @@ public class COSWriterXRefEntry implements Comparable<COSWriterXRefEntry>
     @Override
     public int compareTo(COSWriterXRefEntry obj)
     {
-    	if (obj != null)
-    	{
-    		if (getKey().getNumber() < obj.getKey().getNumber())
-    		{
-    			return -1;
-    		}
-    		else if (getKey().getNumber() > obj.getKey().getNumber())
-    		{
-    			return 1;
-    		}
-    		return 0;
-    	}
-    	return -1;
+        if (obj != null)
+        {
+            if (getKey().getNumber() < obj.getKey().getNumber())
+            {
+                return -1;
+            }
+            else if (getKey().getNumber() > obj.getKey().getNumber())
+            {
+                return 1;
+            }
+            return 0;
+        }
+        return -1;
     }
 
     /**
