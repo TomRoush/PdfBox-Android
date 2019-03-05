@@ -29,6 +29,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNull;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.io.MemoryUsageSetting;
 import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.io.ScratchFile;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
@@ -190,7 +191,15 @@ public class PDFParser extends COSParser
                         + " does not contain an integer value, but: '" + eofLookupRangeStr + "'");
             }
         }
-        document = new COSDocument(useScratchFiles);
+        ScratchFile scratchFile = null; // TODO: PdfBox-Android
+        try
+        {
+            scratchFile = new ScratchFile(MemoryUsageSetting.setupMainMemoryOnly());
+        }
+        catch (IOException ioe2)
+        {
+        }
+        document = new COSDocument(scratchFile);
     }
 
     /**

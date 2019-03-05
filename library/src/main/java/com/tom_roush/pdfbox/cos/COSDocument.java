@@ -19,7 +19,6 @@ package com.tom_roush.pdfbox.cos;
 import android.util.Log;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,6 +53,11 @@ public class COSDocument extends COSBase implements Closeable
         new HashMap<COSObjectKey, Long>();
 
     /**
+     * List containing all streams which are created when creating a new pdf.
+     */
+    private final List<COSStream> streams = new ArrayList<COSStream>();
+
+    /**
      * Document trailer dictionary.
      */
     private COSDictionary trailer;
@@ -74,58 +78,22 @@ public class COSDocument extends COSBase implements Closeable
     private ScratchFile scratchFile;
 
     /**
-     * Constructor.
-     *
-     * @param useScratchFiles enables the usage of a scratch file if set to true
-     *
+     * Constructor. Uses main memory to buffer PDF streams.
      */
-    public COSDocument(boolean useScratchFiles)
+    public COSDocument()
     {
-        this((File) null, useScratchFiles);
-    }
-
-    /**
-     * Constructor that will use a temporary file in the given directory
-     * for storage of the PDF streams. The temporary file is automatically
-     * removed when this document gets closed.
-     *
-     * @param scratchDir directory for the temporary file,
-     *                   or <code>null</code> to use the system default
-     * @param useScratchFiles enables the usage of a scratch file if set to true
-     *
-     */
-    public COSDocument(File scratchDir, boolean useScratchFiles)
-    {
-        if (useScratchFiles)
-        {
-            try
-            {
-                scratchFile = new ScratchFile(scratchDir);
-            }
-            catch (IOException e)
-            {
-                Log.e("PdfBox-Android", "Can't create temp file, using memory buffer instead", e);
-            }
-        }
+        this(ScratchFile.getMainMemoryOnlyInstance());
     }
 
     /**
      * Constructor that will use the provide memory handler for storage of the
      * PDF streams.
      *
-     * @param scratchFile memory handler for storage of PDF streams
+     * @param scratchFile memory handler for buffering of PDF streams
      */
     public COSDocument(ScratchFile scratchFile)
     {
         this.scratchFile = scratchFile;
-    }
-
-    /**
-     * Constructor. Uses memory to store stream.
-     */
-    public COSDocument()
-    {
-        this(false);
     }
 
     /**
@@ -135,7 +103,12 @@ public class COSDocument extends COSBase implements Closeable
      */
     public COSStream createCOSStream()
     {
-        return new COSStream(scratchFile);
+        COSStream stream = new COSStream(scratchFile);
+        // collect all COSStreams so that they can be closed when closing the COSDocument.
+        // This is limited to newly created pdfs as all COSStreams of an existing pdf are
+        // collected within the map objectPool
+        streams.add(stream);
+        return stream;
     }
 
     /**
@@ -288,7 +261,6 @@ public class COSDocument extends COSBase implements Closeable
      */
     public void setVersion( float versionValue )
     {
-        // update header string
         version = versionValue;
     }
 
@@ -461,6 +433,14 @@ public class COSDocument extends COSBase implements Closeable
                     {
                         ((COSStream)cosObject).close();
                     }
+                }
+            }
+
+            if (streams != null)
+            {
+                for (COSStream stream : streams)
+                {
+                    stream.close();
                 }
             }
 

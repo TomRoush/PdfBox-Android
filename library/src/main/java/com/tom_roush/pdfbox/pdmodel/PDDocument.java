@@ -149,29 +149,25 @@ public class PDDocument implements Closeable
     private PDDocument(boolean useScratchFiles, MemoryUsageSetting memUsageSetting)
     {
         ScratchFile scratchFile = null;
-        if (memUsageSetting != null)
+        try
         {
+            scratchFile = new ScratchFile(memUsageSetting);
+        }
+        catch (Exception ioe) // TODO: PdfBox-Android
+        {
+            Log.w("PdfBox-Android", "Error initializing scratch file: " + ioe.getMessage() +
+                ". Fall back to main memory usage only.");
             try
             {
-                scratchFile = new ScratchFile(memUsageSetting);
+                scratchFile = new ScratchFile(MemoryUsageSetting.setupMainMemoryOnly());
             }
-            catch (IOException ioe)
+            catch (IOException ioe2)
             {
-                Log.w("PdfBox-Android", "Error initializing scratch file: " + ioe.getMessage() +
-                    ". Fall back to main memory usage only.");
-                try
-                {
-                    scratchFile = new ScratchFile(MemoryUsageSetting.setupMainMemoryOnly());
-                }
-                catch (IOException ioe2)
-                {
-                }
             }
         }
 
 
-        document = scratchFile != null ? new COSDocument(scratchFile) :
-            new COSDocument(useScratchFiles);
+        document = new COSDocument(scratchFile);
         pdfSource = null;
 
         // First we need a trailer

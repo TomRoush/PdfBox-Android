@@ -16,6 +16,8 @@
  */
 package com.tom_roush.pdfbox.cos;
 
+import android.util.Log;
+
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.FilterOutputStream;
@@ -29,7 +31,6 @@ import com.tom_roush.pdfbox.filter.Filter;
 import com.tom_roush.pdfbox.filter.FilterFactory;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.RandomAccess;
-import com.tom_roush.pdfbox.io.RandomAccessBuffer;
 import com.tom_roush.pdfbox.io.RandomAccessInputStream;
 import com.tom_roush.pdfbox.io.RandomAccessOutputStream;
 import com.tom_roush.pdfbox.io.ScratchFile;
@@ -50,8 +51,7 @@ public class COSStream extends COSDictionary implements Closeable
      */
     public COSStream()
     {
-        this.randomAccess = new RandomAccessBuffer();
-        this.scratchFile = null;
+        this(ScratchFile.getMainMemoryOnlyInstance());
     }
 
     /**
@@ -62,31 +62,8 @@ public class COSStream extends COSDictionary implements Closeable
     public COSStream(ScratchFile scratchFile)
     {
         super();
-        this.randomAccess = createRandomAccess(scratchFile);
-        this.scratchFile = scratchFile;
-    }
-
-    /**
-     * Creates a buffer for writing stream data, either in-memory or on-disk.
-     */
-    private RandomAccess createRandomAccess(ScratchFile scratchFile)
-    {
-        if (scratchFile != null)
-        {
-            try
-            {
-                return scratchFile.createBuffer();
-            }
-            catch (IOException e)
-            {
-                // user can't recover from this exception anyway
-                throw new RuntimeException(e);
-            }
-        }
-        else
-        {
-            return new RandomAccessBuffer();
-        }
+        this.scratchFile =
+            scratchFile != null ? scratchFile : ScratchFile.getMainMemoryOnlyInstance();
     }
 
     /**
@@ -95,7 +72,7 @@ public class COSStream extends COSDictionary implements Closeable
      */
     private void checkClosed() throws IOException
     {
-        if (randomAccess.isClosed())
+        if ((randomAccess != null) && randomAccess.isClosed())
         {
             throw new IOException("COSStream has been closed and cannot be read. " +
                 "Perhaps its enclosing PDDocument has been closed?");
@@ -116,6 +93,29 @@ public class COSStream extends COSDictionary implements Closeable
     }
 
     /**
+     * Ensures {@link #randomAccess} is not <code>null</code> by creating a
+     * buffer from {@link #scratchFile} if needed.
+     *
+     * @param forInputStream if <code>true</code> and {@link #randomAccess} is <code>null</code>
+     * a debug message is logged - input stream should be retrieved after
+     * data being written to stream
+     * @throws IOException
+     */
+    private void ensureRandomAccessExists(boolean forInputStream) throws IOException
+    {
+        if (randomAccess == null)
+        {
+            if (forInputStream)
+            {
+                // no data written to stream - maybe this should be an exception
+                Log.d("PdfBox-Android",
+                    "Create InputStream called without data being written before to stream.");
+            }
+            randomAccess = scratchFile.createBuffer();
+        }
+    }
+
+    /**
      * Returns a new InputStream which reads the encoded PDF stream data. Experts only!
      *
      * @return InputStream containing raw, encoded PDF stream data.
@@ -128,6 +128,7 @@ public class COSStream extends COSDictionary implements Closeable
         {
             throw new IllegalStateException("Cannot read while there is an open stream writer");
         }
+        ensureRandomAccessExists(true);
         return new RandomAccessInputStream(randomAccess);
     }
 
@@ -147,7 +148,7 @@ public class COSStream extends COSDictionary implements Closeable
     /**
      * Returns a new InputStream which reads the decoded stream data.
      *
-     * @return InputStream containing raw, decoded stream data.
+     * @return InputStream containing decoded stream data.
      * @throws IOException If the stream could not be read.
      */
     public COSInputStream createInputStream() throws IOException
@@ -157,6 +158,7 @@ public class COSStream extends COSDictionary implements Closeable
         {
             throw new IllegalStateException("Cannot read while there is an open stream writer");
         }
+        ensureRandomAccessExists(true);
         InputStream input = new RandomAccessInputStream(randomAccess);
         return COSInputStream.create(getFilterList(), this, input, scratchFile);
     }
@@ -204,7 +206,8 @@ public class COSStream extends COSDictionary implements Closeable
         {
             setItem(COSName.FILTER, filters);
         }
-        randomAccess = createRandomAccess(scratchFile); // discards old data
+        randomAccess =
+            scratchFile.createBuffer(); // discards old data - TODO: close existing buffer?
         OutputStream randomOut = new RandomAccessOutputStream(randomAccess);
         OutputStream cosOut = new COSOutputStream(getFilterList(), this, randomOut, scratchFile);
         isWriting = true;
@@ -254,7 +257,8 @@ public class COSStream extends COSDictionary implements Closeable
         {
             throw new IllegalStateException("Cannot have more than one open stream writer.");
         }
-        randomAccess = createRandomAccess(scratchFile); // discards old data
+        randomAccess =
+            scratchFile.createBuffer(); // discards old data - TODO: close existing buffer?
         OutputStream out = new RandomAccessOutputStream(randomAccess);
         isWriting = true;
         return new FilterOutputStream(out)
@@ -386,6 +390,9 @@ public class COSStream extends COSDictionary implements Closeable
     public void close() throws IOException
     {
         // marks the scratch file pages as free
-        randomAccess.close();
+        if (randomAccess != null)
+        {
+            randomAccess.close();
+        }
     }
 }
