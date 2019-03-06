@@ -17,14 +17,14 @@
 
 package com.tom_roush.pdfbox.pdmodel.encryption;
 
+import java.io.IOException;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSBoolean;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSString;
-
-import java.io.IOException;
 
 /**
  * This class is a specialized view of the encryption dictionary of a PDF document.
@@ -258,7 +258,7 @@ public class PDEncryption
      */
     public void setOwnerKey(byte[] o) throws IOException
     {
-    	dictionary.setItem(COSName.O, new COSString(o));
+        dictionary.setItem(COSName.O, new COSString(o));
     }
 
     /**
@@ -288,7 +288,7 @@ public class PDEncryption
      */
     public void setUserKey(byte[] u) throws IOException
     {
-    	dictionary.setItem(COSName.U, new COSString(u));
+        dictionary.setItem(COSName.U, new COSString(u));
     }
 
     /**
@@ -318,7 +318,7 @@ public class PDEncryption
      */
     public void setOwnerEncryptionKey(byte[] oe) throws IOException
     {
-    	dictionary.setItem( COSName.OE, new COSString(oe) );
+        dictionary.setItem(COSName.OE, new COSString(oe));
     }
 
     /**
@@ -348,7 +348,7 @@ public class PDEncryption
      */
     public void setUserEncryptionKey(byte[] ue) throws IOException
     {
-    	dictionary.setItem( COSName.UE, new COSString(ue) );
+        dictionary.setItem(COSName.UE, new COSString(ue));
     }
 
     /**
@@ -420,7 +420,7 @@ public class PDEncryption
         COSArray array = new COSArray();
         for (byte[] recipient : recipients)
         {
-        	COSString recip = new COSString(recipient);
+            COSString recip = new COSString(recipient);
             array.add(recip);
         }
         dictionary.setItem(COSName.RECIPIENTS, array);
@@ -570,7 +570,7 @@ public class PDEncryption
      */
     public void setPerms(byte[] perms) throws IOException
     {
-    	dictionary.setItem( COSName.PERMS, new COSString(perms) );
+        dictionary.setItem(COSName.PERMS, new COSString(perms));
     }
 
     /**

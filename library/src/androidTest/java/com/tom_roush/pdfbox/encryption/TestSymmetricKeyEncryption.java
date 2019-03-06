@@ -21,22 +21,6 @@ import android.graphics.Bitmap;
 import android.support.test.InstrumentationRegistry;
 import android.util.Log;
 
-import com.tom_roush.pdfbox.io.IOUtils;
-import com.tom_roush.pdfbox.pdmodel.PDDocument;
-import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
-import com.tom_roush.pdfbox.pdmodel.PDDocumentNameDictionary;
-import com.tom_roush.pdfbox.pdmodel.PDEmbeddedFilesNameTreeNode;
-import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDComplexFileSpecification;
-import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDEmbeddedFile;
-import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
-import com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
-import com.tom_roush.pdfbox.rendering.PDFRenderer;
-import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -49,6 +33,23 @@ import java.util.List;
 import java.util.Map;
 
 import javax.crypto.Cipher;
+
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
+import com.tom_roush.pdfbox.pdmodel.PDDocumentNameDictionary;
+import com.tom_roush.pdfbox.pdmodel.PDEmbeddedFilesNameTreeNode;
+import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDComplexFileSpecification;
+import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDEmbeddedFile;
+import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
+import com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage;
+import com.tom_roush.pdfbox.rendering.PDFRenderer;
+import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -83,7 +84,7 @@ public class TestSymmetricKeyEncryption
         if (Cipher.getMaxAllowedKeyLength("AES") != Integer.MAX_VALUE)
         {
             // we need strong encryption for these tests
-//            fail("JCE unlimited strength jurisdiction policy files are not installed");
+            fail("JCE unlimited strength jurisdiction policy files are not installed");
         }
 
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
@@ -151,18 +152,18 @@ public class TestSymmetricKeyEncryption
             assertEquals("Cannot decrypt PDF, the password is incorrect", ex.getMessage());
         }
 
-//        inputFileAsByteArray = getFileResourceAsByteArray("PasswordSample-256bit.pdf");
-//        checkPerms(inputFileAsByteArray, "owner", fullAP);
-//        checkPerms(inputFileAsByteArray, "user", restrAP);
-//        try
-//        {
-//            checkPerms(inputFileAsByteArray, "", null);
-//            fail("wrong password not detected");
-//        }
-//        catch (IOException ex)
-//        {
-//            assertEquals("Cannot decrypt PDF, the password is incorrect", ex.getMessage());
-//        } TODO: PdfBox-Android
+        inputFileAsByteArray = getFileResourceAsByteArray("PasswordSample-256bit.pdf");
+        checkPerms(inputFileAsByteArray, "owner", fullAP);
+        checkPerms(inputFileAsByteArray, "user", restrAP);
+        try
+        {
+            checkPerms(inputFileAsByteArray, "", null);
+            fail("wrong password not detected");
+        }
+        catch (IOException ex)
+        {
+            assertEquals("Cannot decrypt PDF, the password is incorrect", ex.getMessage());
+        }
     }
 
     private void checkPerms(byte[] inputFileAsByteArray, String password,
@@ -186,7 +187,7 @@ public class TestSymmetricKeyEncryption
         assertEquals(expectedPermissions.canPrint(), currentAccessPermission.canPrint());
         assertEquals(expectedPermissions.canPrintDegraded(), currentAccessPermission.canPrintDegraded());
 
-//        new PDFRenderer(doc).renderImage(0); TODO: PdfBox-Android
+        new PDFRenderer(doc).renderImage(0);
 
         doc.close();
     }
@@ -209,8 +210,8 @@ public class TestSymmetricKeyEncryption
         testSymmEncrForKeySize(128, sizePriorToEncryption, inputFileAsByteArray,
             USERPASSWORD, OWNERPASSWORD, permission);
 
-//        testSymmEncrForKeySize(256, sizePriorToEncryption, inputFileAsByteArray,
-//                USERPASSWORD, OWNERPASSWORD, permission); TODO: PdfBox-Android
+        testSymmEncrForKeySize(256, sizePriorToEncryption, inputFileAsByteArray, USERPASSWORD,
+            OWNERPASSWORD, permission);
     }
 
     /**
@@ -236,8 +237,9 @@ public class TestSymmetricKeyEncryption
         testSymmEncrForKeySizeInner(128, sizeOfFileWithEmbeddedFile,
             inputFileWithEmbeddedFileAsByteArray, extractedEmbeddedFile, USERPASSWORD, OWNERPASSWORD);
 
-//        testSymmEncrForKeySizeInner(256, sizeOfFileWithEmbeddedFile,
-//                inputFileWithEmbeddedFileAsByteArray, extractedEmbeddedFile, USERPASSWORD, OWNERPASSWORD); TODO: PdfBox-Android
+        testSymmEncrForKeySizeInner(256, sizeOfFileWithEmbeddedFile,
+            inputFileWithEmbeddedFileAsByteArray, extractedEmbeddedFile, USERPASSWORD,
+            OWNERPASSWORD);
     }
 
     private void testSymmEncrForKeySize(int keyLength,
@@ -253,7 +255,7 @@ public class TestSymmetricKeyEncryption
         List<byte[]> srcContentStreamTab = new ArrayList<byte[]>();
         for (int i = 0; i < numSrcPages; ++i)
         {
-//            srcImgTab.add(pdfRenderer.renderImage(i)); TODO: PdfBox-Android
+            srcImgTab.add(pdfRenderer.renderImage(i));
             InputStream unfilteredStream = document.getPage(i).getContents();
             byte[] bytes = IOUtils.toByteArray(unfilteredStream);
             unfilteredStream.close();
@@ -268,8 +270,8 @@ public class TestSymmetricKeyEncryption
         for (int i = 0; i < encryptedDoc.getNumberOfPages(); ++i)
         {
             // compare rendering
-//            Bitmap bim = pdfRenderer.renderImage(i);
-//            ValidateXImage.checkIdent(bim, srcImgTab.get(i)); TODO: PdfBox-Android
+            Bitmap bim = pdfRenderer.renderImage(i);
+            ValidateXImage.checkIdent(bim, srcImgTab.get(i));
 
             // compare content streams
             InputStream unfilteredStream = encryptedDoc.getPage(i).getContents();

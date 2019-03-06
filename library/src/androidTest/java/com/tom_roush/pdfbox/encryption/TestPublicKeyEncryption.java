@@ -19,6 +19,17 @@ package com.tom_roush.pdfbox.encryption;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+
+import javax.crypto.Cipher;
+
+import com.tom_roush.pdfbox.io.MemoryUsageSetting;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
 import com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyProtectionPolicy;
@@ -29,16 +40,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-
-import javax.crypto.Cipher;
 
 import static org.junit.Assert.fail;
 
@@ -77,7 +78,7 @@ public class TestPublicKeyEncryption
         if (Cipher.getMaxAllowedKeyLength("AES") != Integer.MAX_VALUE)
         {
             // we need strong encryption for these tests
-//            fail("JCE unlimited strength jurisdiction policy files are not installed");
+            fail("JCE unlimited strength jurisdiction policy files are not installed");
         }
 
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
@@ -271,7 +272,7 @@ public class TestPublicKeyEncryption
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         doc.save(buffer);
         return PDDocument.load(new ByteArrayInputStream(buffer.toByteArray()), decryptionPassword,
-                keyStore, null, false);
+            keyStore, null, MemoryUsageSetting.setupMainMemoryOnly());
     }
 
     /**

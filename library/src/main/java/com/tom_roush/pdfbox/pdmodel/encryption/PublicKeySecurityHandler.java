@@ -174,7 +174,8 @@ public final class PublicKeySecurityHandler extends SecurityHandler
                     {
                         foundRecipient = true;
                         PrivateKey privateKey = (PrivateKey) material.getPrivateKey();
-                        envelopedData = ri.getContent(new JceKeyTransEnvelopedRecipient(privateKey).setProvider(BouncyCastleProvider.PROVIDER_NAME));
+                        envelopedData = ri.getContent(new JceKeyTransEnvelopedRecipient(privateKey).setProvider(
+                            BouncyCastleProvider.PROVIDER_NAME));
                         break;
                     }
                     j++;
@@ -325,9 +326,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
             SecretKey sk = key.generateKey();
             System.arraycopy(sk.getEncoded(), 0, seed, 0, 20); // create the 20 bytes seed
 
-
             byte[][] recipientsField = computeRecipientsField(seed);
-
             dictionary.setRecipients(recipientsField);
 
             int sha1InputLength = seed.length;
