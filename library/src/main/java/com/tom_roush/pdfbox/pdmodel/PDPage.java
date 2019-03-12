@@ -126,7 +126,7 @@ public class PDPage implements COSObjectable, PDContentStream
         else if (base instanceof COSArray && ((COSArray) base).size() > 0)
         {
             COSArray array = (COSArray) base;
-            for (int i = 0; i < streams.size(); i++)
+            for (int i = 0; i < array.size(); i++)
             {
                 COSStream stream = (COSStream) array.getObject(i);
                 streams.add(new PDStream(stream));
@@ -141,7 +141,7 @@ public class PDPage implements COSObjectable, PDContentStream
         COSBase base = page.getDictionaryObject(COSName.CONTENTS);
         if (base instanceof COSStream)
         {
-            return ((COSStream) base).createInputStream();
+            return ((COSStream)base).createInputStream();
         }
         else if (base instanceof COSArray && ((COSArray)base).size() > 0)
         {
@@ -175,7 +175,6 @@ public class PDPage implements COSObjectable, PDContentStream
         }
         return false;
     }
-
 
     /**
      * A dictionary containing any resources required by the page.
@@ -225,12 +224,6 @@ public class PDPage implements COSObjectable, PDContentStream
         return page.getInt(COSName.STRUCT_PARENTS, 0);
     }
 
-    @Override
-    public PDRectangle getBBox()
-    {
-        return getCropBox();
-    }
-
     /**
      * This will set the key for this page in the structural parent tree.
      *
@@ -239,6 +232,19 @@ public class PDPage implements COSObjectable, PDContentStream
     public void setStructParents(int structParents)
     {
         page.setInt(COSName.STRUCT_PARENTS, structParents);
+    }
+
+    @Override
+    public PDRectangle getBBox()
+    {
+        return getCropBox();
+    }
+
+    @Override
+    public Matrix getMatrix()
+    {
+        // todo: take into account user-space unit redefinition as scale?
+        return new Matrix();
     }
 
     /**
@@ -277,7 +283,7 @@ public class PDPage implements COSObjectable, PDContentStream
         }
         else
         {
-            page.setItem(COSName.MEDIA_BOX, mediaBox.getCOSArray());
+            page.setItem(COSName.MEDIA_BOX, mediaBox);
         }
     }
 
@@ -297,12 +303,6 @@ public class PDPage implements COSObjectable, PDContentStream
         {
             return getMediaBox();
         }
-    }
-
-    @Override
-    public Matrix getMatrix() {
-        // todo: take into account user-space unit redefinition as scale?
-        return new Matrix();
     }
 
     /**
@@ -335,11 +335,11 @@ public class PDPage implements COSObjectable, PDContentStream
         COSArray array = (COSArray) page.getDictionaryObject(COSName.BLEED_BOX);
         if (array != null)
         {
-            retval = new PDRectangle(array);
+            retval = clipToMediaBox(new PDRectangle(array));
         }
         else
         {
-            retval = clipToMediaBox(new PDRectangle(array));
+            retval = getCropBox();
         }
         return retval;
     }
@@ -512,7 +512,7 @@ public class PDPage implements COSObjectable, PDContentStream
 
     /**
      * This will get a list of PDThreadBead objects, which are article threads in the document.
-     * This will return an empty list of there are no thread beads.
+     * This will return an empty list if there are no thread beads.
      *
      * @return A list of article threads on this page.
      */
@@ -550,8 +550,8 @@ public class PDPage implements COSObjectable, PDContentStream
     }
 
     /**
-     * Get the metadata that is part of the document catalog. This will return null if there is no meta data for this
-     * object.
+     * Get the metadata that is part of the document catalog. This will return null if there is
+     * no meta data for this object.
      *
      * @return The metadata for this object.
      */
@@ -651,7 +651,6 @@ public class PDPage implements COSObjectable, PDContentStream
         else
         {
             List<PDAnnotation> actuals = new ArrayList<PDAnnotation>();
-
             for (int i = 0; i < annots.size(); i++)
             {
                 COSBase item = annots.getObject(i);

@@ -22,6 +22,10 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.support.test.InstrumentationRegistry;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
@@ -34,10 +38,6 @@ import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -186,7 +186,8 @@ public class PDInlineImageTest
         PDDocument document = new PDDocument();
         PDPage page = new PDPage();
         document.addPage(page);
-        PDPageContentStream contentStream = new PDPageContentStream(document, page, true, false);
+        PDPageContentStream contentStream = new PDPageContentStream(document, page,
+            PDPageContentStream.AppendMode.APPEND, false);
         contentStream.drawImage(inlineImage1, 150, 400);
         contentStream.drawImage(inlineImage1, 150, 500, inlineImage1.getWidth() * 2,
             inlineImage1.getHeight() * 2);

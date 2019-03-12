@@ -48,14 +48,14 @@ public abstract class BlendMode
             COSArray cosBlendModeArray = (COSArray) cosBlendMode;
             for (int i = 0; i < cosBlendModeArray.size(); i++)
             {
-                result = BLEND_MODES.get(cosBlendModeArray.get(i));
+                result = BLEND_MODES.get((COSName)cosBlendModeArray.get(i));
                 if (result != null)
                 {
                     break;
                 }
             }
         }
-        
+
         if (result != null)
         {
             return result;
@@ -65,7 +65,7 @@ public abstract class BlendMode
 
     public static final SeparableBlendMode NORMAL = new SeparableBlendMode()
     {
-    	@Override
+        @Override
         public float blendChannel(float srcValue, float dstValue)
         {
             return srcValue;
@@ -76,7 +76,7 @@ public abstract class BlendMode
 
     public static final SeparableBlendMode MULTIPLY = new SeparableBlendMode()
     {
-    	@Override
+        @Override
         public float blendChannel(float srcValue, float dstValue)
         {
             return srcValue * dstValue;
@@ -85,7 +85,7 @@ public abstract class BlendMode
 
     public static final SeparableBlendMode SCREEN = new SeparableBlendMode()
     {
-    	@Override
+        @Override
         public float blendChannel(float srcValue, float dstValue)
         {
             return srcValue + dstValue - srcValue * dstValue;
@@ -94,7 +94,7 @@ public abstract class BlendMode
 
     public static final SeparableBlendMode OVERLAY = new SeparableBlendMode()
     {
-    	@Override
+        @Override
         public float blendChannel(float srcValue, float dstValue)
         {
             return (dstValue <= 0.5) ? 2 * dstValue * srcValue : 2 * (srcValue + dstValue - srcValue
@@ -104,7 +104,7 @@ public abstract class BlendMode
 
     public static final SeparableBlendMode DARKEN = new SeparableBlendMode()
     {
-    	@Override
+        @Override
         public float blendChannel(float srcValue, float dstValue)
         {
             return Math.min(srcValue, dstValue);
@@ -113,7 +113,7 @@ public abstract class BlendMode
 
     public static final SeparableBlendMode LIGHTEN = new SeparableBlendMode()
     {
-    	@Override
+        @Override
         public float blendChannel(float srcValue, float dstValue)
         {
             return Math.max(srcValue, dstValue);
@@ -122,7 +122,7 @@ public abstract class BlendMode
 
     public static final SeparableBlendMode COLOR_DODGE = new SeparableBlendMode()
     {
-    	@Override
+        @Override
         public float blendChannel(float srcValue, float dstValue)
         {
             return (srcValue < 1) ? Math.min(1, dstValue / (1 - srcValue)) : 1;
@@ -131,7 +131,7 @@ public abstract class BlendMode
 
     public static final SeparableBlendMode COLOR_BURN = new SeparableBlendMode()
     {
-    	@Override
+        @Override
         public float blendChannel(float srcValue, float dstValue)
         {
             return (srcValue > 0) ? 1 - Math.min(1, (1 - dstValue) / srcValue) : 0;
@@ -140,7 +140,7 @@ public abstract class BlendMode
 
     public static final SeparableBlendMode HARD_LIGHT = new SeparableBlendMode()
     {
-    	@Override
+        @Override
         public float blendChannel(float srcValue, float dstValue)
         {
             return (srcValue <= 0.5) ? 2 * dstValue * srcValue :
@@ -150,7 +150,7 @@ public abstract class BlendMode
 
     public static final SeparableBlendMode SOFT_LIGHT = new SeparableBlendMode()
     {
-    	@Override
+        @Override
         public float blendChannel(float srcValue, float dstValue)
         {
             if (srcValue <= 0.5)
@@ -168,7 +168,7 @@ public abstract class BlendMode
 
     public static final SeparableBlendMode DIFFERENCE = new SeparableBlendMode()
     {
-    	@Override
+        @Override
         public float blendChannel(float srcValue, float dstValue)
         {
             return Math.abs(dstValue - srcValue);
@@ -177,18 +177,19 @@ public abstract class BlendMode
 
     public static final SeparableBlendMode EXCLUSION = new SeparableBlendMode()
     {
-    	@Override
+        @Override
         public float blendChannel(float srcValue, float dstValue)
         {
             return dstValue + srcValue - 2 * dstValue * srcValue;
         }
     };
-    
+
+    // this map *must* come after the declarations above, otherwise its values will be null
     private static final Map<COSName, BlendMode> BLEND_MODES = createBlendModeMap();
 
     private static Map<COSName, BlendMode> createBlendModeMap()
     {
-        Map<COSName, BlendMode> map = new HashMap<COSName, BlendMode>();
+        Map<COSName, BlendMode> map = new HashMap<COSName, BlendMode>(13);
         map.put(COSName.NORMAL, BlendMode.NORMAL);
         map.put(COSName.COMPATIBLE, BlendMode.COMPATIBLE);
         map.put(COSName.MULTIPLY, BlendMode.MULTIPLY);

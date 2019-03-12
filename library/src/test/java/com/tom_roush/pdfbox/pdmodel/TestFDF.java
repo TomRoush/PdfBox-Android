@@ -16,6 +16,10 @@
  */
 package com.tom_roush.pdfbox.pdmodel;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 import com.tom_roush.pdfbox.contentstream.PDContentStream;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSString;
@@ -33,10 +37,6 @@ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDTextField;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
 
 /**
  * This will test the FDF algorithms in PDFBox.
@@ -104,14 +104,14 @@ public class TestFDF extends TestCase
 
                 String expected =
                         "/Tx BMC " +
-                                "BT " +
-                                "/Helv 9 Tf " +
-                                " 0 g " +
-                                " 2 1.985585 Td " +
-                                "2.07698 0 Td " +
-                                "(2) Tj " +
-                                "ET " +
-                                "EMC";
+                        "BT " +
+                        "/Helv 9 Tf " +
+                        " 0 g " +
+                        " 2 1.985585 Td " +
+                        "2.07698 0 Td " +
+                        "(2) Tj " +
+                        "ET " +
+                        "EMC";
 
                 testContentStreams( fdeb, field, expected );
             }
@@ -144,39 +144,39 @@ public class TestFDF extends TestCase
                 feld2.setValue( "Benjamin" );
 
                 String expected =
-                        "1 1 0.8000000119 rg " +
-                                " 0 0 127.5 19.8299999237 re " +
-                                " f " +
-                                " 0 0 0 RG " +
-                                " 1 w " +
-                                " 0.5 0.5 126.5 18.8299999237 re " +
-                                " S " +
-                                " 0.5 g " +
-                                " 1 1 m " +
-                                " 1 18.8299999237 l " +
-                                " 126.5 18.8299999237 l " +
-                                " 125.5 17.8299999237 l " +
-                                " 2 17.8299999237 l " +
-                                " 2 2 l " +
-                                " 1 1 l " +
-                                " f " +
-                                " 0.75 g " +
-                                " 1 1 m " +
-                                " 126.5 1 l " +
-                                " 126.5 18.8299999237 l " +
-                                " 125.5 17.8299999237 l " +
-                                " 125.5 2 l " +
-                                " 2 2 l " +
-                                " 1 1 l " +
-                                " f " +
-                                " /Tx BMC  " +
-                                "BT " +
-                                "/Helv 14 Tf " +
-                                " 0 0 0 rg " +
-                                " 4 4.721 Td " +
-                                "(Benjamin) Tj " +
-                                "ET " +
-                                "EMC";
+                    "1 1 0.8000000119 rg " +
+                    " 0 0 127.5 19.8299999237 re " +
+                    " f " +
+                    " 0 0 0 RG " +
+                    " 1 w " +
+                    " 0.5 0.5 126.5 18.8299999237 re " +
+                    " S " +
+                    " 0.5 g " +
+                    " 1 1 m " +
+                    " 1 18.8299999237 l " +
+                    " 126.5 18.8299999237 l " +
+                    " 125.5 17.8299999237 l " +
+                    " 2 17.8299999237 l " +
+                    " 2 2 l " +
+                    " 1 1 l " +
+                    " f " +
+                    " 0.75 g " +
+                    " 1 1 m " +
+                    " 126.5 1 l " +
+                    " 126.5 18.8299999237 l " +
+                    " 125.5 17.8299999237 l " +
+                    " 125.5 2 l " +
+                    " 2 2 l " +
+                    " 1 1 l " +
+                    " f " +
+                    " /Tx BMC  " +
+                    "BT " +
+                    "/Helv 14 Tf " +
+                    " 0 0 0 rg " +
+                    " 4 4.721 Td " +
+                    "(Benjamin) Tj " +
+                    "ET " +
+                    "EMC";
 
                 testContentStreams( fdeb, feld2, expected );
 

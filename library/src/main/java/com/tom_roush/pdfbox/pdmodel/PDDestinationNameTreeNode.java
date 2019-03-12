@@ -61,7 +61,7 @@ public class PDDestinationNameTreeNode extends PDNameTreeNode<PDPageDestination>
             //it for now
             destination = ((COSDictionary)base).getDictionaryObject( COSName.D );
         }
-        return (PDPageDestination) PDDestination.create(destination);
+        return (PDPageDestination)PDDestination.create(destination);
     }
 
     @Override

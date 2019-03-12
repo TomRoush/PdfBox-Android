@@ -115,7 +115,8 @@ public class ValidateXImage
 
         PDPage page = new PDPage();
         document.addPage(page);
-        PDPageContentStream contentStream = new PDPageContentStream(document, page, true, false);
+        PDPageContentStream contentStream = new PDPageContentStream(document, page,
+            PDPageContentStream.AppendMode.APPEND, false);
         contentStream.drawImage(ximage, 150, 300);
         contentStream.drawImage(ximage, 200, 350);
         contentStream.close();

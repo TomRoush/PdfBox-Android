@@ -22,6 +22,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.support.test.InstrumentationRegistry;
 
+import java.io.File;
+import java.io.IOException;
+
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
@@ -32,9 +35,6 @@ import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
 
 import static com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage.checkIdent;
 import static com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage.colorCount;
@@ -112,7 +112,8 @@ public class LosslessFactoryTest
         // if something goes wrong in the future and we want to have a PDF to open.
         PDPage page = new PDPage();
         document.addPage(page);
-        PDPageContentStream contentStream = new PDPageContentStream(document, page, true, false);
+        PDPageContentStream contentStream = new PDPageContentStream(document, page,
+            PDPageContentStream.AppendMode.APPEND, false);
         contentStream.drawImage(ximage1, 200, 300, ximage1.getWidth() / 2, ximage1.getHeight() / 2);
         contentStream.drawImage(ximage2, 200, 450, ximage2.getWidth() / 2, ximage2.getHeight() / 2);
 //        contentStream.drawImage(ximage3, 200, 600, ximage3.getWidth() / 2, ximage3.getHeight() / 2);
