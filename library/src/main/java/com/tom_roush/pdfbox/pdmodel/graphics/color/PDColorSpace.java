@@ -35,7 +35,8 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
  * @author John Hewson
  * @author Ben Litchfield
  */
-public abstract class PDColorSpace implements COSObjectable {
+public abstract class PDColorSpace implements COSObjectable
+{
     /**
      * Creates a color space space given a name or array.
      *
@@ -43,102 +44,171 @@ public abstract class PDColorSpace implements COSObjectable {
      * @return a new color space
      * @throws IOException if the color space is unknown or cannot be created
      */
-    public static PDColorSpace create(COSBase colorSpace) throws IOException {
+    public static PDColorSpace create(COSBase colorSpace) throws IOException
+    {
         return create(colorSpace, null);
     }
 
     /**
-     * Creates a color space given a name or array.
+     * Creates a color space given a name or array. Abbreviated device color names are not supported
+     * here, please replace them first.
      *
      * @param colorSpace the color space COS object
-     * @param resources  the current resources.
+     * @param resources the current resources.
      * @return a new color space
      * @throws MissingResourceException if the color space is missing in the resources dictionary
-     * @throws IOException              if the color space is unknown or cannot be created
+     * @throws IOException if the color space is unknown or cannot be created
      */
-    public static PDColorSpace create(COSBase colorSpace,
-                                      PDResources resources)
-            throws IOException {
-        if (colorSpace instanceof COSObject) {
+    public static PDColorSpace create(COSBase colorSpace, PDResources resources) throws IOException
+    {
+        return create(colorSpace, resources, false);
+    }
+
+    /**
+     * Creates a color space given a name or array. Abbreviated device color names are not supported
+     * here, please replace them first. This method is for PDFBox internal use only, others should
+     * use {@link #create(COSBase, PDResources)}.
+     *
+     * @param colorSpace the color space COS object
+     * @param resources the current resources.
+     * @param wasDefault if current color space was used by a default color space.
+     *
+     * @return a new color space.
+     * @throws MissingResourceException if the color space is missing in the resources dictionary
+     * @throws IOException if the color space is unknown or cannot be created.
+     */
+    public static PDColorSpace create(COSBase colorSpace, PDResources resources, boolean wasDefault)
+        throws IOException
+    {
+        if (colorSpace instanceof COSObject)
+        {
             return create(((COSObject) colorSpace).getObject(), resources);
-        } else if (colorSpace instanceof COSName) {
+        }
+        else if (colorSpace instanceof COSName)
+        {
             COSName name = (COSName) colorSpace;
 
             // default color spaces
-            if (resources != null) {
+            if (resources != null)
+            {
                 COSName defaultName = null;
-                if (name.equals(COSName.DEVICECMYK) &&
-                        resources.hasColorSpace(COSName.DEFAULT_CMYK)) {
+                if (name.equals(COSName.DEVICECMYK) && resources.hasColorSpace(
+                    COSName.DEFAULT_CMYK))
+                {
                     defaultName = COSName.DEFAULT_CMYK;
-                } else if (name.equals(COSName.DEVICERGB) &&
-                        resources.hasColorSpace(COSName.DEFAULT_RGB)) {
+                }
+                else if (name.equals(COSName.DEVICERGB) && resources.hasColorSpace(
+                    COSName.DEFAULT_RGB))
+                {
                     defaultName = COSName.DEFAULT_RGB;
-                } else if (name.equals(COSName.DEVICEGRAY) &&
-                        resources.hasColorSpace(COSName.DEFAULT_GRAY)) {
+                }
+                else if (name.equals(COSName.DEVICEGRAY) && resources.hasColorSpace(
+                    COSName.DEFAULT_GRAY))
+                {
                     defaultName = COSName.DEFAULT_GRAY;
                 }
 
-                if (resources.hasColorSpace(defaultName)) {
-                    return resources.getColorSpace(defaultName);
+                if (resources.hasColorSpace(defaultName) && !wasDefault)
+                {
+                    return resources.getColorSpace(defaultName, true);
                 }
             }
 
             // built-in color spaces
-            /*if (name == COSName.DEVICECMYK || name == COSName.CMYK) {
+            /*if (name == COSName.DEVICECMYK)
+            {
                 return PDDeviceCMYK.INSTANCE;
-            } else*/ if (name == COSName.DEVICERGB || name == COSName.RGB) {
+            } TODO: PdfBox-Android
+            else*/
+            if (name == COSName.DEVICERGB)
+            {
                 return PDDeviceRGB.INSTANCE;
-            } else if (name == COSName.DEVICEGRAY || name == COSName.G) {
+            }
+            else if (name == COSName.DEVICEGRAY)
+            {
                 return PDDeviceGray.INSTANCE;
-            } /*else if (name == COSName.PATTERN) {
+            }
+            /*else if (name == COSName.PATTERN)
+            {
                 return new PDPattern(resources);
-            } */else if (resources != null) {
-                if (!resources.hasColorSpace(name)) {
+            } TODO: PdfBox-Android
+            */
+            else if (resources != null)
+            {
+                if (!resources.hasColorSpace(name))
+                {
                     throw new MissingResourceException("Missing color space: " + name.getName());
                 }
                 return resources.getColorSpace(name);
-            } else {
+            }
+            else
+            {
                 throw new MissingResourceException("Unknown color space: " + name.getName());
             }
-        } else if (colorSpace instanceof COSArray) {
+        }
+        else if (colorSpace instanceof COSArray)
+        {
             COSArray array = (COSArray) colorSpace;
             COSName name = (COSName) array.get(0);
-//
-//            // TODO cache these returned color spaces?
-//
-//            if (name == COSName.CALGRAY) {
+
+            // TODO cache these returned color spaces?
+
+//            if (name == COSName.CALGRAY)
+//            {
 //                return new PDCalGray(array);
-//            } else if (name == COSName.CALRGB) {
+//            }
+//            else if (name == COSName.CALRGB)
+//            {
 //                return new PDCalRGB(array);
-//            } else if (name == COSName.DEVICEN) {
+//            }
+//            else if (name == COSName.DEVICEN)
+//            {
 //                return new PDDeviceN(array);
-//            } else if (name == COSName.INDEXED || name == COSName.I) {
+//            }
+//            else if (name == COSName.INDEXED || name == COSName.I)
+//            {
 //                return new PDIndexed(array);
-//            } else if (name == COSName.SEPARATION) {
+//            }
+//            else if (name == COSName.SEPARATION)
+//            {
 //                return new PDSeparation(array);
-//            } else if (name == COSName.ICCBASED) {
+//            }
+//            else if (name == COSName.ICCBASED)
+//            {
 //                return new PDICCBased(array);
-//            } else if (name == COSName.LAB) {
+//            }
+//            else if (name == COSName.LAB)
+//            {
 //                return new PDLab(array);
-//            } else if (name == COSName.PATTERN) {
-//                if (array.size() == 1) {
+//            }
+//            else if (name == COSName.PATTERN)
+//            {
+//                if (array.size() == 1)
+//                {
 //                    return new PDPattern(resources);
-//                } else {
+//                }
+//                else
+//                {
 //                    return new PDPattern(resources, PDColorSpace.create(array.get(1)));
 //                }
-//            } else if (name == COSName.DEVICECMYK || name == COSName.CMYK ||
-//                    name == COSName.DEVICERGB || name == COSName.RGB ||
-//                    name == COSName.DEVICEGRAY || name == COSName.PATTERN) {
-//                // not allowed in an array, but we sometimes encounter these regardless
-//                return create(name, resources);
-//            } else {
+//            } TODO: PdfBox-Android
+            /*else*/ if (name == COSName.DEVICECMYK || name == COSName.DEVICERGB ||
+                name == COSName.DEVICEGRAY)
+            {
+                // not allowed in an array, but we sometimes encounter these regardless
+                return create(name, resources);
+            }
+//            else
+//            {
 //                throw new IOException("Invalid color space kind: " + name);
 //            }
 
-//            throw new IOException("Invalid color space kind: " + name);
+            //            throw new IOException("Invalid color space kind: " + name);
             Log.e("PdfBox-Android", "Invalid color space kind: " + name + ". Will try DeviceRGB instead");
             return PDDeviceRGB.INSTANCE;
-        } else {
+        }
+        else
+        {
             throw new IOException("Expected a name or array but got: " + colorSpace);
         }
     }
@@ -162,6 +232,7 @@ public abstract class PDColorSpace implements COSObjectable {
 
     /**
      * Returns the default decode array for this color space.
+     * @param bitsPerComponent the number of bits per component.
      *
      * @return the default decode array
      */
@@ -183,14 +254,14 @@ public abstract class PDColorSpace implements COSObjectable {
      */
     public abstract float[] toRGB(float[] value) throws IOException;
 
-//    /**
-//     * Returns the (A)RGB equivalent of the given raster.
-//     * @param raster the source raster
-//     * @return an (A)RGB Bitmap
-//     * @throws IOException if the color conversion fails
-//     */
-//    public abstract Bitmap toRGBImage(WritableRaster raster) throws IOException; TODO: PdfBox-Android
-
+    /**
+     * Returns the (A)RGB equivalent of the given raster.
+     *
+     * @param raster the source raster
+     *
+     * @return an (A)RGB Bitmap
+     * @throws IOException if the color conversion fails
+     */
     public abstract Bitmap toRGBImage(Bitmap raster) throws IOException;
 
 //    /**
@@ -220,7 +291,8 @@ public abstract class PDColorSpace implements COSObjectable {
 //    } TODO: PdfBox-Android
 
     @Override
-    public COSBase getCOSObject() {
+    public COSBase getCOSObject()
+    {
         return array;
     }
 }

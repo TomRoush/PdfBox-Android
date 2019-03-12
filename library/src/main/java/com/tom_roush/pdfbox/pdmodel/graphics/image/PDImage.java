@@ -25,7 +25,6 @@ import java.util.List;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
-import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 /**
@@ -53,16 +52,10 @@ public interface PDImage extends COSObjectable
     Bitmap getStencilImage(Paint paint) throws IOException;
 
     /**
-     * Returns a stream containing this image's data. Null for inline images.
-     * @throws IOException if the stream could not be read.
-     */
-    PDStream getStream() throws IOException;
-
-    /**
      * Returns an InputStream containing the image data, irrespective of whether this is an
      * inline image or an image XObject.
      *
-     * @return Decoded stream\
+     * @return Decoded stream
      * @throws IOException if the data could not be read.
      */
     InputStream createInputStream() throws IOException;

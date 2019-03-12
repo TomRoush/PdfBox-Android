@@ -82,8 +82,8 @@ public abstract class PDAbstractPattern implements COSObjectable
     }
 
     /**
-     * Convert this standard java object to a COS object.
-     * @return The cos object that matches this Java object.
+     * This will get the underlying dictionary.
+     * @return The dictionary for these pattern resources.
      */
     @Override
     public COSDictionary getCOSObject()
@@ -123,7 +123,7 @@ public abstract class PDAbstractPattern implements COSObjectable
      * @return The pattern type
      */
     public abstract int getPatternType();
-    
+
     /**
      * Returns the pattern matrix, or the identity matrix is none is available.
      */
@@ -131,14 +131,14 @@ public abstract class PDAbstractPattern implements COSObjectable
     {
         COSArray array = (COSArray) getCOSObject().getDictionaryObject(COSName.MATRIX);
         if (array != null)
-    	{
-    		return new Matrix(array);
-    	}
-    	else
-    	{
-    		// default value is the identity matrix
-    		return new Matrix();
-    	}
+        {
+            return new Matrix(array);
+        }
+        else
+        {
+            // default value is the identity matrix
+            return new Matrix();
+        }
     }
 
     /**
@@ -147,13 +147,13 @@ public abstract class PDAbstractPattern implements COSObjectable
      */
     public void setMatrix(AffineTransform transform)
     {
-    	COSArray matrix = new COSArray();
-    	double[] values = new double[6];
-    	transform.getMatrix(values);
-    	for (double v : values)
-    	{
-    		matrix.add(new COSFloat((float)v));
-    	}
+        COSArray matrix = new COSArray();
+        double[] values = new double[6];
+        transform.getMatrix(values);
+        for (double v : values)
+        {
+            matrix.add(new COSFloat((float)v));
+        }
         getCOSObject().setItem(COSName.MATRIX, matrix);
     }
 }

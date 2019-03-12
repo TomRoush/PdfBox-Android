@@ -36,7 +36,7 @@ public class PDOptionalContentProperties implements COSObjectable
     /**
      * Enumeration for the BaseState dictionary entry on the "D" dictionary.
      */
-    public enum BaseState
+    public static enum BaseState
     {
 
         /** The "ON" value. */
@@ -48,7 +48,7 @@ public class PDOptionalContentProperties implements COSObjectable
 
         private final COSName name;
 
-        BaseState(COSName value)
+        private BaseState(COSName value)
         {
             this.name = value;
         }

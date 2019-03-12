@@ -75,9 +75,9 @@ public class PDShadingPattern extends PDAbstractPattern
 
     /**
      * This will set the external graphics state for this pattern.
-     * @param extendedGraphicsState The new external graphics state for this pattern.
+     * @param extendedGraphicsState The new extended graphics state for this pattern.
      */
-    public void setExternalGraphicsState( PDExtendedGraphicsState extendedGraphicsState )
+    public void setExtendedGraphicsState( PDExtendedGraphicsState extendedGraphicsState )
     {
         this.extendedGraphicsState = extendedGraphicsState;
         getCOSObject().setItem(COSName.EXT_G_STATE, extendedGraphicsState);

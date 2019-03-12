@@ -67,7 +67,7 @@ public class PDShadingType2 extends PDShading
     public void setExtend(COSArray newExtend)
     {
         extend = newExtend;
-        getCOSObject().setItem(COSName.EXTEND, newExtend);        getCOSObject().setItem(COSName.EXTEND, newExtend);
+        getCOSObject().setItem(COSName.EXTEND, newExtend);
     }
 
     /**

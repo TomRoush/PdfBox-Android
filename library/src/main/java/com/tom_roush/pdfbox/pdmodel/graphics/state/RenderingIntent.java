@@ -39,7 +39,7 @@ public enum RenderingIntent
     SATURATION("Saturation"),
 
     /**
-     * Perceptual
+     * Perceptual.
      */
     PERCEPTUAL("Perceptual");
 
@@ -61,7 +61,9 @@ public enum RenderingIntent
         {
             return PERCEPTUAL;
         }
-        throw new IllegalArgumentException(value);
+        // "If a conforming reader does not recognize the specified name,
+        // it shall use the RelativeColorimetric intent by default."
+        return RELATIVE_COLORIMETRIC;
     }
 
     private final String value;
