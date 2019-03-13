@@ -35,10 +35,10 @@ public class SetLineWidth extends OperatorProcessor
     @Override
     public void process(Operator operator, List<COSBase> arguments) throws IOException
     {
-    	if (arguments.size() < 1)
-    	{
-    		throw new MissingOperandException(operator, arguments);
-    	}
+        if (arguments.size() < 1)
+        {
+            throw new MissingOperandException(operator, arguments);
+        }
         COSNumber width = (COSNumber) arguments.get(0);
         context.getGraphicsState().setLineWidth(width.floatValue());
     }

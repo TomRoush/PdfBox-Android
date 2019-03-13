@@ -14,47 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tom_roush.pdfbox.contentstream.operator.text;
+package com.tom_roush.pdfbox.contentstream.operator.color;
 
 import java.io.IOException;
 import java.util.List;
 
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
-import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
-import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
 /**
- * TJ: Show text, with position adjustments.
+ * K: Set the stroking colour space to DeviceCMYK and set the colour to use for stroking operations.
  *
- * @author Laurent Huault
+ * @author John Hewson
  */
-public class ShowTextAdjusted extends OperatorProcessor
+public class SetStrokingDeviceCMYKColor extends SetStrokingColor
 {
     @Override
     public void process(Operator operator, List<COSBase> arguments) throws IOException
     {
-        if (arguments.size() < 1)
-        {
-            return;
-        }
-        COSBase base = arguments.get(0);
-        if (!(base instanceof COSArray))
-        {
-            return;
-        }
-        if (context.getTextMatrix() == null)
-        {
-            // ignore: outside of BT...ET
-            return;
-        }
-        COSArray array = (COSArray)base;
-        context.showTextStrings(array);
+        PDColorSpace cs = context.getResources().getColorSpace(COSName.DEVICECMYK);
+        context.getGraphicsState().setStrokingColorSpace(cs);
+        super.process(operator, arguments);
     }
 
     @Override
     public String getName()
     {
-        return "TJ";
+        return "K";
     }
 }

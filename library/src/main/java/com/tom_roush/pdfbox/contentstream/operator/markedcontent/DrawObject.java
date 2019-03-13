@@ -14,16 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tom_roush.pdfbox.contentstream.operator;
+package com.tom_roush.pdfbox.contentstream.operator.markedcontent;
 
 import java.io.IOException;
 import java.util.List;
 
+import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDTransparencyGroup;
+import com.tom_roush.pdfbox.text.PDFMarkedContentExtractor;
 
 /**
  * Do: Draws an XObject.
@@ -46,14 +50,8 @@ public class DrawObject extends OperatorProcessor
             return;
         }
         COSName name = (COSName)base0;
-
-        if (context.getResources().isImageXObject(name))
-        {
-            // we're done here, don't decode images when doing text extraction
-            return;
-        }
-
         PDXObject xobject = context.getResources().getXObject(name);
+        ((PDFMarkedContentExtractor)context).xobject(xobject);
 
         if (xobject instanceof PDTransparencyGroup)
         {

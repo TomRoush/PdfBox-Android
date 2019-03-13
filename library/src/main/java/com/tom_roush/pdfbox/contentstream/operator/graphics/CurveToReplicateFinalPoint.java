@@ -21,6 +21,7 @@ import android.graphics.PointF;
 import java.io.IOException;
 import java.util.List;
 
+import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
@@ -35,6 +36,15 @@ public final class CurveToReplicateFinalPoint extends GraphicsOperatorProcessor
     @Override
     public void process(Operator operator, List<COSBase> operands) throws IOException
     {
+        if (operands.size() < 4)
+        {
+            throw new MissingOperandException(operator, operands);
+        }
+        if (!checkArrayTypesClass(operands, COSNumber.class))
+        {
+            return;
+        }
+
         COSNumber x1 = (COSNumber)operands.get(0);
         COSNumber y1 = (COSNumber)operands.get(1);
         COSNumber x3 = (COSNumber)operands.get(2);

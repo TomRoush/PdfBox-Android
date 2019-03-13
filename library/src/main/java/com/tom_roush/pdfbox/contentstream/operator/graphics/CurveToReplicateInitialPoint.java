@@ -22,6 +22,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.List;
 
+import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
@@ -36,6 +37,15 @@ public class CurveToReplicateInitialPoint extends GraphicsOperatorProcessor
     @Override
     public void process(Operator operator, List<COSBase> operands) throws IOException
     {
+        if (operands.size() < 4)
+        {
+            throw new MissingOperandException(operator, operands);
+        }
+        if (!checkArrayTypesClass(operands, COSNumber.class))
+        {
+            return;
+        }
+
         COSNumber x2 = (COSNumber) operands.get(0);
         COSNumber y2 = (COSNumber) operands.get(1);
         COSNumber x3 = (COSNumber) operands.get(2);

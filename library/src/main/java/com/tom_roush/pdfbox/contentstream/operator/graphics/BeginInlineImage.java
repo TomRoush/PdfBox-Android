@@ -14,47 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tom_roush.pdfbox.contentstream.operator.text;
+package com.tom_roush.pdfbox.contentstream.operator.graphics;
 
 import java.io.IOException;
 import java.util.List;
 
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
-import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
-import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDInlineImage;
 
 /**
- * TJ: Show text, with position adjustments.
+ * BI Begins an inline image.
  *
- * @author Laurent Huault
+ * @author Ben Litchfield
  */
-public class ShowTextAdjusted extends OperatorProcessor
+public final class BeginInlineImage extends GraphicsOperatorProcessor
 {
     @Override
-    public void process(Operator operator, List<COSBase> arguments) throws IOException
+    public void process(Operator operator, List<COSBase> operands) throws IOException
     {
-        if (arguments.size() < 1)
-        {
-            return;
-        }
-        COSBase base = arguments.get(0);
-        if (!(base instanceof COSArray))
-        {
-            return;
-        }
-        if (context.getTextMatrix() == null)
-        {
-            // ignore: outside of BT...ET
-            return;
-        }
-        COSArray array = (COSArray)base;
-        context.showTextStrings(array);
+        PDImage image = new PDInlineImage(operator.getImageParameters(), operator.getImageData(),
+            context.getResources());
+        context.drawImage(image);
     }
 
     @Override
     public String getName()
     {
-        return "TJ";
+        return "BI";
     }
 }

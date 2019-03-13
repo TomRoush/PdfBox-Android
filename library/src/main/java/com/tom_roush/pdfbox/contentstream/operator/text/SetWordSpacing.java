@@ -16,12 +16,12 @@
  */
 package com.tom_roush.pdfbox.contentstream.operator.text;
 
+import java.util.List;
+
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
-
-import java.util.List;
 
 /**
  * Tw: Set word spacing.
@@ -33,7 +33,16 @@ public class SetWordSpacing extends OperatorProcessor
     @Override
     public void process(Operator operator, List<COSBase> arguments)
     {
-        COSNumber wordSpacing = (COSNumber)arguments.get( 0 );
+        if (arguments.size() < 1)
+        {
+            return;
+        }
+        COSBase base = arguments.get(0);
+        if (!(base instanceof COSNumber))
+        {
+            return;
+        }
+        COSNumber wordSpacing = (COSNumber)base;
         context.getGraphicsState().getTextState().setWordSpacing( wordSpacing.floatValue() );
     }
 
