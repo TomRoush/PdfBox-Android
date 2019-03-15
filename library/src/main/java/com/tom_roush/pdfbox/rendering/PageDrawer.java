@@ -41,6 +41,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.PDLineDashPattern;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.form.PDTransparencyGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDGraphicsState;
@@ -874,7 +875,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     }
 
     @Override
-    public void showTransparencyGroup(PDFormXObject form) throws IOException
+    public void showTransparencyGroup(PDTransparencyGroup form) throws IOException
     {
         TransparencyGroup group = new TransparencyGroup(form, false);
 
@@ -925,7 +926,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         /**
          * Creates a buffered image for a transparency group result.
          */
-        private TransparencyGroup(PDFormXObject form, boolean isSoftMask) throws IOException
+        private TransparencyGroup(PDTransparencyGroup form, boolean isSoftMask) throws IOException
         {
 //            Graphics2D g2dOriginal = graphics;
 //            Area lastClipOriginal = lastClip;

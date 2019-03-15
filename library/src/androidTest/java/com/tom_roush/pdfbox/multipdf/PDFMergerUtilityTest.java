@@ -22,6 +22,7 @@ import android.support.test.InstrumentationRegistry;
 import java.io.File;
 import java.io.IOException;
 
+import com.tom_roush.pdfbox.io.MemoryUsageSetting;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
@@ -128,7 +129,7 @@ public class PDFMergerUtilityTest
         pdfMergerUtility.addSource(testContext.getAssets().open(SRCDIR + "/" + filename1));
         pdfMergerUtility.addSource(testContext.getAssets().open(SRCDIR + "/" + filename2));
         pdfMergerUtility.setDestinationFileName(TARGETTESTDIR + mergeFilename);
-        pdfMergerUtility.mergeDocuments(useScratchFiles);
+        pdfMergerUtility.mergeDocuments(useScratchFiles ? MemoryUsageSetting.setupTempFileOnly() : MemoryUsageSetting.setupMainMemoryOnly());
 
         PDDocument mergedDoc
             = PDDocument.load(new File(TARGETTESTDIR, mergeFilename), (String) null);

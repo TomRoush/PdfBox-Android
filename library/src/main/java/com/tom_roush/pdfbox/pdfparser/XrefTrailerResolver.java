@@ -72,7 +72,7 @@ public class XrefTrailerResolver
          */
         private XrefTrailerObj()
         {
-        	xrefType = XRefType.TABLE;
+            xrefType = XRefType.TABLE;
         }
     }
 
@@ -88,7 +88,7 @@ public class XrefTrailerResolver
         /**
          * XRef stream type.
          */
-        STREAM
+        STREAM;
     }
     
     private final Map<Long, XrefTrailerObj> bytePosToXrefMap = new HashMap<Long, XrefTrailerObj>();
@@ -159,7 +159,8 @@ public class XrefTrailerResolver
         if ( curXrefTrailerObj == null )
         {
             // should not happen...
-        	Log.w("PdfBox-Android", "Cannot add XRef entry for '" + objKey.getNumber() + "' because XRef start was not signalled." );
+            Log.w("PdfBox-Android", "Cannot add XRef entry for '" + objKey.getNumber() +
+                "' because XRef start was not signalled.");
             return;
         }
         curXrefTrailerObj.xrefTable.put( objKey, offset );
@@ -175,7 +176,7 @@ public class XrefTrailerResolver
         if ( curXrefTrailerObj == null )
         {
             // should not happen...
-        	Log.w("PdfBox-Android", "Cannot add trailer because XRef start was not signalled." );
+            Log.w("PdfBox-Android", "Cannot add trailer because XRef start was not signalled.");
             return;
         }
         curXrefTrailerObj.trailer = trailer;
@@ -210,7 +211,7 @@ public class XrefTrailerResolver
     {
         if ( resolvedXrefTrailer != null )
         {
-        	Log.w("PdfBox-Android", "Method must be called only ones with last startxref value." );
+            Log.w("PdfBox-Android", "Method must be called only ones with last startxref value.");
             return;
         }
 
@@ -223,7 +224,8 @@ public class XrefTrailerResolver
         if ( curObj == null )
         {
             // no XRef at given position
-        	Log.w("PdfBox-Android", "Did not found XRef object at specified startxref position " + startxrefBytePosValue );
+            Log.w("PdfBox-Android", "Did not found XRef object at specified startxref position " +
+                startxrefBytePosValue);
 
             // use all objects in byte position order (last entries overwrite previous ones)
             xrefSeqBytePos.addAll( bytePosToXrefMap.keySet() );
@@ -231,9 +233,9 @@ public class XrefTrailerResolver
         }
         else
         {
-        	// copy xref type
-        	resolvedXrefTrailer.xrefType = curObj.xrefType;
-        	// found starting Xref object
+            // copy xref type
+            resolvedXrefTrailer.xrefType = curObj.xrefType;
+            // found starting Xref object
             // add this and follow chain defined by 'Prev' keys
             xrefSeqBytePos.add( startxrefBytePosValue );
             while ( curObj.trailer != null )
@@ -247,7 +249,9 @@ public class XrefTrailerResolver
                 curObj = bytePosToXrefMap.get( prevBytePos );
                 if ( curObj == null )
                 {
-                	Log.w("PdfBox-Android", "Did not found XRef object pointed to by 'Prev' key at position " + prevBytePos );
+                    Log.w("PdfBox-Android",
+                        "Did not found XRef object pointed to by 'Prev' key at position " +
+                            prevBytePos);
                     break;
                 }
                 xrefSeqBytePos.add( prevBytePos );

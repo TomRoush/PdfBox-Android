@@ -47,8 +47,8 @@ public class PDFObjectStreamParser extends BaseParser
     public PDFObjectStreamParser(COSStream stream, COSDocument document) throws IOException
     {
         super(new InputStreamSource(stream.createInputStream()));
-        this.document = document;
         this.stream = stream;
+        this.document = document;
     }
 
     /**
@@ -68,7 +68,7 @@ public class PDFObjectStreamParser extends BaseParser
             for( int i=0; i<numberOfObjects; i++ )
             {
                 long objectNumber = readObjectNumber();
-             // skip offset
+                // skip offset
                 readLong();
                 objectNumbers.add( objectNumber);
             }
@@ -81,7 +81,8 @@ public class PDFObjectStreamParser extends BaseParser
                 object.setGenerationNumber(0);
                 if (objectCounter >= objectNumbers.size())
                 {
-                	Log.e("PdfBox-Android", "/ObjStm (object stream) has more objects than /N " + numberOfObjects);
+                    Log.e("PdfBox-Android",
+                        "/ObjStm (object stream) has more objects than /N " + numberOfObjects);
                     break;
                 }
                 object.setObjectNumber( objectNumbers.get( objectCounter) );
@@ -92,7 +93,7 @@ public class PDFObjectStreamParser extends BaseParser
                 // skip endobject marker if present
                 if (!seqSource.isEOF() && seqSource.peek() == 'e')
                 {
-                	readLine();
+                    readLine();
                 }
                 objectCounter++;
             }

@@ -16,11 +16,11 @@
  */
 package com.tom_roush.pdfbox.pdmodel;
 
-import junit.framework.TestCase;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+
+import junit.framework.TestCase;
 
 /**
  * This class tests the extraction of document-level metadata.
@@ -49,8 +49,7 @@ public class TestPDDocumentInformation extends TestCase
             assertNull("Wrong trapped", info.getTrapped());
 
             List<String> expectedMetadataKeys = Arrays.asList("CreationDate", "Author", "Creator",
-                "Producer", "ModDate", "Company",
-                "SourceModified", "Title");
+                "Producer", "ModDate", "Company", "SourceModified", "Title");
             assertEquals("Wrong metadata key count", expectedMetadataKeys.size(),
                     info.getMetadataKeys().size());
             for (String key : expectedMetadataKeys)
@@ -69,5 +68,19 @@ public class TestPDDocumentInformation extends TestCase
                 doc.close();
             }
         }
+    }
+
+    /**
+     * PDFBOX-3068: test that indirect /Title element of /Info entry can be found.
+     *
+     * @throws Exception
+     */
+    public void testPDFBox3068() throws Exception
+    {
+        PDDocument doc = PDDocument.load(TestPDDocumentInformation.class
+            .getResourceAsStream("/pdfbox/com/tom_roush/pdfbox/pdmodel/PDFBOX-3068.pdf"));
+        PDDocumentInformation documentInformation = doc.getDocumentInformation();
+        assertEquals("Title", documentInformation.getTitle());
+        doc.close();
     }
 }
