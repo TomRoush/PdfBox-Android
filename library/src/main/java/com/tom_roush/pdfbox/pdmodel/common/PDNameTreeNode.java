@@ -101,6 +101,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
     {
         return parent == null;
     }
+
     /**
      * Return the children of this node.  This list will contain PDNameTreeNode objects.
      *
@@ -108,7 +109,6 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
      */
     public List<PDNameTreeNode<T>> getKids()
     {
-
         List<PDNameTreeNode<T>> retval = null;
         COSArray kids = (COSArray)node.getDictionaryObject( COSName.KIDS );
         if( kids != null )
@@ -232,7 +232,8 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
             }
             else
             {
-            	Log.e("PdfBox-Android", "NameTreeNode does not have \"names\" nor \"kids\" objects.");
+                Log.w("PdfBox-Android",
+                    "NameTreeNode does not have \"names\" nor \"kids\" objects.");
             }
         }
         return retval;
