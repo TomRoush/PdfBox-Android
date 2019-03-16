@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+
 import org.w3c.dom.Element;
 
 /**
@@ -56,9 +57,9 @@ public class FDFAnnotationFileAttachment extends FDFAnnotation
     /**
      * Constructor.
      *
-     *  @param element An XFDF element.
+     * @param element An XFDF element.
      *
-     *  @throws IOException If there is an error extracting information from the element.
+     * @throws IOException If there is an error extracting information from the element.
      */
     public FDFAnnotationFileAttachment( Element element ) throws IOException
     {

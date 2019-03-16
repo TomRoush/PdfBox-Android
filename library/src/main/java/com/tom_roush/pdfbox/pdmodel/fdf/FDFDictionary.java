@@ -325,7 +325,7 @@ public class FDFDictionary implements COSObjectable
     }
 
     /**
-     * This will get the list of FDF Fields.  This will return a list of FDFField
+     * This will get the list of FDF Fields. This will return a list of FDFField
      * objects.
      *
      * @return A list of FDF fields.
@@ -347,7 +347,7 @@ public class FDFDictionary implements COSObjectable
     }
 
     /**
-     * This will set the list of fields.  This should be a list of FDFField objects.
+     * This will set the list of fields. This should be a list of FDFField objects.
      *
      * @param fields The list of fields.
      */
@@ -378,7 +378,7 @@ public class FDFDictionary implements COSObjectable
     }
 
     /**
-     * This will get the list of FDF Pages.  This will return a list of FDFPage objects.
+     * This will get the list of FDF Pages. This will return a list of FDFPage objects.
      *
      * @return A list of FDF pages.
      */
@@ -399,18 +399,18 @@ public class FDFDictionary implements COSObjectable
     }
 
     /**
-     * This will set the list of pages.  This should be a list of FDFPage objects.
+     * This will set the list of pages. This should be a list of FDFPage objects.
      *
      *
      * @param pages The list of pages.
      */
-    public void setPages( List pages )
+    public void setPages(List<FDFPage> pages)
     {
         fdf.setItem( COSName.PAGES, COSArrayList.converterToCOSArray( pages ) );
     }
 
     /**
-     * The encoding to be used for a FDF field.  The default is PDFDocEncoding
+     * The encoding to be used for a FDF field. The default is PDFDocEncoding
      * and this method will never return null.
      *
      * @return The encoding value.
@@ -437,7 +437,7 @@ public class FDFDictionary implements COSObjectable
     }
 
     /**
-     * This will get the list of FDF Annotations.  This will return a list of FDFAnnotation objects
+     * This will get the list of FDF Annotations. This will return a list of FDFAnnotation objects
      * or null if the entry is not set.
      *
      * @return A list of FDF annotations.
@@ -461,7 +461,7 @@ public class FDFDictionary implements COSObjectable
     }
 
     /**
-     * This will set the list of annotations.  This should be a list of FDFAnnotation objects.
+     * This will set the list of annotations. This should be a list of FDFAnnotation objects.
      *
      *
      * @param annots The list of annotations.
@@ -536,13 +536,13 @@ public class FDFDictionary implements COSObjectable
     }
 
     /**
-     * This will set the list of embedded FDFs.  This should be a list of
+     * This will set the list of embedded FDFs. This should be a list of
      * PDFileSpecification objects.
      *
      *
      * @param embedded The list of embedded FDFs.
      */
-    public void setEmbeddedFDFs( List embedded )
+    public void setEmbeddedFDFs(List<PDFileSpecification> embedded)
     {
         fdf.setItem( COSName.EMBEDDED_FDFS, COSArrayList.converterToCOSArray( embedded ) );
     }
