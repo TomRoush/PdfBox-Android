@@ -28,8 +28,8 @@ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationUnknown;
 
 /**
  * An object reference.
- * 
- * @author Ben Litchfield
+ *
+ * @author Johannes Koch
  */
 public class PDObjectReference implements COSObjectable
 {
