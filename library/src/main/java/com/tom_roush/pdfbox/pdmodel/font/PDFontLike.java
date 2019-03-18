@@ -17,6 +17,7 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
+
 import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
@@ -60,14 +61,26 @@ public interface PDFontLike
 
     /**
      * Returns the height of the given character, in glyph space. This can be expensive to
-     * calculate. Results are only approximate.
+     * calculate. Results are only approximate.</p>
+     *
+     * Warning: This method is deprecated in PDFBox 2.0 because there is no meaningful value
+     * which it can return. The {@link #getWidth} method returns the advance width of a glyph,
+     * but there is no corresponding advance height. The logical height of a character is the same
+     * for every character in a font, so if you want that, retrieve the font bbox's height.
+     * Otherwise if you want the visual bounds of the glyph then call getPath(..) on the appropriate
+     * PDFont subclass to retrieve the glyph outline as a Path.
      *
      * @param code character code
+     * @deprecated Use {@link #getBoundingBox().#getHeight(int)} instead.
      */
+    @Deprecated
     float getHeight(int code) throws IOException;
 
     /**
-     * Returns the advance width of the given character, in glyph space.
+     * Returns the advance width of the given character, in glyph space.</p>
+     *
+     * If you want the visual bounds of the glyph then call getPath(..) on the appropriate
+     * PDFont subclass to retrieve the glyph outline as a GeneralPath instead.
      *
      * @param code character code
      */

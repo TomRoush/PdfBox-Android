@@ -17,37 +17,42 @@
 
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.lang.ref.SoftReference;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import com.tom_roush.fontbox.FontBoxFont;
-
 /**
- * An in-memory cache for system fonts. This allows PDFBox to manage caching for a {@link FontProvider}.
- * PDFBox is free to purge this cache at will.
+ * FontMapper factory class.
  *
  * @author John Hewson
  */
-public final class FontCache
+public final class FontMappers
 {
-    private final Map<FontInfo, SoftReference<FontBoxFont>> cache =
-        new ConcurrentHashMap<FontInfo, SoftReference<FontBoxFont>>();
+    private static FontMapper instance;
 
-    /**
-     * Adds the given FontBox font to the cache.
-     */
-    public void addFont(FontInfo info, FontBoxFont font)
+    private FontMappers()
     {
-        cache.put(info, new SoftReference<FontBoxFont>(font));
+    }
+
+    // lazy thread safe singleton
+    private static class DefaultFontMapper
+    {
+        private static final FontMapper INSTANCE = new FontMapperImpl();
     }
 
     /**
-     * Returns the FontBox font associated with the given FontInfo.
+     * Returns the singleton FontMapper instance.
      */
-    public FontBoxFont getFont(FontInfo info)
+    public static FontMapper instance()
     {
-        SoftReference<FontBoxFont> reference = cache.get(info);
-        return reference != null ? reference.get() : null;
+        if (instance == null)
+        {
+            instance = DefaultFontMapper.INSTANCE;
+        }
+        return instance;
+    }
+
+    /**
+     * Sets the singleton FontMapper instance.
+     */
+    public static synchronized void set(FontMapper fontMapper)
+    {
+        instance = fontMapper;
     }
 }

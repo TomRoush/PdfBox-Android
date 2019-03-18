@@ -40,7 +40,7 @@ public class Type1Encoding extends Encoding
 
         for (Map.Entry<Integer, String> entry : codeToName.entrySet())
         {
-        	enc.add(entry.getKey(), entry.getValue());
+            enc.add(entry.getKey(), entry.getValue());
         }
 
         return enc;
@@ -70,5 +70,11 @@ public class Type1Encoding extends Encoding
     public COSBase getCOSObject()
     {
         return null;
+    }
+
+    @Override
+    public String getEncodingName()
+    {
+        return "built-in (Type 1)";
     }
 }

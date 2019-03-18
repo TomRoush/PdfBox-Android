@@ -38,6 +38,7 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.util.Matrix;
 
@@ -50,116 +51,143 @@ public class PDCIDFontType2 extends PDCIDFont
 {
     private final TrueTypeFont ttf;
     private final int[] cid2gid;
-    private final Map<Integer, Integer> gid2cid;
-    private final boolean hasIdentityCid2Gid;
     private final boolean isEmbedded;
     private final boolean isDamaged;
     private final CmapSubtable cmap; // may be null
     private Matrix fontMatrix;
+    private BoundingBox fontBBox;
 
     /**
      * Constructor.
      *
      * @param fontDictionary The font dictionary according to the PDF specification.
+     * @param parent The parent font.
+     * @throws IOException
      */
     public PDCIDFontType2(COSDictionary fontDictionary, PDType0Font parent) throws IOException
+    {
+        this(fontDictionary, parent, null);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param fontDictionary The font dictionary according to the PDF specification.
+     * @param parent The parent font.
+     * @param trueTypeFont The true type font used to create the parent font
+     *
+     * @throws IOException
+     */
+    public PDCIDFontType2(COSDictionary fontDictionary, PDType0Font parent,
+        TrueTypeFont trueTypeFont) throws IOException
     {
         super(fontDictionary, parent);
 
         PDFontDescriptor fd = getFontDescriptor();
-        PDStream ff2Stream = fd.getFontFile2();
-        PDStream ff3Stream = fd.getFontFile3();
-
-        // Acrobat looks in FontFile too, even though it is not in the spec, see PDFBOX-2599
-        if (ff2Stream == null && ff3Stream == null) {
-            ff2Stream = fd.getFontFile();
-        }
-
-        TrueTypeFont ttfFont = null;
-        boolean fontIsDamaged = false;
-        if (ff2Stream != null)
+        if (trueTypeFont != null)
         {
-            try
-            {
-                // embedded
-                TTFParser ttfParser = new TTFParser(true);
-                ttfFont = ttfParser.parse(ff2Stream.createInputStream());
-            }
-            catch (NullPointerException e) // TTF parser is buggy
-            {
-                Log.w("PdfBox-Android", "Could not read embedded TTF for font " + getBaseFont(), e);
-                fontIsDamaged = true;
-            }
-            catch (IOException e)
-            {
-                Log.w("PdfBox-Android", "Could not read embedded TTF for font " + getBaseFont(), e);
-                fontIsDamaged = true;
-            }
+            ttf = trueTypeFont;
+            isEmbedded = true;
+            isDamaged = false;
         }
-        else if (ff3Stream != null)
+        else
         {
-            try
-            {
-                // embedded
-                OTFParser otfParser = new OTFParser(true);
-                OpenTypeFont otf = otfParser.parse(ff3Stream.createInputStream());
-                ttfFont = otf;
+            boolean fontIsDamaged = false;
+            TrueTypeFont ttfFont = null;
+            PDStream ff2Stream = fd.getFontFile2();
+            PDStream ff3Stream = fd.getFontFile3();
 
-                if (otf.isPostScript())
+            // Acrobat looks in FontFile too, even though it is not in the spec, see PDFBOX-2599
+            if (ff2Stream == null && ff3Stream == null)
+            {
+                ff2Stream = fd.getFontFile();
+            }
+
+            if (ff2Stream != null)
+            {
+                try
                 {
-                    // todo: we need more abstraction to support CFF fonts here
-                    throw new IOException("Not implemented: OpenType font with CFF table " +
-                        getBaseFont());
+                    // embedded
+                    TTFParser ttfParser = new TTFParser(true);
+                    ttfFont = ttfParser.parse(ff2Stream.createInputStream());
                 }
-
-                if (otf.hasLayoutTables())
+                catch (NullPointerException e) // TTF parser is buggy
                 {
-                    Log.e("PdfBox-Android", "OpenType Layout tables used in font " + getBaseFont() +
-                        " are not implemented in PDFBox and will be ignored");
+                    Log.w("PdfBox-Android", "Could not read embedded TTF for font " + getBaseFont(),
+                        e);
+                    fontIsDamaged = true;
+                }
+                catch (IOException e)
+                {
+                    Log.w("PdfBox-Android", "Could not read embedded TTF for font " + getBaseFont(),
+                        e);
+                    fontIsDamaged = true;
                 }
             }
-            catch (NullPointerException e) // TTF parser is buggy
+            else if (ff3Stream != null)
             {
-                fontIsDamaged = true;
-                Log.w("PdfBox-Android", "Could not read embedded OTF for font " + getBaseFont(), e);
+                try
+                {
+                    // embedded
+                    OTFParser otfParser = new OTFParser(true);
+                    OpenTypeFont otf = otfParser.parse(ff3Stream.createInputStream());
+                    ttfFont = otf;
+
+                    if (otf.isPostScript())
+                    {
+                        // todo: we need more abstraction to support CFF fonts here
+                        throw new IOException(
+                            "Not implemented: OpenType font with CFF table " + getBaseFont());
+                    }
+
+                    if (otf.hasLayoutTables())
+                    {
+                        Log.e("PdfBox-Android",
+                            "OpenType Layout tables used in font " + getBaseFont() +
+                                " are not implemented in PDFBox and will be ignored");
+                    }
+                }
+                catch (NullPointerException e) // TTF parser is buggy
+                {
+                    fontIsDamaged = true;
+                    Log.w("PdfBox-Android", "Could not read embedded OTF for font " + getBaseFont(),
+                        e);
+                }
+                catch (IOException e)
+                {
+                    fontIsDamaged = true;
+                    Log.w("PdfBox-Android", "Could not read embedded OTF for font " + getBaseFont(),
+                        e);
+                }
             }
-            catch (IOException e)
+            isEmbedded = ttfFont != null;
+            isDamaged = fontIsDamaged;
+
+            if (ttfFont == null)
             {
-                fontIsDamaged = true;
-                Log.w("PdfBox-Android", "Could not read embedded OTF for font " + getBaseFont(), e);
+                // find font or substitute
+                CIDFontMapping mapping = FontMappers.instance().getCIDFont(getBaseFont(),
+                    getFontDescriptor(), getCIDSystemInfo());
+
+                if (mapping.isCIDFont())
+                {
+                    ttfFont = mapping.getFont();
+                }
+                else
+                {
+                    ttfFont = (TrueTypeFont)mapping.getTrueTypeFont();
+                }
+
+                if (mapping.isFallback())
+                {
+                    Log.w("PdfBox-Android", "Using fallback font " + ttfFont.getName() +
+                        " for CID-keyed TrueType font " + getBaseFont());
+                }
             }
+            ttf = ttfFont;
         }
-
-        isEmbedded = ttfFont != null;
-        isDamaged = fontIsDamaged;
-        if (ttfFont == null)
-        {
-            // find font or substitute
-            CIDFontMapping mapping = FontMapper.getCIDFont(getBaseFont(), getFontDescriptor(),
-                getCIDSystemInfo());
-
-            if (mapping.isCIDFont())
-            {
-                ttfFont = mapping.getFont();
-            }
-            else
-            {
-                ttfFont = (TrueTypeFont) mapping.getTrueTypeFont();
-            }
-
-            if (mapping.isFallback())
-            {
-                Log.w("PdfBox-Android",
-                    "Using fallback font " + ttfFont.getName() + " for CID-keyed TrueType font " + getBaseFont());
-            }
-        }
-        ttf = ttfFont;
         cmap = ttf.getUnicodeCmap(false);
-
         cid2gid = readCIDToGIDMap();
-        gid2cid = invert(cid2gid);
-        COSBase map = dict.getDictionaryObject(COSName.CID_TO_GID_MAP);
-        hasIdentityCid2Gid = map instanceof COSName && ((COSName) map).getName().equals("Identity");
     }
 
     @Override
@@ -176,6 +204,25 @@ public class PDCIDFontType2 extends PDCIDFont
     @Override
     public BoundingBox getBoundingBox() throws IOException
     {
+        if (fontBBox == null)
+        {
+            fontBBox = generateBoundingBox();
+        }
+        return fontBBox;
+    }
+
+    private BoundingBox generateBoundingBox() throws IOException
+    {
+        if (getFontDescriptor() != null)
+        {
+            PDRectangle bbox = getFontDescriptor().getFontBoundingBox();
+            if (bbox.getLowerLeftX() != 0 || bbox.getLowerLeftY() != 0 ||
+                bbox.getUpperRightX() != 0 || bbox.getUpperRightY() != 0)
+            {
+                return new BoundingBox(bbox.getLowerLeftX(), bbox.getLowerLeftY(),
+                    bbox.getUpperRightX(), bbox.getUpperRightY());
+            }
+        }
         return ttf.getFontBBox();
     }
 
@@ -186,6 +233,7 @@ public class PDCIDFontType2 extends PDCIDFont
         if (map instanceof COSStream)
         {
             COSStream stream = (COSStream) map;
+
             InputStream is = stream.createInputStream();
             byte[] mapAsBytes = IOUtils.toByteArray(is);
             IOUtils.closeQuietly(is);
@@ -208,7 +256,7 @@ public class PDCIDFontType2 extends PDCIDFont
         {
             return null;
         }
-        Map<Integer, Integer> inverse = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> inverse = new HashMap<Integer, Integer>(cid2gid.length);
         for (int i = 0; i < cid2gid.length; i++)
         {
             inverse.put(cid2gid[i], i);
@@ -235,7 +283,9 @@ public class PDCIDFontType2 extends PDCIDFont
      *
      * @param code character code
      * @return GID
+     * @throws IOException
      */
+    @Override
     public int codeToGID(int code) throws IOException
     {
         if (!isEmbedded)
@@ -245,20 +295,13 @@ public class PDCIDFontType2 extends PDCIDFont
             // font's 'cmap' table. The means by which this is accomplished are implementation-
             // dependent.
 
-            boolean hasUnicodeMap = parent.getCMapUCS2() != null;
-
-            if (cid2gid != null)
+            // omit the CID2GID mapping if the embedded font is replaced by an external font
+            if (cid2gid != null && !isDamaged)
             {
                 // Acrobat allows non-embedded GIDs - todo: can we find a test PDF for this?
+                Log.w("PdfBox-Android", "Using non-embedded GIDs in font " + getName());
                 int cid = codeToCID(code);
                 return cid2gid[cid];
-            }
-            else if (hasIdentityCid2Gid || !hasUnicodeMap)
-            {
-                // same as above, but for the default Identity CID2GIDMap or when there is no
-                // ToUnicode CMap to fallback to, see PDFBOX-2599 and PDFBOX-2560
-                // todo: can we find a test PDF for the Identity case?
-                return codeToCID(code);
             }
             else
             {
@@ -267,7 +310,9 @@ public class PDCIDFontType2 extends PDCIDFont
                 if (unicode == null)
                 {
                     Log.w("PdfBox-Android", "Failed to find a character mapping for " + code + " in " + getName());
-                    return 0;
+                    // Acrobat is willing to use the CID as a GID, even when the font isn't embedded
+                    // see PDFBOX-2599
+                    return codeToCID(code);
                 }
                 else if (unicode.length() > 1)
                 {

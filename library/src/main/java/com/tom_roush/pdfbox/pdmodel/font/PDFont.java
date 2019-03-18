@@ -54,8 +54,7 @@ public abstract class PDFont implements COSObjectable, PDFontLike
     private final CMap toUnicodeCMap;
     private final FontMetrics afmStandard14; // AFM for standard 14 fonts
     private PDFontDescriptor fontDescriptor;
-
-    private List<Integer> widths;
+    private List<Float> widths;
     private float avgFontWidth;
     private float fontWidthOfSpace = -1f;
 
@@ -70,12 +69,14 @@ public abstract class PDFont implements COSObjectable, PDFontLike
         fontDescriptor = null;
         afmStandard14 = null;
     }
+
     /**
      * Constructor for Standard 14.
      */
     PDFont(String baseFont)
     {
         dict = new COSDictionary();
+        dict.setItem(COSName.TYPE, COSName.FONT);
         toUnicodeCMap = null;
         afmStandard14 = Standard14Fonts.getAFM(baseFont);
         if (afmStandard14 == null)
@@ -222,16 +223,18 @@ public abstract class PDFont implements COSObjectable, PDFontLike
         {
             int firstChar = dict.getInt(COSName.FIRST_CHAR, -1);
             int lastChar = dict.getInt(COSName.LAST_CHAR, -1);
-            if (getWidths().size() > 0 && code >= firstChar && code <= lastChar)
+            int siz = getWidths().size();
+            int idx = code - firstChar;
+            if (siz > 0 && code >= firstChar && code <= lastChar && idx < siz)
             {
-                return getWidths().get(code - firstChar).floatValue();
+                return getWidths().get(idx);
             }
 
             PDFontDescriptor fd = getFontDescriptor();
-            if (fd != null)
+            if (fd != null && fd.hasMissingWidth())
             {
-                // if there's nothing to override with, then obviously we fall back to the font
-                return fd.getMissingWidth(); // default is 0
+                // get entry from /MissingWidth entry
+                return fd.getMissingWidth();
             }
         }
 
@@ -396,11 +399,13 @@ public abstract class PDFont implements COSObjectable, PDFontLike
         // if the font dictionary containsName a ToUnicode CMap, use that CMap
         if (toUnicodeCMap != null)
         {
-            if (toUnicodeCMap.getName() != null && toUnicodeCMap.getName().startsWith("Identity-"))
+            if (toUnicodeCMap.getName() != null && toUnicodeCMap.getName().startsWith(
+                "Identity-") && dict.getDictionaryObject(COSName.TO_UNICODE) instanceof COSName)
             {
                 // handle the undocumented case of using Identity-H/V as a ToUnicode CMap, this
-                // isn't  actually valid as the Identity-x CMaps are code->CID maps, not
+                // isn't actually valid as the Identity-x CMaps are code->CID maps, not
                 // code->Unicode maps. See sample_fonts_solidconvertor.pdf for an example.
+                // PDFBOX-3123: do this only if the /ToUnicode entry is a name
                 return new String(new char[] { (char) code });
             }
             else
@@ -444,14 +449,14 @@ public abstract class PDFont implements COSObjectable, PDFontLike
      *
      * @return The widths of the characters.
      */
-    protected final List<Integer> getWidths()
+    protected final List<Float> getWidths()
     {
         if (widths == null)
         {
             COSArray array = (COSArray) dict.getDictionaryObject(COSName.WIDTHS);
             if (array != null)
             {
-                widths = COSArrayList.convertIntegerCOSArrayToList(array);
+                widths = COSArrayList.convertFloatCOSArrayToList(array);
             }
             else
             {
@@ -523,6 +528,7 @@ public abstract class PDFont implements COSObjectable, PDFontLike
         {
             return false;
         }
+
         // if the name matches, this is a Standard 14 font
         return Standard14Fonts.containsName(getName());
     }

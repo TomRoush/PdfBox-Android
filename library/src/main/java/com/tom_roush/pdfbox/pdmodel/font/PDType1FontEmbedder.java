@@ -16,7 +16,6 @@
  */
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -61,8 +60,8 @@ class PDType1FontEmbedder
 
         // read the pfb
         byte[] pfbBytes = IOUtils.toByteArray(pfbStream);
-        PfbParser pfbParser = new PfbParser(new ByteArrayInputStream(pfbBytes));
-        type1 = Type1Font.createWithPFB(new ByteArrayInputStream(pfbBytes));
+        PfbParser pfbParser = new PfbParser(pfbBytes);
+        type1 = Type1Font.createWithPFB(pfbBytes);
 
         if (encoding == null)
         {
@@ -77,10 +76,10 @@ class PDType1FontEmbedder
         PDFontDescriptor fd = buildFontDescriptor(type1);
 
         PDStream fontStream = new PDStream(doc, pfbParser.getInputStream(), COSName.FLATE_DECODE);
-        fontStream.getStream().setInt("Length", pfbParser.size());
+        fontStream.getCOSObject().setInt("Length", pfbParser.size());
         for (int i = 0; i < pfbParser.getLengths().length; i++)
         {
-            fontStream.getStream().setInt("Length" + (i + 1), pfbParser.getLengths()[i]);
+            fontStream.getCOSObject().setInt("Length" + (i + 1), pfbParser.getLengths()[i]);
         }
         fd.setFontFile(fontStream);
 
