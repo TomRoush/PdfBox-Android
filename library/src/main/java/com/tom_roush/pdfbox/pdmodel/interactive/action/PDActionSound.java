@@ -14,27 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.interactive.action;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
- * This represents a dictionary of actions that occur due to events.
+ * This represents a Sound action that can be executed in a PDF document
  *
- * @author Ben Litchfield
+ * @author Timur Kamalov
  */
-public class PDAdditionalActions implements COSObjectable
+public class PDActionSound extends PDAction
 {
-    private final COSDictionary actions;
+
+    /**
+     * This type of action this object represents.
+     */
+    public static final String SUB_TYPE = "Sound";
 
     /**
      * Default constructor.
      */
-    public PDAdditionalActions()
+    public PDActionSound()
     {
-        actions = new COSDictionary();
+        action = new COSDictionary();
+        setSubType(SUB_TYPE);
     }
 
     /**
@@ -42,39 +47,31 @@ public class PDAdditionalActions implements COSObjectable
      *
      * @param a The action dictionary.
      */
-    public PDAdditionalActions( COSDictionary a )
+    public PDActionSound(COSDictionary a)
     {
-        actions = a;
+        super(a);
     }
 
     /**
-     * Convert this standard java object to a COS object.
+     * This will get the type of action that the actions dictionary describes. It must be Sound for
+     * a Sound action.
      *
-     * @return The cos object that matches this Java object.
+     * @return The S entry of the specific Sound action dictionary.
      */
-    @Override
-    public COSDictionary getCOSObject()
+    public String getS()
     {
-        return actions;
+        return action.getNameAsString(COSName.S);
     }
 
     /**
-     * Get the F action.
+     * This will set the type of action that the actions dictionary describes. It must be Sound for
+     * a Sound action.
      *
-     * @return The F action.
+     * @param s The Sound action.
      */
-    public PDAction getF()
+    public void setS(String s)
     {
-        return PDActionFactory.createAction((COSDictionary)actions.getDictionaryObject(COSName.F));
+        action.setName(COSName.S, s);
     }
 
-    /**
-     * Set the F action.
-     *
-     * @param action Get the F action.
-     */
-    public void setF( PDAction action )
-    {
-        actions.setItem(COSName.F, action);
-    }
 }

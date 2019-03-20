@@ -14,27 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.interactive.action;
+
+import java.io.IOException;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
 
 /**
- * This represents a dictionary of actions that occur due to events.
- *
- * @author Ben Litchfield
+ * @author Timur Kamalov
  */
-public class PDAdditionalActions implements COSObjectable
+public class PDActionImportData extends PDAction
 {
-    private final COSDictionary actions;
+
+    /**
+     * This type of action this object represents.
+     */
+    public static final String SUB_TYPE = "ImportData";
 
     /**
      * Default constructor.
      */
-    public PDAdditionalActions()
+    public PDActionImportData()
     {
-        actions = new COSDictionary();
+        action = new COSDictionary();
+        setSubType(SUB_TYPE);
     }
 
     /**
@@ -42,39 +48,30 @@ public class PDAdditionalActions implements COSObjectable
      *
      * @param a The action dictionary.
      */
-    public PDAdditionalActions( COSDictionary a )
+    public PDActionImportData(COSDictionary a)
     {
-        actions = a;
+        super(a);
     }
 
     /**
-     * Convert this standard java object to a COS object.
+     * This will get the file in which the destination is located.
      *
-     * @return The cos object that matches this Java object.
+     * @return The F entry of the specific Submit-From action dictionary.
+     * @throws IOException If there is an error creating the file spec.
      */
-    @Override
-    public COSDictionary getCOSObject()
+    public PDFileSpecification getFile() throws IOException
     {
-        return actions;
+        return PDFileSpecification.createFS(action.getDictionaryObject(COSName.F));
     }
 
     /**
-     * Get the F action.
+     * This will set the file in which the destination is located.
      *
-     * @return The F action.
+     * @param fs The file specification.
      */
-    public PDAction getF()
+    public void setFile(PDFileSpecification fs)
     {
-        return PDActionFactory.createAction((COSDictionary)actions.getDictionaryObject(COSName.F));
+        action.setItem(COSName.F, fs);
     }
 
-    /**
-     * Set the F action.
-     *
-     * @param action Get the F action.
-     */
-    public void setF( PDAction action )
-    {
-        actions.setItem(COSName.F, action);
-    }
 }
