@@ -56,10 +56,10 @@ public abstract class PDPageDestination extends PDDestination
     }
 
     /**
-     * This will get the page for this destination.  A page destination can either reference a page
+     * This will get the page for this destination. A page destination can either reference a page
      * (for a local destination) or a page number (when doing a remote destination to another PDF).
      * If this object is referencing by page number then this method will return null and
-     * {@Link #getPageNumber()} should be used.
+     * {@link #getPageNumber()} should be used.
      *
      * @return The page for this destination.
      */
@@ -88,9 +88,9 @@ public abstract class PDPageDestination extends PDDestination
     }
 
     /**
-     * This will get the page number for this destination.  A page destination can either reference a
+     * This will get the page number for this destination. A page destination can either reference a
      * page (for a local destination) or a page number (when doing a remote destination to another
-     * PDF).  If this object is referencing by page number then this method will return that number,
+     * PDF). If this object is referencing by page number then this method will return that number,
      * otherwise -1 will be returned.
      *
      * @return The zero-based page number for this destination.
@@ -133,7 +133,6 @@ public abstract class PDPageDestination extends PDDestination
             }
             else if (page instanceof COSDictionary)
             {
-                //TODO make this a static utility method of PDPageTree?
                 COSBase parent = page;
                 while (((COSDictionary) parent).getDictionaryObject(COSName.PARENT, COSName.P) != null)
                 {
@@ -141,7 +140,7 @@ public abstract class PDPageDestination extends PDDestination
                 }
                 // now parent is the pages node
                 PDPageTree pages = new PDPageTree((COSDictionary) parent);
-                retval = pages.indexOf(new PDPage((COSDictionary) page)) + 1;
+                return pages.indexOf(new PDPage((COSDictionary)page)) + 1;
             }
         }
         return retval;
@@ -166,6 +165,7 @@ public abstract class PDPageDestination extends PDDestination
             }
             else if (page instanceof COSDictionary)
             {
+                //TODO make this a static utility method of PDPageTree?
                 COSBase parent = page;
                 while (((COSDictionary) parent).getDictionaryObject(COSName.PARENT, COSName.P) != null)
                 {
