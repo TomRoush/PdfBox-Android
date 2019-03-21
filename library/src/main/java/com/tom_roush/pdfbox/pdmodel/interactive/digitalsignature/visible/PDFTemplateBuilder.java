@@ -40,39 +40,39 @@ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
 public interface PDFTemplateBuilder
 {
     /**
-     * In order to create Affine Transform, using parameters
+     * In order to create Affine Transform, using parameters.
      * @param params
      */
     void createAffineTransform(byte [] params);
 
     /**
-     * Creates specified size page
+     * Creates specified size page.
      * @param properties
      */
     void createPage(PDVisibleSignDesigner properties);
 
     /**
-     * Creates template using page
+     * Creates template using page.
      * @param page
      * @throws IOException
      */
     void createTemplate(PDPage page) throws IOException;
 
     /**
-     * Creates Acro forms in the template
+     * Creates Acro forms in the template.
      * @param template
      */
     void createAcroForm(PDDocument template);
 
     /**
-     * Creates signature fields
+     * Creates signature fields.
      * @param acroForm
      * @throws IOException
      */
     void createSignatureField(PDAcroForm acroForm) throws IOException;
 
     /**
-     * Creates PDSignatureField
+     * Creates PDSignatureField.
      * @param pdSignatureField
      * @param page
      * @param signatureName
@@ -82,7 +82,7 @@ public interface PDFTemplateBuilder
         String signatureName) throws IOException;
 
     /**
-     * Create AcroForm Dictionary
+     * Create AcroForm Dictionary.
      * @param acroForm
      * @param signatureField
      * @throws IOException
@@ -91,7 +91,7 @@ public interface PDFTemplateBuilder
         PDSignatureField signatureField) throws IOException;
 
     /**
-     * Creates SingatureRectangle
+     * Creates SingatureRectangle.
      * @param signatureField
      * @param properties
      * @throws IOException
@@ -100,12 +100,12 @@ public interface PDFTemplateBuilder
         PDVisibleSignDesigner properties) throws IOException;
 
     /**
-     * Creates procSetArray of PDF,Text,ImageB,ImageC,ImageI
+     * Creates procSetArray of PDF,Text,ImageB,ImageC,ImageI.
      */
     void createProcSetArray();
 
     /**
-     * Creates signature image
+     * Creates signature image.
      * @param template
      * @param image
      * @throws IOException
@@ -116,7 +116,7 @@ public interface PDFTemplateBuilder
      *
      * @param params
      */
-    void createFormaterRectangle(byte [] params);
+    void createFormatterRectangle(byte[] params);
 
     /**
      *
@@ -131,6 +131,7 @@ public interface PDFTemplateBuilder
 
     /**
      * Creates Form
+     *
      * @param holderFormResources
      * @param holderFormStream
      * @param formrect
@@ -140,6 +141,7 @@ public interface PDFTemplateBuilder
 
     /**
      * Creates appearance dictionary
+     *
      * @param holderForml
      * @param signatureField
      * @throws IOException
@@ -152,7 +154,6 @@ public interface PDFTemplateBuilder
      * @param template
      */
     void createInnerFormStream(PDDocument template);
-
 
     /**
      * Creates InnerForm
@@ -173,7 +174,7 @@ public interface PDFTemplateBuilder
      * @param innerForm
      * @param holderFormResources
      */
-    void insertInnerFormToHolerResources(PDFormXObject innerForm,
+    void insertInnerFormToHolderResources(PDFormXObject innerForm,
         PDResources holderFormResources);
 
     /**
@@ -189,6 +190,7 @@ public interface PDFTemplateBuilder
 
     /**
      * Creates Image form
+     *
      * @param imageFormResources
      * @param innerFormResource
      * @param imageFormStream
@@ -204,6 +206,7 @@ public interface PDFTemplateBuilder
 
     /**
      * Inject procSetArray
+     *
      * @param innerForm
      * @param page
      * @param innerFormResources
@@ -217,6 +220,7 @@ public interface PDFTemplateBuilder
 
     /**
      * injects appearance streams
+     *
      * @param holderFormStream
      * @param innterFormStream
      * @param imageFormStream
@@ -233,12 +237,14 @@ public interface PDFTemplateBuilder
 
     /**
      * just to create visible signature
+     *
      * @param template
      */
     void createVisualSignature(PDDocument template);
 
     /**
      * adds Widget Dictionary
+     *
      * @param signatureField
      * @param holderFormResources
      * @throws IOException
@@ -254,6 +260,7 @@ public interface PDFTemplateBuilder
 
     /**
      * Closes template
+     *
      * @param template
      * @throws IOException
      */

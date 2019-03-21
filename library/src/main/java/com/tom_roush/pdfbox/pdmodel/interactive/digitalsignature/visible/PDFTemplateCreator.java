@@ -86,7 +86,7 @@ public class PDFTemplateCreator
         pdfBuilder.createAcroForm(template);
         PDAcroForm acroForm = pdfStructure.getAcroForm();
 
-        // AcroForm contains singature fields
+        // AcroForm contains signature fields
         pdfBuilder.createSignatureField(acroForm);
         PDSignatureField pdSignatureField = pdfStructure.getSignatureField();
         
@@ -102,8 +102,8 @@ public class PDFTemplateCreator
        
         // rectangle, formatter, image. /AcroForm/DR/XObject contains that form
         pdfBuilder.createSignatureRectangle(pdSignatureField, properties);
-        pdfBuilder.createFormaterRectangle(properties.getFormaterRectangleParams());
-        PDRectangle formater = pdfStructure.getFormaterRectangle();
+        pdfBuilder.createFormatterRectangle(properties.getFormatterRectangleParams());
+        PDRectangle formatter = pdfStructure.getFormatterRectangle();
         pdfBuilder.createSignatureImage(template, properties.getImage());
 
         // create form stream, form and  resource. 
@@ -111,28 +111,28 @@ public class PDFTemplateCreator
         PDStream holderFormStream = pdfStructure.getHolderFormStream();
         pdfBuilder.createHolderFormResources();
         PDResources holderFormResources = pdfStructure.getHolderFormResources();
-        pdfBuilder.createHolderForm(holderFormResources, holderFormStream, formater);
-       
+        pdfBuilder.createHolderForm(holderFormResources, holderFormStream, formatter);
+
         // that is /AP entry the appearance dictionary.
         pdfBuilder.createAppearanceDictionary(pdfStructure.getHolderForm(), pdSignatureField);
-        
+
         // inner form stream, form and resource (hlder form containts inner form)
         pdfBuilder.createInnerFormStream(template);
         pdfBuilder.createInnerFormResource();
         PDResources innerFormResource = pdfStructure.getInnerFormResources();
-        pdfBuilder.createInnerForm(innerFormResource, pdfStructure.getInnterFormStream(), formater);
+        pdfBuilder.createInnerForm(innerFormResource, pdfStructure.getInnerFormStream(), formatter);
        PDFormXObject innerForm = pdfStructure.getInnerForm();
        
         // inner form must be in the holder form as we wrote
-        pdfBuilder.insertInnerFormToHolerResources(innerForm, holderFormResources);
+        pdfBuilder.insertInnerFormToHolderResources(innerForm, holderFormResources);
         
         //  Image form is in this structure: /AcroForm/DR/FRM0/Resources/XObject/n0
         pdfBuilder.createImageFormStream(template);
         PDStream imageFormStream = pdfStructure.getImageFormStream();
         pdfBuilder.createImageFormResources();
         PDResources imageFormResources = pdfStructure.getImageFormResources();
-        pdfBuilder.createImageForm(imageFormResources, innerFormResource, imageFormStream, formater,
-                transform, pdfStructure.getImage());
+        pdfBuilder.createImageForm(imageFormResources, innerFormResource, imageFormStream,
+            formatter, transform, pdfStructure.getImage());
        
         // now inject procSetArray
         pdfBuilder.injectProcSetArray(innerForm, page, innerFormResource, imageFormResources,
@@ -142,7 +142,7 @@ public class PDFTemplateCreator
         COSName imgName = pdfStructure.getImageName();
         COSName innerFormName = pdfStructure.getInnerFormName();
 
-       // now create Streams of AP
+        // now create Streams of AP
         pdfBuilder.injectAppearanceStreams(holderFormStream, imageFormStream, imageFormStream,
                 imgFormName, imgName, innerFormName, properties);
         pdfBuilder.createVisualSignature(template);

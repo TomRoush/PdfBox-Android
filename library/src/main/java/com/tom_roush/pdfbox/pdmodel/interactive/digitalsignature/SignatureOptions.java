@@ -125,8 +125,8 @@ public class SignatureOptions implements Closeable
   
     /**
      * Set the preferred size of the signature.
-     * 
-     * @param size the size of the signature
+     *
+     * @param size the size of the signature in bytes. Only values above 0 will be considered.
      */
     public void setPreferredSignatureSize(int size)
     {
