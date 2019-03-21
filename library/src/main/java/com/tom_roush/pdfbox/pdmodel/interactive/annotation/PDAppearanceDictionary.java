@@ -36,7 +36,7 @@ public class PDAppearanceDictionary implements COSObjectable
     public PDAppearanceDictionary()
     {
         dictionary = new COSDictionary();
-        //the N entry is required.
+        // the N entry is required.
         dictionary.setItem( COSName.N, new COSDictionary() );
     }
 
@@ -57,7 +57,7 @@ public class PDAppearanceDictionary implements COSObjectable
     }
 
     /**
-     * This will return a list of appearances.  In the case where there is
+     * This will return a list of appearances. In the case where there is
      * only one appearance the map will contain one entry whose key is the string
      * "default".
      *
@@ -72,12 +72,12 @@ public class PDAppearanceDictionary implements COSObjectable
         }
         else
         {
-        	return new PDAppearanceEntry(entry);
+            return new PDAppearanceEntry(entry);
         }
     }
 
     /**
-     * This will set a list of appearances.  If you would like to set the single
+     * This will set a list of appearances. If you would like to set the single
      * appearance then you should use the key "default", and when the PDF is written
      * back to the filesystem then there will only be one stream.
      *
@@ -100,9 +100,9 @@ public class PDAppearanceDictionary implements COSObjectable
     }
 
     /**
-     * This will return a list of appearances.  In the case where there is
+     * This will return a list of appearances. In the case where there is
      * only one appearance the map will contain one entry whose key is the string
-     * "default".  If there is no rollover appearance then the normal appearance
+     * "default". If there is no rollover appearance then the normal appearance
      * will be returned.  Which means that this method will never return null.
      *
      * @return A list of key(java.lang.String) value(PDAppearanceStream) pairs
@@ -116,12 +116,12 @@ public class PDAppearanceDictionary implements COSObjectable
         }
         else
         {
-        	return new PDAppearanceEntry(entry);
+            return new PDAppearanceEntry(entry);
         }
     }
 
     /**
-     * This will set a list of appearances.  If you would like to set the single
+     * This will set a list of appearances. If you would like to set the single
      * appearance then you should use the key "default", and when the PDF is written
      * back to the filesystem then there will only be one stream.
      *
@@ -144,9 +144,9 @@ public class PDAppearanceDictionary implements COSObjectable
     }
 
     /**
-     * This will return a list of appearances.  In the case where there is
+     * This will return a list of appearances. In the case where there is
      * only one appearance the map will contain one entry whose key is the string
-     * "default".  If there is no rollover appearance then the normal appearance
+     * "default". If there is no rollover appearance then the normal appearance
      * will be returned.  Which means that this method will never return null.
      *
      * @return A list of key(java.lang.String) value(PDAppearanceStream) pairs
@@ -160,12 +160,12 @@ public class PDAppearanceDictionary implements COSObjectable
         }
         else
         {
-        	return new PDAppearanceEntry(entry);
+            return new PDAppearanceEntry(entry);
         }
     }
 
     /**
-     * This will set a list of appearances.  If you would like to set the single
+     * This will set a list of appearances. If you would like to set the single
      * appearance then you should use the key "default", and when the PDF is written
      * back to the filesystem then there will only be one stream.
      *
@@ -175,7 +175,7 @@ public class PDAppearanceDictionary implements COSObjectable
     {
         dictionary.setItem( COSName.D, entry );
     }
-    
+
     /**
      * This will set the down appearance when there is down appearance
      * to be shown.

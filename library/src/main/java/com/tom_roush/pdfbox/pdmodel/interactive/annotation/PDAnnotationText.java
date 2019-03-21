@@ -150,8 +150,8 @@ public class PDAnnotationText extends PDAnnotationMarkup
 
     /**
      * This will set the annotation state.
-     * 
-     * @param state the annotation state 
+     *
+     * @param state the annotation state
      */
     public void setState(String state)
     {

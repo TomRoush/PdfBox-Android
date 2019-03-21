@@ -117,7 +117,7 @@ public class PDAnnotationRubberStamp extends PDAnnotationMarkup
 
     /**
      * This will set the name (and hence appearance, AP taking precedence)
-     * For this annotation.   See the NAME_XXX constants for valid values.
+     * For this annotation. See the NAME_XXX constants for valid values.
      *
      * @param name The name of the rubber stamp.
      */
@@ -128,7 +128,7 @@ public class PDAnnotationRubberStamp extends PDAnnotationMarkup
 
     /**
      * This will retrieve the name (and hence appearance, AP taking precedence)
-     * For this annotation.  The default is DRAFT.
+     * For this annotation. The default is DRAFT.
      *
      * @return The name of this rubber stamp, see the NAME_XXX constants.
      */

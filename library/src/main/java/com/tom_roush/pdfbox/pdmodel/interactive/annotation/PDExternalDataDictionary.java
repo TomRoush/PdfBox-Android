@@ -39,8 +39,8 @@ public class PDExternalDataDictionary implements COSObjectable
 
     /**
      * Constructor.
-     * 
-     *  @param dictionary Dictionary
+     *
+     * @param dictionary Dictionary
      */
     public PDExternalDataDictionary(COSDictionary dictionary)
     {
@@ -70,6 +70,7 @@ public class PDExternalDataDictionary implements COSObjectable
 
     /**
      * returns the subtype of the external data dictionary.
+     *
      * @return the subtype of the external data dictionary
      */
     public String getSubtype()
@@ -79,6 +80,7 @@ public class PDExternalDataDictionary implements COSObjectable
 
     /**
      * This will set the subtype of the external data dictionary.
+     *
      * @param subtype the subtype of the external data dictionary
      */
     public void setSubtype(String subtype)

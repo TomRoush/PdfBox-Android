@@ -46,7 +46,6 @@ public class PDAnnotationTextMarkup extends PDAnnotationMarkup
      */
     public static final String SUB_TYPE_STRIKEOUT = "StrikeOut";
 
-
     private PDAnnotationTextMarkup()
     {
         // Must be constructed with a subType or dictionary parameter

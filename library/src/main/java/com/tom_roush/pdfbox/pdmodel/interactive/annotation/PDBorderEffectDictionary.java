@@ -68,6 +68,7 @@ public class PDBorderEffectDictionary implements COSObjectable
      *
      * @return the dictionary
      */
+    @Override
     public COSDictionary getCOSObject()
     {
         return dictionary;
