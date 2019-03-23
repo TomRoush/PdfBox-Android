@@ -16,6 +16,13 @@
  */
 package com.tom_roush.pdfbox.multipdf;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -25,12 +32,6 @@ import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Utility class used to clone PDF objects. It keeps track of objects it has already cloned.
@@ -112,8 +113,10 @@ class PDFCloneUtility
           {
               COSStream originalStream = (COSStream)base;
               COSStream stream = destination.getDocument().createCOSStream();
-              OutputStream output = stream.createOutputStream(originalStream.getFilters());
-              IOUtils.copy(originalStream.createInputStream(), output);
+              OutputStream output = stream.createRawOutputStream();
+              InputStream input = originalStream.createRawInputStream();
+              IOUtils.copy(input, output);
+              input.close();
               output.close();
               clonedVersion.put(base, stream);
               for( Map.Entry<COSName, COSBase> entry :  originalStream.entrySet() )

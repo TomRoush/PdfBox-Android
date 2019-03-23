@@ -16,6 +16,9 @@
  */
 package com.tom_roush.pdfbox.multipdf;
 
+import java.io.File;
+import java.io.IOException;
+
 import com.tom_roush.harmony.awt.AWTColor;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -33,9 +36,6 @@ import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentPr
 import com.tom_roush.pdfbox.util.Matrix;
 
 import junit.framework.TestCase;
-
-import java.io.File;
-import java.io.IOException;
 
 /**
  * Tests the {@link com.tom_roush.pdfbox.multipdf.LayerUtility} class.
@@ -134,7 +134,8 @@ public class TestLayerUtility extends TestCase
             };
 
             //Setup page content stream and paint background/title
-            PDPageContentStream contentStream = new PDPageContentStream(doc, page, false, false);
+            PDPageContentStream contentStream = new PDPageContentStream(doc, page,
+                PDPageContentStream.AppendMode.OVERWRITE, false);
             PDFont font = PDType1Font.HELVETICA_BOLD;
             contentStream.beginText();
             contentStream.newLineAtOffset(50, 720);
@@ -180,7 +181,8 @@ public class TestLayerUtility extends TestCase
             }
 
             //Setup page content stream and paint background/title
-            PDPageContentStream contentStream = new PDPageContentStream(doc, page, false, false);
+            PDPageContentStream contentStream = new PDPageContentStream(doc, page,
+                PDPageContentStream.AppendMode.OVERWRITE, false);
             PDFont font = PDType1Font.HELVETICA_BOLD;
             contentStream.setNonStrokingColor(AWTColor.LIGHT_GRAY);
             contentStream.beginText();

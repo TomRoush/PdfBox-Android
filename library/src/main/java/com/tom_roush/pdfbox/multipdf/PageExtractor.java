@@ -48,8 +48,8 @@ public class PageExtractor
      * Creates a new instance of PageExtractor
      *
      * @param sourceDocument The document to split.
-     * @param startPage      The first page you want extracted (inclusive)
-     * @param endPage        The last page you want extracted (inclusive)
+     * @param startPage The first page you want extracted (inclusive)
+     * @param endPage The last page you want extracted (inclusive)
      */
     public PageExtractor(PDDocument sourceDocument, int startPage, int endPage)
     {
@@ -68,7 +68,6 @@ public class PageExtractor
      * blank document will be returned.
      *
      * @return The extracted document
-     *
      * @throws IOException If there is an IOError
      */
     public PDDocument extract() throws IOException
