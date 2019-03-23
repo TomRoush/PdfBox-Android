@@ -31,7 +31,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.image.JPEGFactory;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import com.tom_roush.pdfbox.pdmodel.interactive.form.PDCheckbox;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDComboBox;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDListBox;
@@ -195,7 +195,7 @@ public class MainActivity extends Activity {
             field.setReadOnly(true);
 
             PDField checkbox = acroForm.getField("Checkbox");
-            ((PDCheckbox) checkbox).check();
+            ((PDCheckBox) checkbox).check();
 
             PDField radio = acroForm.getField("Radio");
             ((PDRadioButton)radio).setValue("Second");

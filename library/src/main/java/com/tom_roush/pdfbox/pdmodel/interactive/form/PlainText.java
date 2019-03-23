@@ -194,6 +194,7 @@ class PlainText
                 start = end;
                 end = iterator.next();
             }
+            textLine.setWidth(textLine.calculateWidth(font, fontSize));
             textLines.add(textLine);
             return textLines;
         }

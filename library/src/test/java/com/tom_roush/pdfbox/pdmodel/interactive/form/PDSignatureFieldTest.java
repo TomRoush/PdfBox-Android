@@ -16,6 +16,10 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
@@ -23,9 +27,8 @@ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Test for the PDSignatureField class.
@@ -46,6 +49,7 @@ public class PDSignatureFieldTest
     public void createDefaultSignatureField() throws IOException
     {
         PDSignatureField sigField = new PDSignatureField(acroForm);
+        sigField.setPartialName("SignatureField");
 
         assertEquals(sigField.getFieldType(), sigField.getCOSObject().getNameAsString(COSName.FT));
         assertEquals(sigField.getFieldType(), "Sig");
@@ -53,5 +57,21 @@ public class PDSignatureFieldTest
         assertEquals(COSName.ANNOT, sigField.getCOSObject().getItem(COSName.TYPE));
         assertEquals(PDAnnotationWidget.SUB_TYPE,
             sigField.getCOSObject().getNameAsString(COSName.SUBTYPE));
+
+        // Add the field to the acroform
+        List<PDField> fields = new ArrayList<PDField>();
+        fields.add(sigField);
+        this.acroForm.setFields(fields);
+
+        assertNotNull(acroForm.getField("SignatureField"));
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void setValueForAbstractedSignatureField() throws IOException
+    {
+        PDSignatureField sigField = new PDSignatureField(acroForm);
+        sigField.setPartialName("SignatureField");
+
+        ((PDField)sigField).setValue("Can't set value using String");
     }
 }
