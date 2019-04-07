@@ -711,6 +711,11 @@ public class FontMetrics
     public void setCharMetrics(List<CharMetric> charMetricsValue)
     {
         charMetrics = charMetricsValue;
+        charMetricsMap = new HashMap<String, CharMetric>(charMetrics.size());
+        for (CharMetric metric : charMetricsValue)
+        {
+            charMetricsMap.put( metric.getName(), metric );
+        }
     }
 
     /**

@@ -39,8 +39,7 @@ public class PDButtonTest
 {
 
 
-    private static final File IN_DIR = new File(
-        "src/test/resources/org/apache/pdfbox/pdmodel/interactive/form");
+    private static final String IN_DIR = "/pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/form/";
     private static final String NAME_OF_PDF = "AcroFormsBasicFields.pdf";
 
     private PDDocument document;
@@ -58,7 +57,7 @@ public class PDButtonTest
 
         try
         {
-            acrobatDocument = PDDocument.load(new File(getClass().getResource("/pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/form/AcroFormsBasicFields.pdf").toURI()));
+            acrobatDocument = PDDocument.load(new File(getClass().getResource(IN_DIR + NAME_OF_PDF).toURI()));
         }
         catch (URISyntaxException e)
         {

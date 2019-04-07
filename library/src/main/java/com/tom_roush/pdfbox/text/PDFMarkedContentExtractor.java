@@ -25,6 +25,7 @@ import java.util.Stack;
 
 import com.tom_roush.pdfbox.contentstream.operator.markedcontent.BeginMarkedContentSequence;
 import com.tom_roush.pdfbox.contentstream.operator.markedcontent.BeginMarkedContentSequenceWithProperties;
+import com.tom_roush.pdfbox.contentstream.operator.markedcontent.DrawObject;
 import com.tom_roush.pdfbox.contentstream.operator.markedcontent.EndMarkedContentSequence;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -38,10 +39,11 @@ import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
  */
 public class PDFMarkedContentExtractor extends PDFTextStreamEngine
 {
-    private boolean suppressDuplicateOverlappingText = true;
-    private List<PDMarkedContent> markedContents = new ArrayList<PDMarkedContent>();
-    private Stack<PDMarkedContent> currentMarkedContents = new Stack<PDMarkedContent>();
-    private Map<String, List<TextPosition>> characterListMapping = new HashMap<String, List<TextPosition>>();
+    private final boolean suppressDuplicateOverlappingText = true;
+    private final List<PDMarkedContent> markedContents = new ArrayList<PDMarkedContent>();
+    private final Stack<PDMarkedContent> currentMarkedContents = new Stack<PDMarkedContent>();
+    private final Map<String, List<TextPosition>> characterListMapping =
+        new HashMap<String, List<TextPosition>>();
 
     /**
      * Instantiate a new PDFTextStripper object.
@@ -61,6 +63,7 @@ public class PDFMarkedContentExtractor extends PDFTextStreamEngine
         addOperator(new BeginMarkedContentSequenceWithProperties());
         addOperator(new BeginMarkedContentSequence());
         addOperator(new EndMarkedContentSequence());
+        addOperator(new DrawObject());
         // todo: DP - Marked Content Point
         // todo: MP - Marked Content Point with Properties
     }
