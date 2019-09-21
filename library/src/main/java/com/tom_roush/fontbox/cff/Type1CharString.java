@@ -471,7 +471,7 @@ public class Type1CharString
             try
             {
                 Type1CharString base = font.getType1CharString(baseName);
-                path.op(base.getPath(), Path.Op.UNION);
+                path.op(base.getPath(), Path.Op.UNION); // TODO: PdfBox-Android
                 PathMeasure pm = new PathMeasure(path, false);
                 //coordinates will be here
                 float aCoordinates[] = {0f, 0f};
@@ -497,7 +497,7 @@ public class Type1CharString
                 AffineTransform at = AffineTransform.getTranslateInstance(
                     leftSideBearing.x + adx.floatValue(),
                     leftSideBearing.y + ady.floatValue());
-                path.op(accent.getPath(), Path.Op.UNION);
+                path.op(accent.getPath(), Path.Op.UNION); // TODO: PdfBox-Android
             }
             catch (IOException e)
             {

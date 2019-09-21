@@ -30,34 +30,51 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 /**
  * Renders a PDF document to an AWT BufferedImage.
  * This class may be overridden in order to perform custom rendering.
- * @author John Hewson
- * @author Andreas Lehmkühler
  *
+ * @author John Hewson
  */
 public class PDFRenderer
 {
-	protected final PDDocument document;
-	// TODO keep rendering state such as caches here
-	
-	/**
-	 * Creates a new PDFRenderer.
-	 * @param document the document to render
-	 */
-	public PDFRenderer(PDDocument document)
-	{
-		this.document = document;
-	}
-	
-	/**
-	 * Returns the given page as an RGB image at 72 DPI
-	 * @param pageIndex the zero-based index of the page to be converted.
-	 * @return the rendered page image
-	 * @throws IOException if the PDF cannot be read
-	 */
-	public Bitmap renderImage(int pageIndex) throws IOException
-	{
-		return renderImage(pageIndex, 1, Bitmap.Config.ARGB_8888);
-	}
+    protected final PDDocument document;
+    // TODO keep rendering state such as caches here
+
+    /**
+     * Creates a new PDFRenderer.
+     *
+     * @param document the document to render
+     */
+    public PDFRenderer(PDDocument document)
+    {
+        this.document = document;
+    }
+
+    /**
+     * Returns the given page as an RGB image at 72 DPI
+     *
+     * @param pageIndex the zero-based index of the page to be converted.
+     *
+     * @return the rendered page image
+     * @throws IOException if the PDF cannot be read
+     */
+    public Bitmap renderImage(int pageIndex) throws IOException
+    {
+        return renderImage(pageIndex, 1);
+    }
+
+    /**
+     * Returns the given page as an RGB image at the given scale.
+     * A scale of 1 will render at 72 DPI.
+     *
+     * @param pageIndex the zero-based index of the page to be converted
+     * @param scale the scaling factor, where 1 = 72 DPI
+     *
+     * @return the rendered page image
+     * @throws IOException if the PDF cannot be read
+     */
+    public Bitmap renderImage(int pageIndex, float scale) throws IOException
+    {
+        return renderImage(pageIndex, scale, ImageType.RGB);
+    }
 
     /**
      * Returns the given page as an RGB image at the given DPI.
@@ -68,7 +85,7 @@ public class PDFRenderer
      */
     public Bitmap renderImageWithDPI(int pageIndex, float dpi) throws IOException
     {
-        return renderImage(pageIndex, dpi / 72f, Bitmap.Config.ARGB_8888);
+        return renderImage(pageIndex, dpi / 72f, ImageType.RGB);
     }
 
     /**
@@ -79,23 +96,25 @@ public class PDFRenderer
      * @return the rendered page image
      * @throws IOException if the PDF cannot be read
      */
-    public Bitmap renderImageWithDPI(int pageIndex, float dpi, Bitmap.Config imageType)
+    public Bitmap renderImageWithDPI(int pageIndex, float dpi, ImageType imageType)
         throws IOException
     {
         return renderImage(pageIndex, dpi / 72f, imageType);
     }
-	
-	/**
-	 * Returns the given page as an RGB image at the given scale.
-	 * @param pageIndex the zero-based index of the page to be converted
-	 * @param scale the scaling factor, where 1 = 72 DPI
-     * @param config the bitmap config to create
-	 * @return the rendered page image
-	 * @throws IOException if the PDF cannot be read
-	 */
-	public Bitmap renderImage(int pageIndex, float scale, Bitmap.Config config) throws IOException
-	{
-		PDPage page = document.getPage(pageIndex);
+
+    /**
+     * Returns the given page as an RGB image at the given scale.
+     *
+     * @param pageIndex the zero-based index of the page to be converted
+     * @param scale the scaling factor, where 1 = 72 DPI
+     * @param imageType the type of image to return
+     *
+     * @return the rendered page image
+     * @throws IOException if the PDF cannot be read
+     */
+    public Bitmap renderImage(int pageIndex, float scale, ImageType imageType) throws IOException
+    {
+        PDPage page = document.getPage(pageIndex);
 
         PDRectangle cropbBox = page.getCropBox();
         float widthPt = cropbBox.getWidth();
@@ -108,32 +127,56 @@ public class PDFRenderer
         Bitmap image;
         if (rotationAngle == 90 || rotationAngle == 270)
         {
-            image = Bitmap.createBitmap(heightPx, widthPx, config);
+            image = Bitmap.createBitmap(heightPx, widthPx, imageType.toBitmapConfig());
         }
         else
         {
-            image = Bitmap.createBitmap(widthPx, heightPx, config);
+            image = Bitmap.createBitmap(widthPx, heightPx, imageType.toBitmapConfig());
         }
 
         // use a transparent background if the imageType supports alpha
         Paint paint = new Paint();
         Canvas canvas = new Canvas(image);
-        if (config != Bitmap.Config.ARGB_8888)
+        if (imageType == ImageType.ARGB)
+        {
+            paint.setColor(Color.TRANSPARENT);
+        }
+        else
         {
             paint.setColor(Color.WHITE);
-            paint.setStyle(Paint.Style.FILL);
-            canvas.drawRect(0, 0, image.getWidth(), image.getHeight(), paint);
-            paint.reset();
         }
+        paint.setStyle(Paint.Style.FILL);
+        canvas.drawRect(0, 0, image.getWidth(), image.getHeight(), paint);
+        paint.reset();
 
         renderPage(page, paint, canvas, image.getWidth(), image.getHeight(), scale, scale);
 
         return image;
-	}
-	
-	// renders a page to the given graphics
-    public void renderPage(PDPage page, Paint paint, Canvas canvas, int width, int height, float scaleX,
-                            float scaleY) throws IOException
+    }
+
+    /**
+     * Renders a given page to an AWT Graphics2D instance.
+     *
+     * @param pageIndex the zero-based index of the page to be converted
+     * @param paint the Paint that will be used to draw the page
+     * @param canvas the Canvas on which to draw the page
+     * @param scale the scale to draw the page at
+     *
+     * @throws IOException if the PDF cannot be read
+     */
+    public void renderPageToGraphics(int pageIndex, Paint paint, Canvas canvas, float scale)
+        throws IOException
+    {
+        PDPage page = document.getPage(pageIndex);
+        // TODO need width/wight calculations? should these be in PageDrawer?
+        PDRectangle adjustedCropBox = page.getCropBox();
+        renderPage(page, paint, canvas, (int)adjustedCropBox.getWidth(),
+            (int)adjustedCropBox.getHeight(), scale, scale);
+    }
+
+    // renders a page to the given graphics
+    private void renderPage(PDPage page, Paint paint, Canvas canvas, int width, int height,
+        float scaleX, float scaleY) throws IOException
     {
         canvas.scale(scaleX, scaleY);
 
@@ -142,20 +185,20 @@ public class PDFRenderer
 
         if (rotationAngle != 0)
         {
-        	float translateX = 0;
-        	float translateY = 0;
+            float translateX = 0;
+            float translateY = 0;
             switch (rotationAngle)
             {
-                case 90:
-                    translateX = cropBox.getHeight();
-                    break;
-                case 270:
-                    translateY = cropBox.getWidth();
-                    break;
-                case 180:
-                    translateX = cropBox.getWidth();
-                    translateY = cropBox.getHeight();
-                    break;
+            case 90:
+                translateX = cropBox.getHeight();
+                break;
+            case 270:
+                translateY = cropBox.getWidth();
+                break;
+            case 180:
+                translateX = cropBox.getWidth();
+                translateY = cropBox.getHeight();
+                break;
             }
             canvas.translate(translateX, translateY);
             canvas.rotate((float) Math.toRadians(rotationAngle));

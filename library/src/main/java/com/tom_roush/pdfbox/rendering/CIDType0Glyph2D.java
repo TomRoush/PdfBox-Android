@@ -35,6 +35,7 @@ final class CIDType0Glyph2D implements Glyph2D
     private final Map<Integer, Path> cache = new HashMap<Integer, Path>();
     private final PDCIDFontType0 font;
     private final String fontName;
+
     /**
      * Constructor.
      *
@@ -48,28 +49,30 @@ final class CIDType0Glyph2D implements Glyph2D
     @Override
     public Path getPathForCharacterCode(int code)
     {
-        if (cache.containsKey(code))
+        Path path = cache.get(code);
+        if (path == null)
         {
-            return cache.get(code);
-        }
-        try
-        {
-            if (!font.hasGlyph(code))
+            try
             {
-                int cid = font.getParent().codeToCID(code);
-                String cidHex = String.format("%04x", cid);
-                Log.w("PdfBox-Android", "No glyph for " + code + " (CID " + cidHex + ") in font " + fontName);
+                if (!font.hasGlyph(code))
+                {
+                    int cid = font.getParent().codeToCID(code);
+                    String cidHex = String.format("%04x", cid);
+                    Log.w("PdfBox-Android",
+                        "No glyph for " + code + " (CID " + cidHex + ") in font " + fontName);
+                }
+                path = font.getPath(code);
+//                cache.put(code, path); TODO: PdfBox-Android
+                return path;
             }
-            Path path = font.getPath(code);
-            cache.put(code, path);
-            return path;
+            catch (IOException e)
+            {
+                // TODO: escalate this error?
+                Log.w("PdfBox-Android", "Glyph rendering failed", e);
+                return new Path();
+            }
         }
-        catch (IOException e)
-        {
-            // TODO: escalate this error?
-            Log.w("PdfBox-Android", "Glyph rendering failed", e);
-            return new Path();
-        }
+        return path;
     }
     @Override
     public void dispose()

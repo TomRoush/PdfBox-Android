@@ -25,8 +25,12 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Region;
-import android.util.Log;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.contentstream.PDFGraphicsStreamEngine;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
@@ -40,7 +44,6 @@ import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDLineDashPattern;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
-import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDTransparencyGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
@@ -50,11 +53,6 @@ import com.tom_roush.pdfbox.pdmodel.graphics.state.RenderingMode;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
-import com.tom_roush.harmony.awt.geom.AffineTransform;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Paints a page in a PDF document to a Canvas context. May be subclassed to provide custom
@@ -71,15 +69,15 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     // parent document renderer - note: this is needed for not-yet-implemented resource caching
     private final PDFRenderer renderer;
 
-	// the graphics device to draw to, xform is the initial transform of the device (i.e. DPI)
-	Paint paint;
-	Canvas canvas;
-	private AffineTransform xform;
+    // the graphics device to draw to, xform is the initial transform of the device (i.e. DPI)
+    Paint paint;
+    Canvas canvas;
+    private AffineTransform xform;
 
-	// the page box to draw (usually the crop box but may be another)
-	private PDRectangle pageSize;
+    // the page box to draw (usually the crop box but may be another)
+    private PDRectangle pageSize;
 
-	// clipping winding rule used for the clipping path
+    // clipping winding rule used for the clipping path
     private Path.FillType clipWindingRule = null;
     private Path linePath = new Path();
 
@@ -94,17 +92,17 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
     private PointF currentPoint = new PointF();
 
-	/**
-	 * Constructor.
-	 *
-	 * @param parameters Parameters for page drawing.
-	 * @throws IOException If there is an error loading properties from the file.
-	 */
+    /**
+     * Constructor.
+     *
+     * @param parameters Parameters for page drawing.
+     * @throws IOException If there is an error loading properties from the file.
+     */
     public PageDrawer(PageDrawerParameters parameters) throws IOException
-	{
+    {
         super(parameters.getPage());
         this.renderer = parameters.getRenderer();
-	}
+    }
 
     /**
      * Returns the parent renderer.
@@ -142,44 +140,44 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         paint.setAntiAlias(true);
     }
 
-	/**
-	 * Draws the page to the requested canvas.
+    /**
+     * Draws the page to the requested canvas.
      *
      * @param p The paint.
-	 * @param c The canvas to draw onto.
-	 * @param pageSize The size of the page to draw.
-	 * @throws IOException If there is an IO error while drawing the page.
-	 */
-	public void drawPage(Paint p, Canvas c, PDRectangle pageSize) throws IOException
-	{
-		paint = p;
-		canvas = c;
-		xform = new AffineTransform(canvas.getMatrix());
-		this.pageSize = pageSize;
+     * @param c The canvas to draw onto.
+     * @param pageSize The size of the page to draw.
+     * @throws IOException If there is an IO error while drawing the page.
+     */
+    public void drawPage(Paint p, Canvas c, PDRectangle pageSize) throws IOException
+    {
+        paint = p;
+        canvas = c;
+        xform = new AffineTransform(canvas.getMatrix());
+        this.pageSize = pageSize;
 
-		setRenderingHints();
+        setRenderingHints();
 
-		canvas.translate(0, pageSize.getHeight());
-		canvas.scale(1, -1);
+        canvas.translate(0, pageSize.getHeight());
+        canvas.scale(1, -1);
 
-		paint.setStrokeCap(Paint.Cap.BUTT);
-		paint.setStrokeJoin(Paint.Join.MITER);
+        paint.setStrokeCap(Paint.Cap.BUTT);
+        paint.setStrokeJoin(Paint.Join.MITER);
         paint.setStrokeWidth(1.0f);
 
-		// adjust for non-(0,0) crop box
-		canvas.translate(-pageSize.getLowerLeftX(), -pageSize.getLowerLeftY());
+        // adjust for non-(0,0) crop box
+        canvas.translate(-pageSize.getLowerLeftX(), -pageSize.getLowerLeftY());
 
-		processPage(getPage());
+        processPage(getPage());
 
-		for (PDAnnotation annotation : getPage().getAnnotations())
-		{
-			showAnnotation(annotation);
-		}
+        for (PDAnnotation annotation : getPage().getAnnotations())
+        {
+            showAnnotation(annotation);
+        }
 
 //		graphics = null;
-	}
+    }
 
-	/**
+    /**
      * Draws the pattern stream to the requested context.
      *
      * @param g The graphics context to draw onto.
@@ -256,7 +254,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //    } TODO: PdfBox-Android
 
     // returns an integer for color that Android understands from the PDColor
-	// TODO: alpha?
+    // TODO: alpha?
     private int getColor(PDColor color) throws IOException {
         PDColorSpace colorSpace = color.getColorSpace();
         float[] floats = colorSpace.toRGB(color.getComponents());
@@ -318,7 +316,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
     @Override
     protected void showFontGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
-                                 Vector displacement) throws IOException
+        Vector displacement) throws IOException
     {
         AffineTransform at = textRenderingMatrix.createAffineTransform();
         at.concatenate(font.getFontMatrix().createAffineTransform());
@@ -338,7 +336,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
      * @throws IOException if something went wrong
      */
     private void drawGlyph2D(Glyph2D glyph2D, PDFont font, int code, Vector displacement,
-                             AffineTransform at) throws IOException
+        AffineTransform at) throws IOException
     {
         PDGraphicsState state = getGraphicsState();
         RenderingMode renderingMode = state.getTextState().getRenderingMode();
@@ -351,7 +349,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
                 float fontWidth = font.getWidthFromFont(code);
                 if (fontWidth > 0 && // ignore spaces
-                        Math.abs(fontWidth - displacement.getX() * 1000) > 0.0001)
+                    Math.abs(fontWidth - displacement.getX() * 1000) > 0.0001)
                 {
                     float pdfWidth = displacement.getX() * 1000;
                     at.scale(pdfWidth / fontWidth, 1);
@@ -366,7 +364,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
 //                graphics.setComposite(state.getNonStrokingJavaComposite());
 //                graphics.setPaint(getNonStrokingPaint());
-            	paint.setColor(getNonStrokingColor());
+                paint.setColor(getNonStrokingColor());
                 setClip();
 //                graphics.fill(glyph);
                 paint.setStyle(Paint.Style.FILL);
@@ -379,7 +377,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
 //                graphics.setComposite(state.getStrokingJavaComposite());
 //                graphics.setPaint(getStrokingPaint());
-            	paint.setColor(getStrokingColor());
+                paint.setColor(getStrokingColor());
 //                graphics.setStroke(getStroke());
                 setClip();
 //                graphics.draw(glyph);
@@ -536,7 +534,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //    {
 //        return getPaint(getGraphicsState().getNonStrokingColor());
 //    } TODO: PdfBox-Android
-    
+
     private int getNonStrokingColor() throws IOException {
         return getColor(getGraphicsState().getNonStrokingColor());
     }
@@ -608,93 +606,43 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public void fillPath(Path.FillType windingRule) throws IOException
     {
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
-    	paint.setColor(getNonStrokingColor());
-    	setClip();
-    	linePath.setFillType(windingRule);
+        paint.setColor(getNonStrokingColor());
+        setClip();
+        linePath.setFillType(windingRule);
 
         // disable anti-aliasing for rectangular paths, this is a workaround to avoid small stripes
         // which occur when solid fills are used to simulate piecewise gradients, see PDFBOX-2302
         // note that we ignore paths with a width/height under 1 as these are fills used as strokes,
         // see PDFBOX-1658 for an example
-//        RectF bounds = new RectF(();
-//        linePath.computeBounds(bounds, true);
-//        boolean noAntiAlias = isRectangular(linePath) && bounds.width() > 1 && bounds.height() > 1;
-//        if (noAntiAlias)
+        RectF bounds = new RectF();
+        linePath.computeBounds(bounds, true);
+        boolean noAntiAlias = isRectangular(linePath) && bounds.width() > 1 && bounds.height() > 1;
+        if (noAntiAlias)
         {
 //            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 //                                      RenderingHints.VALUE_ANTIALIAS_OFF);
         }
 
-        // TODO: PdfBox-Android: Commit 7f5861f9559e30ad68f0bcbce5b9dd2e7c2621b5 ?
-
         paint.setStyle(Paint.Style.FILL);
-        canvas.drawPath(linePath, paint);     
+        canvas.drawPath(linePath, paint);
         linePath.reset();
 
-//        if (noAntiAlias)
+        if (noAntiAlias)
         {
             // JDK 1.7 has a bug where rendering hints are reset by the above call to
             // the setRenderingHint method, so we re-set all hints, see PDFBOX-2302
-        	setRenderingHints();
+            setRenderingHints();
         }
     }
 
     /**
      * Returns true if the given path is rectangular.
      */
-//    private boolean isRectangular(GeneralPath path)
-//    {
-//        PathIterator iter = path.getPathIterator(null);
-//        double[] coords = new double[6];
-//        int count = 0;
-//        int[] xs = new int[4];
-//        int[] ys = new int[4];
-//        while (!iter.isDone())
-//        {
-//            switch(iter.currentSegment(coords))
-//            {
-//                case PathIterator.SEG_MOVETO:
-//                    if (count == 0)
-//                    {
-//                        xs[count] = (int)Math.floor(coords[0]);
-//                        ys[count] = (int)Math.floor(coords[1]);
-//                    }
-//                    else
-//                    {
-//                        return false;
-//                    }
-//                    count++;
-//                    break;
-//
-//                case PathIterator.SEG_LINETO:
-//                    if (count < 4)
-//                    {
-//                        xs[count] = (int)Math.floor(coords[0]);
-//                        ys[count] = (int)Math.floor(coords[1]);
-//                    }
-//                    else
-//                    {
-//                        return false;
-//                    }
-//                    count++;
-//                    break;
-//
-//                case PathIterator.SEG_CUBICTO:
-//                    return false;
-//
-//                case PathIterator.SEG_CLOSE:
-//                    break;
-//            }
-//            iter.next();
-//        }
-//
-//        if (count == 4)
-//        {
-//            return xs[0] == xs[1] || xs[0] == xs[2] ||
-//                   ys[0] == ys[1] || ys[0] == ys[3];
-//        }
-//        return false;
-//    } TODO: PdfBox-Android
+    private boolean isRectangular(Path path)
+    {
+        RectF rect = null;
+        return path.isRect(rect);
+    }
 
     /**
      * Fills and then strokes the path.
@@ -746,7 +694,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public PointF getCurrentPoint()
     {
-    	return currentPoint;
+        return currentPoint;
     }
 
     @Override
@@ -775,17 +723,17 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
         if (!pdImage.getInterpolate())
         {
-        	boolean isScaledUp = pdImage.getWidth() < Math.round(at.getScaleX()) ||
-        			pdImage.getHeight() < Math.round(at.getScaleY());
+            boolean isScaledUp = pdImage.getWidth() < Math.round(at.getScaleX()) ||
+                pdImage.getHeight() < Math.round(at.getScaleY());
 
-        	// if the image is scaled down, we use smooth interpolation, eg PDFBOX-2364
-        	// only when scaled up do we use nearest neighbour, eg PDFBOX-2302 / mori-cvpr01.pdf
-        	// stencils are excluded from this rule (see survey.pdf)
-        	if (isScaledUp || pdImage.isStencil())
-        	{
+            // if the image is scaled down, we use smooth interpolation, eg PDFBOX-2364
+            // only when scaled up do we use nearest neighbour, eg PDFBOX-2302 / mori-cvpr01.pdf
+            // stencils are excluded from this rule (see survey.pdf)
+            if (isScaledUp || pdImage.isStencil())
+            {
 //        		graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 //        				RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        	}
+            }
         }
 
         if (pdImage.isStencil())
@@ -804,9 +752,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
         if (!pdImage.getInterpolate())
         {
-        	// JDK 1.7 has a bug where rendering hints are reset by the above call to
-        	// the setRenderingHint method, so we re-set all hints, see PDFBOX-2302
-        	setRenderingHints();
+            // JDK 1.7 has a bug where rendering hints are reset by the above call to
+            // the setRenderingHint method, so we re-set all hints, see PDFBOX-2302
+            setRenderingHints();
         }
     }
 
@@ -857,21 +805,21 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public void showAnnotation(PDAnnotation annotation) throws IOException
     {
 //        lastClip = null;
-    	//TODO support more annotation flags (Invisible, NoZoom, NoRotate)
+        //TODO support more annotation flags (Invisible, NoZoom, NoRotate)
 //    	int deviceType = graphics.getDeviceConfiguration().getDevice().getType();
 //    	if (deviceType == GraphicsDevice.TYPE_PRINTER && !annotation.isPrinted())
 //    	{
 //    		return;
 //    	} Shouldn't be needed
-    	if (/*deviceType == GraphicsDevice.TYPE_RASTER_SCREEN && */annotation.isNoView())
-    	{
-    		return;
-    	}
-    	if (annotation.isHidden())
-    	{
-    		return;
-    	}
-    	super.showAnnotation(annotation);
+        if (/*deviceType == GraphicsDevice.TYPE_RASTER_SCREEN && */annotation.isNoView())
+        {
+            return;
+        }
+        if (annotation.isHidden())
+        {
+            return;
+        }
+        super.showAnnotation(annotation);
     }
 
     @Override
@@ -932,11 +880,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            Area lastClipOriginal = lastClip;
 
             // get the CTM x Form Matrix transform
-//            Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
-//            Matrix transform = Matrix.concatenate(ctm, form.getMatrix());
+            Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
+            Matrix transform = Matrix.concatenate(ctm, form.getMatrix());
 
             // transform the bbox
-//            Path transformedBox = form.getBBox().transform(transform);
+            Path transformedBox = form.getBBox().transform(transform);
 
             // clip the bbox to prevent giant bboxes from consuming all memory
 //            Area clip = (Area)getGraphicsState().getCurrentClippingPath().clone();
@@ -975,7 +923,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
                 if (isSoftMask)
                 {
-//                    processSoftMask(form);
+                    processSoftMask(form);
                 }
                 else
                 {
@@ -984,7 +932,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             }
             finally
             {
-//                lastClip = lastClipOriginal;                
+//                lastClip = lastClipOriginal;
 //                graphics.dispose();
 //                graphics = g2dOriginal;
             }
