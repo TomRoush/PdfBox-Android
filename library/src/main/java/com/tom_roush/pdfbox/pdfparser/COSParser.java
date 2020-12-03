@@ -1365,16 +1365,16 @@ public class COSParser extends BaseParser
             {
                 source.seek(currentOffset);
                 long findOffset = findString(string);
-                if(findOffset >= 0) {
+                if (findOffset >= 0)
+                {
                     currentOffset = findOffset - string.length;
-//                    source.seek(currentOffset);
-                }else{
+                }
+                else
+                {
                     break;
                 }
-                if(findOffset >= 0)
-//                if (isString(string))
+                if (findOffset >= 0)
                 {
-
                     long tempOffset = currentOffset - 1;
                     source.seek(tempOffset);
                     int genID = source.peek();
@@ -1401,7 +1401,7 @@ public class COSParser extends BaseParser
                                 source.read();
                                 byte[] objIDBytes = source.readFully(length);
                                 String objIdString = new String(objIDBytes, 0,
-                                        objIDBytes.length, ISO_8859_1);
+                                    objIDBytes.length, ISO_8859_1);
                                 Long objectID;
                                 try
                                 {
@@ -1752,13 +1752,11 @@ public class COSParser extends BaseParser
      */
     private boolean isString(char[] string) throws IOException
     {
-//        boolean bytesMatching = true;
         long originOffset = source.getPosition();
         for (char c : string)
         {
             if (source.read() != c)
             {
-//                bytesMatching = false;
                 source.seek(originOffset);
                 return false;
             }
@@ -1779,25 +1777,30 @@ public class COSParser extends BaseParser
         char c = string[0];
         do
         {
-            while (source.read() != c && !source.isEOF()){
+            while (source.read() != c && !source.isEOF())
+            {
                 continue;
             }
             i++;
             c = string[i];
-            while(!source.isEOF() && source.read() == c && i < string.length - 1){
-                i ++;
+            while (!source.isEOF() && source.read() == c && i < string.length - 1)
+            {
+                i++;
                 c = string[i];
             }
-            if(i == string.length - 1){
+            if (i == string.length - 1)
+            {
                 return source.getPosition();
-            }else{
+            }
+            else
+            {
                 i = 0;
                 c = string[0];
             }
-        }while (!source.isEOF());
+        }
+        while (!source.isEOF());
 
         return -1;
-
     }
 
     /**
