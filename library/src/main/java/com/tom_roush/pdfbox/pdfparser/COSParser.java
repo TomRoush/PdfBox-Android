@@ -1931,7 +1931,12 @@ public class COSParser extends BaseParser
             String[] headerParts = header.split("-");
             if (headerParts.length == 2)
             {
-                headerVersion = Float.parseFloat(headerParts[1]);
+                String versionStr = headerParts[1];
+                if (versionStr.matches(".*\\s+.*")) {
+                    String[] versionStrWithSpace = versionStr.split("\\s+");
+                    versionStr = versionStrWithSpace[0];
+                }
+                headerVersion = Float.parseFloat(versionStr);
             }
         }
         catch (NumberFormatException exception)
