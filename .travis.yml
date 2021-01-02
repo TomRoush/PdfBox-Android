@@ -6,9 +6,9 @@ android:
     - tools
     - platform-tools
 
-    - build-tools-28.0.3
+    - build-tools-30.0.3
     - android-21
-    - android-28
+    - android-30
     - sys-img-armeabi-v7a-android-21
     - extra-android-support
 
