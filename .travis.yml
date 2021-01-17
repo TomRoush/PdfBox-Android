@@ -1,5 +1,4 @@
-os: linux
-dist: focal
+sudo: required
 language: android
 android:
   components:
