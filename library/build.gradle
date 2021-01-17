@@ -10,7 +10,6 @@ ext {
 
 android {
     compileSdkVersion Integer.parseInt(project.ANDROID_BUILD_SDK_VERSION)
-    buildToolsVersion project.ANDROID_BUILD_TOOLS_VERSION
     compileOptions.encoding = 'UTF-8'
 
     defaultConfig {
@@ -89,7 +88,7 @@ dependencies {
     api 'com.madgag.spongycastle:prov:1.58.0.0'
 
     // Test dependencies
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
 }
 
