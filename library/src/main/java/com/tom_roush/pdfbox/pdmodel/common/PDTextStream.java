@@ -119,7 +119,7 @@ public class PDTextStream implements COSObjectable
             return string.getString();
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        InputStream is = stream.getUnfilteredStream();
+        InputStream is = stream.createInputStream();
         IOUtils.copy(is, out);
         IOUtils.closeQuietly(is);
         return new String(out.toByteArray(), "ISO-8859-1");
@@ -142,7 +142,7 @@ public class PDTextStream implements COSObjectable
         }
         else
         {
-            retval = stream.getUnfilteredStream();
+            retval = stream.createInputStream();
         }
         return retval;
     }

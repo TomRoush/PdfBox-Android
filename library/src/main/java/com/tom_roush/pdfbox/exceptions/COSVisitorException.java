@@ -22,7 +22,7 @@ package com.tom_roush.pdfbox.exceptions;
  * @author Michael Traut
  * @version $Revision: 1.6 $
  */
-public class COSVisitorException extends WrappedException
+public class COSVisitorException extends Exception
 {
 
     /**

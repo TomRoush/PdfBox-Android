@@ -44,12 +44,13 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.cms.EncryptedContentInfo;
@@ -60,7 +61,7 @@ import org.bouncycastle.asn1.cms.RecipientIdentifier;
 import org.bouncycastle.asn1.cms.RecipientInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.TBSCertificateStructure;
+import org.bouncycastle.asn1.x509.TBSCertificate;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
@@ -395,7 +396,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            DEROutputStream k = new DEROutputStream(baos);
+            ASN1OutputStream k = ASN1OutputStream.create(baos, ASN1Encoding.DER);
 
             k.writeObject(obj);
 
@@ -459,7 +460,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
         BadPaddingException, IllegalBlockSizeException
     {
         ASN1InputStream input = new ASN1InputStream(x509certificate.getTBSCertificate());
-        TBSCertificateStructure certificate = TBSCertificateStructure.getInstance(input.readObject());
+        TBSCertificate certificate = TBSCertificate.getInstance(input.readObject());
         input.close();
 
         AlgorithmIdentifier algorithmId = certificate.getSubjectPublicKeyInfo().getAlgorithm();

@@ -81,7 +81,7 @@ public class FDFJavaScript implements COSObjectable
         }
         else if (base instanceof COSStream)
         {
-            return ((COSStream)base).getString();
+            return ((COSStream)base).toTextString();
         }
         else
         {
@@ -113,7 +113,7 @@ public class FDFJavaScript implements COSObjectable
         }
         else if (base instanceof COSStream)
         {
-            return ((COSStream) base).getString();
+            return ((COSStream) base).toTextString();
         }
         else
         {
