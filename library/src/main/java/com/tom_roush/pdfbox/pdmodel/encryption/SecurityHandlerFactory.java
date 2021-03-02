@@ -22,7 +22,7 @@ import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.spongycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  * Manages security handlers for the application.
