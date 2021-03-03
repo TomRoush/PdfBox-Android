@@ -173,7 +173,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
                     {
                         foundRecipient = true;
                         PrivateKey privateKey = (PrivateKey) material.getPrivateKey();
-                        envelopedData = ri.getContent(new JceKeyTransEnvelopedRecipient(privateKey).setProvider("SC"));
+                        envelopedData = ri.getContent(new JceKeyTransEnvelopedRecipient(privateKey).setProvider("BC"));
                         break;
                     }
                     j++;
@@ -287,6 +287,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
         }
         try
         {
+            Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
             Security.addProvider(new BouncyCastleProvider());
 
             PDEncryption dictionary = doc.getEncryption();
@@ -416,8 +417,8 @@ public final class PublicKeySecurityHandler extends SecurityHandler
         try
         {
             apg = AlgorithmParameterGenerator.getInstance(algorithm);
-            keygen = KeyGenerator.getInstance(algorithm, "SC");
-            cipher = Cipher.getInstance(algorithm, "SC");
+            keygen = KeyGenerator.getInstance(algorithm, "BC");
+            cipher = Cipher.getInstance(algorithm, "BC");
         }
         catch (NoSuchAlgorithmException e)
         {
