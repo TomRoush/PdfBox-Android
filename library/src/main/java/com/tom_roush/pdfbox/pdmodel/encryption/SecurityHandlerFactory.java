@@ -40,6 +40,7 @@ public final class SecurityHandlerFactory
 
     static
     {
+        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
         Security.addProvider(new BouncyCastleProvider());
     }
 
