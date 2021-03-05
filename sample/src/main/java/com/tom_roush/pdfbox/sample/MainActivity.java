@@ -1,15 +1,10 @@
 package com.tom_roush.pdfbox.sample;
 
-import android.Manifest;
 import android.app.Activity;
-import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -80,18 +75,10 @@ public class MainActivity extends Activity {
         // Enable Android-style asset loading (highly recommended)
         PDFBoxResourceLoader.init(getApplicationContext());
         // Find the root of the external storage.
-        root = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+
+        root = getApplicationContext().getCacheDir();
         assetManager = getAssets();
         tv = (TextView) findViewById(R.id.statusTextView);
-
-        // Need to ask for write permissions on SDK 23 and up, this is ignored on older versions
-        if (ContextCompat.checkSelfPermission(MainActivity.this,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-        {
-
-            ActivityCompat.requestPermissions(MainActivity.this,
-                new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-        }
     }
 
     /**
