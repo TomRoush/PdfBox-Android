@@ -46,7 +46,7 @@ public class PDFObjectStreamParser extends BaseParser
      */
     public PDFObjectStreamParser(COSStream stream, COSDocument document) throws IOException
     {
-        super(new InputStreamSource(stream.getUnfilteredStream()));
+        super(new InputStreamSource(stream.createInputStream()));
         this.document = document;
         this.stream = stream;
     }
