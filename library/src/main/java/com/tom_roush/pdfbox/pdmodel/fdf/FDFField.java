@@ -125,7 +125,7 @@ public class FDFField implements COSObjectable
             }
             else if(value instanceof COSStream)
             {
-                output.write("<value>" + escapeXML(((COSStream) value).getString()) + "</value>\n");
+                output.write("<value>" + escapeXML(((COSStream) value).toTextString()) + "</value>\n");
             }
         }
         String rt = getRichText();
@@ -768,7 +768,7 @@ public class FDFField implements COSObjectable
         }
         else
         {
-            return ((COSStream) rv).getString();
+            return ((COSStream) rv).toTextString();
         }
     }
 
