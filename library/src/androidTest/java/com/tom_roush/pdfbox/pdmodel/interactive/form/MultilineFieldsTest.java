@@ -52,7 +52,7 @@ public class MultilineFieldsTest
         System.out.println("Working Directory = " + System.getProperty("user.dir"));
         document = PDDocument.load(testContext.getAssets().open(IN_DIR + "/" + NAME_OF_PDF));
         acroForm = document.getDocumentCatalog().getAcroForm();
-        OUT_DIR = new File(android.os.Environment.getExternalStorageDirectory(), "Download/pdfbox-test-output");
+        OUT_DIR = new File(testContext.getCacheDir(), "Download/pdfbox-test-output");
         OUT_DIR.mkdirs();
     }
 
