@@ -1,5 +1,5 @@
 os: linux
-dist: focal
+dist: bionic
 language: android
 android:
   components:
