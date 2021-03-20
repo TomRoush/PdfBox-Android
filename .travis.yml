@@ -1,5 +1,5 @@
 os: linux
-dist: bionic
+dist: xenial
 language: android
 android:
   components:
