@@ -178,7 +178,19 @@ public final class PDImageXObject extends PDXObject implements PDImage
         String ext = name.substring(dot + 1).toLowerCase();
         if ("jpg".equals(ext) || "jpeg".equals(ext))
         {
-            return JPEGFactory.createFromStream(doc, new FileInputStream(file));
+            InputStream stream = null;
+            try {
+                stream = new FileInputStream(file);
+                return JPEGFactory.createFromStream(doc, stream);
+            } finally {
+                if (stream != null) {
+                    try {
+                        stream.close();
+                    } catch (IOException e) {
+                        // do nothing here
+                    }
+                }
+            }
         }
         if ("tif".equals(ext) || "tiff".equals(ext))
         {
