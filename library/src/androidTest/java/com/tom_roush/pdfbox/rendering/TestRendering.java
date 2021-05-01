@@ -89,7 +89,7 @@ public class TestRendering
     {
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
-        OUT_DIR = new File(android.os.Environment.getExternalStorageDirectory(), "Download/pdfbox-test-output/rendering");
+        OUT_DIR = new File(testContext.getCacheDir(), "pdfbox-test-output/rendering");
         OUT_DIR.mkdirs();
     }
 

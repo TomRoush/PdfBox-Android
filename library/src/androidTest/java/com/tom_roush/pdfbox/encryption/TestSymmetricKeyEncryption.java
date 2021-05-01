@@ -89,7 +89,7 @@ public class TestSymmetricKeyEncryption
 
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
-        testResultsDir = new File(testContext.getCacheDir(), "Download/pdfbox-test-output/crypto");
+        testResultsDir = new File(testContext.getCacheDir(), "pdfbox-test-output/crypto");
         testResultsDir.mkdirs();
 
         permission = new AccessPermission();

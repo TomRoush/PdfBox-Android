@@ -60,8 +60,7 @@ public class PDAcroFormTest
         acroForm = new PDAcroForm(document);
         document.getDocumentCatalog().setAcroForm(acroForm);
 
-        OUT_DIR = new File(testContext.getCacheDir(),
-            "Download/pdfbox-test-output");
+        OUT_DIR = new File(testContext.getCacheDir(), "pdfbox-test-output");
         OUT_DIR.mkdirs();
     }
 

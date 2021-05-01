@@ -50,7 +50,7 @@ public class PDFMergerUtilityTest
     {
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
-        TARGETTESTDIR = testContext.getCacheDir() + "/Download/pdfbox-test-output/merge/";
+        TARGETTESTDIR = testContext.getCacheDir() + "/pdfbox-test-output/merge/";
         new File(TARGETTESTDIR).mkdirs();
         if (!new File(TARGETTESTDIR).exists())
         {

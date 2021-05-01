@@ -58,8 +58,7 @@ public class PDInlineImageTest
     {
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
-        testResultsDir = new File(testContext.getCacheDir() +
-            "/Download/pdfbox-test-output/graphics/");
+        testResultsDir = new File(testContext.getCacheDir(), "pdfbox-test-output/graphics/");
         testResultsDir.mkdirs();
     }
 
