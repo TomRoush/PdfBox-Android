@@ -20,6 +20,7 @@ package com.tom_roush.pdfbox.rendering;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.FlakyTest;
 import android.util.Log;
 
 import java.io.File;
@@ -93,6 +94,7 @@ public class TestRendering
         OUT_DIR.mkdirs();
     }
 
+    @FlakyTest(detail = "May cause OutOfMemoryExceptions in some cases, though test should pass")
     @Test
     public void testRendering()
     {
