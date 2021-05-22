@@ -18,58 +18,48 @@ package com.tom_roush.fontbox.cff;
 
 
 import java.util.List;
+import java.util.Stack;
 
 /**
  * A Handler for CharStringCommands.
- * 
+ *
  * @author Villu Ruusmann
- * @version $Revision$
+ * @author John Henson
  */
 public abstract class CharStringHandler
 {
-
     /**
      * Handler for a sequence of CharStringCommands.
-     * 
+     *
      * @param sequence of CharStringCommands
-     * 
-     * @return may return a command sequence of a subroutine
      */
-    @SuppressWarnings(value = { "unchecked" })
     public List<Integer> handleSequence(List<Object> sequence)
     {
-        List<Integer> numbers = null;
-        int offset = 0;
-        int size = sequence.size();
-        for (int i = 0; i < size; i++)
+        Stack<Integer> stack = new Stack<Integer>();
+        for (Object obj : sequence)
         {
-            Object object = sequence.get(i);
-            if (object instanceof CharStringCommand)
+            if (obj instanceof CharStringCommand)
             {
-                if (numbers == null)
-                    numbers = (List) sequence.subList(offset, i);
-                else 
-                    numbers.addAll((List) sequence.subList(offset, i));
-                List<Integer> stack = handleCommand(numbers, (CharStringCommand) object);
-                if (stack != null && !stack.isEmpty())
-                    numbers = stack;
-                else
-                    numbers = null;
-                offset = i + 1;
+                List<Integer> results = handleCommand(stack, (CharStringCommand)obj);
+                stack.clear();  // this is basically returning the new stack
+                if (results != null)
+                {
+                    stack.addAll(results);
+                }
+            }
+            else
+            {
+                stack.push((Integer)obj);
             }
         }
-        if (numbers != null && !numbers.isEmpty())
-            return numbers;
-        else
-            return null;
+        return stack;
     }
+
     /**
      * Handler for CharStringCommands.
-     *  
+     *
      * @param numbers a list of numbers
      * @param command the CharStringCommand
-     * 
-     * @return may return a command sequence of a subroutine
      */
     public abstract List<Integer> handleCommand(List<Integer> numbers, CharStringCommand command);
 }

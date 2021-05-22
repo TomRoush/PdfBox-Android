@@ -24,14 +24,17 @@ import java.io.IOException;
 import com.tom_roush.pdfbox.contentstream.operator.color.SetNonStrokingColor;
 import com.tom_roush.pdfbox.contentstream.operator.color.SetNonStrokingColorN;
 import com.tom_roush.pdfbox.contentstream.operator.color.SetNonStrokingColorSpace;
+import com.tom_roush.pdfbox.contentstream.operator.color.SetNonStrokingDeviceCMYKColor;
 import com.tom_roush.pdfbox.contentstream.operator.color.SetNonStrokingDeviceGrayColor;
 import com.tom_roush.pdfbox.contentstream.operator.color.SetNonStrokingDeviceRGBColor;
 import com.tom_roush.pdfbox.contentstream.operator.color.SetStrokingColor;
 import com.tom_roush.pdfbox.contentstream.operator.color.SetStrokingColorN;
 import com.tom_roush.pdfbox.contentstream.operator.color.SetStrokingColorSpace;
+import com.tom_roush.pdfbox.contentstream.operator.color.SetStrokingDeviceCMYKColor;
 import com.tom_roush.pdfbox.contentstream.operator.color.SetStrokingDeviceGrayColor;
 import com.tom_roush.pdfbox.contentstream.operator.color.SetStrokingDeviceRGBColor;
 import com.tom_roush.pdfbox.contentstream.operator.graphics.AppendRectangleToPath;
+import com.tom_roush.pdfbox.contentstream.operator.graphics.BeginInlineImage;
 import com.tom_roush.pdfbox.contentstream.operator.graphics.ClipEvenOddRule;
 import com.tom_roush.pdfbox.contentstream.operator.graphics.ClipNonZeroRule;
 import com.tom_roush.pdfbox.contentstream.operator.graphics.CloseAndStrokePath;
@@ -90,21 +93,23 @@ import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage;
  *
  * @author John Hewson
  */
-public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
+public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine
+{
     // may be null, for example if the stream is a tiling pattern
     private final PDPage page;
 
     /**
      * Constructor.
      */
-    protected PDFGraphicsStreamEngine(PDPage page) {
+    protected PDFGraphicsStreamEngine(PDPage page)
+    {
         this.page = page;
 
         addOperator(new CloseFillNonZeroAndStrokePath());
         addOperator(new FillNonZeroAndStrokePath());
         addOperator(new CloseFillEvenOddAndStrokePath());
         addOperator(new FillEvenOddAndStrokePath());
-//        addOperator(new BeginInlineImage());TODO: PdfBox-Android
+        addOperator(new BeginInlineImage());
         addOperator(new BeginText());
         addOperator(new CurveTo());
         addOperator(new Concatenate());
@@ -123,8 +128,8 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
         addOperator(new SetFlatness());
         addOperator(new SetLineJoinStyle());
         addOperator(new SetLineCapStyle());
-//        addOperator(new SetStrokingDeviceCMYKColor());TODO: PdfBox-Android
-//        addOperator(new SetNonStrokingDeviceCMYKColor());TODO: PdfBox-Android
+        addOperator(new SetStrokingDeviceCMYKColor());
+        addOperator(new SetNonStrokingDeviceCMYKColor());
         addOperator(new LineTo());
         addOperator(new MoveTo());
         addOperator(new SetLineMiterLimit());
@@ -167,7 +172,8 @@ public abstract class PDFGraphicsStreamEngine extends PDFStreamEngine {
     /**
      * Returns the page.
      */
-    protected final PDPage getPage() {
+    protected final PDPage getPage()
+    {
         return page;
     }
 

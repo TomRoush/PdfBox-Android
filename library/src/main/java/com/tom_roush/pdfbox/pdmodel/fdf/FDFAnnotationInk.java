@@ -70,9 +70,9 @@ public class FDFAnnotationInk extends FDFAnnotation
     /**
      * Constructor.
      *
-     *  @param element An XFDF element.
+     * @param element An XFDF element.
      *
-     *  @throws IOException If there is an error extracting information from the element.
+     * @throws IOException If there is an error extracting information from the element.
      */
     public FDFAnnotationInk( Element element ) throws IOException
     {
@@ -104,6 +104,7 @@ public class FDFAnnotationInk extends FDFAnnotation
                     inklist.add(values);
                 }
             }
+            setInkList(inklist);
         }
         catch (XPathExpressionException e)
         {
@@ -120,7 +121,7 @@ public class FDFAnnotationInk extends FDFAnnotation
      *
      * @param inklist the List of arrays representing the paths.
      */
-    public void setInkList(List<float[]> inklist)
+    public final void setInkList(List<float[]> inklist)
     {
         COSArray newInklist = new COSArray();
         for (float[] array : inklist)

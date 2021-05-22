@@ -118,7 +118,7 @@ final class SampledImageReader
         final float[] defaultDecode = pdImage.getColorSpace().getDefaultDecode(8);
         if (pdImage.getSuffix() != null && pdImage.getSuffix().equals("jpg"))
         {
-        	return BitmapFactory.decodeStream(pdImage.getStream().createInputStream());
+        	return BitmapFactory.decodeStream(pdImage.createInputStream());
         }
         else if (bitsPerComponent == 8 && Arrays.equals(decode, defaultDecode) && colorKey == null)
         {

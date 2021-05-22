@@ -76,10 +76,27 @@ abstract class TrueTypeEmbedder implements Subsetter
         cmap = ttf.getUnicodeCmap();
     }
 
+    /**
+     * Creates a new TrueType font for embedding.
+     */
+    TrueTypeEmbedder(PDDocument document, COSDictionary dict, TrueTypeFont ttf, boolean embedSubset)
+        throws IOException
+    {
+        this.document = document;
+        this.embedSubset = embedSubset;
+        this.ttf = ttf;
+        fontDescriptor = createFontDescriptor(ttf);
+
+        dict.setName(COSName.BASE_FONT, ttf.getName());
+
+        // choose a Unicode "cmap"
+        cmap = ttf.getUnicodeCmap();
+    }
+
     public void buildFontFile2(InputStream ttfStream) throws IOException
     {
         PDStream stream = new PDStream(document, ttfStream, COSName.FLATE_DECODE);
-        stream.getStream().setInt(COSName.LENGTH1, stream.toByteArray().length);
+        stream.getCOSObject().setInt(COSName.LENGTH1, stream.toByteArray().length);
 
         // as the stream was closed within the PDStream constructor, we have to recreate it
         InputStream input = null;
@@ -288,6 +305,7 @@ abstract class TrueTypeEmbedder implements Subsetter
 
         // re-build the embedded font
         buildSubset(new ByteArrayInputStream(out.toByteArray()), tag, gidToCid);
+        ttf.close();
     }
 
     /**

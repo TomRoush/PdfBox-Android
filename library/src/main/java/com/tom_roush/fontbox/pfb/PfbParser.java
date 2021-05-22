@@ -101,7 +101,7 @@ public class PfbParser
         byte[] pfb = readPfbInput(in);
         parsePfb(pfb);
     }
-    
+
     /**
      * Create a new object.
      * @param bytes The input.
@@ -109,7 +109,7 @@ public class PfbParser
      */
     public PfbParser(final byte[] bytes) throws IOException
     {
-    	parsePfb(bytes);
+        parsePfb(bytes);
     }
 
     /**
@@ -141,6 +141,10 @@ public class PfbParser
             size += in.read() << 16;
             size += in.read() << 24;
             lengths[records] = size;
+            if (pointer >= pfbdata.length)
+            {
+                throw new EOFException("attempted to read past EOF");
+            }
             int got = in.read(pfbdata, pointer, size);
             if (got < 0) 
             {

@@ -24,7 +24,7 @@ public final class Parser
 {
 
     /** Used to indicate the parsers current state. */
-    private enum State
+    private static enum State
     {
         NEWLINE, WHITESPACE, COMMENT, TOKEN
     }
@@ -86,21 +86,21 @@ public final class Parser
     {
 
         /** {@inheritDoc} */
-    	@Override
+        @Override
         public void comment(CharSequence text)
         {
             //nop
         }
 
         /** {@inheritDoc} */
-    	@Override
+        @Override
         public void newLine(CharSequence text)
         {
             //nop
         }
 
         /** {@inheritDoc} */
-    	@Override
+        @Override
         public void whitespace(CharSequence text)
         {
             //nop
@@ -223,8 +223,8 @@ public final class Parser
             buffer.append(ch);
             if (ch == CR && peek() == LF)
             {
-            	//CRLF is treated as one newline
-            	buffer.append(nextChar());
+                //CRLF is treated as one newline
+                buffer.append(nextChar());
             }
             handler.newLine(buffer);
             nextChar();

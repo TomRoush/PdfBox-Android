@@ -72,7 +72,7 @@ public class PDFStreamParser extends BaseParser
     @Deprecated
     public PDFStreamParser(COSStream stream) throws IOException
     {
-        super(new InputStreamSource(stream.getUnfilteredStream()));
+        super(new InputStreamSource(stream.createInputStream()));
     }
 
     /**
@@ -143,13 +143,13 @@ public class PDFStreamParser extends BaseParser
         {
             case '<':
             {
-                //pull off first left bracket
+                // pull off first left bracket
                 int leftBracket = seqSource.read();
 
-                //check for second left bracket
+                // check for second left bracket
                 c = (char) seqSource.peek();
 
-                //put back first bracket
+                // put back first bracket
                 seqSource.unread(leftBracket);
 
                 if (c == '<')
@@ -236,8 +236,8 @@ public class PDFStreamParser extends BaseParser
             case '+':
             case '.':
             {
-            /* We will be filling buf with the rest of the number.  Only
-			 * allow 1 "." and "-" and "+" at start of number. */
+                /* We will be filling buf with the rest of the number.  Only
+                 * allow 1 "." and "-" and "+" at start of number. */
                 StringBuffer buf = new StringBuffer();
                 buf.append(c);
                 seqSource.read();
@@ -362,7 +362,7 @@ public class PDFStreamParser extends BaseParser
             for (int bIdx = 0; bIdx < readBytes; bIdx++)
             {
                 final byte b = binCharTestArr[bIdx];
-                if ((b < 0x09) || ((b > 0x0a) && (b < 0x20) && (b != 0x0d)))
+                if (b < 0x09 || b > 0x0a && b < 0x20 && b != 0x0d)
                 {
                     // control character or > 0x7f -> we have binary data
                     noBinData = false;
@@ -402,32 +402,6 @@ public class PDFStreamParser extends BaseParser
         }
 
         return noBinData;
-    }
-
-    /**
-     * Check whether the output stream ends with 70 ASCII85 data bytes
-     * (33..117). This method is to be called when "EI" and then space/LF/CR
-     * are detected.
-     *
-     * @param imageData output data stream without the "EI"
-     * @return true if this is an ASCII85 line so the "EI" is to be considered
-     * part of the data stream, false if not
-     */
-    private boolean hasPrecedingAscii85Data(ByteArrayOutputStream imageData)
-    {
-        if (imageData.size() < 70)
-        {
-            return false;
-        }
-        byte[] tab = imageData.toByteArray();
-        for (int i = tab.length - 1; i >= tab.length - 70; --i)
-        {
-            if (tab[i] < 33 || tab[i] > 117)
-            {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**

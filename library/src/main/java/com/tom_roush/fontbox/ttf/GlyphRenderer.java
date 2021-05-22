@@ -85,51 +85,52 @@ class GlyphRenderer
         int start = 0;
         for (int p = 0, len = points.length; p < len; ++p)
         {
-        	if (points[p].endOfContour)
+            if (points[p].endOfContour)
             {
-        		Point firstPoint = points[start];
-        		Point lastPoint = points[p];
-        		List<Point> contour = new ArrayList<Point>();
-        		for (int q = start; q <= p; ++q)
+                Point firstPoint = points[start];
+                Point lastPoint = points[p];
+                List<Point> contour = new ArrayList<Point>();
+                for (int q = start; q <= p; ++q)
                 {
-        			contour.add(points[q]);
+                    contour.add(points[q]);
                 }
-        		if (points[start].onCurve)
+                if (points[start].onCurve)
                 {
-        			// using start point at the contour end
-        			contour.add(firstPoint);
+                    // using start point at the contour end
+                    contour.add(firstPoint);
                 }
-        		else if (points[p].onCurve)
+                else if (points[p].onCurve)
                 {
-        			// first is off-curve point, trying to use one from the end
-        			contour.add(0, lastPoint);
+                    // first is off-curve point, trying to use one from the end
+                    contour.add(0, lastPoint);
                 }
                 else
                 {
-                	// start and end are off-curve points, creating implicit one
-                	Point pmid = midValue(firstPoint, lastPoint);
-                	contour.add(0, pmid);
-                	contour.add(pmid);
+                    // start and end are off-curve points, creating implicit one
+                    Point pmid = midValue(firstPoint, lastPoint);
+                    contour.add(0, pmid);
+                    contour.add(pmid);
                 }
-        		moveTo(path, contour.get(0));
-        		for (int j = 1, clen = contour.size(); j < clen; j++)
+                moveTo(path, contour.get(0));
+                for (int j = 1, clen = contour.size(); j < clen; j++)
                 {
-        			Point pnow = contour.get(j);
-        			if (pnow.onCurve)
-        			{
-        				lineTo(path, pnow);
-        			}
-        			else if (contour.get(j + 1).onCurve)
-        			{
-        				quadTo(path, pnow, contour.get(j + 1));
-        				++j;
-        			}
-        			else
-        			{
-        				quadTo(path, pnow, midValue(pnow, contour.get(j + 1)));
-        			}
+                    Point pnow = contour.get(j);
+                    if (pnow.onCurve)
+                    {
+                        lineTo(path, pnow);
+                    }
+                    else if (contour.get(j + 1).onCurve)
+                    {
+                        quadTo(path, pnow, contour.get(j + 1));
+                        ++j;
+                    }
+                    else
+                    {
+                        quadTo(path, pnow, midValue(pnow, contour.get(j + 1)));
+                    }
                 }
-        		start = p + 1;
+                path.close();
+                start = p + 1;
             }
         }
         return path;

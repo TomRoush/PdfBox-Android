@@ -156,7 +156,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the list of kids.  This will return a list of FDFField objects.
+     * This will get the list of kids. This will return a list of FDFField objects.
      * This will return null if the underlying list is null.
      *
      * @return The list of kids.
@@ -188,9 +188,9 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the "T" entry in the field dictionary.  A partial field
-     * name.  Where the fully qualified field name is a concatenation of
-     * the parent's fully qualified field name and "." as a separator.  For example<br/>
+     * This will get the "T" entry in the field dictionary. A partial field
+     * name. Where the fully qualified field name is a concatenation of
+     * the parent's fully qualified field name and "." as a separator. For example<br/>
      * Address.State<br />
      * Address.City<br />
      *
@@ -212,7 +212,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the value for the field.  This will return type will either be <br />
+     * This will get the value for the field. This will return type will either be <br />
      * String : Checkboxes, Radio Button <br />
      * java.util.List of strings: Choice Field
      * PDTextStream: Textfields
@@ -289,7 +289,7 @@ public class FDFField implements COSObjectable
         COSBase cos = null;
         if( value instanceof List )
         {
-            cos = COSArrayList.convertStringListToCOSStringCOSArray( (List<String>)value );
+            cos = COSArrayList.convertStringListToCOSStringCOSArray((List)value);
         }
         else if( value instanceof String )
         {
@@ -317,7 +317,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the Ff entry of the cos dictionary.  If it it not present then
+     * This will get the Ff entry of the cos dictionary. If it it not present then
      * this method will return null.
      *
      * @return The field flags.
@@ -334,7 +334,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the field flags that are associated with this field.  The Ff entry
+     * This will get the field flags that are associated with this field. The Ff entry
      * in the FDF field dictionary.
      *
      * @param ff The new value for the field flags.
@@ -350,7 +350,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the field flags that are associated with this field.  The Ff entry
+     * This will get the field flags that are associated with this field. The Ff entry
      * in the FDF field dictionary.
      *
      * @param ff The new value for the field flags.
@@ -361,7 +361,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the SetFf entry of the cos dictionary.  If it it not present then
+     * This will get the SetFf entry of the cos dictionary. If it it not present then
      * this method will return null.
      *
      * @return The field flags.
@@ -378,7 +378,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the field flags that are associated with this field.  The SetFf entry
+     * This will get the field flags that are associated with this field. The SetFf entry
      * in the FDF field dictionary.
      *
      * @param ff The new value for the "set field flags".
@@ -394,7 +394,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the field flags that are associated with this field.  The SetFf entry
+     * This will get the field flags that are associated with this field. The SetFf entry
      * in the FDF field dictionary.
      *
      * @param ff The new value for the "set field flags".
@@ -405,7 +405,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the ClrFf entry of the cos dictionary.  If it it not present then
+     * This will get the ClrFf entry of the cos dictionary. If it it not present then
      * this method will return null.
      *
      * @return The field flags.
@@ -422,7 +422,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the field flags that are associated with this field.  The ClrFf entry
+     * This will get the field flags that are associated with this field. The ClrFf entry
      * in the FDF field dictionary.
      *
      * @param ff The new value for the "clear field flags".
@@ -438,7 +438,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the field flags that are associated with this field.  The ClrFf entry
+     * This will get the field flags that are associated with this field. The ClrFf entry
      * in the FDF field dictionary.
      *
      * @param ff The new value for the "clear field flags".
@@ -449,7 +449,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the F entry of the cos dictionary.  If it it not present then
+     * This will get the F entry of the cos dictionary. If it it not present then
      * this method will return null.
      *
      * @return The widget field flags.
@@ -466,7 +466,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the widget field flags that are associated with this field.  The F entry
+     * This will get the widget field flags that are associated with this field. The F entry
      * in the FDF field dictionary.
      *
      * @param f The new value for the field flags.
@@ -482,7 +482,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the field flags that are associated with this field.  The F entry
+     * This will get the field flags that are associated with this field. The F entry
      * in the FDF field dictionary.
      *
      * @param f The new value for the field flags.
@@ -493,7 +493,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the SetF entry of the cos dictionary.  If it it not present then
+     * This will get the SetF entry of the cos dictionary. If it it not present then
      * this method will return null.
      *
      * @return The field flags.
@@ -510,7 +510,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the widget field flags that are associated with this field.  The SetF entry
+     * This will get the widget field flags that are associated with this field. The SetF entry
      * in the FDF field dictionary.
      *
      * @param ff The new value for the "set widget field flags".
@@ -526,7 +526,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the widget field flags that are associated with this field.  The SetF entry
+     * This will get the widget field flags that are associated with this field. The SetF entry
      * in the FDF field dictionary.
      *
      * @param ff The new value for the "set widget field flags".
@@ -537,7 +537,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the ClrF entry of the cos dictionary.  If it it not present then
+     * This will get the ClrF entry of the cos dictionary. If it it not present then
      * this method will return null.
      *
      * @return The widget field flags.
@@ -554,7 +554,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the field flags that are associated with this field.  The ClrF entry
+     * This will get the field flags that are associated with this field. The ClrF entry
      * in the FDF field dictionary.
      *
      * @param ff The new value for the "clear widget field flags".
@@ -570,7 +570,7 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will get the field flags that are associated with this field.  The ClrF entry
+     * This will get the field flags that are associated with this field. The ClrF entry
      * in the FDF field dictionary.
      *
      * @param ff The new value for the "clear field flags".
@@ -641,7 +641,7 @@ public class FDFField implements COSObjectable
     public FDFIconFit getIconFit()
     {
         FDFIconFit retval = null;
-        COSDictionary dic = (COSDictionary)field.getDictionaryObject( "IF" );
+        COSDictionary dic = (COSDictionary)field.getDictionaryObject(COSName.IF);
         if( dic != null )
         {
             retval = new FDFIconFit( dic );
@@ -660,8 +660,8 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will return a list of options for a choice field.  The value in the
-     * list will be 1 of 2 types.  java.lang.String or FDFOptionElement.
+     * This will return a list of options for a choice field. The value in the
+     * list will be 1 of 2 types. java.lang.String or FDFOptionElement.
      *
      * @return A list of all options.
      */
@@ -691,12 +691,12 @@ public class FDFField implements COSObjectable
     }
 
     /**
-     * This will set the options for the choice field.  The objects in the list
+     * This will set the options for the choice field. The objects in the list
      * should either be java.lang.String or FDFOptionElement.
      *
      * @param options The options to set.
      */
-    public void setOptions( List options )
+    public void setOptions(List<Object> options)
     {
         COSArray value = COSArrayList.converterToCOSArray( options );
         field.setItem( COSName.OPT, value );

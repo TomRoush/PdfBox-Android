@@ -32,7 +32,7 @@ final class CMapManager
 {
     static Map<String, CMap> cMapCache =
             Collections.synchronizedMap(new HashMap<String, CMap>());
-    
+
     private CMapManager()
     {
     }

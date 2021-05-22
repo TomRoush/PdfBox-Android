@@ -16,10 +16,8 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.viewerpreferences;
 
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
@@ -58,7 +56,7 @@ public class PDViewerPreferences implements COSObjectable
     /**
      * Enumeration containing all valid values for NonFullScreenPageMode.
      */
-    public enum NON_FULL_SCREEN_PAGE_MODE
+    public static enum NON_FULL_SCREEN_PAGE_MODE
     {
         /**
          *  From PDF Reference: "Neither document outline nor thumbnail images visible".
@@ -93,7 +91,7 @@ public class PDViewerPreferences implements COSObjectable
     /**
      * Enumeration containing all valid values for ReadingDirection.
      */
-    public enum READING_DIRECTION
+    public static enum READING_DIRECTION
     {
         /**
          * left to right.
@@ -138,7 +136,7 @@ public class PDViewerPreferences implements COSObjectable
     /**
      * Enumeration containing all valid values for boundaries.
      */
-    public enum BOUNDARY
+    public static enum BOUNDARY
     {
         /**
          * use media box as boundary.
@@ -165,7 +163,7 @@ public class PDViewerPreferences implements COSObjectable
     /**
      * Enumeration containing all valid values for duplex.
      */
-    public enum DUPLEX
+    public static enum DUPLEX
     {
         /**
          * simplex printing.
@@ -184,7 +182,7 @@ public class PDViewerPreferences implements COSObjectable
     /**
      * Enumeration containing all valid values for printscaling.
      */
-    public enum PRINT_SCALING
+    public static enum PRINT_SCALING
     {
         /**
          * no scaling.
@@ -214,7 +212,7 @@ public class PDViewerPreferences implements COSObjectable
      * @return The underlying info dictionary.
      */
     @Override
-    public COSBase getCOSObject()
+    public COSDictionary getCOSObject()
     {
         return prefs;
     }

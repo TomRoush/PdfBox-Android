@@ -18,14 +18,14 @@ package com.tom_roush.pdfbox.filter;
 
 import android.util.Log;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
  * A filter for stream data.
@@ -74,7 +74,7 @@ public abstract class Filter
 
     // gets the decode params for a specific filter index, this is used to
     // normalise the DecodeParams entry so that it is always a dictionary
-    protected static COSDictionary getDecodeParams(COSDictionary dictionary, int index)
+    protected COSDictionary getDecodeParams(COSDictionary dictionary, int index)
     {
         COSBase obj = dictionary.getDictionaryObject(COSName.DECODE_PARMS, COSName.DP);
         if (obj instanceof COSDictionary)

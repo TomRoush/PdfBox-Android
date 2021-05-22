@@ -93,7 +93,7 @@ public class KerningSubtable
      * Determine if subtable is designated for use in horizontal writing modes, contains
      * kerning pairs (as opposed to minimum pairs), and, if CROSS is true, then return
      * cross stream designator; otherwise, if CROSS is false, return true if cross stream
-     * esignator is false.
+     * designator is false.
      *
      * @param cross if true, then return cross stream designator in horizontal modes
      * @return true if subtable is for horizontal kerning in horizontal modes
@@ -172,6 +172,7 @@ public class KerningSubtable
         {
             Log.w("PdfBox-Android",
                 "No kerning subtable data available due to an unsupported kerning subtable version");
+            return 0;
         }
         return pairs.getKerning(l, r);
     }

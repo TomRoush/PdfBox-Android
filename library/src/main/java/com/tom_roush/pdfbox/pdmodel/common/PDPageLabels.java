@@ -162,10 +162,11 @@ public class PDPageLabels implements COSObjectable
      */
     public void setLabelItem(int startPage, PDPageLabelRange item)
     {
-    	if (startPage < 0)
-    	{
-    		throw new IllegalArgumentException("startPage parameter of setLabelItem may not be < 0");
-    	}
+        if (startPage < 0)
+        {
+            throw new IllegalArgumentException(
+                "startPage parameter of setLabelItem may not be < 0");
+        }
         labels.put(startPage, item);
     }
     
@@ -206,7 +207,7 @@ public class PDPageLabels implements COSObjectable
             new HashMap<String, Integer>(doc.getNumberOfPages());
         computeLabels(new LabelHandler()
         {
-        	@Override
+            @Override
             public void newLabel(int pageIndex, String label)
             {
                 labelMap.put(label, pageIndex);
@@ -227,7 +228,7 @@ public class PDPageLabels implements COSObjectable
         final String[] map = new String[doc.getNumberOfPages()];
         computeLabels(new LabelHandler()
         {
-        	@Override
+            @Override
             public void newLabel(int pageIndex, String label)
             {
                 if(pageIndex < doc.getNumberOfPages())

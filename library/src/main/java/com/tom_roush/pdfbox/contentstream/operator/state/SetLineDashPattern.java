@@ -16,13 +16,16 @@
  */
 package com.tom_roush.pdfbox.contentstream.operator.state;
 
+import android.util.Log;
+
+import java.util.List;
+
+import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
-
-import java.util.List;
 
 /**
  * d: Set the line dash pattern.
@@ -32,10 +35,49 @@ import java.util.List;
 public class SetLineDashPattern extends OperatorProcessor
 {
     @Override
-    public void process(Operator operator, List<COSBase> arguments)
+    public void process(Operator operator, List<COSBase> arguments) throws MissingOperandException
     {
-        COSArray dashArray = (COSArray) arguments.get(0);
-        int dashPhase = ((COSNumber) arguments.get(1)).intValue();
+        if (arguments.size() < 2)
+        {
+            throw new MissingOperandException(operator, arguments);
+        }
+        COSBase base0 = arguments.get(0);
+        if (!(base0 instanceof COSArray))
+        {
+            return;
+        }
+        COSBase base1 = arguments.get(1);
+        if (!(base1 instanceof COSNumber))
+        {
+            return;
+        }
+        COSArray dashArray = (COSArray)base0;
+        int dashPhase = ((COSNumber)base1).intValue();
+
+        boolean allZero = true;
+        for (COSBase base : dashArray)
+        {
+            if (base instanceof COSNumber)
+            {
+                COSNumber num = (COSNumber)base;
+                if (num.floatValue() != 0)
+                {
+                    allZero = false;
+                    break;
+                }
+            }
+            else
+            {
+                Log.e("PdfBox-Android", "dash array has non number element " + base + ", ignored");
+                dashArray = new COSArray();
+                break;
+            }
+        }
+        if (dashArray.size() > 0 && allZero)
+        {
+            Log.e("PdfBox-Android", "dash lengths all zero, ignored");
+            dashArray = new COSArray();
+        }
         context.setLineDashPattern(dashArray, dashPhase);
     }
 

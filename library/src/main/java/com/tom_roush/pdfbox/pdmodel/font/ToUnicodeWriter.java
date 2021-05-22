@@ -91,9 +91,9 @@ final class ToUnicodeWriter
 
         writeLine(writer, "begincmap");
         writeLine(writer, "/CIDSystemInfo");
-        writeLine(writer, "<< /Registry ()");
-        writeLine(writer, "/Ordering ()");
-        writeLine(writer, "/Supplement ");
+        writeLine(writer, "<< /Registry (Adobe)");
+        writeLine(writer, "/Ordering (UCS)");
+        writeLine(writer, "/Supplement 0");
         writeLine(writer, ">> def\n");
 
         writeLine(writer, "/CMapName /Adobe-Identity-UCS" + " def");
@@ -116,28 +116,28 @@ final class ToUnicodeWriter
 
         int srcPrev = -1;
         String dstPrev = null;
-        
+
         int srcCode1 = -1;
 
         for (Map.Entry<Integer, String> entry : cidToUnicode.entrySet())
         {
-        	int cid = entry.getKey();
-        	String text = entry.getValue();
+            int cid = entry.getKey();
+            String text = entry.getValue();
 
-        	if (cid == srcPrev + 1 && // CID must be last CID + 1
-        			dstPrev.codePointCount(0, dstPrev.length()) == 1 && // no UTF-16 surrogates
-        			text.codePointAt(0) == dstPrev.codePointAt(0) + 1 && // dstString must be prev + 1
-        			dstPrev.codePointAt(0) + 1 <= 255 - (cid - srcCode1)) // increment last byte only
-        	{
-        		// extend range
-        		srcTo.set(srcTo.size() - 1, cid);
-        	}
-        	else
-        	{
-        		// begin range
-        		srcCode1 = cid;
-        		srcFrom.add(cid);
-        		srcTo.add(cid);
+            if (cid == srcPrev + 1 && // CID must be last CID + 1
+                dstPrev.codePointCount(0, dstPrev.length()) == 1 && // no UTF-16 surrogates
+                text.codePointAt(0) == dstPrev.codePointAt(0) + 1 && // dstString must be prev + 1
+                dstPrev.codePointAt(0) + 1 <= 255 - (cid - srcCode1)) // increment last byte only
+            {
+                // extend range
+                srcTo.set(srcTo.size() - 1, cid);
+            }
+            else
+            {
+                // begin range
+                srcCode1 = cid;
+                srcFrom.add(cid);
+                srcTo.add(cid);
                 dstString.add(text);
             }
             srcPrev = cid;

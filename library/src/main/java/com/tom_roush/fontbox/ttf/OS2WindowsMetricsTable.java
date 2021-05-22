@@ -512,7 +512,7 @@ public class OS2WindowsMetricsTable extends TTFTable
     /**
      * @param typoLineGapValue The typoLineGap to set.
      */
-    public void setTypeLineGap(int typoLineGapValue)
+    public void setTypoLineGap(int typoLineGapValue)
     {
         this.typoLineGap = typoLineGapValue;
     }
@@ -698,7 +698,7 @@ public class OS2WindowsMetricsTable extends TTFTable
      */
     public int getHeight()
     {
-    	return sxHeight;
+        return sxHeight;
     }
 
     /**
@@ -706,7 +706,7 @@ public class OS2WindowsMetricsTable extends TTFTable
      */
     public int getCapHeight()
     {
-    	return sCapHeight;
+        return sCapHeight;
     }
 
     /**
@@ -714,7 +714,7 @@ public class OS2WindowsMetricsTable extends TTFTable
      */
     public int getDefaultChar()
     {
-    	return usDefaultChar;
+        return usDefaultChar;
     }
 
     /**
@@ -722,7 +722,7 @@ public class OS2WindowsMetricsTable extends TTFTable
      */
     public int getBreakChar()
     {
-    	return usBreakChar;
+        return usBreakChar;
     }
 
     /**
@@ -730,7 +730,7 @@ public class OS2WindowsMetricsTable extends TTFTable
      */
     public int getMaxContext()
     {
-    	return usMaxContext;
+        return usMaxContext;
     }
 
     private int version;
@@ -817,16 +817,16 @@ public class OS2WindowsMetricsTable extends TTFTable
         winDescent = data.readUnsignedShort();
         if (version >= 1)
         {
-        	codePageRange1 = data.readUnsignedInt();
-        	codePageRange2 = data.readUnsignedInt();
+            codePageRange1 = data.readUnsignedInt();
+            codePageRange2 = data.readUnsignedInt();
         }
         if (version >= 1.2)
         {
-        	sxHeight = data.readSignedShort();
-        	sCapHeight = data.readSignedShort();
-        	usDefaultChar = data.readUnsignedShort();
-        	usBreakChar = data.readUnsignedShort();
-        	usMaxContext = data.readUnsignedShort();
+            sxHeight = data.readSignedShort();
+            sCapHeight = data.readSignedShort();
+            usDefaultChar = data.readUnsignedShort();
+            usBreakChar = data.readUnsignedShort();
+            usMaxContext = data.readUnsignedShort();
         }
         initialized = true;
     }

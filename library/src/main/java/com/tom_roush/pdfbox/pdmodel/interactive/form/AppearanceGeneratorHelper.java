@@ -49,7 +49,7 @@ class AppearanceGeneratorHelper
     private static final Operator BMC = Operator.getOperator("BMC");
     private static final Operator EMC = Operator.getOperator("EMC");
 
-	private final PDVariableText field;
+    private final PDVariableText field;
     private final PDDefaultAppearanceString defaultAppearance;
     private String value;
 
@@ -81,15 +81,15 @@ class AppearanceGeneratorHelper
      * Constructs a COSAppearance from the given field.
      *
      * @param field the field which you wish to control the appearance of
-     * @throws IOException If there is an error creating the appearance.
+     * @throws IOException
      */
     AppearanceGeneratorHelper(PDVariableText field) throws IOException
     {
-		this.field = field;
+        this.field = field;
         this.defaultAppearance = field.getDefaultAppearanceString();
     }
 
-	/**
+    /**
      * This is the public method for setting the appearance stream.
      *
      * @param apValue the String value which the appearance should represent
@@ -98,9 +98,9 @@ class AppearanceGeneratorHelper
     public void setAppearanceValue(String apValue) throws IOException
     {
         value = apValue;
-		for (PDAnnotationWidget widget : field.getWidgets())
-		{
-			PDFormFieldAdditionalActions actions = field.getActions();
+        for (PDAnnotationWidget widget : field.getWidgets())
+        {
+            PDFormFieldAdditionalActions actions = field.getActions();
 
             // in case all tests fail the field will be formatted by acrobat
             // when it is opened. See FreedomExpressions.pdf for an example of this.
@@ -116,6 +116,7 @@ class AppearanceGeneratorHelper
 
                 PDAppearanceEntry appearance = appearanceDict.getNormalAppearance();
                 // TODO support appearances other than "normal"
+
                 PDAppearanceStream appearanceStream;
                 if (appearance.isStream())
                 {
@@ -250,6 +251,7 @@ class AppearanceGeneratorHelper
             // append contents after EMC
             writer.writeTokens(tokens.subList(emcIndex, tokens.size()));
         }
+
         output.close();
         writeToStream(output.toByteArray(), appearanceStream);
     }
@@ -381,10 +383,10 @@ class AppearanceGeneratorHelper
         contents.close();
     }
 
-	private boolean isMultiLine()
-	{
-		return field instanceof PDTextField && ((PDTextField) field).isMultiline();
-	}
+    private boolean isMultiLine()
+    {
+        return field instanceof PDTextField && ((PDTextField)field).isMultiline();
+    }
 
     /**
      * Determine if the appearance shall provide a comb output.
@@ -508,6 +510,7 @@ class AppearanceGeneratorHelper
         contents.setNonStrokingColor(0);
 
         int q = field.getQ();
+
         if (q == PDVariableText.QUADDING_CENTERED || q == PDVariableText.QUADDING_RIGHT)
         {
             float fieldWidth = appearanceStream.getBBox().getWidth();
@@ -556,25 +559,25 @@ class AppearanceGeneratorHelper
         }
     }
 
-	/**
-	 * Writes the stream to the actual stream in the COSStream.
-	 *
-	 * @throws IOException If there is an error writing to the stream
-	 */
-	private void writeToStream(byte[] data, PDAppearanceStream appearanceStream) throws IOException
-	{
-        OutputStream out = appearanceStream.getCOSStream().createOutputStream();
+    /**
+     * Writes the stream to the actual stream in the COSStream.
+     *
+     * @throws IOException If there is an error writing to the stream
+     */
+    private void writeToStream(byte[] data, PDAppearanceStream appearanceStream) throws IOException
+    {
+        OutputStream out = appearanceStream.getCOSObject().createOutputStream();
         out.write(data);
         out.close();
     }
 
-	/**
-	 * My "not so great" method for calculating the fontsize. It does not work superb, but it
-	 * handles ok.
-	 * @return the calculated font-size
-	 *
-	 * @throws IOException If there is an error getting the font information.
-	 */
+    /**
+     * My "not so great" method for calculating the fontsize. It does not work superb, but it
+     * handles ok.
+     *
+     * @return the calculated font-size
+     * @throws IOException If there is an error getting the font information.
+     */
     private float calculateFontSize(PDFont font, PDRectangle contentRect) throws IOException
     {
         float fontSize = defaultAppearance.getFontSize();
@@ -609,32 +612,33 @@ class AppearanceGeneratorHelper
             }
         }
         return fontSize;
-	}
+    }
 
-	/**
-	 * Resolve the bounding box.
-	 *
-	 * @param fieldWidget the annotation widget.
-	 * @param appearanceStream the annotations appearance stream.
-	 * @return the resolved boundingBox.
-	 */
+    /**
+     * Resolve the bounding box.
+     *
+     * @param fieldWidget the annotation widget.
+     * @param appearanceStream the annotations appearance stream.
+     *
+     * @return the resolved boundingBox.
+     */
     private PDRectangle resolveBoundingBox(PDAnnotationWidget fieldWidget,
         PDAppearanceStream appearanceStream)
     {
-		PDRectangle boundingBox = appearanceStream.getBBox();
-		if (boundingBox == null)
-		{
-			boundingBox = fieldWidget.getRectangle().createRetranslatedRectangle();
-		}
-		return boundingBox;
-	}
+        PDRectangle boundingBox = appearanceStream.getBBox();
+        if (boundingBox == null)
+        {
+            boundingBox = fieldWidget.getRectangle().createRetranslatedRectangle();
+        }
+        return boundingBox;
+    }
 
-	/**
-	 * Apply padding to a box.
-	 *
-	 * @param box box
-	 * @return the padded box.
-	 */
+    /**
+     * Apply padding to a box.
+     *
+     * @param box box
+     * @return the padded box.
+     */
     private PDRectangle applyPadding(PDRectangle box, float padding)
     {
         return new PDRectangle(

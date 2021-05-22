@@ -155,7 +155,7 @@ public class LayerUtility
         form.setResources(formRes);
 
         //Transfer some values from page to form
-        transferDict(page.getCOSObject(), form.getCOSStream(), PAGE_TO_FORM_FILTER, true);
+        transferDict(page.getCOSObject(), form.getCOSObject(), PAGE_TO_FORM_FILTER, true);
 
         Matrix matrix = form.getMatrix();
         AffineTransform at = matrix.createAffineTransform();
@@ -175,16 +175,16 @@ public class LayerUtility
             case 90:
                 at.scale(viewBox.getWidth() / viewBox.getHeight(), viewBox.getHeight() / viewBox.getWidth());
                 at.translate(0, viewBox.getWidth());
-                at.rotate((float)(-Math.PI / 2.0));
+                at.rotate(-Math.PI / 2.0);
                 break;
             case 180:
                 at.translate(viewBox.getWidth(), viewBox.getHeight());
-                at.rotate((float)-Math.PI);
+                at.rotate(-Math.PI);
                 break;
             case 270:
                 at.scale(viewBox.getWidth() / viewBox.getHeight(), viewBox.getHeight() / viewBox.getWidth());
                 at.translate(viewBox.getHeight(), 0);
-                at.rotate((float)(-Math.PI * 1.5));
+                at.rotate(-Math.PI * 1.5);
             default:
                 //no additional transformations necessary
         }
@@ -237,7 +237,7 @@ public class LayerUtility
         ocprops.addGroup(layer);
 
         PDPageContentStream contentStream = new PDPageContentStream(
-            targetDoc, targetPage, true, !DEBUG);
+            targetDoc, targetPage, PDPageContentStream.AppendMode.APPEND, !DEBUG);
         contentStream.beginMarkedContent(COSName.OC, layer);
         contentStream.saveGraphicsState();
         contentStream.transform(new Matrix(transform));

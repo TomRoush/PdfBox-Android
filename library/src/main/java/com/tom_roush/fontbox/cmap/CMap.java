@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,10 +34,13 @@ public class CMap
     private String cmapName = null;
     private String cmapVersion = null;
     private int cmapType = -1;
-    
+
     private String registry = null;
     private String ordering = null;
     private int supplement = 0;
+
+    private int minCodeLength = 4;
+    private int maxCodeLength;
 
     // code lengths
     private final List<CodespaceRange> codespaceRanges = new ArrayList<CodespaceRange>();
@@ -48,7 +50,7 @@ public class CMap
 
     // CID mappings
     private final Map<Integer,Integer> codeToCid = new HashMap<Integer,Integer>();
-    private final List<CIDRange> codeToCidRanges = new LinkedList<CIDRange>();
+    private final List<CIDRange> codeToCidRanges = new ArrayList<CIDRange>();
 
     private static final String SPACE = " ";
     private int spaceMapping = -1;
@@ -101,81 +103,36 @@ public class CMap
      */
     public int readCode(InputStream in) throws IOException
     {
-        // save the position in the string
-        in.mark(4);
-
-        // mapping algorithm
-        List<Byte> bytes = new ArrayList<Byte>(4);
-        for (int i = 0; i < 4; i++)
+        byte[] bytes = new byte[maxCodeLength];
+        in.read(bytes, 0, minCodeLength);
+        for (int i = minCodeLength - 1; i < maxCodeLength; i++)
         {
-            bytes.add((byte)in.read());
+            final int byteCount = i + 1;
             for (CodespaceRange range : codespaceRanges)
             {
-                if (range.isFullMatch(bytes))
+                if (range.isFullMatch(bytes, byteCount))
                 {
-                    return toInt(bytes);
+                    return toInt(bytes, byteCount);
                 }
+            }
+            if (byteCount < maxCodeLength)
+            {
+                bytes[byteCount] = (byte)in.read();
             }
         }
-
-        // reset to the original position in the string
-        in.reset();
-
-        // modified mapping algorithm
-        bytes = new ArrayList<Byte>(4);
-        for (int i = 0; i < 4; i++)
-        {
-            bytes.add((byte)in.read());
-            CodespaceRange match = null;
-            CodespaceRange shortest = null;
-            for (CodespaceRange range : codespaceRanges)
-            {
-                if (range.isPartialMatch(bytes.get(i), i))
-                {
-                    if (match == null)
-                    {
-                        match = range;
-                    }
-                    else if (range.getStart().length < match.getStart().length)
-                    {
-                        // for multiple matches, choose the codespace with the shortest codes
-                        match = range;
-                    }
-                }
-
-                // find shortest range
-                if (shortest == null || range.getStart().length < shortest.getStart().length)
-                {
-                    shortest = range;
-                }
-            }
-
-            // if there are no matches, the range with the shortest codes is chosen
-            if (match == null)
-            {
-                match = shortest;
-            }
-
-            // we're done when we have enough bytes for the matched range
-            if (match != null && match.getStart().length == bytes.size())
-            {
-                return toInt(bytes);
-            }
-        }
-
         throw new IOException("CMap is invalid");
     }
 
     /**
-     * Returns an int given a List<Byte>
+     * Returns an int for the given byte array
      */
-    private int toInt(List<Byte> data)
+    private int toInt(byte[] data, int dataLen)
     {
         int code = 0;
-        for (byte b : data)
+        for (int i = 0; i < dataLen; ++i)
         {
             code <<= 8;
-            code |= (b + 256) % 256;
+            code |= (data[i] + 256) % 256;
         }
         return code;
     }
@@ -195,15 +152,15 @@ public class CMap
         }
         for (CIDRange range : codeToCidRanges)
         {
-        	int ch = range.map((char)code);
-        	if (ch != -1)
-        	{
-        		return ch;
-        	}
+            int ch = range.map((char)code);
+            if (ch != -1)
+            {
+                return ch;
+            }
         }
         return 0;
     }
-    
+
     /**
      * Convert the given part of a byte array to an integer.
      * @param data the byte array
@@ -261,7 +218,7 @@ public class CMap
      */
     void addCIDRange(char from, char to, int cid)
     {
-        codeToCidRanges.add(0, new CIDRange(from, to, cid));
+        codeToCidRanges.add(new CIDRange(from, to, cid));
     }
 
     /**
@@ -272,6 +229,8 @@ public class CMap
     void addCodespaceRange( CodespaceRange range )
     {
         codespaceRanges.add(range);
+        maxCodeLength = Math.max(maxCodeLength, range.getCodeLength());
+        minCodeLength = Math.min(minCodeLength, range.getCodeLength());
     }
     
     /**
@@ -282,12 +241,15 @@ public class CMap
      */
     void useCmap( CMap cmap )
     {
-        this.codespaceRanges.addAll(cmap.codespaceRanges);
-        this.charToUnicode.putAll(cmap.charToUnicode);
-        this.codeToCid.putAll(cmap.codeToCid);
-        this.codeToCidRanges.addAll(cmap.codeToCidRanges);
+        for (CodespaceRange codespaceRange : cmap.codespaceRanges)
+        {
+            addCodespaceRange(codespaceRange);
+        }
+        charToUnicode.putAll(cmap.charToUnicode);
+        codeToCid.putAll(cmap.codeToCid);
+        codeToCidRanges.addAll(cmap.codeToCidRanges);
     }
-    
+
     /**
      * Returns the WMode of a CMap.
      *

@@ -16,6 +16,12 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.List;
+
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSDocument;
@@ -33,12 +39,6 @@ import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
-import com.tom_roush.harmony.awt.geom.AffineTransform;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Structure of PDF document with visible signature.
@@ -53,11 +53,11 @@ public class PDFTemplateStructure
     private PDSignatureField signatureField;
     private PDSignature pdSignature;
     private COSDictionary acroFormDictionary;
-    private PDRectangle singatureRectangle;
+    private PDRectangle signatureRectangle;
     private AffineTransform affineTransform;
     private COSArray procSet;
     private PDImageXObject image;
-    private PDRectangle formaterRectangle;
+    private PDRectangle formatterRectangle;
     private PDStream holderFormStream;
     private PDResources holderFormResources;
     private PDFormXObject holderForm;
@@ -194,9 +194,9 @@ public class PDFTemplateStructure
      * Gets SignatureRectangle
      * @return the rectangle for the signature
      */
-    public PDRectangle getSingatureRectangle()
+    public PDRectangle getSignatureRectangle()
     {
-        return singatureRectangle;
+        return signatureRectangle;
     }
 
     /**
@@ -205,7 +205,7 @@ public class PDFTemplateStructure
      */
     public void setSignatureRectangle(PDRectangle singatureRectangle)
     {
-        this.singatureRectangle = singatureRectangle;
+        this.signatureRectangle = singatureRectangle;
     }
 
     /**
@@ -266,18 +266,18 @@ public class PDFTemplateStructure
      * Gets formatter rectangle
      * @return the formatter rectangle
      */
-    public PDRectangle getFormaterRectangle()
+    public PDRectangle getFormatterRectangle()
     {
-        return formaterRectangle;
+        return formatterRectangle;
     }
 
     /**
      * Sets formatter rectangle
-     * @param formaterRectangle
+     * @param formatterRectangle
      */
-    public void setFormaterRectangle(PDRectangle formaterRectangle)
+    public void setFormatterRectangle(PDRectangle formatterRectangle)
     {
-        this.formaterRectangle = formaterRectangle;
+        this.formatterRectangle = formatterRectangle;
     }
 
     /**
@@ -361,7 +361,7 @@ public class PDFTemplateStructure
      * Gets Inner form Stream.
      * @return the inner form stream
      */
-    public PDStream getInnterFormStream()
+    public PDStream getInnerFormStream()
     {
         return innterFormStream;
     }

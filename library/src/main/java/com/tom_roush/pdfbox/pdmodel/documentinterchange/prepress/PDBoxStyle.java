@@ -30,7 +30,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
  *
  * @author Ben Litchfield
  */
-public final class PDBoxStyle implements COSObjectable
+public class PDBoxStyle implements COSObjectable
 {
     /**
      * Style for guideline.
@@ -41,7 +41,7 @@ public final class PDBoxStyle implements COSObjectable
      */
     public static final String GUIDELINE_STYLE_DASHED = "D";
 
-    private COSDictionary dictionary;
+    private final COSDictionary dictionary;
 
     /**
      * Default Constructor.
@@ -88,7 +88,7 @@ public final class PDBoxStyle implements COSObjectable
             colorValues.add( COSInteger.ZERO );
             colorValues.add( COSInteger.ZERO );
             colorValues.add( COSInteger.ZERO );
-            dictionary.setItem( "C", colorValues );
+            dictionary.setItem(COSName.C, colorValues);
         }
         PDColor color = new PDColor(colorValues.toFloatArray(), PDDeviceRGB.INSTANCE);
         return color;

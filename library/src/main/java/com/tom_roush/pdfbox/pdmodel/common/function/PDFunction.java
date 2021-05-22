@@ -54,7 +54,7 @@ public abstract class PDFunction implements COSObjectable
         if (function instanceof COSStream)
         {
             functionStream = new PDStream( (COSStream)function );
-            functionStream.getStream().setItem( COSName.TYPE, COSName.FUNCTION );
+            functionStream.getCOSObject().setItem(COSName.TYPE, COSName.FUNCTION);
         }
         else if (function instanceof COSDictionary)
         {
@@ -85,7 +85,7 @@ public abstract class PDFunction implements COSObjectable
     {
         if (functionStream != null)
         {
-            return functionStream.getStream();
+            return functionStream.getCOSObject();
         }
         else 
         {
@@ -126,7 +126,7 @@ public abstract class PDFunction implements COSObjectable
         int functionType = functionDictionary.getInt( COSName.FUNCTION_TYPE );
         if( functionType == 0 )
         {
-//            retval = new PDFunctionType0(functionDictionary);TODO: PdfBox-Android
+            retval = new PDFunctionType0(functionDictionary);
         }
         else if( functionType == 2 )
         {

@@ -16,10 +16,11 @@
  */
 package com.tom_roush.pdfbox.util;
 
-import junit.framework.TestCase;
-
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
+
+import junit.framework.TestCase;
 
 /**
  *
@@ -32,7 +33,7 @@ public class TestQuickSort extends TestCase
         List<T> list = Arrays.asList(input);
         QuickSort.sort(list);
 
-        boolean equal = Arrays.equals(list.toArray(new Object[input.length]), input);
+        boolean equal = Arrays.equals(list.toArray(new Object[input.length]), expected);
 
         assertTrue(equal);
     }
@@ -75,6 +76,21 @@ public class TestQuickSort extends TestCase
         {
             Integer[] input = new Integer[] { 6, 5 };
             Integer[] expected = new Integer[] { 5, 6 };
+            doTest(input, expected);
+        }
+
+        Random rnd = new Random(12345);
+        for (int cnt = 0; cnt < 100; ++cnt)
+        {
+            int len = rnd.nextInt(20000) + 2;
+            Integer[] input = new Integer[len];
+            Integer[] expected = new Integer[len];
+            for (int i = 0; i < len; ++i)
+            {
+                // choose values so that there are some duplicates
+                expected[i] = input[i] = rnd.nextInt(rnd.nextInt(100) + 1);
+            }
+            Arrays.sort(expected);
             doTest(input, expected);
         }
     }

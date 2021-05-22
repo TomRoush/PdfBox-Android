@@ -18,6 +18,9 @@ package com.tom_roush.pdfbox.pdmodel.graphics.image;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 
+import java.io.File;
+import java.io.IOException;
+
 import com.tom_roush.pdfbox.io.RandomAccessBuffer;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
@@ -28,9 +31,6 @@ import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
 
 import static com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage.validate;
 import static org.junit.Assert.assertEquals;
@@ -50,8 +50,7 @@ public class CCITTFactoryTest
     {
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
-        testResultsDir = new File(testContext.getCacheDir() +
-            "/Download/pdfbox-test-output/graphics/");
+        testResultsDir = new File(testContext.getCacheDir(), "pdfbox-test-output/graphics/");
         testResultsDir.mkdirs();
     }
 
@@ -73,7 +72,8 @@ public class CCITTFactoryTest
 //        checkIdent(bim3, ximage3.getOpaqueImage());
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
-        PDPageContentStream contentStream = new PDPageContentStream(document, page, true, false);
+        PDPageContentStream contentStream = new PDPageContentStream(document, page,
+            PDPageContentStream.AppendMode.APPEND, false);
         contentStream.drawImage(ximage3, 0, 0, ximage3.getWidth(), ximage3.getHeight());
         contentStream.close();
 
@@ -84,7 +84,8 @@ public class CCITTFactoryTest
 //        checkIdent(bim4, ximage4.getOpaqueImage());
         page = new PDPage(PDRectangle.A4);
         document.addPage(page);
-        contentStream = new PDPageContentStream(document, page, true, false);
+        contentStream = new PDPageContentStream(document, page,
+            PDPageContentStream.AppendMode.APPEND, false);
         contentStream.drawImage(ximage4, 0, 0);
         contentStream.close();
 
@@ -131,7 +132,8 @@ public class CCITTFactoryTest
             float fY = ximage.getHeight() / page.getMediaBox().getHeight();
             float factor = Math.max(fX, fY);
             document.addPage(page);
-            PDPageContentStream contentStream = new PDPageContentStream(document, page, true, false);
+            PDPageContentStream contentStream = new PDPageContentStream(document, page,
+                PDPageContentStream.AppendMode.APPEND, false);
             contentStream.drawImage(ximage, 0, 0, ximage.getWidth() / factor, ximage.getHeight() / factor);
             contentStream.close();
             ++pdfPageNum;

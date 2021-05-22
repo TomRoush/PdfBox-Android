@@ -35,11 +35,14 @@ import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.StandardEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Type1Encoding;
 import com.tom_roush.pdfbox.util.Matrix;
+
+import static com.tom_roush.pdfbox.pdmodel.font.UniUtil.getUniNameOfCodePoint;
 
 /**
  * Type 1-equivalent CFF font.
@@ -58,6 +61,7 @@ public class PDType1CFont extends PDSimpleFont
     private final FontBoxFont genericFont; // embedded or system font for rendering
     private final boolean isEmbedded;
     private final boolean isDamaged;
+    private BoundingBox fontBBox;
 
     /**
      * Constructor.
@@ -93,7 +97,7 @@ public class PDType1CFont extends PDSimpleFont
             {
                 // note: this could be an OpenType file, fortunately CFFParser can handle that
                 CFFParser cffParser = new CFFParser();
-                cffEmbedded = (CFFType1Font)cffParser.parse(bytes).get(0);
+                cffEmbedded = (CFFType1Font)cffParser.parse(bytes, new ByteSource()).get(0);
             }
         }
         catch (IOException e)
@@ -111,7 +115,8 @@ public class PDType1CFont extends PDSimpleFont
         }
         else
         {
-            FontMapping<FontBoxFont> mapping = FontMapper.getFontBoxFont(getBaseFont(), fd);
+            FontMapping<FontBoxFont> mapping = FontMappers.instance().getFontBoxFont(getBaseFont(),
+                fd);
             genericFont = mapping.getFont();
 
             if (mapping.isFallback())
@@ -124,6 +129,16 @@ public class PDType1CFont extends PDSimpleFont
         readEncoding();
         fontMatrixTransform = getFontMatrix().createAffineTransform();
         fontMatrixTransform.scale(1000, 1000);
+    }
+
+    private class ByteSource implements CFFParser.ByteSource
+    {
+        @Override
+        public byte[] getBytes() throws IOException
+        {
+            PDStream ff3Stream = getFontDescriptor().getFontFile3();
+            return IOUtils.toByteArray(ff3Stream.createInputStream());
+        }
     }
 
     @Override
@@ -144,7 +159,7 @@ public class PDType1CFont extends PDSimpleFont
     public Path getPath(String name) throws IOException
     {
         // Acrobat only draws .notdef for embedded or "Standard 14" fonts, see PDFBOX-2372
-        if (isEmbedded() && name.equals(".notdef") && !isEmbedded() && !isStandard14())
+        if (name.equals(".notdef") && !isEmbedded() && !isStandard14())
         {
             return new Path();
         }
@@ -169,6 +184,25 @@ public class PDType1CFont extends PDSimpleFont
     @Override
     public BoundingBox getBoundingBox() throws IOException
     {
+        if (fontBBox == null)
+        {
+            fontBBox = generateBoundingBox();
+        }
+        return fontBBox;
+    }
+
+    private BoundingBox generateBoundingBox() throws IOException
+    {
+        if (getFontDescriptor() != null)
+        {
+            PDRectangle bbox = getFontDescriptor().getFontBoundingBox();
+            if (bbox.getLowerLeftX() != 0 || bbox.getLowerLeftY() != 0 ||
+                bbox.getUpperRightX() != 0 || bbox.getUpperRightY() != 0)
+            {
+                return new BoundingBox(bbox.getLowerLeftX(), bbox.getLowerLeftY(),
+                    bbox.getUpperRightX(), bbox.getUpperRightY());
+            }
+        }
         return genericFont.getFontBBox();
     }
 
@@ -191,7 +225,6 @@ public class PDType1CFont extends PDSimpleFont
             // extract from Type1 font/substitute
             if (genericFont instanceof EncodedFont)
             {
-                //FIXME dead instanceof
                 return Type1Encoding.fromFontBox(((EncodedFont) genericFont).getEncoding());
             }
             else
@@ -277,7 +310,26 @@ public class PDType1CFont extends PDSimpleFont
     @Override
     protected byte[] encode(int unicode) throws IOException
     {
-        throw new UnsupportedOperationException("Not implemented: Type1C");
+        String name = getGlyphList().codePointToName(unicode);
+        if (!encoding.contains(name))
+        {
+            throw new IllegalArgumentException(String
+                .format("U+%04X ('%s') is not available in this font's encoding: %s", unicode, name,
+                    encoding.getEncodingName()));
+        }
+
+        String nameInFont = getNameInFont(name);
+
+        Map<String, Integer> inverted = encoding.getNameToCodeMap();
+
+        if (nameInFont.equals(".notdef") || !genericFont.hasGlyph(nameInFont))
+        {
+            throw new IllegalArgumentException(
+                String.format("No glyph for U+%04X in font %s", unicode, getName()));
+        }
+
+        int code = inverted.get(name);
+        return new byte[] { (byte)code };
     }
 
     @Override
@@ -318,5 +370,31 @@ public class PDType1CFont extends PDSimpleFont
     {
         // todo: not implemented, highly suspect
         return 500;
+    }
+
+    /**
+     * Maps a PostScript glyph name to the name in the underlying font, for example when
+     * using a TTF font we might map "W" to "uni0057".
+     */
+    private String getNameInFont(String name) throws IOException
+    {
+        if (isEmbedded() || genericFont.hasGlyph(name))
+        {
+            return name;
+        }
+        else
+        {
+            // try unicode name
+            String unicodes = getGlyphList().toUnicode(name);
+            if (unicodes != null && unicodes.length() == 1)
+            {
+                String uniName = getUniNameOfCodePoint(unicodes.codePointAt(0));
+                if (genericFont.hasGlyph(uniName))
+                {
+                    return uniName;
+                }
+            }
+        }
+        return ".notdef";
     }
 }

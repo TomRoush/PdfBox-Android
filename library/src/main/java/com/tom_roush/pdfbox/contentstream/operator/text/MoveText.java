@@ -48,8 +48,19 @@ public class MoveText extends OperatorProcessor
             return;
         }
 
-        COSNumber x = (COSNumber) arguments.get(0);
-        COSNumber y = (COSNumber) arguments.get(1);
+        COSBase base0 = arguments.get(0);
+        COSBase base1 = arguments.get(1);
+        if (!(base0 instanceof COSNumber))
+        {
+            return;
+        }
+        if (!(base1 instanceof COSNumber))
+        {
+            return;
+        }
+        COSNumber x = (COSNumber)base0;
+        COSNumber y = (COSNumber)base1;
+
         Matrix matrix = new Matrix(1, 0, 0, 1, x.floatValue(), y.floatValue());
         textLineMatrix.concatenate(matrix);
         context.setTextMatrix(textLineMatrix.clone());

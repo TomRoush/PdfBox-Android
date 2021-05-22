@@ -220,7 +220,7 @@ public class PDStructureElement extends PDStructureNode
             int revisionNumber = attributes.getRevisionNumber(i);
             if (revisionNumber < 0)
             {
-            	throw new IllegalArgumentException("The revision number shall be > -1");
+                throw new IllegalArgumentException("The revision number shall be > -1");
             }
             array.add(attributeObject);
             array.add(COSInteger.get(revisionNumber));
@@ -386,7 +386,7 @@ public class PDStructureElement extends PDStructureNode
             int revisionNumber = classNames.getRevisionNumber(i);
             if (revisionNumber < 0)
             {
-            	throw new IllegalArgumentException("The revision number shall be > -1");
+                throw new IllegalArgumentException("The revision number shall be > -1");
             }
             array.add(COSName.getPDFName(className));
             array.add(COSInteger.get(revisionNumber));
@@ -482,7 +482,7 @@ public class PDStructureElement extends PDStructureNode
     {
         if (revisionNumber < 0)
         {
-        	throw new IllegalArgumentException("The revision number shall be > -1");
+            throw new IllegalArgumentException("The revision number shall be > -1");
         }
         this.getCOSObject().setInt(COSName.R, revisionNumber);
     }

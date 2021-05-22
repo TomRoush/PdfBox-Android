@@ -16,13 +16,13 @@
  */
 package com.tom_roush.fontbox.afm;
 
-import com.tom_roush.fontbox.util.BoundingBox;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import com.tom_roush.fontbox.util.BoundingBox;
 
 /**
  * This is the outermost AFM type.  This can be created by the afmparser with a valid AFM document.
@@ -66,7 +66,7 @@ public class FontMetrics
     private float standardVerticalWidth;
 
     private List<CharMetric> charMetrics = new ArrayList<CharMetric>();
-    private final Map<String,CharMetric> charMetricsMap = new HashMap<String,CharMetric>();
+    private Map<String, CharMetric> charMetricsMap = new HashMap<String, CharMetric>();
     private List<TrackKern> trackKern = new ArrayList<TrackKern>();
     private List<Composite> composites = new ArrayList<Composite>();
     private List<KernPair> kernPairs = new ArrayList<KernPair>();
@@ -89,13 +89,9 @@ public class FontMetrics
      */
     public float getCharacterWidth( String name )
     {
-        float result;
+        float result = 0;
         CharMetric metric = charMetricsMap.get( name );
-        if( metric == null )
-        {
-            result=0;
-        }
-        else
+        if (metric != null)
         {
             result = metric.getWx();
         }
@@ -110,13 +106,9 @@ public class FontMetrics
      */
     public float getCharacterHeight( String name )
     {
-        float result;
+        float result = 0;
         CharMetric metric = charMetricsMap.get( name );
-        if( metric == null )
-        {
-            result=0;
-        }
-        else
+        if (metric != null)
         {
             if( metric.getWy() == 0 )
             {
@@ -719,6 +711,11 @@ public class FontMetrics
     public void setCharMetrics(List<CharMetric> charMetricsValue)
     {
         charMetrics = charMetricsValue;
+        charMetricsMap = new HashMap<String, CharMetric>(charMetrics.size());
+        for (CharMetric metric : charMetricsValue)
+        {
+            charMetricsMap.put( metric.getName(), metric );
+        }
     }
 
     /**

@@ -48,6 +48,7 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
 
     /**
      * Returns the dictionary.
+     *
      * @return the dictionary
      */
     @Override
@@ -83,7 +84,7 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
      */
     public PDColor getBorderColour()
     {
-    	return getColor(COSName.BC);
+        return getColor(COSName.BC);
     }
 
     /**
@@ -93,7 +94,7 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
      */
     public void setBorderColour(PDColor c)
     {
-    	this.getCOSObject().setItem(COSName.BC, c.toCOSArray());
+        this.getCOSObject().setItem(COSName.BC, c.toCOSArray());
     }
 
     /**
@@ -103,7 +104,7 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
      */
     public PDColor getBackground()
     {
-    	return getColor(COSName.BG);
+        return getColor(COSName.BG);
     }
 
     /**
@@ -113,7 +114,7 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
      */
     public void setBackground(PDColor c)
     {
-    	this.getCOSObject().setItem(COSName.BG, c.toCOSArray());
+        this.getCOSObject().setItem(COSName.BG, c.toCOSArray());
     }
 
     /**
@@ -223,26 +224,26 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
 
     private PDColor getColor(COSName itemName)
     {
-    	COSBase c = this.getCOSObject().getItem(itemName);
-    	if (c instanceof COSArray)
-    	{
-    		PDColorSpace colorSpace = null;
-    		switch (((COSArray) c).size())
-    		{
-    		case 1:
-    			colorSpace = PDDeviceGray.INSTANCE;
-    			break;
-    		case 3:
-    			colorSpace = PDDeviceRGB.INSTANCE;
-    			break;
-//    		case 4:
-//    			colorSpace = PDDeviceCMYK.INSTANCE;
-//    			break; TODO: PdfBox-Android
-    		default:
-    			break;
-    		}
-    		return new PDColor((COSArray) c, colorSpace);
-    	}
-    	return null;
+        COSBase c = this.getCOSObject().getItem(itemName);
+        if (c instanceof COSArray)
+        {
+            PDColorSpace colorSpace = null;
+            switch (((COSArray)c).size())
+            {
+            case 1:
+                colorSpace = PDDeviceGray.INSTANCE;
+                break;
+            case 3:
+                colorSpace = PDDeviceRGB.INSTANCE;
+                break;
+            case 4:
+//    			colorSpace = PDDeviceCMYK.INSTANCE; TODO: PdfBox-Android
+                break;
+            default:
+                break;
+            }
+            return new PDColor((COSArray)c, colorSpace);
+        }
+        return null;
     }
 }

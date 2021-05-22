@@ -140,6 +140,28 @@ public class ScratchFile implements Closeable
     }
 
     /**
+     * Getter for an instance using only unrestricted main memory for buffering
+     * (same as <code>new ScratchFile(MemoryUsageSetting.setupMainMemoryOnly())</code>).
+     *
+     * @return instance configured to only use main memory with no size restriction
+     */
+    public static ScratchFile getMainMemoryOnlyInstance()
+    {
+        try
+        {
+            return new ScratchFile(MemoryUsageSetting.setupMainMemoryOnly());
+        }
+        catch (IOException ioe)
+        {
+            // cannot happen for main memory setup
+            Log.e("PdfBox-Android",
+                "Unexpected exception occurred creating main memory scratch file instance: " +
+                    ioe.getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Returns a new free page, either from free page pool
      * or by enlarging scratch file (may be created).
      *
@@ -271,6 +293,7 @@ public class ScratchFile implements Closeable
      * Reads the page with specified index.
      *
      * @param pageIdx index of page to read
+     *
      * @return byte array of size {@link #PAGE_SIZE} filled with page data read from file
      * @throws IOException
      */
@@ -307,6 +330,7 @@ public class ScratchFile implements Closeable
                 throw new IOException(
                     "Missing scratch file to read page with index " + pageIdx + " from.");
             }
+
             byte[] page = new byte[PAGE_SIZE];
             raf.seek(((long) pageIdx - inMemoryMaxPageCount) * PAGE_SIZE);
             raf.readFully(page);
@@ -324,6 +348,7 @@ public class ScratchFile implements Closeable
      *
      * @param pageIdx index of page to write
      * @param page page to write (length has to be {@value #PAGE_SIZE})
+     * 
      * @throws IOException in case page index is out of range or page has wrong length
      * or writing to file failed
      */

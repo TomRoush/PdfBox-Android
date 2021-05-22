@@ -58,7 +58,7 @@ public enum PDTransitionDirection
 
     private final int degrees;
 
-    PDTransitionDirection(int degrees)
+    private PDTransitionDirection(int degrees)
     {
         this.degrees = degrees;
     }

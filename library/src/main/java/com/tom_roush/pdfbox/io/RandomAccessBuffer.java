@@ -21,8 +21,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.System.arraycopy;
-
 /**
  * An implementation of the RandomAccess interface to store data in memory.
  * The data will be stored in chunks organized in an ArrayList.
@@ -54,8 +52,17 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
      */
     public RandomAccessBuffer()
     {
+        this(DEFAULT_CHUNK_SIZE);
+    }
+
+    /**
+     * Default constructor.
+     */
+    private RandomAccessBuffer(int definedChunkSize)
+    {
         // starting with one chunk
         bufferList = new ArrayList<byte[]>();
+        chunkSize = definedChunkSize;
         currentBuffer = new byte[chunkSize];
         bufferList.add(currentBuffer);
         pointer = 0;
@@ -106,13 +113,13 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
     @Override
     public RandomAccessBuffer clone()
     {
-        RandomAccessBuffer copy = new RandomAccessBuffer();
+        RandomAccessBuffer copy = new RandomAccessBuffer(chunkSize);
 
         copy.bufferList = new ArrayList<byte[]>(bufferList.size());
         for (byte [] buffer : bufferList)
         {
             byte [] newBuffer = new byte [buffer.length];
-            arraycopy(buffer, 0, newBuffer, 0, buffer.length);
+            System.arraycopy(buffer, 0, newBuffer, 0, buffer.length);
             copy.bufferList.add(newBuffer);
         }
         if (currentBuffer!=null)
@@ -267,7 +274,7 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
         if (maxLength >= remainingBytes)
         {
             // copy the remaining bytes from the current buffer
-            arraycopy(currentBuffer, currentBufferPointer, b, offset, remainingBytes);
+            System.arraycopy(currentBuffer, currentBufferPointer, b, offset, remainingBytes);
             // end of file reached
             currentBufferPointer += remainingBytes;
             pointer += remainingBytes;
@@ -276,7 +283,7 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
         else
         {
             // copy the remaining bytes from the whole buffer
-            arraycopy(currentBuffer, currentBufferPointer, b, offset, maxLength);
+            System.arraycopy(currentBuffer, currentBufferPointer, b, offset, maxLength);
             // end of file reached
             currentBufferPointer += maxLength;
             pointer += maxLength;
@@ -331,6 +338,15 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
      * {@inheritDoc}
      */
     @Override
+    public void write(byte[] b) throws IOException
+    {
+        write(b, 0, b.length);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void write(byte[] b, int offset, int length) throws IOException
     {
         checkClosed();
@@ -369,7 +385,7 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
         }
         else
         {
-            arraycopy(b, offset, currentBuffer, (int) currentBufferPointer, length);
+            System.arraycopy(b, offset, currentBuffer, currentBufferPointer, length);
             currentBufferPointer += length;
         }
         pointer += length;
@@ -431,18 +447,9 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
      * {@inheritDoc}
      */
     @Override
-    public void write(byte[] b) throws IOException
-    {
-        write(b, 0, b.length);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public boolean isClosed()
     {
-    	return currentBuffer == null;
+        return currentBuffer == null;
     }
 
     /**

@@ -16,8 +16,12 @@
  */
 package com.tom_roush.pdfbox.io;
 
+import android.util.Log;
+
 import java.io.EOFException;
 import java.io.IOException;
+
+import com.tom_roush.pdfbox.cos.COSStream;
 
 /**
  * Implementation of {@link RandomAccess} as sequence of multiple fixed size pages handled
@@ -494,6 +498,33 @@ class ScratchFileBuffer implements RandomAccess
             currentPagePositionInPageIndexes = -1;
             positionInPage = 0;
             size = 0;
+        }
+    }
+
+    /**
+     * While calling finalize is normally discouraged we will have to
+     * use it here as long as closing a scratch file buffer is not
+     * done in every case. Currently {@link COSStream} creates new
+     * buffers without closing the old one - which might still be
+     * used.
+     *
+     * <p>Enabling debugging one will see if there are still cases
+     * where the buffer is not closed.</p>
+     */
+    @Override
+    protected void finalize() throws Throwable
+    {
+        try
+        {
+            if ((pageHandler != null))
+            {
+                Log.d("PdfBox-Android", "ScratchFileBuffer not closed!");
+            }
+            close();
+        }
+        finally
+        {
+            super.finalize();
         }
     }
 }

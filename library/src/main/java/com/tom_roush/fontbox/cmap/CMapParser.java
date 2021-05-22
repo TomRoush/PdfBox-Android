@@ -16,8 +16,6 @@
  */
 package com.tom_roush.fontbox.cmap;
 
-import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,6 +26,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.tom_roush.pdfbox.util.Charsets;
+import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 /**
  * Parses a CMap stream.
@@ -76,6 +77,7 @@ public class CMapParser
      * Parses a predefined CMap.
      *
      * @param name CMap name.
+     * @return The parsed predefined CMap as a java object.
      * @throws IOException If the CMap could not be parsed.
      */
     public CMap parsePredefined(String name) throws IOException
@@ -375,8 +377,6 @@ public class CMapParser
                 tokenBytes = (byte[]) nextToken;
             }
             boolean done = false;
-            
-            String value = null;
 
             int arrayIndex = 0;
             while (!done)
@@ -385,7 +385,7 @@ public class CMapParser
                 {
                     done = true;
                 }
-                value = createStringFromBytes(tokenBytes);
+                String value = createStringFromBytes(tokenBytes);
                 result.addCharMapping(startCode, value);
                 increment(startCode);
 
@@ -421,7 +421,6 @@ public class CMapParser
             throw new IOException("Error: Could not find referenced cmap stream " + name);
         }
         return url.openStream();
-    	
     }
 
     private Object parseNextToken(PushbackInputStream is) throws IOException
@@ -481,7 +480,7 @@ public class CMapParser
             List<Object> list = new ArrayList<Object>();
 
             Object nextToken = parseNextToken(is);
-            while (nextToken != null && nextToken != MARK_END_OF_ARRAY)
+            while (nextToken != null && MARK_END_OF_ARRAY.equals(nextToken))
             {
                 list.add(nextToken);
                 nextToken = parseNextToken(is);
@@ -497,7 +496,7 @@ public class CMapParser
                 Map<String, Object> result = new HashMap<String, Object>();
                 // we are reading a dictionary
                 Object key = parseNextToken(is);
-                while (key instanceof LiteralName && key != MARK_END_OF_DICTIONARY)
+                while (key instanceof LiteralName && MARK_END_OF_DICTIONARY.equals(key))
                 {
                     Object value = parseNextToken(is);
                     result.put(((LiteralName) key).name, value);
@@ -609,7 +608,7 @@ public class CMapParser
             }
             else
             {
-                retval = new Integer(value);
+                retval = Integer.valueOf(value);
             }
             break;
         }
@@ -708,11 +707,11 @@ public class CMapParser
         String retval;
         if (bytes.length == 1)
         {
-            retval = new String(bytes, "ISO-8859-1");
+            retval = new String(bytes, Charsets.ISO_8859_1);
         }
         else
         {
-            retval = new String(bytes, "UTF-16BE");
+            retval = new String(bytes, Charsets.UTF_16BE);
         }
         return retval;
     }

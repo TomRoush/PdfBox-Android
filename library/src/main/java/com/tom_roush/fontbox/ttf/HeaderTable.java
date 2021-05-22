@@ -63,7 +63,7 @@ public class HeaderTable extends TTFTable
     {
         super(font);
     }
-    
+
     /**
      * This will read the required data from the stream.
      * 

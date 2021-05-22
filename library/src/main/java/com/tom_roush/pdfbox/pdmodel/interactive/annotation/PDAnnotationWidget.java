@@ -35,7 +35,6 @@ public class PDAnnotationWidget extends PDAnnotation
      */
     public static final String SUB_TYPE = "Widget";
 
-
     /**
      * Constructor.
      */
@@ -44,7 +43,6 @@ public class PDAnnotationWidget extends PDAnnotation
         super();
         getCOSObject().setName(COSName.SUBTYPE, SUB_TYPE);
     }
-
 
     /**
      * Creates a PDWidget from a COSDictionary, expected to be
@@ -168,7 +166,7 @@ public class PDAnnotationWidget extends PDAnnotation
     }
 
     /**
-     * Get the additional actions for this field.  This will return null
+     * Get the additional actions for this field. This will return null
      * if there are no additional actions for this field.
      * As of PDF 1.6 this is only used for Widget Annotations.
      *
@@ -215,15 +213,12 @@ public class PDAnnotationWidget extends PDAnnotation
      */
     public PDBorderStyleDictionary getBorderStyle()
     {
-    	COSDictionary bs = (COSDictionary) this.getCOSObject().getItem(COSName.BS);
-        if (bs != null)
+        COSBase bs = getCOSObject().getDictionaryObject(COSName.BS);
+        if (bs instanceof COSDictionary)
         {
-            return new PDBorderStyleDictionary( bs );
+            return new PDBorderStyleDictionary((COSDictionary)bs);
         }
-        else
-        {
-            return null;
-        }
+        return null;
     }
 
     // TODO where to get acroForm from?

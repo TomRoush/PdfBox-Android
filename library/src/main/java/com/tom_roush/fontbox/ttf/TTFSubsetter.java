@@ -944,31 +944,31 @@ public final class TTFSubsetter
             Map<String, byte[]> tables = new TreeMap<String, byte[]>();
             if (os2 != null)
             {
-            	tables.put("OS/2", os2);
+                tables.put("OS/2", os2);
             }
             if (cmap != null)
             {
-            	tables.put("cmap", cmap);
+                tables.put("cmap", cmap);
             }
             if (glyf != null)
             {
-            	tables.put("glyf", glyf);
+                tables.put("glyf", glyf);
             }
             tables.put("head", head);
             tables.put("hhea", hhea);
             tables.put("hmtx", hmtx);
             if (loca != null)
             {
-            	tables.put("loca", loca);
+                tables.put("loca", loca);
             }
             tables.put("maxp", maxp);
             if (name != null)
             {
-            	tables.put("name", name);
+                tables.put("name", name);
             }
             if (post != null)
             {
-            	tables.put("post", post);
+                tables.put("post", post);
             }
 
             // copy all other tables

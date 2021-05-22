@@ -31,6 +31,7 @@ public class PDAppearanceStream extends PDFormXObject
 {
     /**
      * Creates a Form XObject for reading.
+     *
      * @param stream The XObject stream
      */
     public PDAppearanceStream(COSStream stream)
@@ -40,6 +41,7 @@ public class PDAppearanceStream extends PDFormXObject
 
     /**
      * Creates a Form Image XObject for writing, in the given document.
+     *
      * @param document The current document
      */
     public PDAppearanceStream(PDDocument document)

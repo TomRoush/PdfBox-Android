@@ -63,15 +63,15 @@ final class XMLUtil
         }
         catch (FactoryConfigurationError e )
         {
-        	throw new IOException( e.getMessage(), e );
+            throw new IOException(e.getMessage(), e);
         }
         catch (ParserConfigurationException e)
         {
-        	throw new IOException( e.getMessage(), e );
+            throw new IOException(e.getMessage(), e);
         }
         catch (SAXException e)
         {
-        	throw new IOException( e.getMessage(), e );
+            throw new IOException(e.getMessage(), e);
         }
     }
 
@@ -83,17 +83,17 @@ final class XMLUtil
      */
     public static String getNodeValue( Element node )
     {
-    	StringBuilder sb = new StringBuilder();
-    	NodeList children = node.getChildNodes();
-    	int numNodes = children.getLength();
-    	for( int i=0; i<numNodes; i++ )
-    	{
+        StringBuilder sb = new StringBuilder();
+        NodeList children = node.getChildNodes();
+        int numNodes = children.getLength();
+        for (int i = 0; i < numNodes; i++)
+        {
             Node next = children.item( i );
             if( next instanceof Text )
             {
-            	sb.append(next.getNodeValue());
+                sb.append(next.getNodeValue());
             }
         }
-    	return sb.toString();
+        return sb.toString();
     }
 }

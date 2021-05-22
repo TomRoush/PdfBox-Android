@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.tom_roush.pdfbox.cos;
 
 import java.io.IOException;
@@ -89,10 +105,11 @@ public class COSObject extends COSBase implements COSUpdateInfo
     @Override
     public String toString()
     {
-    	return "COSObject{" + Long.toString(objectNumber) + ", " + Integer.toString(generationNumber) + "}";
+        return "COSObject{" + Long.toString(objectNumber) + ", " + Integer.toString(
+            generationNumber) + "}";
     }
 
-    /** 
+    /**
      * Getter for property objectNumber.
      * @return Value of property objectNumber.
      */
@@ -101,7 +118,7 @@ public class COSObject extends COSBase implements COSUpdateInfo
         return objectNumber;
     }
 
-    /** 
+    /**
      * Setter for property objectNumber.
      * @param objectNum New value of property objectNumber.
      */
@@ -110,7 +127,7 @@ public class COSObject extends COSBase implements COSUpdateInfo
         objectNumber = objectNum;
     }
 
-    /** 
+    /**
      * Getter for property generationNumber.
      * @return Value of property generationNumber.
      */
@@ -119,7 +136,7 @@ public class COSObject extends COSBase implements COSUpdateInfo
         return generationNumber;
     }
 
-    /** 
+    /**
      * Setter for property generationNumber.
      * @param generationNumberValue New value of property generationNumber.
      */
@@ -140,7 +157,7 @@ public class COSObject extends COSBase implements COSUpdateInfo
     {
         return getObject() != null ? getObject().accept( visitor ) : COSNull.NULL.accept( visitor );
     }
-    
+
     /**
      * Get the update state for the COSWriter.
      *
@@ -149,7 +166,7 @@ public class COSObject extends COSBase implements COSUpdateInfo
     @Override
     public boolean isNeedToBeUpdated()
     {
-    	return needToBeUpdated;
+        return needToBeUpdated;
     }
 
     /**
@@ -160,6 +177,6 @@ public class COSObject extends COSBase implements COSUpdateInfo
     @Override
     public void setNeedToBeUpdated(boolean flag)
     {
-    	needToBeUpdated = flag;
+        needToBeUpdated = flag;
     }
 }

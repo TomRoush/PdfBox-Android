@@ -16,6 +16,11 @@
  */
 package com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
+
 import com.tom_roush.harmony.awt.AWTColor;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
@@ -25,13 +30,9 @@ import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
+import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties.BaseState;
 
 import junit.framework.TestCase;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
 
 /**
  * Tests optional content group functionality (also called layers).
@@ -92,7 +93,8 @@ public class TestOptionalContentGroups extends TestCase
             assertFalse(ocprops.isGroupEnabled("disabled"));
 
             //Setup page content stream and paint background/title
-            PDPageContentStream contentStream = new PDPageContentStream(doc, page, false, false);
+            PDPageContentStream contentStream = new PDPageContentStream(doc, page,
+                PDPageContentStream.AppendMode.OVERWRITE, false);
             PDFont font = PDType1Font.HELVETICA_BOLD;
             contentStream.beginMarkedContent(COSName.OC, background);
             contentStream.beginText();
@@ -171,7 +173,7 @@ public class TestOptionalContentGroups extends TestCase
             assertNull(resources.getProperties(COSName.getPDFName("inexistent")));
 
             PDOptionalContentProperties ocgs = catalog.getOCProperties();
-            assertEquals(PDOptionalContentProperties.BaseState.ON, ocgs.getBaseState());
+            assertEquals(BaseState.ON, ocgs.getBaseState());
             Set<String> names = new java.util.HashSet<String>(Arrays.asList(ocgs.getGroupNames()));
             assertEquals(3, names.size());
             assertTrue(names.contains("background"));

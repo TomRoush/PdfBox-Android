@@ -32,7 +32,7 @@ public final class PDDocumentOutline extends PDOutlineNode
      */
     public PDDocumentOutline()
     {
-    	getCOSObject().setName(COSName.TYPE, COSName.OUTLINES.getName());
+        getCOSObject().setName(COSName.TYPE, COSName.OUTLINES.getName());
     }
 
     /**
@@ -42,25 +42,25 @@ public final class PDDocumentOutline extends PDOutlineNode
      */
     public PDDocumentOutline( COSDictionary dic )
     {
-    	super( dic );
-    	getCOSObject().setName(COSName.TYPE, COSName.OUTLINES.getName());
+        super(dic);
+        getCOSObject().setName(COSName.TYPE, COSName.OUTLINES.getName());
     }
 
     @Override
     public boolean isNodeOpen()
     {
-    	return true;
+        return true;
     }
 
     @Override
     public void openNode()
     {
-    	// The root of the outline hierarchy is not an OutlineItem and cannot be opened or closed
+        // The root of the outline hierarchy is not an OutlineItem and cannot be opened or closed
     }
 
     @Override
     public void closeNode()
     {
-    	// The root of the outline hierarchy is not an OutlineItem and cannot be opened or closed
+        // The root of the outline hierarchy is not an OutlineItem and cannot be opened or closed
     }
 }

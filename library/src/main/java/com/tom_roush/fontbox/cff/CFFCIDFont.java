@@ -19,13 +19,13 @@ package com.tom_roush.fontbox.cff;
 
 import android.graphics.Path;
 
-import com.tom_roush.fontbox.type1.Type1CharStringReader;
-
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.tom_roush.fontbox.type1.Type1CharStringReader;
 
 /**
  * A Type 0 CIDFont represented in a CFF file. Thread safe.
@@ -171,7 +171,6 @@ public class CFFCIDFont extends CFFFont
      * Returns the defaultWidthX for the given GID.
      *
      * @param gid GID
-     * @return defaultWidthX
      */
     private int getDefaultWidthX(int gid)
     {
@@ -188,7 +187,6 @@ public class CFFCIDFont extends CFFFont
      * Returns the nominalWidthX for the given GID.
      *
      * @param gid GID
-     * @return defaultWidthX
      */
     private int getNominalWidthX(int gid)
     {
@@ -200,21 +198,21 @@ public class CFFCIDFont extends CFFFont
         Map<String, Object> privDict = this.privateDictionaries.get(fdArrayIndex);
         return privDict.containsKey("nominalWidthX") ? ((Number)privDict.get("nominalWidthX")).intValue() : 0;
     }
-    
+
     /**
-    * Returns the LocalSubrIndex for the given GID.
-    *
-    * @param gid GID
+     * Returns the LocalSubrIndex for the given GID.
+     *
+     * @param gid GID
     */
-    private IndexData getLocalSubrIndex(int gid)
+    private byte[][] getLocalSubrIndex(int gid)
     {
         int fdArrayIndex = this.fdSelect.getFDIndex(gid);
         if (fdArrayIndex == -1)
         {
-            return new IndexData(0);
+            return null;
         }
         Map<String, Object> privDict = this.privateDictionaries.get(fdArrayIndex);
-        return (IndexData)privDict.get("Subrs");
+        return (byte[][])privDict.get("Subrs");
     }
 
     /**
@@ -223,6 +221,7 @@ public class CFFCIDFont extends CFFFont
      * @param cid CID
      * @throws IOException if the charstring could not be read
      */
+    @Override
     public CIDKeyedType2CharString getType2CharString(int cid) throws IOException
     {
         CIDKeyedType2CharString type2 = charStringCache.get(cid);
@@ -230,15 +229,15 @@ public class CFFCIDFont extends CFFFont
         {
             int gid = charset.getGIDForCID(cid);
 
-            byte[] bytes = charStrings.get(gid);
+            byte[] bytes = charStrings[gid];
             if (bytes == null)
             {
-                bytes = charStrings.get(0); // .notdef
+                bytes = charStrings[0]; // .notdef
             }
             Type2CharStringParser parser = new Type2CharStringParser(fontName, cid);
             List<Object> type2seq = parser.parse(bytes, globalSubrIndex, getLocalSubrIndex(gid));
-            type2 = new CIDKeyedType2CharString(reader, fontName, cid, gid, type2seq, 
-            		getDefaultWidthX(cid), getNominalWidthX(cid));
+            type2 = new CIDKeyedType2CharString(reader, fontName, cid, gid, type2seq,
+                getDefaultWidthX(gid), getNominalWidthX(gid));
             charStringCache.put(cid, type2);
         }
         return type2;
@@ -247,8 +246,8 @@ public class CFFCIDFont extends CFFFont
     @Override
     public List<Number> getFontMatrix()
     {
-    	// our parser guarantees that FontMatrix will be present and correct in the Top DICT
-    	return (List<Number>)topDict.get("FontMatrix");
+        // our parser guarantees that FontMatrix will be present and correct in the Top DICT
+        return (List<Number>)topDict.get("FontMatrix");
     }
 
     @Override

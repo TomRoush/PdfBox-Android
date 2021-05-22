@@ -31,12 +31,13 @@ import com.tom_roush.pdfbox.pdmodel.graphics.image.JPEGFactory;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
-import com.tom_roush.pdfbox.pdmodel.interactive.form.PDCheckbox;
+import com.tom_roush.pdfbox.pdmodel.interactive.form.PDCheckBox;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDComboBox;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDListBox;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDRadioButton;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDTextField;
+import com.tom_roush.pdfbox.rendering.ImageType;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
@@ -160,7 +161,7 @@ public class MainActivity extends Activity {
             // Create a renderer for the document
             PDFRenderer renderer = new PDFRenderer(document);
             // Render the image to an RGB Bitmap
-            pageImage = renderer.renderImage(0, 1, Bitmap.Config.RGB_565);
+            pageImage = renderer.renderImage(0, 1, ImageType.RGB);
 
             // Save the render result to an image
             String path = root.getAbsolutePath() + "/render.jpg";
@@ -195,7 +196,7 @@ public class MainActivity extends Activity {
             field.setReadOnly(true);
 
             PDField checkbox = acroForm.getField("Checkbox");
-            ((PDCheckbox) checkbox).check();
+            ((PDCheckBox) checkbox).check();
 
             PDField radio = acroForm.getField("Radio");
             ((PDRadioButton)radio).setValue("Second");

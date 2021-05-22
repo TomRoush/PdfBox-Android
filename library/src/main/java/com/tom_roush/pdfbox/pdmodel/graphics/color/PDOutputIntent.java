@@ -37,7 +37,7 @@ import com.tom_roush.pdfbox.pdmodel.common.PDStream;
  */
 public final class PDOutputIntent implements COSObjectable
 {
-    private COSDictionary dictionary;
+    private final COSDictionary dictionary;
 
     public PDOutputIntent(PDDocument doc, InputStream colorProfile) throws IOException
     {
@@ -53,6 +53,7 @@ public final class PDOutputIntent implements COSObjectable
         this.dictionary = dictionary;
     }
 
+    @Override
     public COSBase getCOSObject()
     {
         return dictionary;
@@ -106,6 +107,9 @@ public final class PDOutputIntent implements COSObjectable
     private PDStream configureOutputProfile(PDDocument doc, InputStream colorProfile)
             throws IOException
     {
+//        ICC_Profile icc = ICC_Profile.getInstance(colorProfile);
+//        PDStream stream = new PDStream(doc, new ByteArrayInputStream(icc.getData()), COSName.FLATE_DECODE);
+//        stream.getCOSObject().setInt(COSName.N, icc.getNumComponents()); TODO: PdFBox-Android
         PDStream stream = new PDStream(doc, colorProfile, COSName.FLATE_DECODE);
         stream.getStream().setInt(COSName.N, 3);
         return stream;

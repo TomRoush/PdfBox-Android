@@ -57,9 +57,9 @@ public class FDFAnnotationHighlight extends FDFAnnotationTextMarkup
     /**
      * Constructor.
      *
-     *  @param element An XFDF element.
+     * @param element An XFDF element.
      *
-     *  @throws IOException If there is an error extracting information from the element.
+     * @throws IOException If there is an error extracting information from the element.
      */
     public FDFAnnotationHighlight( Element element ) throws IOException
     {

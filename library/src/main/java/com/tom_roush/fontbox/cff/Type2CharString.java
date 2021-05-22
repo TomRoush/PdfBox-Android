@@ -83,7 +83,7 @@ public class Type2CharString extends Type1CharString
         type1Sequence = new ArrayList<Object>();
         pathCount = 0;
         CharStringHandler handler = new CharStringHandler() {
-        	@Override
+            @Override
             public List<Integer> handleCommand(List<Integer> numbers, CharStringCommand command)
             {
                 return Type2CharString.this.handleCommand(numbers, command);

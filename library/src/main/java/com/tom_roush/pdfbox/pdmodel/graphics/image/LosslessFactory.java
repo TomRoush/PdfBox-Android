@@ -43,7 +43,7 @@ public final class LosslessFactory
     private LosslessFactory()
     {
     }
-    
+
     /**
      * Creates a new lossless encoded Image XObject from a Buffered Image.
      *
@@ -120,7 +120,7 @@ public final class LosslessFactory
         PDImage xAlpha = createAlphaFromARGBImage(document, image); // TODO: PdfBox-Android - simplify with extract alpha?
         if (xAlpha != null)
         {
-            pdImage.getCOSStream().setItem(COSName.SMASK, xAlpha);
+            pdImage.getCOSObject().setItem(COSName.SMASK, xAlpha);
         }
 
         return pdImage;
@@ -140,10 +140,10 @@ public final class LosslessFactory
     private static PDImageXObject createAlphaFromARGBImage(PDDocument document, Bitmap image)
             throws IOException
     {
-        // this implementation makes the assumption that the raster uses 
-        // SinglePixelPackedSampleModel, i.e. the values can be used 1:1 for
-        // the stream. 
-        // Sadly the type of the databuffer is TYPE_INT and not TYPE_BYTE.
+        // this implementation makes the assumption that the raster values can be used 1:1 for
+        // the stream.
+        // Sadly the type of the databuffer is usually TYPE_INT and not TYPE_BYTE so we can't just
+        // save it directly
         if (!image.hasAlpha())
         {
             return null;
@@ -198,6 +198,7 @@ public final class LosslessFactory
 
         PDImageXObject pdImage = prepareImageXObject(document, bos.toByteArray(), 
                 image.getWidth(), image.getHeight(), bpc, PDDeviceGray.INSTANCE);
+
         return pdImage;
     }
 
@@ -246,9 +247,9 @@ public final class LosslessFactory
 //    }            
 
     /**
-     * Create a PDImageXObject while making a decision whether not to 
+     * Create a PDImageXObject while making a decision whether not to
      * compress, use Flate filter only, or Flate and LZW filters.
-     * 
+     *
      * @param document The document.
      * @param byteArray array with data.
      * @param width the image width
@@ -256,11 +257,10 @@ public final class LosslessFactory
      * @param bitsPerComponent the bits per component
      * @param initColorSpace the color space
      * @return the newly created PDImageXObject with the data compressed.
-     * @throws IOException 
+     * @throws IOException
      */
-    private static PDImageXObject prepareImageXObject(PDDocument document, 
-            byte [] byteArray, int width, int height, int bitsPerComponent, 
-            PDColorSpace initColorSpace) throws IOException
+    private static PDImageXObject prepareImageXObject(PDDocument document, byte[] byteArray,
+        int width, int height, int bitsPerComponent, PDColorSpace initColorSpace) throws IOException
     {
         // Pre-size the output stream to half of the input
         ByteArrayOutputStream baos = new ByteArrayOutputStream(byteArray.length / 2);

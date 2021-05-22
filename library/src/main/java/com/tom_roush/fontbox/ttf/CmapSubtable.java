@@ -39,7 +39,7 @@ public class CmapSubtable
     private int platformEncodingId;
     private long subTableOffset;
     private int[] glyphIdToCharacterCode;
-    private final Map<Integer, Integer> characterCodeToGlyphId = new HashMap<Integer, Integer>();
+    private Map<Integer, Integer> characterCodeToGlyphId;
 
     /**
      * This will read the required data from the stream.
@@ -135,6 +135,7 @@ public class CmapSubtable
         }
 
         glyphIdToCharacterCode = newGlyphIdToCharacterCode(numGlyphs);
+        characterCodeToGlyphId = new HashMap<Integer, Integer>(numGlyphs);
         // -- Read all sub header
         for (long i = 0; i < nbGroups; ++i)
         {
@@ -223,6 +224,7 @@ public class CmapSubtable
     {
         long nbGroups = data.readUnsignedInt();
         glyphIdToCharacterCode = newGlyphIdToCharacterCode(numGlyphs);
+        characterCodeToGlyphId = new HashMap<Integer, Integer>(numGlyphs);
         for (long i = 0; i < nbGroups; ++i)
         {
             long firstCode = data.readUnsignedInt();
@@ -230,14 +232,13 @@ public class CmapSubtable
             long startGlyph = data.readUnsignedInt();
 
             if (firstCode < 0 || firstCode > 0x0010FFFF ||
-                (firstCode >= 0x0000D800 && firstCode <= 0x0000DFFF))
+                firstCode >= 0x0000D800 && firstCode <= 0x0000DFFF)
             {
                 throw new IOException("Invalid characters codes");
             }
 
-            if ((endCode > 0 && endCode < firstCode) ||
-                endCode > 0x0010FFFF ||
-                (endCode >= 0x0000D800 && endCode <= 0x0000DFFF))
+            if (endCode > 0 && endCode < firstCode || endCode > 0x0010FFFF ||
+                endCode >= 0x0000D800 && endCode <= 0x0000DFFF)
             {
                 throw new IOException("Invalid characters codes");
             }
@@ -247,13 +248,15 @@ public class CmapSubtable
                 long glyphIndex = startGlyph + j;
                 if (glyphIndex >= numGlyphs)
                 {
-                    throw new IOException("Character Code greater than Integer.MAX_VALUE");
+                    Log.w("PdfBox-Android", "Format 12 cmap contains an invalid glyph index");
+                    break;
                 }
 
                 if (firstCode + j > 0x10FFFF)
                 {
                     Log.w("PdfBox-Android", "Format 12 cmap contains character beyond UCS-4");
                 }
+
                 glyphIdToCharacterCode[(int) glyphIndex] = (int) (firstCode + j);
                 characterCodeToGlyphId.put((int) (firstCode + j), (int) glyphIndex);
             }
@@ -270,6 +273,7 @@ public class CmapSubtable
     protected void processSubtype13(TTFDataStream data, int numGlyphs) throws IOException
     {
         long nbGroups = data.readUnsignedInt();
+        characterCodeToGlyphId = new HashMap<Integer, Integer>(numGlyphs);
         for (long i = 0; i < nbGroups; ++i)
         {
             long firstCode = data.readUnsignedInt();
@@ -295,7 +299,6 @@ public class CmapSubtable
 
             for (long j = 0; j <= endCode - firstCode; ++j)
             {
-
                 if (firstCode + j > Integer.MAX_VALUE)
                 {
                     throw new IOException("Character Code greater than Integer.MAX_VALUE");
@@ -337,7 +340,13 @@ public class CmapSubtable
     {
         int firstCode = data.readUnsignedShort();
         int entryCount = data.readUnsignedShort();
-        Map<Integer, Integer> tmpGlyphToChar = new HashMap<Integer, Integer>();
+        // skip emtpy tables
+        if (entryCount == 0)
+        {
+            return;
+        }
+        Map<Integer, Integer> tmpGlyphToChar = new HashMap<Integer, Integer>(numGlyphs);
+        characterCodeToGlyphId = new HashMap<Integer, Integer>(numGlyphs);
         int[] glyphIdArray = data.readUnsignedShortArray(entryCount);
         for (int i = 0; i < entryCount; i++)
         {
@@ -373,7 +382,8 @@ public class CmapSubtable
         int[] idDelta = data.readUnsignedShortArray(segCount);
         int[] idRangeOffset = data.readUnsignedShortArray(segCount);
 
-        Map<Integer, Integer> tmpGlyphToChar = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> tmpGlyphToChar = new HashMap<Integer, Integer>(numGlyphs);
+        characterCodeToGlyphId = new HashMap<Integer, Integer>(numGlyphs);
 
         long currentPosition = data.getCurrentPosition();
 
@@ -462,6 +472,7 @@ public class CmapSubtable
         }
         long startGlyphIndexOffset = data.getCurrentPosition();
         glyphIdToCharacterCode = newGlyphIdToCharacterCode(numGlyphs);
+        characterCodeToGlyphId = new HashMap<Integer, Integer>(numGlyphs);
         for (int i = 0; i <= maxSubHeaderIndex; ++i)
         {
             SubHeader sh = subHeaders[i];
@@ -486,6 +497,14 @@ public class CmapSubtable
                 {
                     p = (p + idDelta) % 65536;
                 }
+                if (p >= numGlyphs)
+                {
+                    Log.w("PdfBox-Android",
+                        "glyphId " + p + " for charcode " + charCode + " ignored, numGlyphs is " +
+                            numGlyphs);
+                    continue;
+                }
+
                 glyphIdToCharacterCode[p] = charCode;
                 characterCodeToGlyphId.put(charCode, p);
             }
@@ -502,6 +521,7 @@ public class CmapSubtable
     {
         byte[] glyphMapping = data.read(256);
         glyphIdToCharacterCode = newGlyphIdToCharacterCode(256);
+        characterCodeToGlyphId = new HashMap<Integer, Integer>(glyphMapping.length);
         for (int i = 0; i < glyphMapping.length; i++)
         {
             int glyphIndex = (glyphMapping[i] + 256) % 256;
@@ -577,6 +597,7 @@ public class CmapSubtable
         {
             return null;
         }
+
         // workaround for the fact that glyphIdToCharacterCode doesn't distinguish between
         // missing character codes and code 0.
         int code = glyphIdToCharacterCode[gid];

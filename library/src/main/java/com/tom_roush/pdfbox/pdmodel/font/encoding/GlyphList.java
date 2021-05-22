@@ -34,28 +34,29 @@ import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 public final class GlyphList
 {
     // Adobe Glyph List (AGL)
-    private static final GlyphList DEFAULT = load("glyphlist.txt");
+    private static final GlyphList DEFAULT = load("glyphlist.txt", 4281);
 
     // Zapf Dingbats has its own glyph list
-    private static final GlyphList ZAPF_DINGBATS = load("zapfdingbats.txt");
+    private static final GlyphList ZAPF_DINGBATS = load("zapfdingbats.txt", 201);
 
     /**
      * Loads a glyph list from disk.
      */
-    private static GlyphList load(String filename)
+    private static GlyphList load(String filename, int numberOfEntries)
     {
         try
         {
             String path = "com/tom_roush/pdfbox/resources/glyphlist/";
             if (PDFBoxResourceLoader.isReady())
             {
-                return new GlyphList(PDFBoxResourceLoader.getStream(path + filename));
+                return new GlyphList(PDFBoxResourceLoader.getStream(path + filename),
+                    numberOfEntries);
             }
             else
             {
                 // Fallback
                 ClassLoader loader = GlyphList.class.getClassLoader();
-                return new GlyphList(loader.getResourceAsStream(path + filename));
+                return new GlyphList(loader.getResourceAsStream(path + filename), numberOfEntries);
             }
         }
         catch (IOException e)
@@ -109,14 +110,16 @@ public final class GlyphList
      * Creates a new GlyphList from a glyph list file.
      *
      * @param input glyph list in Adobe format
+     * @param numberOfEntries number of expected values used to preallocate the correct amount of memory
      * @throws IOException if the glyph list could not be read
      */
-    public GlyphList(InputStream input) throws IOException
+    public GlyphList(InputStream input, int numberOfEntries) throws IOException
     {
-        nameToUnicode = new HashMap<String, String>();
-        unicodeToName = new HashMap<String, String>();
+        nameToUnicode = new HashMap<String, String>(numberOfEntries);
+        unicodeToName = new HashMap<String, String>(numberOfEntries);
         loadList(input);
     }
+
     /**
      * Creates a new GlyphList from multiple glyph list files.
      *
@@ -136,23 +139,26 @@ public final class GlyphList
         BufferedReader in = new BufferedReader(new InputStreamReader(input, "ISO-8859-1"));
         try
         {
-            String line = null;
-            while ((line = in.readLine()) != null)
+            while (in.ready())
             {
-                if (!line.startsWith("#"))
+                String line = in.readLine();
+                if (line != null && !line.startsWith("#"))
                 {
                     String[] parts = line.split(";");
                     if (parts.length < 2)
                     {
                         throw new IOException("Invalid glyph list entry: " + line);
                     }
+
                     String name = parts[0];
                     String[] unicodeList = parts[1].split(" ");
+
                     if (nameToUnicode.containsKey(name))
                     {
                         Log.w("PdfBox-Android", "duplicate value for " + name + " -> " + parts[1] + " " +
                             nameToUnicode.get(name));
                     }
+
                     int[] codePoints = new int[unicodeList.length];
                     int index = 0;
                     for (String hex : unicodeList)
@@ -160,8 +166,10 @@ public final class GlyphList
                         codePoints[index++] = Integer.parseInt(hex, 16);
                     }
                     String string = new String(codePoints, 0 , codePoints.length);
+
                     // forward mapping
                     nameToUnicode.put(name, string);
+
                     // reverse mapping
                     if (!unicodeToName.containsKey(string))
                     {

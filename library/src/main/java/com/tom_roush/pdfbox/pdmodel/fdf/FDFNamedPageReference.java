@@ -62,7 +62,7 @@ public class FDFNamedPageReference implements COSObjectable
     }
 
     /**
-     * This will get the name of the referenced page.  A required parameter.
+     * This will get the name of the referenced page. A required parameter.
      *
      * @return The name of the referenced page.
      */
@@ -82,7 +82,7 @@ public class FDFNamedPageReference implements COSObjectable
     }
 
     /**
-     * This will get the file specification of this reference.  An optional parameter.
+     * This will get the file specification of this reference. An optional parameter.
      *
      * @return The F entry for this dictionary.
      *

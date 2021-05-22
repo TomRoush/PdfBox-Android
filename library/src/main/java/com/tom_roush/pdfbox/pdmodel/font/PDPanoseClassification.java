@@ -17,15 +17,13 @@
 
 package com.tom_roush.pdfbox.pdmodel.font;
 
-import java.io.Serializable;
-
 /**
  * Represents a 10-byte PANOSE classification.
  *
- * @author John Hewson
  * @link http://www.monotype.com/services/pan2
+ * @author John Hewson
  */
-public class PDPanoseClassification implements Serializable
+public class PDPanoseClassification
 {
     private final byte[] bytes;
 
@@ -82,6 +80,11 @@ public class PDPanoseClassification implements Serializable
     public int getXHeight()
     {
         return bytes[9];
+    }
+
+    public byte[] getBytes()
+    {
+        return bytes;
     }
 
     @Override

@@ -236,15 +236,15 @@ public abstract class PDShading implements COSObjectable
      */
     public void setColorSpace(PDColorSpace colorSpace)
     {
-    	this.colorSpace = colorSpace;
-    	if (colorSpace != null)
-    	{
-    		dictionary.setItem(COSName.COLORSPACE, colorSpace.getCOSObject());
-    	}
-    	else
-    	{
-    		dictionary.removeItem(COSName.COLORSPACE);
-    	}
+        this.colorSpace = colorSpace;
+        if (colorSpace != null)
+        {
+            dictionary.setItem(COSName.COLORSPACE, colorSpace.getCOSObject());
+        }
+        else
+        {
+            dictionary.removeItem(COSName.COLORSPACE);
+        }
     }
 
     /**
@@ -315,7 +315,7 @@ public abstract class PDShading implements COSObjectable
      * This will return the function used to convert the color values.
      *
      * @return the function
-     * @throws java.io.IOException if we were not unable to create the function
+     * @throws java.io.IOException if we were not able to create the function
      */
     public PDFunction getFunction() throws IOException
     {
@@ -374,7 +374,7 @@ public abstract class PDShading implements COSObjectable
      */
     public float[] evalFunction(float inputValue) throws IOException
     {
-    	return evalFunction(new float[] { inputValue });
+        return evalFunction(new float[] { inputValue });
     }
 
     /**

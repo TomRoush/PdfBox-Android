@@ -193,7 +193,7 @@ public class PDStructureTreeRoot extends PDStructureNode
             }
             catch (IOException e)
             {
-            	Log.e("PdfBox-Android", e.getMessage(),e);
+                Log.e("PdfBox-Android", e.getMessage(), e);
             }
         }
         return new Hashtable<String, Object>();
@@ -209,7 +209,7 @@ public class PDStructureTreeRoot extends PDStructureNode
         COSDictionary rmDic = new COSDictionary();
         for (Map.Entry<String, String> entry : roleMap.entrySet())
         {
-        	rmDic.setName(entry.getKey(), entry.getValue());
+            rmDic.setName(entry.getKey(), entry.getValue());
         }
         this.getCOSObject().setItem(COSName.ROLE_MAP, rmDic);
     }

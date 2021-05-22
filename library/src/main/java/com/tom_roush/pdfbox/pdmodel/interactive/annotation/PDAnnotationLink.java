@@ -36,7 +36,6 @@ import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.P
 public class PDAnnotationLink extends PDAnnotation
 {
 
-
     /**
      * Constant values of the Text as defined in the PDF 1.6 reference Table 8.19.
      */
@@ -53,7 +52,6 @@ public class PDAnnotationLink extends PDAnnotation
      * Constant values of the Text as defined in the PDF 1.6 reference Table 8.19.
      */
     public static final String HIGHLIGHT_MODE_PUSH = "P";
-
 
     /**
      * The type of annotation.
@@ -81,11 +79,10 @@ public class PDAnnotationLink extends PDAnnotation
     }
 
     /**
-     * Get the action to be performed when this annotation is to be activated.
+     * Get the action to be performed when this annotation is to be activated. Either this or the
+     * destination entry should be set, but not both.
      *
      * @return The action to be performed when this annotation is activated.
-     *
-     * TODO not all annotations have an A entry
      */
     public PDAction getAction()
     {
@@ -95,10 +92,9 @@ public class PDAnnotationLink extends PDAnnotation
     }
 
     /**
-     * Set the annotation action.
-     * As of PDF 1.6 this is only used for Widget Annotations
+     * Set the annotation action. Either this or the destination entry should be set, but not both.
+     *
      * @param action The annotation action.
-     * TODO not all annotations have an A entry
      */
     public void setAction(PDAction action)
     {
@@ -106,12 +102,9 @@ public class PDAnnotationLink extends PDAnnotation
     }
 
     /**
-     * This will set the border style dictionary, specifying the width and dash
-     * pattern used in drawing the line.
+     * This will set the border style dictionary, specifying the width and dash pattern used in drawing the line.
      *
      * @param bs the border style dictionary to set.
-     * TODO not all annotations may have a BS entry
-     *
      */
     public void setBorderStyle(PDBorderStyleDictionary bs)
     {
@@ -126,20 +119,17 @@ public class PDAnnotationLink extends PDAnnotation
      */
     public PDBorderStyleDictionary getBorderStyle()
     {
-    	COSBase bs = this.getCOSObject().getDictionaryObject(COSName.BS);
-    	if (bs instanceof COSDictionary)
+        COSBase bs = getCOSObject().getDictionaryObject(COSName.BS);
+        if (bs instanceof COSDictionary)
         {
-    		return new PDBorderStyleDictionary((COSDictionary) bs);
+            return new PDBorderStyleDictionary((COSDictionary)bs);
         }
-        else
-        {
-            return null;
-        }
+        return null;
     }
 
     /**
-     * Get the destination to be displayed when the annotation is activated.  Either
-     * this or the A should be set but not both.
+     * Get the destination to be displayed when the annotation is activated. Either this or the
+     * action entry should be set, but not both.
      *
      * @return The destination for this annotation.
      *
@@ -148,13 +138,11 @@ public class PDAnnotationLink extends PDAnnotation
     public PDDestination getDestination() throws IOException
     {
         COSBase base = getCOSObject().getDictionaryObject(COSName.DEST);
-        PDDestination retval = PDDestination.create( base );
-
-        return retval;
+        return PDDestination.create(base);
     }
 
     /**
-     * The new destination value.
+     * The new destination value. Either this or the action entry should be set, but not both.
      *
      * @param dest The updated destination.
      */
@@ -175,7 +163,7 @@ public class PDAnnotationLink extends PDAnnotation
     }
 
     /**
-     * Set the highlight mode.  See the HIGHLIGHT_MODE_XXX constants.
+     * Set the highlight mode. See the HIGHLIGHT_MODE_XXX constants.
      *
      * @param mode The new highlight mode.
      */
@@ -208,10 +196,7 @@ public class PDAnnotationLink extends PDAnnotation
         {
             return new PDActionURI( pa );
         }
-        else
-        {
-            return null;
-        }
+        return null;
     }
 
     /**
@@ -241,9 +226,7 @@ public class PDAnnotationLink extends PDAnnotation
         {
             return quadPoints.toFloatArray();
         }
-        else
-        {
-            return null; // Should never happen as this is a required item
-        }
+        // Should never happen as this is a required item
+        return null;
     }
 }

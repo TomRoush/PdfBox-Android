@@ -37,6 +37,7 @@ import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.BuiltInEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
@@ -45,6 +46,8 @@ import com.tom_roush.pdfbox.pdmodel.font.encoding.MacOSRomanEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.StandardEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Type1Encoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
+
+import static com.tom_roush.pdfbox.pdmodel.font.UniUtil.getUniNameOfCodePoint;
 
 /**
  * TrueType font.
@@ -57,7 +60,8 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
     private static final int START_RANGE_F100 = 0xF100;
     private static final int START_RANGE_F200 = 0xF200;
 
-    private static final Map<String, Integer> INVERTED_MACOS_ROMAN = new HashMap<String, Integer>();
+    private static final Map<String, Integer> INVERTED_MACOS_ROMAN = new HashMap<String, Integer>(
+        250);
     static
     {
         Map<Integer, String> codeToName = MacOSRomanEncoding.INSTANCE.getCodeToNameMap();
@@ -113,6 +117,7 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
      * @param file A TTF file.
      * @return a PDTrueTypeFont instance.
      * @throws IOException If there is an error loading the data.
+     *
      * @deprecated Use {@link PDType0Font#load(PDDocument, File)} instead.
      */
     @Deprecated
@@ -146,6 +151,7 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
     private final TrueTypeFont ttf;
     private final boolean isEmbedded;
     private final boolean isDamaged;
+    private BoundingBox fontBBox;
 
     /**
      * Creates a new TrueType font from a Font dictionary.
@@ -188,8 +194,8 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
         // substitute
         if (ttfFont == null)
         {
-            FontMapping<TrueTypeFont> mapping = FontMapper.getTrueTypeFont(getBaseFont(),
-                getFontDescriptor());
+            FontMapping<TrueTypeFont> mapping = FontMappers.instance().getTrueTypeFont(
+                getBaseFont(), getFontDescriptor());
             ttfFont = mapping.getFont();
 
             if (mapping.isFallback())
@@ -293,6 +299,21 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
     @Override
     public BoundingBox getBoundingBox() throws IOException
     {
+        if (fontBBox == null)
+        {
+            fontBBox = generateBoundingBox();
+        }
+        return fontBBox;
+    }
+
+    private BoundingBox generateBoundingBox() throws IOException
+    {
+        if (getFontDescriptor() != null)
+        {
+            PDRectangle bbox = getFontDescriptor().getFontBoundingBox();
+            return new BoundingBox(bbox.getLowerLeftX(), bbox.getLowerLeftY(),
+                bbox.getUpperRightX(), bbox.getUpperRightY());
+        }
         return ttf.getFontBBox();
     }
 
@@ -338,21 +359,22 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
     @Override
     protected byte[] encode(int unicode) throws IOException
     {
-        if (getEncoding() != null)
+        if (encoding != null)
         {
-            if (!getEncoding().contains(getGlyphList().codePointToName(unicode)))
+            if (!encoding.contains(getGlyphList().codePointToName(unicode)))
             {
-                throw new IllegalArgumentException(
-                    String.format("U+%04X is not available in this font's Encoding", unicode));
+                throw new IllegalArgumentException(String
+                    .format("U+%04X is not available in this font's encoding: %s", unicode,
+                        encoding.getEncodingName()));
             }
 
             String name = getGlyphList().codePointToName(unicode);
-            Map<String, Integer> inverted = getInvertedEncoding();
+            Map<String, Integer> inverted = encoding.getNameToCodeMap();
 
             if (!ttf.hasGlyph(name))
             {
                 // try unicode name
-                String uniName = String.format("uni%04X", unicode);
+                String uniName = getUniNameOfCodePoint(unicode);
                 if (!ttf.hasGlyph(uniName))
                 {
                     throw new IllegalArgumentException(

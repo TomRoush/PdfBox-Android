@@ -18,10 +18,10 @@ package com.tom_roush.fontbox;
 
 import android.graphics.Path;
 
-import com.tom_roush.fontbox.util.BoundingBox;
-
 import java.io.IOException;
 import java.util.List;
+
+import com.tom_roush.fontbox.util.BoundingBox;
 
 /**
  * Common interface for all FontBox fonts.
@@ -63,6 +63,7 @@ public interface FontBoxFont
 
     /**
      * Returns true if the font contains the given glyph.
+     *
      * @param name PostScript glyph name
      */
     boolean hasGlyph(String name) throws IOException;

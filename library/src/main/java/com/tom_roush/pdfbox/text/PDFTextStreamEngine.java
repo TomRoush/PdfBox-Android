@@ -21,6 +21,8 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.tom_roush.fontbox.ttf.TrueTypeFont;
+import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.contentstream.PDFStreamEngine;
 import com.tom_roush.pdfbox.contentstream.operator.DrawObject;
 import com.tom_roush.pdfbox.contentstream.operator.state.Concatenate;
@@ -46,8 +48,13 @@ import com.tom_roush.pdfbox.contentstream.operator.text.ShowTextLine;
 import com.tom_roush.pdfbox.contentstream.operator.text.ShowTextLineAndSpace;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.font.PDCIDFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType2;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDFontDescriptor;
 import com.tom_roush.pdfbox.pdmodel.font.PDSimpleFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDTrueTypeFont;
+import com.tom_roush.pdfbox.pdmodel.font.PDType0Font;
 import com.tom_roush.pdfbox.pdmodel.font.PDType3Font;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.GlyphList;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDGraphicsState;
@@ -66,8 +73,8 @@ class PDFTextStreamEngine extends PDFStreamEngine
 {
     private int pageRotation;
     private PDRectangle pageSize;
+    private Matrix translateMatrix;
     private final GlyphList glyphList;
-    private Matrix legacyCTM;
 
     /**
      * Constructor.
@@ -120,14 +127,18 @@ class PDFTextStreamEngine extends PDFStreamEngine
     {
         this.pageRotation = page.getRotation();
         this.pageSize = page.getCropBox();
-        super.processPage(page);
-    }
 
-    @Override
-    protected void showText(byte[] string) throws IOException
-    {
-        legacyCTM = getGraphicsState().getCurrentTransformationMatrix().clone();
-        super.showText(string);
+        if (pageSize.getLowerLeftX() == 0 && pageSize.getLowerLeftY() == 0)
+        {
+            translateMatrix = null;
+        }
+        else
+        {
+            // translation matrix for cropbox
+            translateMatrix = Matrix.getTranslateInstance(-pageSize.getLowerLeftX(),
+                -pageSize.getLowerLeftY());
+        }
+        super.processPage(page);
     }
 
     /**
@@ -142,21 +153,73 @@ class PDFTextStreamEngine extends PDFStreamEngine
         //
 
         PDGraphicsState state = getGraphicsState();
-        Matrix ctm = legacyCTM;
+        Matrix ctm = state.getCurrentTransformationMatrix();
         float fontSize = state.getTextState().getFontSize();
         float horizontalScaling = state.getTextState().getHorizontalScaling() / 100f;
         Matrix textMatrix = getTextMatrix();
 
+        BoundingBox bbox = font.getBoundingBox();
+        if (bbox.getLowerLeftY() < Short.MIN_VALUE)
+        {
+            // PDFBOX-2158 and PDFBOX-3130
+            // files by Salmat eSolutions / ClibPDF Library
+            bbox.setLowerLeftY(-(bbox.getLowerLeftY() + 65536));
+        }
         // 1/2 the bbox is used as the height todo: why?
-        float glyphHeight = font.getBoundingBox().getHeight() / 2;
+        float glyphHeight = bbox.getHeight() / 2;
+
+        // sometimes the bbox has very high values, but CapHeight is OK
+        PDFontDescriptor fontDescriptor = font.getFontDescriptor();
+        if (fontDescriptor != null)
+        {
+            float capHeight = fontDescriptor.getCapHeight();
+            if (capHeight != 0 && capHeight < glyphHeight)
+            {
+                glyphHeight = capHeight;
+            }
+        }
 
         // transformPoint from glyph space -> text space
-        float height = font.getFontMatrix().transformPoint(0, glyphHeight).y;
+        float height;
+        if (font instanceof PDType3Font)
+        {
+            height = font.getFontMatrix().transformPoint(0, glyphHeight).y;
+        }
+        else
+        {
+            height = glyphHeight / 1000;
+        }
 
+        float displacementX = displacement.getX();
+        // the sorting algorithm is based on the width of the character. As the displacement
+        // for vertical characters doesn't provide any suitable value for it, we have to
+        // calculate our own
+        if (font.isVertical())
+        {
+            displacementX = font.getWidth(code) / 1000;
+            // there may be an additional scaling factor for true type fonts
+            TrueTypeFont ttf = null;
+            if (font instanceof PDTrueTypeFont)
+            {
+                ttf = ((PDTrueTypeFont)font).getTrueTypeFont();
+            }
+            else if (font instanceof PDType0Font)
+            {
+                PDCIDFont cidFont = ((PDType0Font)font).getDescendantFont();
+                if (cidFont instanceof PDCIDFontType2)
+                {
+                    ttf = ((PDCIDFontType2)cidFont).getTrueTypeFont();
+                }
+            }
+            if (ttf != null && ttf.getUnitsPerEm() != 1000)
+            {
+                displacementX *= 1000f / ttf.getUnitsPerEm();
+            }
+        }
         // (modified) combined displacement, this is calculated *without* taking the character
         // spacing and word spacing into account, due to legacy code in TextStripper
-        float tx = displacement.getX() * fontSize * horizontalScaling;
-        float ty = 0; // todo: support vertical writing mode
+        float tx = displacementX * fontSize * horizontalScaling;
+        float ty = displacement.getY() * fontSize;
 
         // (modified) combined displacement matrix
         Matrix td = Matrix.getTranslateInstance(tx, ty);
@@ -180,16 +243,10 @@ class PDFTextStreamEngine extends PDFStreamEngine
         // Text or Disp to represent if the values are in text or disp units (no glyph units are
         // saved).
 
-        float fontSizeText = getGraphicsState().getTextState().getFontSize();
-        float horizontalScalingText = getGraphicsState().getTextState().getHorizontalScaling()/100f;
-        //Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
-
         float glyphSpaceToTextSpaceFactor = 1 / 1000f;
         if (font instanceof PDType3Font)
         {
-            // This will typically be 1000 but in the case of a type3 font
-            // this might be a different number
-            glyphSpaceToTextSpaceFactor = 1f / font.getFontMatrix().getScaleX();
+            glyphSpaceToTextSpaceFactor = font.getFontMatrix().getScaleX();
         }
 
         float spaceWidthText = 0;
@@ -215,8 +272,7 @@ class PDFTextStreamEngine extends PDFStreamEngine
         }
 
         // the space width has to be transformed into display units
-        float spaceWidthDisplay = spaceWidthText * fontSizeText * horizontalScalingText *
-            textRenderingMatrix.getScalingFactorX()  * ctm.getScalingFactorX();
+        float spaceWidthDisplay = spaceWidthText * textRenderingMatrix.getScalingFactorX();
 
         // use our additional glyph list for Unicode mapping
         unicode = font.toUnicode(code, glyphList);
@@ -239,11 +295,25 @@ class PDFTextStreamEngine extends PDFStreamEngine
             }
         }
 
+        // adjust for cropbox if needed
+        Matrix translatedTextRenderingMatrix;
+        if (translateMatrix == null)
+        {
+            translatedTextRenderingMatrix = textRenderingMatrix;
+        }
+        else
+        {
+            translatedTextRenderingMatrix = Matrix.concatenate(translateMatrix,
+                textRenderingMatrix);
+            nextX -= pageSize.getLowerLeftX();
+            nextY -= pageSize.getLowerLeftY();
+        }
+
         processTextPosition(new TextPosition(pageRotation, pageSize.getWidth(),
-            pageSize.getHeight(), textRenderingMatrix, nextX, nextY,
+            pageSize.getHeight(), translatedTextRenderingMatrix, nextX, nextY,
             dyDisplay, dxDisplay,
             spaceWidthDisplay, unicode, new int[] { code } , font, fontSize,
-            (int)(fontSize * textRenderingMatrix.getScalingFactorX())));
+            (int)(fontSize * textMatrix.getScalingFactorX())));
     }
 
     /**

@@ -17,17 +17,18 @@
 package com.tom_roush.fontbox.cff;
 
 import android.graphics.Path;
+import android.graphics.PathMeasure;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
 
-import com.tom_roush.fontbox.encoding.StandardEncoding;
-import com.tom_roush.fontbox.type1.Type1CharStringReader;
-import com.tom_roush.harmony.awt.geom.AffineTransform;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.tom_roush.fontbox.encoding.StandardEncoding;
+import com.tom_roush.fontbox.type1.Type1CharStringReader;
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 
 /**
  * This class represents and renders a Type 1 CharString.
@@ -47,7 +48,6 @@ public class Type1CharString
     private List<PointF> flexPoints = new ArrayList<PointF>();
     protected List<Object> type1Sequence;
     protected int commandCount;
-
 
     /**
      * Constructs a new Type1CharString object.
@@ -404,7 +404,6 @@ public class Type1CharString
     {
         float x = current.x + dx.floatValue();
         float y = current.y + dy.floatValue();
-        //        if (path.getCurrentPoint() == null) TODO: Patch for now
         if(path.isEmpty())
         {
             Log.w("PdfBox-Android", "rlineTo without initial moveTo in font " + fontName + ", glyph " + glyphName);
@@ -429,7 +428,6 @@ public class Type1CharString
         float y2 = y1 + dy2.floatValue();
         float x3 = x2 + dx3.floatValue();
         float y3 = y2 + dy3.floatValue();
-        //      if (path.getCurrentPoint() == null) TODO: Patch for now
         if(path.isEmpty())
         {
             Log.w("PdfBox-Android", "rrcurveTo without initial moveTo in font " + fontName + ", glyph " + glyphName);
@@ -447,7 +445,6 @@ public class Type1CharString
      */
     private void closepath()
     {
-        //      if (path.getCurrentPoint() == null) TODO: Patch for now
         if(path.isEmpty())
         {
             Log.w("PdfBox-Android", "closepath without initial moveTo in font " + fontName + ", glyph " + glyphName);
@@ -474,8 +471,16 @@ public class Type1CharString
             try
             {
                 Type1CharString base = font.getType1CharString(baseName);
-                //				path.append(base.getPath().getPathIterator(null), false); TODO: check this
-                path.op(base.getPath(), Path.Op.UNION);
+                path.op(base.getPath(), Path.Op.UNION); // TODO: PdfBox-Android
+                PathMeasure pm = new PathMeasure(path, false);
+                //coordinates will be here
+                float aCoordinates[] = {0f, 0f};
+
+                //get coordinates of the middle point
+                for (int i = 0; i < pm.getLength(); i++)
+                {
+                    pm.getPosTan(pm.getLength() * 0.5f, aCoordinates, null);
+                }
             }
             catch (IOException e)
             {
@@ -492,8 +497,7 @@ public class Type1CharString
                 AffineTransform at = AffineTransform.getTranslateInstance(
                     leftSideBearing.x + adx.floatValue(),
                     leftSideBearing.y + ady.floatValue());
-                //				path.append(accent.getPath().getPathIterator(at), false); TODO: Check this
-                path.op(accent.getPath(), Path.Op.UNION);
+                path.op(accent.getPath(), Path.Op.UNION); // TODO: PdfBox-Android
             }
             catch (IOException e)
             {

@@ -17,6 +17,7 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
 import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
@@ -63,7 +64,6 @@ public class PDAnnotationSquareCircle extends PDAnnotationMarkup
         super( field );
     }
 
-
     /**
      * This will set interior color of the drawn area
      * Color is in DeviceRGB colorspace.
@@ -72,7 +72,7 @@ public class PDAnnotationSquareCircle extends PDAnnotationMarkup
      */
     public void setInteriorColor( PDColor ic )
     {
-    	getCOSObject().setItem(COSName.IC, ic.toCOSArray());
+        getCOSObject().setItem(COSName.IC, ic.toCOSArray());
     }
 
     /**
@@ -83,7 +83,7 @@ public class PDAnnotationSquareCircle extends PDAnnotationMarkup
      */
     public PDColor getInteriorColor()
     {
-    	return getColor(COSName.IC);
+        return getColor(COSName.IC);
     }
 
 
@@ -121,7 +121,7 @@ public class PDAnnotationSquareCircle extends PDAnnotationMarkup
     /**
      * This will set the rectangle difference rectangle. Giving the difference
      * between the annotations rectangle and where the drawing occurs.
-         * (To take account of any effects applied through the BE entry forexample)
+     * (To take account of any effects applied through the BE entry forexample)
      *
      * @param rd the rectangle difference
      *
@@ -134,7 +134,7 @@ public class PDAnnotationSquareCircle extends PDAnnotationMarkup
     /**
      * This will get the rectangle difference rectangle. Giving the difference
      * between the annotations rectangle and where the drawing occurs.
-         * (To take account of any effects applied through the BE entry forexample)
+     * (To take account of any effects applied through the BE entry forexample)
      *
      * @return the rectangle difference
      */
@@ -182,6 +182,7 @@ public class PDAnnotationSquareCircle extends PDAnnotationMarkup
      * TODO not all annotations may have a BS entry
      *
      */
+    @Override
     public void setBorderStyle( PDBorderStyleDictionary bs )
     {
         this.getCOSObject().setItem(COSName.BS, bs);
@@ -194,17 +195,15 @@ public class PDAnnotationSquareCircle extends PDAnnotationMarkup
      * @return the border style dictionary.
      * TODO not all annotations may have a BS entry
      */
+    @Override
     public PDBorderStyleDictionary getBorderStyle()
     {
-        COSDictionary bs = (COSDictionary) this.getCOSObject().getItem(COSName.BS);
-        if (bs != null)
+        COSBase bs = getCOSObject().getDictionaryObject(COSName.BS);
+        if (bs instanceof COSDictionary)
         {
-            return new PDBorderStyleDictionary( bs );
+            return new PDBorderStyleDictionary((COSDictionary)bs);
         }
-        else
-        {
-            return null;
-        }
+        return null;
     }
 
 }

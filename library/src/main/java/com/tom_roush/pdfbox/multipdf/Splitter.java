@@ -151,8 +151,8 @@ public class Splitter
     {
         if (splitAtPage(currentPageNumber) || currentDestinationDocument == null)
         {
-        	currentDestinationDocument = createNewDocument();
-        	destinationDocuments.add(currentDestinationDocument);
+            currentDestinationDocument = createNewDocument();
+            destinationDocuments.add(currentDestinationDocument);
         }
     }
 
@@ -163,8 +163,8 @@ public class Splitter
      * <code>
      * protected void splitAtPage()
      * {
-     * 		// will split at pages with prime numbers only
-     * 		return isPrime(pageNumber);
+     *     // will split at pages with prime numbers only
+     *     return isPrime(pageNumber);
      * }
      * </code>
      * 
@@ -174,7 +174,7 @@ public class Splitter
      */
     protected boolean splitAtPage(int pageNumber)
     {
-    	return pageNumber % splitLength == 0;
+        return pageNumber % splitLength == 0;
     }
 
     /**
@@ -213,33 +213,33 @@ public class Splitter
         // remove page links to avoid copying not needed resources 
         processAnnotations(imported);
     }
-    
+
     private void processAnnotations(PDPage imported) throws IOException
     {
-    	List<PDAnnotation> annotations = imported.getAnnotations();
-    	for (PDAnnotation annotation : annotations)
-    	{
-    		if (annotation instanceof PDAnnotationLink)
-    		{
-    			PDAnnotationLink link = (PDAnnotationLink)annotation;
-    			PDDestination destination = link.getDestination();
-    			if (destination == null && link.getAction() != null)
-    			{
-    				PDAction action = link.getAction();
-    				if (action instanceof PDActionGoTo)
-    				{
-    					destination = ((PDActionGoTo)action).getDestination();
-    				}
-    			}
-    			if (destination instanceof PDPageDestination)
-    			{
-    				// TODO preserve links to pages within the splitted result
-    				((PDPageDestination) destination).setPage(null);
-    			}
-    		}
+        List<PDAnnotation> annotations = imported.getAnnotations();
+        for (PDAnnotation annotation : annotations)
+        {
+            if (annotation instanceof PDAnnotationLink)
+            {
+                PDAnnotationLink link = (PDAnnotationLink)annotation;
+                PDDestination destination = link.getDestination();
+                if (destination == null && link.getAction() != null)
+                {
+                    PDAction action = link.getAction();
+                    if (action instanceof PDActionGoTo)
+                    {
+                        destination = ((PDActionGoTo)action).getDestination();
+                    }
+                }
+                if (destination instanceof PDPageDestination)
+                {
+                    // TODO preserve links to pages within the splitted result
+                    ((PDPageDestination)destination).setPage(null);
+                }
+            }
             // TODO preserve links to pages within the splitted result
             annotation.setPage(null);
-    	}
+        }
     }
 
     /**

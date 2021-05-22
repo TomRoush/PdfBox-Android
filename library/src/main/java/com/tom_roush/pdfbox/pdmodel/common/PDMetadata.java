@@ -40,8 +40,8 @@ public class PDMetadata extends PDStream
     public PDMetadata( PDDocument document )
     {
         super( document );
-        getStream().setName( COSName.TYPE, "Metadata" );
-        getStream().setName( COSName.SUBTYPE, "XML" );
+        getCOSObject().setName(COSName.TYPE, "Metadata");
+        getCOSObject().setName(COSName.SUBTYPE, "XML");
     }
 
     /**
@@ -55,8 +55,8 @@ public class PDMetadata extends PDStream
     public PDMetadata(PDDocument doc, InputStream str) throws IOException
     {
         super(doc, str);
-        getStream().setName( COSName.TYPE, "Metadata" );
-        getStream().setName( COSName.SUBTYPE, "XML" );
+        getCOSObject().setName(COSName.TYPE, "Metadata");
+        getCOSObject().setName(COSName.SUBTYPE, "XML");
     }
 
     /**
@@ -92,8 +92,8 @@ public class PDMetadata extends PDStream
     public void importXMPMetadata( byte[] xmp )
         throws IOException
     {
-    	OutputStream os = createOutputStream();
-    	os.write(xmp);
-    	os.close();
+        OutputStream os = createOutputStream();
+        os.write(xmp);
+        os.close();
     }
 }

@@ -29,13 +29,13 @@ import java.util.Map;
 public abstract class CFFCharset
 {
     private final boolean isCIDFont;
-    private final Map<Integer, Integer> sidOrCidToGid = new HashMap<Integer, Integer>();
-    private final Map<Integer, Integer> gidToSid = new HashMap<Integer, Integer>();
-    private final Map<String, Integer> nameToSid = new HashMap<String, Integer>();
+    private final Map<Integer, Integer> sidOrCidToGid = new HashMap<Integer, Integer>(250);
+    private final Map<Integer, Integer> gidToSid = new HashMap<Integer, Integer>(250);
+    private final Map<String, Integer> nameToSid = new HashMap<String, Integer>(250);
 
     // inverse
     private final Map<Integer, Integer> gidToCid = new HashMap<Integer, Integer>();
-    private final Map<Integer, String> gidToName = new HashMap<Integer, String>();
+    private final Map<Integer, String> gidToName = new HashMap<Integer, String>(250);
 
     /**
      * Package-private constructor for use by subclasses.
@@ -45,6 +45,16 @@ public abstract class CFFCharset
     CFFCharset(boolean isCIDFont)
     {
         this.isCIDFont = isCIDFont;
+    }
+
+    /**
+     * Indicates if the charset belongs to a CID font.
+     *
+     * @return true for CID fonts
+     */
+    public boolean isCIDFont()
+    {
+        return isCIDFont;
     }
 
     /**

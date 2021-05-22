@@ -42,7 +42,7 @@ public final class CCITTFactory
     }
     
     /**
-     * Creates a new CCITT Fax compressed Image XObject from the first page of
+     * Creates a new CCITT Fax compressed image XObject from the first page of
      * a TIFF file.
      *
      * @param document the document to create the image as part of.
@@ -55,13 +55,13 @@ public final class CCITTFactory
      */
     @Deprecated
     public static PDImageXObject createFromRandomAccess(PDDocument document, RandomAccess reader)
-    		throws IOException
+            throws IOException
     {
-    	return createFromRandomAccessImpl(document, reader, 0);
+        return createFromRandomAccessImpl(document, reader, 0);
     }
 
     /**
-     * Creates a new CCITT Fax compressed Image XObject from a TIFF file.
+     * Creates a new CCITT Fax compressed image XObject from a specific image of a TIFF file.
      *
      * @param document the document to create the image as part of.
      * @param reader the random access TIFF file which contains a suitable CCITT
@@ -74,14 +74,17 @@ public final class CCITTFactory
      */
     @Deprecated
     public static PDImageXObject createFromRandomAccess(PDDocument document, RandomAccess reader,
-    		int number) throws IOException
+            int number) throws IOException
     {
-    	return createFromRandomAccessImpl(document, reader, number);
+        return createFromRandomAccessImpl(document, reader, number);
     }
 
     /**
-     * Creates a new CCITT Fax compressed Image XObject from the first page of
-     * a TIFF file.
+     * Creates a new CCITT Fax compressed image XObject from the first image of a TIFF file. Only
+     * single-strip CCITT T4 or T6 compressed TIFF files are supported. If you're not sure what TIFF
+     * files you have, use
+     * {@link LosslessFactory#createFromImage(PDDocument, android.graphics.Bitmap)}
+     * instead.
      *
      * @param document the document to create the image as part of.
      * @param file the TIFF file which contains a suitable CCITT compressed image
@@ -89,30 +92,32 @@ public final class CCITTFactory
      * @throws IOException if there is an error reading the TIFF data.
      */
     public static PDImageXObject createFromFile(PDDocument document, File file)
-    		throws IOException
+            throws IOException
     {
-    	return createFromRandomAccessImpl(document, new RandomAccessFile(file, "r"), 0);
+        return createFromRandomAccessImpl(document, new RandomAccessFile(file, "r"), 0);
     }
 
     /**
-     * Creates a new CCITT Fax compressed Image XObject from the first page of 
-     * a TIFF file.
+     * Creates a new CCITT Fax compressed image XObject from a specific image of a TIFF file. Only
+     * single-strip CCITT T4 or T6 compressed TIFF files are supported. If you're not sure what TIFF
+     * files you have, use
+     * {@link LosslessFactory#createFromImage(PDDocument, android.graphics.Bitmap)}
+     * instead.
      * 
      * @param document the document to create the image as part of.
      * @param file the TIFF file which contains a suitable CCITT compressed image
      * @param number TIFF image number, starting from 0
-     * compressed image
      * @return a new Image XObject
      * @throws IOException if there is an error reading the TIFF data.
      */
     public static PDImageXObject createFromFile(PDDocument document, File file, int number)
             throws IOException
     {
-    	return createFromRandomAccessImpl(document, new RandomAccessFile(file, "r"), number);
+        return createFromRandomAccessImpl(document, new RandomAccessFile(file, "r"), number);
     }
 
     /**
-     * Creates a new CCITT Fax compressed Image XObject from a TIFF file.
+     * Creates a new CCITT Fax compressed image XObject from a TIFF file.
      * 
      * @param document the document to create the image as part of.
      * @param reader the random access TIFF file which contains a suitable CCITT
@@ -122,8 +127,8 @@ public final class CCITTFactory
      * @throws IOException if there is an error reading the TIFF data.
      */
     private static PDImageXObject createFromRandomAccessImpl(PDDocument document,
-    		RandomAccess reader,
-    		int number) throws IOException
+            RandomAccess reader,
+            int number) throws IOException
     {
         COSDictionary decodeParms = new COSDictionary();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -141,7 +146,7 @@ public final class CCITTFactory
                 1, PDDeviceGray.INSTANCE);
                 
         
-        COSDictionary dict = pdImage.getCOSStream();
+        COSDictionary dict = pdImage.getCOSObject();
         dict.setItem(COSName.DECODE_PARMS, decodeParms);
         return pdImage;
     }
@@ -208,6 +213,7 @@ public final class CCITTFactory
 
             // Default value to detect error
             int k = -1000;
+
             int dataoffset = 0;
             int datalength = 0;
 

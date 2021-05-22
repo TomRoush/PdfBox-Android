@@ -57,7 +57,6 @@ public final class FieldUtils
             return this.key;
         }
 
-
         public String getValue()
         {
             return this.value;
@@ -75,8 +74,8 @@ public final class FieldUtils
      */
     static class KeyValueKeyComparator implements Serializable, Comparator<KeyValue>
     {
-    	private static final long serialVersionUID = 6715364290007167694L;
-    	
+        private static final long serialVersionUID = 6715364290007167694L;
+
         @Override
         public int compare(KeyValue o1, KeyValue o2)
         {
@@ -89,8 +88,8 @@ public final class FieldUtils
      */
     static class KeyValueValueComparator implements Serializable, Comparator<KeyValue>
     {
-    	private static final long serialVersionUID = -3984095679894798265L;
-    	
+        private static final long serialVersionUID = -3984095679894798265L;
+
         @Override
         public int compare(KeyValue o1, KeyValue o2)
         {
@@ -161,31 +160,32 @@ public final class FieldUtils
      */
     static List<String> getPairableItems(COSBase items, int pairIdx)
     {
-    	if (pairIdx < 0 || pairIdx > 1)
-    	{
-    		throw new IllegalArgumentException("Only 0 and 1 are allowed as an index into two-element arrays");
-    	}
-    	
-    	if (items instanceof COSString)
-    	{
-    		List<String> array = new ArrayList<String>();
-    		array.add(((COSString) items).getString());
-    		return array;
-    	}
-    	else if (items instanceof COSArray)
-    	{
-    		// test if there is a single text or a two-element array
-    		COSBase entry = ((COSArray) items).get(0);
-    		if (entry instanceof COSString)
-    		{
-    			return COSArrayList.convertCOSStringCOSArrayToList((COSArray)items);
-    		}
-    		else
-    		{
-    			return getItemsFromPair(items, pairIdx);
-    		}
-    	}
-    	return Collections.emptyList();
+        if (pairIdx < 0 || pairIdx > 1)
+        {
+            throw new IllegalArgumentException(
+                "Only 0 and 1 are allowed as an index into two-element arrays");
+        }
+
+        if (items instanceof COSString)
+        {
+            List<String> array = new ArrayList<String>();
+            array.add(((COSString)items).getString());
+            return array;
+        }
+        else if (items instanceof COSArray)
+        {
+            // test if there is a single text or a two-element array
+            COSBase entry = ((COSArray)items).get(0);
+            if (entry instanceof COSString)
+            {
+                return COSArrayList.convertCOSStringCOSArrayToList((COSArray)items);
+            }
+            else
+            {
+                return getItemsFromPair(items, pairIdx);
+            }
+        }
+        return Collections.<String>emptyList();
     }
     
     /**
@@ -197,14 +197,14 @@ public final class FieldUtils
      */
     private static List<String> getItemsFromPair(COSBase items, int pairIdx)
     {
-    	List<String> exportValues = new ArrayList<String>();
-    	int numItems = ((COSArray) items).size();
-    	for (int i=0;i<numItems;i++)
-    	{
-    		COSArray pair = (COSArray) ((COSArray) items).get(i);
-    		COSString displayValue = (COSString) pair.get(pairIdx);
-    		exportValues.add(displayValue.getString());
-    	}
-    	return exportValues;
+        List<String> exportValues = new ArrayList<String>();
+        int numItems = ((COSArray)items).size();
+        for (int i = 0; i < numItems; i++)
+        {
+            COSArray pair = (COSArray)((COSArray)items).get(i);
+            COSString displayValue = (COSString)pair.get(pairIdx);
+            exportValues.add(displayValue.getString());
+        }
+        return exportValues;
     }
 }

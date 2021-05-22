@@ -16,13 +16,13 @@
  */
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
+import java.io.IOException;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 
 import org.w3c.dom.Element;
-
-import java.io.IOException;
 
 /**
  * This abstract class is used as a superclass for the different FDF annotations with text markup attributes.
@@ -53,6 +53,7 @@ public abstract class FDFAnnotationTextMarkup extends FDFAnnotation
      * Constructor.
      *
      * @param element An XFDF element.
+     *
      * @throws IOException If there is an error extracting information from the element.
      */
     public FDFAnnotationTextMarkup(Element element) throws IOException
@@ -76,7 +77,6 @@ public abstract class FDFAnnotationTextMarkup extends FDFAnnotation
         }
         setCoords(values);
     }
-
 
     /**
      * Set the coordinates of individual words or group of words.

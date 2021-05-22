@@ -18,14 +18,14 @@ package com.tom_roush.fontbox.cff;
 
 import android.graphics.Path;
 
-import com.tom_roush.fontbox.EncodedFont;
-import com.tom_roush.fontbox.type1.Type1CharStringReader;
-
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import com.tom_roush.fontbox.EncodedFont;
+import com.tom_roush.fontbox.type1.Type1CharStringReader;
 
 /**
  * A Type 1-equivalent font program represented in a CFF file. Thread safe.
@@ -116,6 +116,7 @@ public class CFFType1Font extends CFFFont implements EncodedFont
      * @param gid GID
      * @throws IOException if the charstring could not be read
      */
+    @Override
     public Type2CharString getType2CharString(int gid) throws IOException
     {
         String name = "GID+" + gid; // for debugging only
@@ -129,14 +130,14 @@ public class CFFType1Font extends CFFFont implements EncodedFont
         if (type2 == null)
         {
             byte[] bytes = null;
-            if (gid < charStrings.size())
+            if (gid < charStrings.length)
             {
-                bytes = charStrings.get(gid);
+                bytes = charStrings[gid];
             }
             if (bytes == null)
             {
                 // .notdef
-                bytes = charStrings.get(0);
+                bytes = charStrings[0];
             }
             Type2CharStringParser parser = new Type2CharStringParser(fontName, name);
             List<Object> type2seq = parser.parse(bytes, globalSubrIndex, getLocalSubrIndex());
@@ -193,9 +194,9 @@ public class CFFType1Font extends CFFFont implements EncodedFont
         this.encoding = encoding;
     }
 
-    private IndexData getLocalSubrIndex()
+    private byte[][] getLocalSubrIndex()
     {
-        return (IndexData)privateDict.get("Subrs");
+        return (byte[][])privateDict.get("Subrs");
     }
 
     // helper for looking up keys/values
