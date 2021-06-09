@@ -115,7 +115,7 @@ public class MainActivity extends Activity {
             contentStream.setNonStrokingColor(15, 38, 192);
             contentStream.setFont(font, 12);
             contentStream.newLineAtOffset(100, 700);
-            contentStream.showText("Hello World");
+            contentStream.showText("भरत");
             contentStream.endText();
 
             // Load in the images
