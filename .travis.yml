@@ -35,7 +35,7 @@ before_script:
   - emulator -avd test -no-audio -no-window &
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
-  # Update VERSION_NAME on tagged versions
+  # Update VERSION_NAME on tagged versions, this indicates a release
   - if [[ $TRAVIS_REPO_SLUG == 'TomRoush/PdfBox-Android' && $TRAVIS_BRANCH == 'master' &&
     $TRAVIS_PULL_REQUEST == 'false' && ! -z $TRAVIS_TAG ]]; then
     sed -e s/-SNAPSHOT//g -i gradle.properties
