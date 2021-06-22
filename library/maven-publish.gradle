@@ -1,5 +1,5 @@
-apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
 task copyResources(type: Copy) {
     from fileTree('src/main/resources') //.files
@@ -13,25 +13,7 @@ clean {
     delete 'src/main/assets'
 }
 
-bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
-
-    dryRun = false
-    publish = false
-    override = false
-
-    pkg {
-        repo = 'PdfBox-Android'
-        name = 'PdfBox-Android'
-
-        version {
-            name = project.VERSION_NAME
-        }
-    }
-
-    publications = ['Production']
-}
+ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 task androidJavadocs(type: Javadoc) {
     failOnError false
@@ -72,6 +54,7 @@ task androidSourcesJar(type: Jar) {
 }
 
 def pomConfig = {
+    url "https://github.com/TomRoush/PdfBox-Android"
     licenses {
         license {
             name "The Apache Software License, Version 2.0"
@@ -79,15 +62,35 @@ def pomConfig = {
             distribution "repo"
         }
     }
-
+    developers {
+        developer {
+            name "Tom Roush"
+            email "tom@tom-roush.com"
+            organization "PdfBox-Android Developers"
+            organizationUrl "https://github.com/TomRoush/PdfBox-Android"
+        }
+    }
     scm {
+        connection "scm:git:git@github.com:TomRoush/PdfBox-Android.git"
+        developerConnection "scm:git:ssh@github.com:TomRoush/PdfBox-Android.git"
         url "https://github.com/TomRoush/PdfBox-Android"
     }
 }
 
 publishing {
+    repositories {
+        maven {
+            def releaseRepo = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotRepo = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+            url = isReleaseVersion ? releaseRepo : snapshotRepo
+            credentials {
+                username = project.hasProperty('ossrhUsername') ? ossrhUsername : System.getenv('OSSRH_USERNAME')
+                password = project.hasProperty('ossrhPassword') ? ossrhPassword : System.getenv('OSSRH_PASSWORD')
+            }
+        }
+    }
     publications {
-        Production(MavenPublication) {
+        maven(MavenPublication) {
             artifact "$buildDir/outputs/aar/pdfbox-android-release-${project.VERSION_NAME}.aar"
             artifact androidJavadocsJar
             artifact androidSourcesJar
@@ -99,6 +102,7 @@ publishing {
             pom.withXml {
                 def root = asNode()
                 root.appendNode('name', 'PdfBox-Android')
+                root.appendNode('description', 'The Apache PdfBox project ported to work on Android')
                 root.children().last() + pomConfig
 
                 // Manually add all the pom nodes for dependencies
@@ -112,4 +116,12 @@ publishing {
             }
         }
     }
+}
+
+signing {
+    def signingKeyId = findProperty("signingKeyId")
+    def signingKey = findProperty("signingKey")
+    def signingPassword = findProperty("signingPassword")
+    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+    sign publishing.publications.maven
 }
