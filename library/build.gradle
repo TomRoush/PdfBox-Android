@@ -37,7 +37,7 @@ android {
 
     sourceSets {
         androidTest {
-            assets.srcDirs = ['src/test/resources'];
+            assets.srcDirs = ['src/test/resources']
         }
     }
 
