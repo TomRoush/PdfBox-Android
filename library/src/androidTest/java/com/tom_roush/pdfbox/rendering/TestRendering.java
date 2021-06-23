@@ -19,8 +19,8 @@ package com.tom_roush.pdfbox.rendering;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.FlakyTest;
+import androidx.test.InstrumentationRegistry;
+import androidx.test.filters.FlakyTest;
 import android.util.Log;
 
 import java.io.File;

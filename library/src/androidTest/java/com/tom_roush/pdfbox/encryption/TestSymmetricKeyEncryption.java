@@ -18,7 +18,7 @@ package com.tom_roush.pdfbox.encryption;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.test.InstrumentationRegistry;
+import androidx.test.InstrumentationRegistry;
 import android.util.Log;
 
 import java.io.ByteArrayInputStream;
