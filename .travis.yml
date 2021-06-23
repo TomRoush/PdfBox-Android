@@ -34,7 +34,7 @@ before_script:
   # Update VERSION_NAME on tagged versions. This indicates a release and will build a non-snapshot version
   - if [[ $TRAVIS_REPO_SLUG == 'TomRoush/PdfBox-Android' && $TRAVIS_BRANCH == 'master' &&
     $TRAVIS_PULL_REQUEST == 'false' && ! -z $TRAVIS_TAG ]]; then
-    sed -e s/-SNAPSHOT//g -i gradle.properties
+    sed -e s/-SNAPSHOT//g -i gradle.properties;
     fi;
 
 script:
