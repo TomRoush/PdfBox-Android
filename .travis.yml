@@ -13,10 +13,6 @@ android:
     - sys-img-armeabi-v7a-android-21
     - extra-android-support
 
-branches:
-  only:
-    - master
-
 jdk:
   - oraclejdk8
 
