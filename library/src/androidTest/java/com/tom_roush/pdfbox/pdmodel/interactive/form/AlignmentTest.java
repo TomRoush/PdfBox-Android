@@ -17,7 +17,7 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
+import androidx.test.InstrumentationRegistry;
 
 import java.io.File;
 import java.io.IOException;
