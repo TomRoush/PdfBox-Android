@@ -7,7 +7,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.1'
+        classpath 'com.android.tools.build:gradle:4.2.2'
     }
 }
 
@@ -15,7 +15,7 @@ allprojects {
     version = VERSION_NAME
 
     repositories {
-//        Enable to download snapshot versions
+//        Enable downloading snapshot versions
 //        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
         mavenCentral()
         google()
