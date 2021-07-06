@@ -1,18 +1,6 @@
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
-task copyResources(type: Copy) {
-    from fileTree('src/main/resources') //.files
-    into 'src/main/assets'
-    include('**/*')
-}
-
-preBuild.dependsOn copyResources
-
-clean {
-    delete 'src/main/assets'
-}
-
 ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
 
 task androidJavadocs(type: Javadoc) {

@@ -36,6 +36,9 @@ android {
     }
 
     sourceSets {
+        test {
+            resources.srcDirs = ['src/main/assets', 'src/test/resources']
+        }
         androidTest {
             assets.srcDirs = ['src/test/resources']
         }
@@ -94,8 +97,9 @@ dependencies {
 
     // Test dependencies
     testImplementation 'junit:junit:4.13.2'
-    testImplementation group: 'com.googlecode.java-diff-utils', name: 'diffutils', version: '1.3.0'
-    androidTestImplementation 'androidx.test:runner:1.3.0'
+    testImplementation 'com.googlecode.java-diff-utils:diffutils:1.3.0'
+
+    androidTestImplementation 'androidx.test:runner:1.4.0'
 }
 
 apply from: 'maven-publish.gradle'
