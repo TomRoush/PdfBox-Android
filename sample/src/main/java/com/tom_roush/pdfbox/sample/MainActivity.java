@@ -73,7 +73,7 @@ public class MainActivity extends Activity {
      * Initializes variables used for convenience
      */
     private void setup() {
-        // Enable Android-style asset loading (highly recommended)
+        // Enable Android asset loading
         PDFBoxResourceLoader.init(getApplicationContext());
         // Find the root of the external storage.
 

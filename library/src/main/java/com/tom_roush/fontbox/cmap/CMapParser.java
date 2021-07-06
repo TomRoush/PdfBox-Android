@@ -410,10 +410,10 @@ public class CMapParser
      */
     protected InputStream getExternalCMap(String name) throws IOException
     {
-    	if(PDFBoxResourceLoader.isReady()) {
+    	if (PDFBoxResourceLoader.isReady()) {
     		return PDFBoxResourceLoader.getStream("com/tom_roush/fontbox/resources/cmap/" + name);
     	}
-    	
+
     	// Fallback
         URL url = getClass().getResource("/com/tom_roush/fontbox/resources/cmap/" + name);
         if (url == null)
