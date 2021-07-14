@@ -51,13 +51,24 @@ jobs:
           arch: x86_64
           script: adb logcat *:S TestRunner:V & ./gradlew connectedCheck --no-build-cache --no-daemon --stacktrace
 
+  instrumentation-test-summary:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: Instrumentation Test Matrix Summary
+    needs: instrumentation-tests
+
+    steps:
+      - name: Check build matrix status
+        if: ${{ needs.instrumentation-tests.result != 'success' }}
+        run: exit 1
+
   publish-snapshot:
     name: Publish OSS Sonatype Snapshot
     runs-on: ubuntu-latest
     if: "github.event_name == 'push'"
     needs:
       - build
-      - instrumentation-tests
+      - instrumentation-test-summary
 
     steps:
       - name: Checkout
