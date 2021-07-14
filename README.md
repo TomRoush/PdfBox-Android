@@ -18,7 +18,7 @@ dependencies {
 }
 ```
 
-Before calls to PDFBox are made it is **highly** recommended to initialize the library's resource loader. Add the following line before calling PDFBox methods:
+Before calls to PDFBox are made it is required to initialize the library's resource loader. Add the following line before calling PDFBox methods:
 
 ```java
 PDFBoxResourceLoader.init(getApplicationContext());
