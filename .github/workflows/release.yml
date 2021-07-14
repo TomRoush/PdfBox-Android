@@ -15,7 +15,8 @@ jobs:
       - name: Configure JDK
         uses: actions/setup-java@v2.1.0
         with:
-          java-version: 1.8
+          java-version: 8
+          distribution: 'adopt'
 
       - name: Publish Maven Central Release
         run: ./gradlew assembleRelease publish
