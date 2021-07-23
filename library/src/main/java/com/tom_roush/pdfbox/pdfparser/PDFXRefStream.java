@@ -82,7 +82,7 @@ public class PDFXRefStream implements PDFXRef
 
         List<Long> indexEntry = getIndexEntry();
         COSArray indexAsArray = new COSArray();
-        for (Long i : indexEntry)
+        for ( Long i : indexEntry )
         {
             indexAsArray.add(COSInteger.get(i));
         }
@@ -90,7 +90,7 @@ public class PDFXRefStream implements PDFXRef
 
         int[] wEntry = getWEntry();
         COSArray wAsArray = new COSArray();
-        for (int i = 0; i < wEntry.length; i++)
+        for ( int i = 0; i < wEntry.length; i++ )
         {
             int j = wEntry[i];
             wAsArray.add(COSInteger.get(j));
@@ -107,8 +107,12 @@ public class PDFXRefStream implements PDFXRef
         {
             // "Other cross-reference stream entries not listed in Table 17 may be indirect; in fact,
             // some (such as Root in Table 15) shall be indirect."
-            if (COSName.ROOT.equals(cosName) || COSName.INFO.equals(cosName) || COSName.PREV.equals(
-                cosName))
+            if (COSName.ROOT.equals(cosName) || COSName.INFO.equals(cosName) || COSName.PREV.equals(cosName))
+            {
+                continue;
+            }
+            // this one too, because it has already been written in COSWriter.doWriteBody()
+            if (COSName.ENCRYPT.equals(cosName))
             {
                 continue;
             }
@@ -120,7 +124,7 @@ public class PDFXRefStream implements PDFXRef
 
     /**
      * Copy all Trailer Information to this file.
-     * 
+     *
      * @param trailerDict dictionary to be added as trailer info
      */
     public void addTrailerInfo(COSDictionary trailerDict)
@@ -129,8 +133,8 @@ public class PDFXRefStream implements PDFXRef
         for ( Entry<COSName, COSBase> entry : entrySet )
         {
             COSName key = entry.getKey();
-            if (COSName.INFO.equals(key) || COSName.ROOT.equals(key) || COSName.ENCRYPT.equals(key) 
-                    || COSName.ID.equals(key) || COSName.PREV.equals(key))
+            if (COSName.INFO.equals(key) || COSName.ROOT.equals(key) || COSName.ENCRYPT.equals(key)
+                || COSName.ID.equals(key) || COSName.PREV.equals(key))
             {
                 stream.setItem(key, entry.getValue());
             }
@@ -139,7 +143,7 @@ public class PDFXRefStream implements PDFXRef
 
     /**
      * Add an new entry to the XRef stream.
-     * 
+     *
      * @param entry new entry to be added
      */
     public void addEntry(COSWriterXRefEntry entry)
@@ -166,7 +170,7 @@ public class PDFXRefStream implements PDFXRef
 
     /**
      * determines the minimal length required for all the lengths.
-     * 
+     *
      * @return the length information
      */
     private int[] getWEntry()
@@ -216,7 +220,7 @@ public class PDFXRefStream implements PDFXRef
 
     /**
      * Set the size of the XRef stream.
-     * 
+     *
      * @param streamSize size to bet set as stream size
      */
     public void setSize(long streamSize)
@@ -233,7 +237,7 @@ public class PDFXRefStream implements PDFXRef
         // add object number 0 to the set
         objNumbers.add(0L);
         objNumbers.addAll(objectNumbers);
-        for (Long objNumber : objNumbers)
+        for ( Long objNumber : objNumbers )
         {
             if (first == null)
             {

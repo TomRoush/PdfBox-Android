@@ -20,7 +20,10 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import android.content.Context;
-import androidx.test.InstrumentationRegistry;
+
+import androidx.test.platform.app.InstrumentationRegistry;
+
+import java.io.IOException;
 
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
@@ -28,8 +31,6 @@ import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  * @author adam

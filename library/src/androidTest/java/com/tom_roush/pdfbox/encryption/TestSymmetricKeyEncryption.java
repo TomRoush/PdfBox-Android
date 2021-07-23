@@ -18,8 +18,9 @@ package com.tom_roush.pdfbox.encryption;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import androidx.test.InstrumentationRegistry;
 import android.util.Log;
+
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -68,7 +69,6 @@ import static org.junit.Assert.fail;
  */
 public class TestSymmetricKeyEncryption
 {
-
     private File testResultsDir;
 
     private AccessPermission permission;
@@ -81,16 +81,16 @@ public class TestSymmetricKeyEncryption
     @Before
     public void setUp() throws Exception
     {
+        testContext = InstrumentationRegistry.getInstrumentation().getContext();
+        PDFBoxResourceLoader.init(testContext);
+        testResultsDir = new File(testContext.getCacheDir(), "pdfbox-test-output/crypto");
+        testResultsDir.mkdirs();
+
         if (Cipher.getMaxAllowedKeyLength("AES") != Integer.MAX_VALUE)
         {
             // we need strong encryption for these tests
             fail("JCE unlimited strength jurisdiction policy files are not installed");
         }
-
-        testContext = InstrumentationRegistry.getInstrumentation().getContext();
-        PDFBoxResourceLoader.init(testContext);
-        testResultsDir = new File(testContext.getCacheDir(), "pdfbox-test-output/crypto");
-        testResultsDir.mkdirs();
 
         permission = new AccessPermission();
         permission.setCanAssembleDocument(false);
@@ -193,8 +193,7 @@ public class TestSymmetricKeyEncryption
     }
 
     /**
-     * Protect a document with a key and try to reopen it with that key and
-     * compare.
+     * Protect a document with a key and try to reopen it with that key and compare.
      *
      * @throws Exception If there is an unexpected error during the test.
      */
@@ -204,14 +203,17 @@ public class TestSymmetricKeyEncryption
         byte[] inputFileAsByteArray = getFileResourceAsByteArray("Acroform-PDFBOX-2333.pdf");
         int sizePriorToEncryption = inputFileAsByteArray.length;
 
-        testSymmEncrForKeySize(40, sizePriorToEncryption, inputFileAsByteArray,
+        testSymmEncrForKeySize(40, false, sizePriorToEncryption, inputFileAsByteArray,
             USERPASSWORD, OWNERPASSWORD, permission);
 
-        testSymmEncrForKeySize(128, sizePriorToEncryption, inputFileAsByteArray,
+        testSymmEncrForKeySize(128, false, sizePriorToEncryption, inputFileAsByteArray,
             USERPASSWORD, OWNERPASSWORD, permission);
 
-        testSymmEncrForKeySize(256, sizePriorToEncryption, inputFileAsByteArray, USERPASSWORD,
-            OWNERPASSWORD, permission);
+        testSymmEncrForKeySize(128, true, sizePriorToEncryption, inputFileAsByteArray,
+            USERPASSWORD, OWNERPASSWORD, permission);
+
+        testSymmEncrForKeySize(256, true, sizePriorToEncryption, inputFileAsByteArray,
+            USERPASSWORD, OWNERPASSWORD, permission);
     }
 
     /**
@@ -231,18 +233,20 @@ public class TestSymmetricKeyEncryption
         File extractedEmbeddedFile
             = extractEmbeddedFile(new ByteArrayInputStream(inputFileWithEmbeddedFileAsByteArray), "innerFile.pdf");
 
-        testSymmEncrForKeySizeInner(40, sizeOfFileWithEmbeddedFile,
+        testSymmEncrForKeySizeInner(40, false, sizeOfFileWithEmbeddedFile,
             inputFileWithEmbeddedFileAsByteArray, extractedEmbeddedFile, USERPASSWORD, OWNERPASSWORD);
 
-        testSymmEncrForKeySizeInner(128, sizeOfFileWithEmbeddedFile,
+        testSymmEncrForKeySizeInner(128, false, sizeOfFileWithEmbeddedFile,
             inputFileWithEmbeddedFileAsByteArray, extractedEmbeddedFile, USERPASSWORD, OWNERPASSWORD);
 
-        testSymmEncrForKeySizeInner(256, sizeOfFileWithEmbeddedFile,
-            inputFileWithEmbeddedFileAsByteArray, extractedEmbeddedFile, USERPASSWORD,
-            OWNERPASSWORD);
+        testSymmEncrForKeySizeInner(128, true, sizeOfFileWithEmbeddedFile,
+            inputFileWithEmbeddedFileAsByteArray, extractedEmbeddedFile, USERPASSWORD, OWNERPASSWORD);
+
+        testSymmEncrForKeySizeInner(256, true, sizeOfFileWithEmbeddedFile,
+            inputFileWithEmbeddedFileAsByteArray, extractedEmbeddedFile, USERPASSWORD, OWNERPASSWORD);
     }
 
-    private void testSymmEncrForKeySize(int keyLength,
+    private void testSymmEncrForKeySize(int keyLength, boolean preferAES,
         int sizePriorToEncr, byte[] inputFileAsByteArray,
         String userpassword, String ownerpassword,
         AccessPermission permission) throws IOException
@@ -262,10 +266,10 @@ public class TestSymmetricKeyEncryption
             srcContentStreamTab.add(bytes);
         }
 
-        PDDocument encryptedDoc = encrypt(keyLength, sizePriorToEncr, document,
+        PDDocument encryptedDoc = encrypt(keyLength, preferAES, sizePriorToEncr, document,
             prefix, permission, userpassword, ownerpassword);
 
-        assertEquals(numSrcPages, encryptedDoc.getNumberOfPages());
+        Assert.assertEquals(numSrcPages, encryptedDoc.getNumberOfPages());
         pdfRenderer = new PDFRenderer(encryptedDoc);
         for (int i = 0; i < encryptedDoc.getNumberOfPages(); ++i)
         {
@@ -278,10 +282,11 @@ public class TestSymmetricKeyEncryption
             byte[] bytes = IOUtils.toByteArray(unfilteredStream);
             unfilteredStream.close();
             Assert.assertArrayEquals("content stream of page " + i + " not identical",
-                srcContentStreamTab.get(i), bytes);
+                srcContentStreamTab.get(i),
+                bytes);
         }
 
-        File pdfFile = new File(testResultsDir, prefix + keyLength + "-bit-decrypted.pdf");
+        File pdfFile = new File(testResultsDir, prefix + keyLength + "-bit-" + (preferAES ? "AES" : "RC4") + "-decrypted.pdf");
         encryptedDoc.setAllSecurityToBeRemoved(true);
         encryptedDoc.save(pdfFile);
         encryptedDoc.close();
@@ -289,13 +294,14 @@ public class TestSymmetricKeyEncryption
 
     // encrypt with keylength and permission, save, check sizes before and after encryption
     // reopen, decrypt and return document
-    private PDDocument encrypt(int keyLength, int sizePriorToEncr,
+    private PDDocument encrypt(int keyLength, boolean preferAES, int sizePriorToEncr,
         PDDocument doc, String prefix, AccessPermission permission,
         String userpassword, String ownerpassword) throws IOException
     {
         AccessPermission ap = new AccessPermission();
         StandardProtectionPolicy spp = new StandardProtectionPolicy(ownerpassword, userpassword, ap);
         spp.setEncryptionKeyLength(keyLength);
+        spp.setPreferAES(preferAES);
         spp.setPermissions(permission);
 
         // This must have no effect and should only log a warning.
@@ -303,13 +309,13 @@ public class TestSymmetricKeyEncryption
 
         doc.protect(spp);
 
-        File pdfFile = new File(testResultsDir, prefix + keyLength + "-bit-encrypted.pdf");
+        File pdfFile = new File(testResultsDir, prefix + keyLength + "-bit-" + (preferAES ? "AES" : "RC4") + "-encrypted.pdf");
 
         doc.save(pdfFile);
         doc.close();
         long sizeEncrypted = pdfFile.length();
         Assert.assertTrue(keyLength
-                + "-bit encrypted pdf should not have same size as plain one",
+                + "-bit " + (preferAES ? "AES" : "RC4") + " encrypted pdf should not have same size as plain one",
             sizeEncrypted != sizePriorToEncr);
 
         PDDocument encryptedDoc;
@@ -339,7 +345,7 @@ public class TestSymmetricKeyEncryption
         PDDocumentNameDictionary names = catalog.getNames();
         PDEmbeddedFilesNameTreeNode embeddedFiles = names.getEmbeddedFiles();
         Map<String, PDComplexFileSpecification> embeddedFileNames = embeddedFiles.getNames();
-        assertEquals(1, embeddedFileNames.size());
+        Assert.assertEquals(1, embeddedFileNames.size());
         Map.Entry<String, PDComplexFileSpecification> entry = embeddedFileNames.entrySet().iterator().next();
         Log.i("PdfBox-Android", "Processing embedded file " + entry.getKey() + ":");
         PDComplexFileSpecification complexFileSpec = entry.getValue();
@@ -358,21 +364,21 @@ public class TestSymmetricKeyEncryption
         return resultFile;
     }
 
-    private void testSymmEncrForKeySizeInner(int keyLength,
+    private void testSymmEncrForKeySizeInner(int keyLength, boolean preferAES,
         int sizePriorToEncr, byte[] inputFileWithEmbeddedFileAsByteArray,
         File embeddedFilePriorToEncryption,
         String userpassword, String ownerpassword) throws IOException
     {
         PDDocument document = PDDocument.load(new ByteArrayInputStream(inputFileWithEmbeddedFileAsByteArray));
-        PDDocument encryptedDoc = encrypt(keyLength, sizePriorToEncr, document, "ContainsEmbedded-", permission, userpassword, ownerpassword);
+        PDDocument encryptedDoc = encrypt(keyLength, preferAES, sizePriorToEncr, document, "ContainsEmbedded-", permission, userpassword, ownerpassword);
 
-        File decryptedFile = new File(testResultsDir, "DecryptedContainsEmbedded-" + keyLength + "-bit.pdf");
+        File decryptedFile = new File(testResultsDir, "DecryptedContainsEmbedded-" + keyLength + "-bit-" + (preferAES ? "AES" : "RC4") + ".pdf");
         encryptedDoc.setAllSecurityToBeRemoved(true);
         encryptedDoc.save(decryptedFile);
 
-        File extractedEmbeddedFile = extractEmbeddedFile(new FileInputStream(decryptedFile), "decryptedInnerFile-" + keyLength + "-bit.pdf");
+        File extractedEmbeddedFile = extractEmbeddedFile(new FileInputStream(decryptedFile), "decryptedInnerFile-" + keyLength + "-bit-" + (preferAES ? "AES" : "RC4") + ".pdf");
 
-        assertEquals(keyLength + "-bit decrypted inner attachment pdf should have same size as plain one",
+        Assert.assertEquals(keyLength + "-bit " + (preferAES ? "AES" : "RC4") + " decrypted inner attachment pdf should have same size as plain one",
             embeddedFilePriorToEncryption.length(), extractedEmbeddedFile.length());
 
         // compare the two embedded files
@@ -399,4 +405,5 @@ public class TestSymmetricKeyEncryption
     {
         return getStreamAsByteArray(new FileInputStream(f));
     }
+
 }

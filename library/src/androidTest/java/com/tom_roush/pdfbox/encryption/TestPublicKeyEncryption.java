@@ -17,7 +17,8 @@
 package com.tom_roush.pdfbox.encryption;
 
 import android.content.Context;
-import androidx.test.InstrumentationRegistry;
+
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

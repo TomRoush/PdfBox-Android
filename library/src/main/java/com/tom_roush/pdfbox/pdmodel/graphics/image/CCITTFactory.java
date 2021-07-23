@@ -31,7 +31,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 
 /**
  * Factory for creating a PDImageXObject containing a CCITT Fax compressed TIFF image.
- * 
+ *
  * @author Ben Litchfield
  * @author Paul King
  */
@@ -40,22 +40,21 @@ public final class CCITTFactory
     private CCITTFactory()
     {
     }
-    
+
     /**
-     * Creates a new CCITT Fax compressed image XObject from the first page of
-     * a TIFF file.
+     * Creates a new CCITT Fax compressed image XObject from the first image of a TIFF file.
      *
      * @param document the document to create the image as part of.
      * @param reader the random access TIFF file which contains a suitable CCITT
      * compressed image
-     * @return a new Image XObject
+     * @return a new image XObject
      * @throws IOException if there is an error reading the TIFF data.
-     * 
+     *
      * @deprecated Use {@link #createFromFile(PDDocument, File)} instead.
      */
     @Deprecated
     public static PDImageXObject createFromRandomAccess(PDDocument document, RandomAccess reader)
-            throws IOException
+        throws IOException
     {
         return createFromRandomAccessImpl(document, reader, 0);
     }
@@ -67,14 +66,14 @@ public final class CCITTFactory
      * @param reader the random access TIFF file which contains a suitable CCITT
      * compressed image
      * @param number TIFF image number, starting from 0
-     * @return a new Image XObject, or null if no such page
+     * @return a new image XObject, or null if no such page
      * @throws IOException if there is an error reading the TIFF data.
      *
      * @deprecated Use {@link #createFromFile(PDDocument, File, int)} instead.
      */
     @Deprecated
     public static PDImageXObject createFromRandomAccess(PDDocument document, RandomAccess reader,
-            int number) throws IOException
+        int number) throws IOException
     {
         return createFromRandomAccessImpl(document, reader, number);
     }
@@ -83,16 +82,16 @@ public final class CCITTFactory
      * Creates a new CCITT Fax compressed image XObject from the first image of a TIFF file. Only
      * single-strip CCITT T4 or T6 compressed TIFF files are supported. If you're not sure what TIFF
      * files you have, use
-     * {@link LosslessFactory#createFromImage(PDDocument, android.graphics.Bitmap)}
+     * {@link LosslessFactory#createFromImage(com.tom_roush.pdfbox.pdmodel.PDDocument, android.graphics.Bitmap)}
      * instead.
      *
      * @param document the document to create the image as part of.
-     * @param file the TIFF file which contains a suitable CCITT compressed image
+     * @param file the  TIFF file which contains a suitable CCITT compressed image
      * @return a new Image XObject
      * @throws IOException if there is an error reading the TIFF data.
      */
     public static PDImageXObject createFromFile(PDDocument document, File file)
-            throws IOException
+        throws IOException
     {
         return createFromRandomAccessImpl(document, new RandomAccessFile(file, "r"), 0);
     }
@@ -101,9 +100,9 @@ public final class CCITTFactory
      * Creates a new CCITT Fax compressed image XObject from a specific image of a TIFF file. Only
      * single-strip CCITT T4 or T6 compressed TIFF files are supported. If you're not sure what TIFF
      * files you have, use
-     * {@link LosslessFactory#createFromImage(PDDocument, android.graphics.Bitmap)}
+     * {@link LosslessFactory#createFromImage(com.tom_roush.pdfbox.pdmodel.PDDocument, android.graphics.Bitmap)}
      * instead.
-     * 
+     *
      * @param document the document to create the image as part of.
      * @param file the TIFF file which contains a suitable CCITT compressed image
      * @param number TIFF image number, starting from 0
@@ -111,14 +110,14 @@ public final class CCITTFactory
      * @throws IOException if there is an error reading the TIFF data.
      */
     public static PDImageXObject createFromFile(PDDocument document, File file, int number)
-            throws IOException
+        throws IOException
     {
         return createFromRandomAccessImpl(document, new RandomAccessFile(file, "r"), number);
     }
 
     /**
      * Creates a new CCITT Fax compressed image XObject from a TIFF file.
-     * 
+     *
      * @param document the document to create the image as part of.
      * @param reader the random access TIFF file which contains a suitable CCITT
      * compressed image
@@ -127,8 +126,8 @@ public final class CCITTFactory
      * @throws IOException if there is an error reading the TIFF data.
      */
     private static PDImageXObject createFromRandomAccessImpl(PDDocument document,
-            RandomAccess reader,
-            int number) throws IOException
+        RandomAccess reader,
+        int number) throws IOException
     {
         COSDictionary decodeParms = new COSDictionary();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -140,12 +139,12 @@ public final class CCITTFactory
         ByteArrayInputStream encodedByteStream = new ByteArrayInputStream(bos.toByteArray());
         PDImageXObject pdImage = new PDImageXObject(document,
             encodedByteStream,
-                COSName.CCITTFAX_DECODE, 
-                decodeParms.getInt(COSName.COLUMNS), 
-                decodeParms.getInt(COSName.ROWS),
-                1, PDDeviceGray.INSTANCE);
-                
-        
+            COSName.CCITTFAX_DECODE,
+            decodeParms.getInt(COSName.COLUMNS),
+            decodeParms.getInt(COSName.ROWS),
+            1,
+            PDDeviceGray.INSTANCE);
+
         COSDictionary dict = pdImage.getCOSObject();
         dict.setItem(COSName.DECODE_PARMS, decodeParms);
         return pdImage;
@@ -153,7 +152,7 @@ public final class CCITTFactory
 
     // extracts the CCITT stream from the TIFF file
     private static void extractFromTiff(RandomAccess reader, OutputStream os,
-            COSDictionary params, int number) throws IOException
+        COSDictionary params, int number) throws IOException
     {
         try
         {
@@ -178,8 +177,8 @@ public final class CCITTFactory
             // Relocate to the first set of tags
             int address = readlong(endianess, reader);
             reader.seek(address);
-    
-            // If some higher page number is required, skip this page's tags, 
+
+            // If some higher page number is required, skip this page's tags,
             // then read the next page's address
             for (int i = 0; i < number; i++)
             {
@@ -232,111 +231,119 @@ public final class CCITTFactory
                 {
                     switch (type)
                     {
-                        case 1:
-                        {
-                            val = val >> 24;
-                            break; // byte value
-                        }
-                        case 3:
-                        {
-                            val = val >> 16;
-                            break; // short value
-                        }
-                        case 4:
-                        {
-                            break; // long value
-                        }
-                        default:
-                        {
-                            // do nothing
-                        }
-                    }
-                }
-                switch (tag)
-                {
-                    case 256:
+                    case 1:
                     {
-                        params.setInt(COSName.COLUMNS, val);
-                        break;
+                        val = val >> 24;
+                        break; // byte value
                     }
-                    case 257:
+                    case 3:
                     {
-                        params.setInt(COSName.ROWS, val);
-                        break;
+                        val = val >> 16;
+                        break; // short value
                     }
-                    case 259:
+                    case 4:
                     {
-                        if (val == 4)
-                        {
-                            k = -1;
-                        }
-                        if (val == 3)
-                        {
-                            k = 0;
-                        }
-                        break; // T6/T4 Compression
-                    }
-                    case 262:
-                    {
-                        if (val == 1)
-                        {
-                            params.setBoolean(COSName.BLACK_IS_1, true);
-                        }
-                        break;
-                    }
-                    case 273:
-                    {
-                        if (count == 1)
-                        {
-                            dataoffset = val;
-                        }
-                        break;
-                    }
-                    case 279:
-                    {
-                        if (count == 1)
-                        {
-                            datalength = val;
-                        }
-                        break;
-                    }
-                    case 292:
-                    {
-                        if ((val & 1) != 0)
-                        {
-                            k = 50; // T4 2D - arbitary positive K value
-                        }
-                        // http://www.awaresystems.be/imaging/tiff/tifftags/t4options.html
-                        if ((val & 4) != 0)
-                        {
-                            throw new IOException("CCITT Group 3 'uncompressed mode' is not supported");
-                        }
-                        if ((val & 2) != 0)
-                        {
-                            throw new IOException("CCITT Group 3 'fill bits before EOL' is not supported");
-                        }
-                        break;
-                    }
-                    case 324:
-                    {
-                        if (count == 1)
-                        {
-                            dataoffset = val;
-                        }
-                        break;
-                    }
-                    case 325:
-                    {
-                        if (count == 1)
-                        {
-                            datalength = val;
-                        }
-                        break;
+                        break; // long value
                     }
                     default:
                     {
                         // do nothing
                     }
+                    }
+                }
+                switch (tag)
+                {
+                case 256:
+                {
+                    params.setInt(COSName.COLUMNS, val);
+                    break;
+                }
+                case 257:
+                {
+                    params.setInt(COSName.ROWS, val);
+                    break;
+                }
+                case 259:
+                {
+                    if (val == 4)
+                    {
+                        k = -1;
+                    }
+                    if (val == 3)
+                    {
+                        k = 0;
+                    }
+                    break; // T6/T4 Compression
+                }
+                case 262:
+                {
+                    if (val == 1)
+                    {
+                        params.setBoolean(COSName.BLACK_IS_1, true);
+                    }
+                    break;
+                }
+                case 266:
+                {
+                    if (val != 1)
+                    {
+                        throw new IOException("FillOrder " + val + " is not supported");
+                    }
+                    break;
+                }
+                case 273:
+                {
+                    if (count == 1)
+                    {
+                        dataoffset = val;
+                    }
+                    break;
+                }
+                case 279:
+                {
+                    if (count == 1)
+                    {
+                        datalength = val;
+                    }
+                    break;
+                }
+                case 292:
+                {
+                    if ((val & 1) != 0)
+                    {
+                        k = 50; // T4 2D - arbitary positive K value
+                    }
+                    // http://www.awaresystems.be/imaging/tiff/tifftags/t4options.html
+                    if ((val & 4) != 0)
+                    {
+                        throw new IOException("CCITT Group 3 'uncompressed mode' is not supported");
+                    }
+                    if ((val & 2) != 0)
+                    {
+                        throw new IOException("CCITT Group 3 'fill bits before EOL' is not supported");
+                    }
+                    break;
+                }
+                case 324:
+                {
+                    if (count == 1)
+                    {
+                        dataoffset = val;
+                    }
+                    break;
+                }
+                case 325:
+                {
+                    if (count == 1)
+                    {
+                        datalength = val;
+                    }
+                    break;
+                }
+                default:
+                {
+                    // do nothing
+                }
                 }
             }
 

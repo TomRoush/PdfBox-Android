@@ -17,13 +17,15 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
 import android.content.Context;
-import androidx.test.InstrumentationRegistry;
+
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.File;
 import java.io.IOException;
 
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import com.tom_roush.pdfbox.rendering.TestRendering;
 import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
@@ -103,6 +105,32 @@ public class PDAcroFormTest
         testPdf.getDocumentCatalog().getAcroForm().flatten();
         assertTrue(testPdf.getDocumentCatalog().getAcroForm().getFields().isEmpty());
         File file = new File(OUT_DIR, "AlignmentTests-flattened.pdf");
+        testPdf.save(file);
+        // compare rendering
+        TestRendering testRendering = new TestRendering();
+        testRendering.setUp();
+        testRendering.render(file);
+    }
+
+    /*
+     * Same as above but remove the page reference from the widget annotation
+     * before doing the flatten() to ensure that the widgets page reference is properly looked up
+     * (PDFBOX-3301)
+     */
+    @Test
+    public void testFlattenWidgetNoRef() throws IOException
+    {
+        PDDocument testPdf = PDDocument.load(
+            testContext.getAssets().open(IN_DIR + "/" + "AlignmentTests.pdf"));
+        PDAcroForm acroForm = testPdf.getDocumentCatalog().getAcroForm();
+        for (PDField field : acroForm.getFieldTree()) {
+            for (PDAnnotationWidget widget : field.getWidgets()) {
+                widget.getCOSObject().removeItem(COSName.P);
+            }
+        }
+        testPdf.getDocumentCatalog().getAcroForm().flatten();
+        assertTrue(testPdf.getDocumentCatalog().getAcroForm().getFields().isEmpty());
+        File file = new File(OUT_DIR, "AlignmentTests-flattened-noRef.pdf");
         testPdf.save(file);
         // compare rendering
         TestRendering testRendering = new TestRendering();

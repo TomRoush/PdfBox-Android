@@ -139,7 +139,7 @@ public class Type1CharString
         width = 0;
         CharStringHandler handler = new CharStringHandler() {
             @Override
-            public List<Integer> handleCommand(List<Integer> numbers, CharStringCommand command)
+            public List<Number> handleCommand(List<Number> numbers, CharStringCommand command)
             {
                 return Type1CharString.this.handleCommand(numbers, command);
             }
@@ -147,7 +147,7 @@ public class Type1CharString
         handler.handleSequence(type1Sequence);
     }
 
-    private List<Integer> handleCommand(List<Integer> numbers, CharStringCommand command)
+    private List<Number> handleCommand(List<Number> numbers, CharStringCommand command)
     {
         commandCount++;
         String name = CharStringCommand.TYPE1_VOCABULARY.get(command.getKey());
@@ -158,7 +158,7 @@ public class Type1CharString
             {
                 if (isFlex)
                 {
-                    flexPoints.add(new PointF(numbers.get(0), numbers.get(1)));
+                    flexPoints.add(new PointF(numbers.get(0).floatValue(), numbers.get(1).floatValue()));
                 }
                 else
                 {
@@ -173,7 +173,7 @@ public class Type1CharString
                 if (isFlex)
                 {
                     // not in the Type 1 spec, but exists in some fonts
-                    flexPoints.add(new PointF(0, numbers.get(0)));
+                    flexPoints.add(new PointF(0, numbers.get(0).floatValue()));
                 }
                 else
                 {
@@ -188,7 +188,7 @@ public class Type1CharString
                 if (isFlex)
                 {
                     // not in the Type 1 spec, but exists in some fonts
-                    flexPoints.add(new PointF(numbers.get(0), 0));
+                    flexPoints.add(new PointF(numbers.get(0).floatValue(), 0f));
                 }
                 else
                 {
@@ -233,8 +233,8 @@ public class Type1CharString
         {
             if (numbers.size() >= 3)
             {
-                leftSideBearing = new PointF(numbers.get(0), numbers.get(1));
-                width = numbers.get(2);
+                leftSideBearing = new PointF(numbers.get(0).floatValue(), numbers.get(1).floatValue());
+                width = numbers.get(2).intValue();
                 current.set(leftSideBearing);
             }
         }
@@ -242,8 +242,8 @@ public class Type1CharString
         {
             if (numbers.size() >= 2)
             {
-                leftSideBearing = new PointF(numbers.get(0), 0);
-                width = numbers.get(1);
+                leftSideBearing = new PointF(numbers.get(0).floatValue(), 0);
+                width = numbers.get(1).intValue();
                 current.set(leftSideBearing);
             }
         }
@@ -251,22 +251,23 @@ public class Type1CharString
         {
             if (numbers.size() >= 4)
             {
-                rrcurveTo(0, numbers.get(0), numbers.get(1), numbers.get(2), numbers.get(3), 0);
+                rrcurveTo(0, numbers.get(0), numbers.get(1),
+                    numbers.get(2), numbers.get(3), 0);
             }
         }
         else if ("hvcurveto".equals(name))
         {
             if (numbers.size() >= 4)
             {
-                rrcurveTo(numbers.get(0), 0, numbers.get(1), numbers.get(2), 0, numbers.get(3));
+                rrcurveTo(numbers.get(0), 0, numbers.get(1),
+                    numbers.get(2), 0, numbers.get(3));
             }
         }
         else if ("seac".equals(name))
         {
             if (numbers.size() >= 5)
             {
-                seac(numbers.get(0), numbers.get(1), numbers.get(2), numbers.get(3),
-                    numbers.get(4));
+                seac(numbers.get(0), numbers.get(1), numbers.get(2), numbers.get(3), numbers.get(4));
             }
         }
         else if ("setcurrentpoint".equals(name))
@@ -280,17 +281,17 @@ public class Type1CharString
         {
             if (numbers.size() >= 1)
             {
-                callothersubr(numbers.get(0));
+                callothersubr(numbers.get(0).intValue());
             }
         }
         else if ("div".equals(name))
         {
-            int b = numbers.get(numbers.size() -1);
-            int a = numbers.get(numbers.size() -2);
+            float b = numbers.get(numbers.size() -1).floatValue();
+            float a = numbers.get(numbers.size() -2).floatValue();
 
-            int result = a / b; // TODO loss of precision, should be float
+            float result = a / b;
 
-            List<Integer> list = new ArrayList<Integer>(numbers);
+            List<Number> list = new ArrayList<Number>(numbers);
             list.remove(list.size() - 1);
             list.remove(list.size() - 1);
             list.add(result);
@@ -329,9 +330,9 @@ public class Type1CharString
      * Sets the current absolute point without performing a moveto.
      * Used only with results from callothersubr
      */
-    private void setcurrentpoint(int x, int y)
+    private void setcurrentpoint(Number x, Number y)
     {
-        current.set(x, y);
+        current.set(x.floatValue(), y.floatValue());
     }
 
     /**

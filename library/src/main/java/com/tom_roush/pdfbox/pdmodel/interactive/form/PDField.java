@@ -53,8 +53,7 @@ public abstract class PDField implements COSObjectable
 
     /**
      * Constructor.
-     *
-     * @param acroForm The form that this field is part of.
+     *  @param acroForm The form that this field is part of.
      * @param field the PDF object to represent as a field.
      * @param parent the parent node of the node
      */
@@ -71,7 +70,6 @@ public abstract class PDField implements COSObjectable
      * @param form the form that the field is part of
      * @param field the dictionary representing a field element
      * @param parent the parent node of the node to be created, or null if root.
-     *
      * @return a new PDField instance
      */
     static PDField fromDictionary(PDAcroForm form, COSDictionary field, PDNonTerminalField parent)
@@ -105,14 +103,15 @@ public abstract class PDField implements COSObjectable
      * Get the FT entry of the field. This is a read only field and is set depending on the actual type. The field type
      * is an inheritable attribute.
      *
-     * @return The list of widget annotations.
+     * @return The Field type.
+     *
      */
     public abstract String getFieldType();
 
     /**
      * Returns a string representation of the "V" entry, or an empty string.
      *
-     * @return A non-null string.
+     * @return The list of widget annotations.
      */
     public abstract String getValueAsString();
 
@@ -132,7 +131,7 @@ public abstract class PDField implements COSObjectable
      * For {@link PDNonTerminalField} the list will be empty as non terminal fields
      * have no visual representation in the form.
      *
-     * @return A non-null string.
+     * @return @return a List of {@link PDAnnotationWidget} annotations.
      */
     public abstract List<PDAnnotationWidget> getWidgets();
 
@@ -312,7 +311,7 @@ public abstract class PDField implements COSObjectable
                 if (name[nameIndex].equals(kidDictionary.getString(COSName.T)))
                 {
                     retval = PDField.fromDictionary(acroForm, kidDictionary,
-                        (PDNonTerminalField) this);
+                        (PDNonTerminalField)this);
                     if (retval != null && name.length > nameIndex + 1)
                     {
                         retval = retval.findKid(name, nameIndex + 1);
@@ -353,7 +352,6 @@ public abstract class PDField implements COSObjectable
     {
         return dictionary.getString(COSName.T);
     }
-
     /**
      * This will set the partial name of the field.
      *

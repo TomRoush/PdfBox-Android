@@ -74,7 +74,7 @@ public abstract class PDTerminalField extends PDField
     public int getFieldFlags()
     {
         int retval = 0;
-        COSInteger ff = (COSInteger)getCOSObject().getDictionaryObject(COSName.FF);
+        COSInteger ff = (COSInteger) getCOSObject().getDictionaryObject(COSName.FF);
         if (ff != null)
         {
             retval = ff.intValue();
@@ -177,7 +177,7 @@ public abstract class PDTerminalField extends PDField
                 COSBase kid = kids.getObject(i);
                 if (kid instanceof COSDictionary)
                 {
-                    widgets.add(new PDAnnotationWidget((COSDictionary) kid));
+                    widgets.add(new PDAnnotationWidget((COSDictionary)kid));
                 }
             }
         }
@@ -193,6 +193,10 @@ public abstract class PDTerminalField extends PDField
     {
         COSArray kidsArray = COSArrayList.converterToCOSArray(children);
         getCOSObject().setItem(COSName.KIDS, kidsArray);
+        for (PDAnnotationWidget widget : children)
+        {
+            widget.getCOSObject().setItem(COSName.PARENT, this);
+        }
     }
 
     /**
@@ -217,7 +221,7 @@ public abstract class PDTerminalField extends PDField
      */
     protected final void applyChange() throws IOException
     {
-        if(!getAcroForm().getNeedAppearances())
+        if (!getAcroForm().getNeedAppearances())
         {
             constructAppearances();
         }
