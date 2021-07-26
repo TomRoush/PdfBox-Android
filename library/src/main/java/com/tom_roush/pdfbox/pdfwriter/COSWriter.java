@@ -183,7 +183,7 @@ public class COSWriter implements ICOSVisitor, Closeable
     // these are used for indirect references in other objects
     //A hashtable is used on purpose over a hashmap
     //so that null entries will not get added.
-    private final Map<COSBase,COSObjectKey> objectKeys = new Hashtable<COSBase,COSObjectKey>();
+    private final Map<COSBase, COSObjectKey> objectKeys = new Hashtable<COSBase,COSObjectKey>();
     private final Map<COSObjectKey,COSBase> keyObject = new Hashtable<COSObjectKey,COSBase>();
 
     // the list of x ref entries to be made so far
@@ -254,6 +254,7 @@ public class COSWriter implements ICOSVisitor, Closeable
      *
      * @param outputStream output stream where the new PDF data will be written
      * @param inputData random access read containing source PDF data
+     *
      * @throws IOException if something went wrong
      */
     public COSWriter(OutputStream outputStream, RandomAccessRead inputData) throws IOException
@@ -262,8 +263,7 @@ public class COSWriter implements ICOSVisitor, Closeable
         initWriter(outputStream, inputData);
     }
 
-    private void initWriter(OutputStream outputStream, RandomAccessRead inputData)
-        throws IOException
+    private void initWriter(OutputStream outputStream, RandomAccessRead inputData) throws IOException
     {
         // write to buffer instead of output
         setOutput(new ByteArrayOutputStream());
@@ -472,18 +472,18 @@ public class COSWriter implements ICOSVisitor, Closeable
             addObjectToWrite( info );
         }
 
-        while( objectsToWrite.size() > 0 )
-        {
-            COSBase nextObject = objectsToWrite.removeFirst();
-            objectsToWriteSet.remove(nextObject);
-            doWriteObject( nextObject );
-        }
+        doWriteObjects();
         willEncrypt = false;
         if( encrypt != null )
         {
             addObjectToWrite( encrypt );
         }
 
+        doWriteObjects();
+    }
+
+    private void doWriteObjects() throws IOException
+    {
         while( objectsToWrite.size() > 0 )
         {
             COSBase nextObject = objectsToWrite.removeFirst();
@@ -495,7 +495,7 @@ public class COSWriter implements ICOSVisitor, Closeable
     private void addObjectToWrite( COSBase object )
     {
         COSBase actual = object;
-        if( actual instanceof COSObject )
+        if( actual instanceof COSObject)
         {
             actual = ((COSObject)actual).getObject();
         }
@@ -520,7 +520,6 @@ public class COSWriter implements ICOSVisitor, Closeable
             {
                 return;
             }
-
             objectsToWrite.add( object );
             objectsToWriteSet.add( object );
             if( actual != null )
@@ -542,7 +541,7 @@ public class COSWriter implements ICOSVisitor, Closeable
         writtenObjects.add( obj );
         if(obj instanceof COSDictionary)
         {
-            COSBase itemType = ((COSDictionary)obj).getItem(COSName.TYPE);
+            COSBase itemType = ((COSDictionary) obj).getItem(COSName.TYPE);
             if (COSName.SIG.equals(itemType) || COSName.DOC_TIME_STAMP.equals(itemType))
             {
                 reachedSignature = true;
@@ -717,11 +716,11 @@ public class COSWriter implements ICOSVisitor, Closeable
      */
     private void doWriteIncrement() throws IOException
     {
-        ByteArrayOutputStream byteOut = (ByteArrayOutputStream)output;
+        ByteArrayOutputStream byteOut = (ByteArrayOutputStream) output;
         byteOut.flush();
         byte[] buffer = byteOut.toByteArray();
-        SequenceInputStream signStream = new SequenceInputStream(
-            new RandomAccessInputStream(incrementalInput), new ByteArrayInputStream(buffer));
+        SequenceInputStream signStream = new SequenceInputStream(new RandomAccessInputStream(incrementalInput),
+            new ByteArrayInputStream(buffer));
         // write the data to the incremental output stream
         IOUtils.copy(signStream, incrementalOutput);
     }
@@ -766,8 +765,7 @@ public class COSWriter implements ICOSVisitor, Closeable
         System.arraycopy(buffer, bufSignatureOffset + (int)signatureLength,
             signBuffer, bufSignatureOffset, buffer.length - bufSignatureOffset - (int)signatureLength);
 
-        SequenceInputStream signStream = new SequenceInputStream(
-            new RandomAccessInputStream(incrementalInput),
+        SequenceInputStream signStream = new SequenceInputStream(new RandomAccessInputStream(incrementalInput),
             new ByteArrayInputStream(signBuffer));
 
         // sign the bytes
@@ -1107,9 +1105,7 @@ public class COSWriter implements ICOSVisitor, Closeable
             if (signatureOffset == 0 || byteRangeOffset == 0)
             {
                 doWriteIncrement();
-            }
-            else
-            {
+            } else {
                 doWriteSignature();
             }
         }
@@ -1167,8 +1163,8 @@ public class COSWriter implements ICOSVisitor, Closeable
     {
         if (willEncrypt)
         {
-            pdDocument.getEncryption().getSecurityHandler().encryptStream(obj,
-                currentObjectKey.getNumber(), currentObjectKey.getGeneration());
+            pdDocument.getEncryption().getSecurityHandler()
+                .encryptStream(obj, currentObjectKey.getNumber(), currentObjectKey.getGeneration());
         }
 
         InputStream input = null;
@@ -1206,7 +1202,6 @@ public class COSWriter implements ICOSVisitor, Closeable
                 currentObjectKey.getNumber(),
                 currentObjectKey.getGeneration());
         }
-
         COSWriter.writeString(obj, getStandardOutput());
         return null;
     }
@@ -1274,13 +1269,11 @@ public class COSWriter implements ICOSVisitor, Closeable
             {
                 if (!incrementalUpdate)
                 {
-                    SecurityHandler securityHandler =
-                        pdDocument.getEncryption().getSecurityHandler();
+                    SecurityHandler securityHandler = pdDocument.getEncryption().getSecurityHandler();
                     if (!securityHandler.hasProtectionPolicy())
                     {
-                        throw new IllegalStateException(
-                            "PDF contains an encryption dictionary, please remove it with " +
-                                "setAllSecurityToBeRemoved() or set a protection policy with protect()");
+                        throw new IllegalStateException("PDF contains an encryption dictionary, please remove it with "
+                            + "setAllSecurityToBeRemoved() or set a protection policy with protect()");
                     }
                     securityHandler.prepareDocumentForEncryption(pdDocument);
                 }
@@ -1324,7 +1317,7 @@ public class COSWriter implements ICOSVisitor, Closeable
                 Iterator<COSBase> values = info.getValues().iterator();
                 while( values.hasNext() )
                 {
-                    md5.update( values.next().toString().getBytes(Charsets.ISO_8859_1) );
+                    md5.update(values.next().toString().getBytes(Charsets.ISO_8859_1));
                 }
             }
             // reuse origin documentID if available as first value
@@ -1353,7 +1346,6 @@ public class COSWriter implements ICOSVisitor, Closeable
         COSDocument cosDoc = fdfDocument.getDocument();
         cosDoc.accept(this);
     }
-
     /**
      * This will output the given byte getString as a PDF object.
      *
@@ -1413,14 +1405,14 @@ public class COSWriter implements ICOSVisitor, Closeable
             {
                 switch (b)
                 {
-                    case '(':
-                    case ')':
-                    case '\\':
-                        output.write('\\');
-                        output.write(b);
-                        break;
-                    default:
-                        output.write(b);
+                case '(':
+                case ')':
+                case '\\':
+                    output.write('\\');
+                    output.write(b);
+                    break;
+                default:
+                    output.write(b);
                 }
             }
             output.write(')');

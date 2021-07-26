@@ -17,7 +17,8 @@ package com.tom_roush.pdfbox.multipdf;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import androidx.test.InstrumentationRegistry;
+
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.File;
 import java.io.IOException;

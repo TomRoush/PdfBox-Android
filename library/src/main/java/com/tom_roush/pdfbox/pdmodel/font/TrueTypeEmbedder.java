@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.ByteArrayInputStream;
@@ -50,7 +51,7 @@ import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 abstract class TrueTypeEmbedder implements Subsetter
 {
     private static final int ITALIC = 1;
-    private static final int OBLIQUE = 256;
+    private static final int OBLIQUE = 512;
     private static final String BASE25 = "BCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     private final PDDocument document;
@@ -79,8 +80,8 @@ abstract class TrueTypeEmbedder implements Subsetter
     /**
      * Creates a new TrueType font for embedding.
      */
-    TrueTypeEmbedder(PDDocument document, COSDictionary dict, TrueTypeFont ttf, boolean embedSubset)
-        throws IOException
+    TrueTypeEmbedder(PDDocument document, COSDictionary dict, TrueTypeFont ttf,
+        boolean embedSubset) throws IOException
     {
         this.document = document;
         this.embedSubset = embedSubset;
@@ -103,6 +104,11 @@ abstract class TrueTypeEmbedder implements Subsetter
         try
         {
             input = stream.createInputStream();
+            if (ttf != null)
+            {
+                // close the replaced true type font
+                ttf.close();
+            }
             ttf = new TTFParser().parseEmbedded(input);
             if (!isEmbeddingPermitted(ttf))
             {
@@ -180,21 +186,20 @@ abstract class TrueTypeEmbedder implements Subsetter
             ttf.getHorizontalHeader().getNumberOfHMetrics() == 1);
 
         int fsSelection = os2.getFsSelection();
-        fd.setItalic((fsSelection & ITALIC) == fsSelection ||
-            (fsSelection & OBLIQUE) == fsSelection);
+        fd.setItalic(((fsSelection & (ITALIC | OBLIQUE)) != 0));
 
         switch (os2.getFamilyClass())
         {
-            case OS2WindowsMetricsTable.FAMILY_CLASS_CLAREDON_SERIFS:
-            case OS2WindowsMetricsTable.FAMILY_CLASS_FREEFORM_SERIFS:
-            case OS2WindowsMetricsTable.FAMILY_CLASS_MODERN_SERIFS:
-            case OS2WindowsMetricsTable.FAMILY_CLASS_OLDSTYLE_SERIFS:
-            case OS2WindowsMetricsTable.FAMILY_CLASS_SLAB_SERIFS:
-                fd.setSerif(true);
-                break;
-            case OS2WindowsMetricsTable.FAMILY_CLASS_SCRIPTS:
-                fd.setScript(true);
-                break;
+        case OS2WindowsMetricsTable.FAMILY_CLASS_CLAREDON_SERIFS:
+        case OS2WindowsMetricsTable.FAMILY_CLASS_FREEFORM_SERIFS:
+        case OS2WindowsMetricsTable.FAMILY_CLASS_MODERN_SERIFS:
+        case OS2WindowsMetricsTable.FAMILY_CLASS_OLDSTYLE_SERIFS:
+        case OS2WindowsMetricsTable.FAMILY_CLASS_SLAB_SERIFS:
+            fd.setSerif(true);
+            break;
+        case OS2WindowsMetricsTable.FAMILY_CLASS_SCRIPTS:
+            fd.setScript(true);
+            break;
         }
 
         fd.setFontWeight(os2.getWeightClass());

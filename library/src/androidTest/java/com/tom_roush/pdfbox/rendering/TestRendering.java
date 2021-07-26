@@ -19,9 +19,10 @@ package com.tom_roush.pdfbox.rendering;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import androidx.test.InstrumentationRegistry;
-import androidx.test.filters.FlakyTest;
 import android.util.Log;
+
+import androidx.test.filters.FlakyTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.File;
 import java.io.FileOutputStream;

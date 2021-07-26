@@ -44,7 +44,7 @@ public class CFFCIDFont extends CFFFont
     private FDSelect fdSelect;
 
     private final Map<Integer, CIDKeyedType2CharString> charStringCache =
-            new ConcurrentHashMap<Integer, CIDKeyedType2CharString>();
+        new ConcurrentHashMap<Integer, CIDKeyedType2CharString>();
 
     private final PrivateType1CharStringReader reader = new PrivateType1CharStringReader();
 
@@ -52,7 +52,7 @@ public class CFFCIDFont extends CFFFont
      * Returns the registry value.
      * * @return the registry
      */
-    public String getRegistry() 
+    public String getRegistry()
     {
         return registry;
     }
@@ -72,7 +72,7 @@ public class CFFCIDFont extends CFFFont
      *
      * @return the ordering
      */
-    public String getOrdering() 
+    public String getOrdering()
     {
         return ordering;
     }
@@ -92,7 +92,7 @@ public class CFFCIDFont extends CFFFont
      *
      * @return the supplement
      */
-    public int getSupplement() 
+    public int getSupplement()
     {
         return supplement;
     }
@@ -203,7 +203,7 @@ public class CFFCIDFont extends CFFFont
      * Returns the LocalSubrIndex for the given GID.
      *
      * @param gid GID
-    */
+     */
     private byte[][] getLocalSubrIndex(int gid)
     {
         int fdArrayIndex = this.fdSelect.getFDIndex(gid);

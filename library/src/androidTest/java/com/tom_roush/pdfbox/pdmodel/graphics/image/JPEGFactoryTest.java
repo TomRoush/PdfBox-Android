@@ -18,8 +18,9 @@ package com.tom_roush.pdfbox.pdmodel.graphics.image;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import androidx.test.InstrumentationRegistry;
 import android.util.Log;
+
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

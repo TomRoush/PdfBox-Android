@@ -53,15 +53,21 @@ final class XMLUtil
      * @return The DOM document.
      * @throws IOException It there is an error creating the dom.
      */
-    public static Document parse( InputStream is ) throws IOException
+    public static Document parse(InputStream is) throws IOException
     {
         try
         {
             DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+            builderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            builderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            builderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            builderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            builderFactory.setXIncludeAware(false);
+            builderFactory.setExpandEntityReferences(false);
             DocumentBuilder builder = builderFactory.newDocumentBuilder();
-            return builder.parse( is );
+            return builder.parse(is);
         }
-        catch (FactoryConfigurationError e )
+        catch (FactoryConfigurationError e)
         {
             throw new IOException(e.getMessage(), e);
         }
@@ -81,15 +87,15 @@ final class XMLUtil
      * @param node The node to get the text value for.
      * @return The text of the node.
      */
-    public static String getNodeValue( Element node )
+    public static String getNodeValue(Element node)
     {
         StringBuilder sb = new StringBuilder();
         NodeList children = node.getChildNodes();
         int numNodes = children.getLength();
         for (int i = 0; i < numNodes; i++)
         {
-            Node next = children.item( i );
-            if( next instanceof Text )
+            Node next = children.item(i);
+            if (next instanceof Text)
             {
                 sb.append(next.getNodeValue());
             }

@@ -69,7 +69,7 @@ public final class TTFSubsetter
 
     /**
      * Creates a subsetter for the given font.
-     * 
+     *
      * @param ttf the font to be subset
      * @param tables optional tables to keep if present
      */
@@ -95,10 +95,10 @@ public final class TTFSubsetter
     {
         this.prefix = prefix;
     }
-    
+
     /**
      * Add the given character code to the subset.
-     * 
+     *
      * @param unicode character code
      */
     public void add(int unicode)
@@ -151,24 +151,24 @@ public final class TTFSubsetter
     {
         out.writeInt(0x00010000);
         out.writeShort(nTables);
-        
+
         int mask = Integer.highestOneBit(nTables);
         int searchRange = mask * 16;
         out.writeShort(searchRange);
-        
+
         int entrySelector = log2(mask);
-    
+
         out.writeShort(entrySelector);
-        
+
         // numTables * 16 - searchRange
         int last = 16 * nTables - searchRange;
         out.writeShort(last);
-        
+
         return 0x00010000L + toUInt32(nTables, searchRange) + toUInt32(entrySelector, last);
     }
-        
+
     private long writeTableHeader(DataOutputStream out, String tag, long offset, byte[] bytes)
-            throws IOException 
+        throws IOException
     {
         long checksum = 0;
         for (int nup = 0, n = bytes.length; nup < n; nup++)
@@ -249,7 +249,14 @@ public final class TTFSubsetter
         writeSInt16(out, h.getReserved4());
         writeSInt16(out, h.getReserved5());
         writeSInt16(out, h.getMetricDataFormat());
-        writeUint16(out, glyphIds.subSet(0, h.getNumberOfHMetrics()).size());
+
+        // is there a GID >= numberOfHMetrics ? Then keep the last entry of original hmtx table
+        int hmetrics = glyphIds.subSet(0, h.getNumberOfHMetrics()).size();
+        if (glyphIds.last() >= h.getNumberOfHMetrics())
+        {
+            ++hmetrics;
+        }
+        writeUint16(out, hmetrics);
 
         out.flush();
         return bos.toByteArray();
@@ -258,9 +265,9 @@ public final class TTFSubsetter
     private boolean shouldCopyNameRecord(NameRecord nr)
     {
         return nr.getPlatformId() == NameRecord.PLATFORM_WINDOWS
-                && nr.getPlatformEncodingId() == NameRecord.ENCODING_WINDOWS_UNICODE_BMP
-                && nr.getLanguageId() == NameRecord.LANGUGAE_WINDOWS_EN_US
-                && nr.getNameId() >= 0 && nr.getNameId() < 7;
+            && nr.getPlatformEncodingId() == NameRecord.ENCODING_WINDOWS_UNICODE_BMP
+            && nr.getLanguageId() == NameRecord.LANGUGAE_WINDOWS_EN_US
+            && nr.getNameId() >= 0 && nr.getNameId() < 7;
     }
 
     private byte[] buildNameTable() throws IOException
@@ -415,7 +422,7 @@ public final class TTFSubsetter
 
         writeSInt16(out, os2.getStrikeoutSize());
         writeSInt16(out, os2.getStrikeoutPosition());
-        writeSInt16(out, (short) os2.getFamilyClass());
+        writeSInt16(out, (short)os2.getFamilyClass());
         out.write(os2.getPanose());
 
         writeUint32(out, 0);
@@ -864,11 +871,21 @@ public final class TTFSubsetter
         HorizontalMetricsTable hm = ttf.getHorizontalMetrics();
         byte [] buf = new byte[4];
         InputStream is = ttf.getOriginalData();
+
+        // is there a GID >= numberOfHMetrics ? Then keep the last entry of original hmtx table
+        SortedSet<Integer> gidSet = glyphIds;
+        if (glyphIds.last() >= h.getNumberOfHMetrics())
+        {
+            // Create a deep copy of the glyph set that has the last entry
+            gidSet = new TreeSet<Integer>(glyphIds);
+            gidSet.add(ttf.getHorizontalHeader().getNumberOfHMetrics() - 1);
+        }
+
         try
         {
             is.skip(hm.getOffset());
             long lastOff = 0;
-            for (Integer glyphId : glyphIds)
+            for (Integer glyphId : gidSet)
             {
                 // offset in original file
                 long off;
@@ -924,7 +941,7 @@ public final class TTFSubsetter
         addCompoundReferences();
 
         DataOutputStream out = new DataOutputStream(os);
-        try 
+        try
         {
             long[] newLoca = new long[glyphIds.size() + 1];
 
@@ -1003,7 +1020,7 @@ public final class TTFSubsetter
                 writeTableBody(out, bytes);
             }
         }
-        finally 
+        finally
         {
             out.close();
         }
@@ -1054,9 +1071,9 @@ public final class TTFSubsetter
     private long toUInt32(byte[] bytes)
     {
         return (bytes[0] & 0xffL) << 24
-                | (bytes[1] & 0xffL) << 16
-                | (bytes[2] & 0xffL) << 8
-                | bytes[3] & 0xffL;
+            | (bytes[1] & 0xffL) << 16
+            | (bytes[2] & 0xffL) << 8
+            | bytes[3] & 0xffL;
     }
 
     private int log2(int num)

@@ -20,7 +20,7 @@ import java.io.IOException;
 
 /**
  * This is specialized DataInput. It's used to parse a CFFFont.
- * 
+ *
  * @author Villu Ruusmann
  */
 public class CFFDataInput extends DataInput

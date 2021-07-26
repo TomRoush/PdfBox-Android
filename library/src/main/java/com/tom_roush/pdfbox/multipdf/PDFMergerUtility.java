@@ -45,10 +45,12 @@ import com.tom_roush.pdfbox.pdmodel.PDDocumentNameDictionary;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.PageMode;
+import com.tom_roush.pdfbox.pdmodel.common.PDMetadata;
 import com.tom_roush.pdfbox.pdmodel.common.PDNumberTreeNode;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDMarkInfo;
 import com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureTreeRoot;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDOutputIntent;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
@@ -70,6 +72,8 @@ public class PDFMergerUtility
     private String destinationFileName;
     private OutputStream destinationStream;
     private boolean ignoreAcroFormErrors = false;
+    private PDDocumentInformation destinationDocumentInformation = null;
+    private PDMetadata destinationMetadata = null;
 
     /**
      * Instantiate a new PDFMergerUtility.
@@ -118,6 +122,50 @@ public class PDFMergerUtility
     public void setDestinationStream(OutputStream destStream)
     {
         destinationStream = destStream;
+    }
+
+    /**
+     * Get the destination document information that is to be set in {@link #mergeDocuments(com.tom_roush.pdfbox.io.MemoryUsageSetting)
+     * }. The default is null, which means that it is ignored.
+     *
+     * @return The destination document information.
+     */
+    public PDDocumentInformation getDestinationDocumentInformation()
+    {
+        return destinationDocumentInformation;
+    }
+
+    /**
+     * Set the destination document information that is to be set in {@link #mergeDocuments(com.tom_roush.pdfbox.io.MemoryUsageSetting)
+     * }. The default is null, which means that it is ignored.
+     *
+     * @param info The destination document information.
+     */
+    public void setDestinationDocumentInformation(PDDocumentInformation info)
+    {
+        destinationDocumentInformation = info;
+    }
+
+    /**
+     * Set the destination metadata that is to be set in {@link #mergeDocuments(com.tom_roush.pdfbox.io.MemoryUsageSetting)
+     * }. The default is null, which means that it is ignored.
+     *
+     * @return The destination metadata.
+     */
+    public PDMetadata getDestinationMetadata()
+    {
+        return destinationMetadata;
+    }
+
+    /**
+     * Set the destination metadata that is to be set in {@link #mergeDocuments(com.tom_roush.pdfbox.io.MemoryUsageSetting)
+     * }. The default is null, which means that it is ignored.
+     *
+     * @param meta The destination metadata.
+     */
+    public void setDestinationMetadata(PDMetadata meta)
+    {
+        destinationMetadata = meta;
     }
 
     /**
@@ -184,7 +232,8 @@ public class PDFMergerUtility
      * file.
      *
      * @param memUsageSetting defines how memory is used for buffering PDF streams;
-     * in case of <code>null</code> unrestricted main memory is used
+     *                        in case of <code>null</code> unrestricted main memory is used
+     *
      * @throws IOException If there is an error saving the document.
      */
     public void mergeDocuments(MemoryUsageSetting memUsageSetting) throws IOException
@@ -198,9 +247,9 @@ public class PDFMergerUtility
 
             try
             {
-                MemoryUsageSetting partitionedMemSetting =
-                    memUsageSetting != null ? memUsageSetting.getPartitionedCopy(
-                        sources.size() + 1) : MemoryUsageSetting.setupMainMemoryOnly();
+                MemoryUsageSetting partitionedMemSetting = memUsageSetting != null ?
+                    memUsageSetting.getPartitionedCopy(sources.size()+1) :
+                    MemoryUsageSetting.setupMainMemoryOnly();
                 Iterator<InputStream> sit = sources.iterator();
                 destination = new PDDocument(partitionedMemSetting);
 
@@ -211,6 +260,17 @@ public class PDFMergerUtility
                     tobeclosed.add(source);
                     appendDocument(destination, source);
                 }
+
+                // optionally set meta data
+                if (destinationDocumentInformation != null)
+                {
+                    destination.setDocumentInformation(destinationDocumentInformation);
+                }
+                if (destinationMetadata != null)
+                {
+                    destination.getDocumentCatalog().setMetadata(destinationMetadata);
+                }
+
                 if (destinationStream == null)
                 {
                     destination.save(destinationFileName);
@@ -270,6 +330,8 @@ public class PDFMergerUtility
         PDDocumentInformation srcInfo = source.getDocumentInformation();
         destInfo.getCOSObject().mergeInto(srcInfo.getCOSObject());
 
+
+
         // use the highest version number for the resulting pdf
         float destVersion = destination.getVersion();
         float srcVersion = source.getVersion();
@@ -295,6 +357,7 @@ public class PDFMergerUtility
             {
                 destCatalog.getCOSObject().setItem(COSName.ACRO_FORM,
                     cloner.cloneForNewDocument(srcAcroForm.getCOSObject()));
+
             }
             else
             {
@@ -420,11 +483,12 @@ public class PDFMergerUtility
         COSStream srcMetadata = (COSStream) srcCatalog.getCOSObject().getDictionaryObject(COSName.METADATA);
         if (destMetadata == null && srcMetadata != null)
         {
-            PDStream newStream = new PDStream(destination, srcMetadata.createInputStream(),
-                (COSName)null);
+            PDStream newStream = new PDStream(destination, srcMetadata.createInputStream(), (COSName) null);
             newStream.getCOSObject().mergeInto(srcMetadata);
             destCatalog.getCOSObject().setItem(COSName.METADATA, newStream);
         }
+
+        mergeOutputIntents(cloner, srcCatalog, destCatalog);
 
         // merge logical structure hierarchy if logical structure information is available in both source pdf and
         // destination pdf
@@ -535,6 +599,38 @@ public class PDFMergerUtility
         }
     }
 
+    // copy outputIntents to destination, but avoid duplicate OutputConditionIdentifier,
+    // except when it is missing or is named "Custom".
+    private void mergeOutputIntents(PDFCloneUtility cloner,
+        PDDocumentCatalog srcCatalog, PDDocumentCatalog destCatalog) throws IOException
+    {
+        List<PDOutputIntent> srcOutputIntents = srcCatalog.getOutputIntents();
+        List<PDOutputIntent> dstOutputIntents = destCatalog.getOutputIntents();
+        for (PDOutputIntent srcOI : srcOutputIntents)
+        {
+            String srcOCI = srcOI.getOutputConditionIdentifier();
+            if (srcOCI != null && !"Custom".equals(srcOCI))
+            {
+                // is that identifier already there?
+                boolean skip = false;
+                for (PDOutputIntent dstOI : dstOutputIntents)
+                {
+                    if (dstOI.getOutputConditionIdentifier().equals(srcOCI))
+                    {
+                        skip = true;
+                        break;
+                    }
+                }
+                if (skip)
+                {
+                    continue;
+                }
+            }
+            destCatalog.addOutputIntent(new PDOutputIntent((COSDictionary) cloner.cloneForNewDocument(srcOI)));
+            dstOutputIntents.add(srcOI);
+        }
+    }
+
     private int nextFieldNum = 1;
 
     /**
@@ -549,7 +645,9 @@ public class PDFMergerUtility
     private void mergeAcroForm(PDFCloneUtility cloner, PDAcroForm destAcroForm, PDAcroForm srcAcroForm)
         throws IOException
     {
+
         List<PDField> srcFields = srcAcroForm.getFields();
+
         if (srcFields != null)
         {
             // if a form is merged multiple times using PDFBox the newly generated

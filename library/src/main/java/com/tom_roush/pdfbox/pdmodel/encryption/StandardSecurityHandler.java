@@ -68,6 +68,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 
     // hashes used for Algorithm 2.B, depending on remainder from E modulo 3
     private static final String[] HASHES_2B = new String[] {"SHA-256", "SHA-384", "SHA-512"};
+
     private static final int DEFAULT_VERSION = 1;
 
     private StandardProtectionPolicy policy;
@@ -103,8 +104,11 @@ public final class StandardSecurityHandler extends SecurityHandler
         {
             return DEFAULT_VERSION;
         }
-        //TODO return 4 if keyLength is 128 to enable AES128 functionality
-        else if(keyLength == 256)
+        else if (keyLength == 128 && policy.isPreferAES())
+        {
+            return 4;
+        }
+        else if (keyLength == 256)
         {
             return 5;
         }
@@ -308,9 +312,8 @@ public final class StandardSecurityHandler extends SecurityHandler
 
             if (permsP != dicPermissions)
             {
-                Log.w("PdfBox-Android",
-                    "Verification of permissions failed (" + String.format("%08X", permsP) +
-                        " != " + String.format("%08X", dicPermissions) + ")");
+                Log.w("PdfBox-Android", "Verification of permissions failed (" + String.format("%08X",permsP) +
+                    " != " + String.format("%08X",dicPermissions) + ")");
             }
 
             if (encryptMetadata && perms[8] != 'T' || !encryptMetadata && perms[8] != 'F')
@@ -454,7 +457,7 @@ public final class StandardSecurityHandler extends SecurityHandler
             perms[5] = (byte) 0xFF;
             perms[6] = (byte) 0xFF;
             perms[7] = (byte) 0xFF;
-            perms[8] = 'T'; // we always encrypt Metadata
+            perms[8] = 'T';    // we always encrypt Metadata
             perms[9] = 'a';
             perms[10] = 'd';
             perms[11] = 'b';
@@ -479,11 +482,12 @@ public final class StandardSecurityHandler extends SecurityHandler
 
     private void prepareEncryptionDictRev2345(String ownerPassword, String userPassword,
         PDEncryption encryptionDictionary, int permissionInt, PDDocument document,
-        int revision, int length) throws IOException
+        int revision, int length)
+        throws IOException
     {
         COSArray idArray = document.getDocument().getDocumentID();
 
-        //check if the document has an id yet. If it does not then generate one
+        //check if the document has an id yet.  If it does not then generate one
         if (idArray == null || idArray.size() < 2)
         {
             MessageDigest md = MessageDigests.getMD5();
@@ -504,10 +508,12 @@ public final class StandardSecurityHandler extends SecurityHandler
 
         COSString id = (COSString) idArray.getObject(0);
 
-        byte[] ownerBytes = computeOwnerPassword(ownerPassword.getBytes(Charsets.ISO_8859_1),
+        byte[] ownerBytes = computeOwnerPassword(
+            ownerPassword.getBytes(Charsets.ISO_8859_1),
             userPassword.getBytes(Charsets.ISO_8859_1), revision, length);
 
-        byte[] userBytes = computeUserPassword(userPassword.getBytes(Charsets.ISO_8859_1),
+        byte[] userBytes = computeUserPassword(
+            userPassword.getBytes(Charsets.ISO_8859_1),
             ownerBytes, permissionInt, id.getBytes(), revision, length, true);
 
         encryptionKey = computeEncryptedKey(userPassword.getBytes(Charsets.ISO_8859_1), ownerBytes,
@@ -848,7 +854,7 @@ public final class StandardSecurityHandler extends SecurityHandler
                 }
                 ByteArrayInputStream input = new ByteArrayInputStream( encrypted.toByteArray() );
                 encrypted.reset();
-                encryptDataRC4(iterationKey, input, encrypted);
+                encryptDataRC4(iterationKey, input, encrypted );
             }
         }
 
@@ -875,6 +881,7 @@ public final class StandardSecurityHandler extends SecurityHandler
         System.arraycopy(digest, 0, rc4Key, 0, length);
         return rc4Key;
     }
+
 
     /**
      * This will take the password and truncate or pad it as necessary.
@@ -1027,7 +1034,6 @@ public final class StandardSecurityHandler extends SecurityHandler
             userKey = new byte[48];
             System.arraycopy(u, 0, userKey, 0, 48);
         }
-
         else
         {
             userKey = u;
