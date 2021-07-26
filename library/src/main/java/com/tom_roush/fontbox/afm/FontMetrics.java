@@ -17,8 +17,8 @@
 package com.tom_roush.fontbox.afm;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +66,7 @@ public class FontMetrics
     private float standardVerticalWidth;
 
     private List<CharMetric> charMetrics = new ArrayList<CharMetric>();
-    private Map<String, CharMetric> charMetricsMap = new HashMap<String, CharMetric>();
+    private Map<String,CharMetric> charMetricsMap = new HashMap<String,CharMetric>();
     private List<TrackKern> trackKern = new ArrayList<TrackKern>();
     private List<Composite> composites = new ArrayList<Composite>();
     private List<KernPair> kernPairs = new ArrayList<KernPair>();
@@ -91,13 +91,13 @@ public class FontMetrics
     {
         float result = 0;
         CharMetric metric = charMetricsMap.get( name );
-        if (metric != null)
+        if( metric != null )
         {
             result = metric.getWx();
         }
         return result;
     }
-    
+
     /**
      * This will get the width of a character.
      *
@@ -108,15 +108,12 @@ public class FontMetrics
     {
         float result = 0;
         CharMetric metric = charMetricsMap.get( name );
-        if (metric != null)
+        if( metric != null )
         {
-            if( metric.getWy() == 0 )
+            result = metric.getWy();
+            if( result == 0 )
             {
                 result = metric.getBoundingBox().getHeight();
-            }
-            else
-            {
-                result = metric.getWy();
             }
         }
         return result;
@@ -133,10 +130,8 @@ public class FontMetrics
         float average = 0;
         float totalWidths = 0;
         float characterCount = 0;
-        Iterator<CharMetric> iter = charMetricsMap.values().iterator();
-        while( iter.hasNext() )
+        for (CharMetric metric : charMetrics)
         {
-            CharMetric metric = iter.next();
             if( metric.getWx() > 0 )
             {
                 totalWidths += metric.getWx();
@@ -147,7 +142,6 @@ public class FontMetrics
         {
             average = totalWidths / characterCount;
         }
-
         return average;
     }
 
@@ -168,7 +162,7 @@ public class FontMetrics
      */
     public List<String> getComments()
     {
-        return comments;
+        return Collections.unmodifiableList(comments);
     }
 
     /**
@@ -211,8 +205,8 @@ public class FontMetrics
     {
         if( metricSetsValue < 0 || metricSetsValue > 2 )
         {
-            throw new IllegalArgumentException("The metricSets attribute must be in the " +
-                "set {0,1,2} and not '" + metricSetsValue + "'");
+            throw new IllegalArgumentException("The metricSets attribute must be in the "
+                + "set {0,1,2} and not '" + metricSetsValue + "'");
         }
         metricSets = metricSetsValue;
     }
@@ -702,7 +696,7 @@ public class FontMetrics
      */
     public List<CharMetric> getCharMetrics()
     {
-        return charMetrics;
+        return Collections.unmodifiableList(charMetrics);
     }
 
     /** Setter for property charMetrics.
@@ -734,7 +728,7 @@ public class FontMetrics
      */
     public List<TrackKern> getTrackKern()
     {
-        return trackKern;
+        return Collections.unmodifiableList(trackKern);
     }
 
     /** Setter for property trackKern.
@@ -760,7 +754,7 @@ public class FontMetrics
      */
     public List<Composite> getComposites()
     {
-        return composites;
+        return Collections.unmodifiableList(composites);
     }
 
     /** Setter for property composites.
@@ -786,7 +780,7 @@ public class FontMetrics
      */
     public List<KernPair> getKernPairs()
     {
-        return kernPairs;
+        return Collections.unmodifiableList(kernPairs);
     }
 
     /**
@@ -812,7 +806,7 @@ public class FontMetrics
      */
     public List<KernPair> getKernPairs0()
     {
-        return kernPairs0;
+        return Collections.unmodifiableList(kernPairs0);
     }
 
     /**
@@ -838,7 +832,7 @@ public class FontMetrics
      */
     public List<KernPair> getKernPairs1()
     {
-        return kernPairs1;
+        return Collections.unmodifiableList(kernPairs1);
     }
 
     /**

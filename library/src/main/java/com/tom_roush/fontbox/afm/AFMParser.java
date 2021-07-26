@@ -31,6 +31,7 @@ import com.tom_roush.fontbox.util.Charsets;
  * @see <A href="http://partners.adobe.com/asn/developer/type/">AFM Documentation</A>
  *
  * @author Ben Litchfield
+ *
  */
 public class AFMParser
 {
@@ -300,11 +301,11 @@ public class AFMParser
     }
 
     /**
-     * This will parse the AFM document.  The input stream is closed
+     * This will parse the AFM document. The input stream is closed
      * when the parsing is finished.
      *
      * @return the parsed FontMetric
-     * 
+     *
      * @throws IOException If there is an IO error reading the document.
      */
     public FontMetrics parse() throws IOException
@@ -318,13 +319,13 @@ public class AFMParser
      *
      * @param reducedDataset parse a reduced subset of data if set to true
      * @return the parsed FontMetric
+     *
      * @throws IOException If there is an IO error reading the document.
      */
     public FontMetrics parse(boolean reducedDataset) throws IOException
     {
         return parseFontMetric(reducedDataset);
     }
-
     /**
      * This will parse a font metrics item.
      *
@@ -339,7 +340,7 @@ public class AFMParser
         if( !START_FONT_METRICS.equals( startFontMetrics ) )
         {
             throw new IOException( "Error: The AFM file should start with " + START_FONT_METRICS +
-                                   " and not '" + startFontMetrics + "'" );
+                " and not '" + startFontMetrics + "'" );
         }
         fontMetrics.setAFMVersion( readFloat() );
         String nextCommand;
@@ -472,18 +473,18 @@ public class AFMParser
                 for( int i=0; i<count; i++ )
                 {
                     CharMetric charMetric = parseCharMetric();
-                    charMetrics.add(charMetric);
+                    charMetrics.add( charMetric );
                 }
                 String end = readString();
                 if( !end.equals( END_CHAR_METRICS ) )
                 {
                     throw new IOException( "Error: Expected '" + END_CHAR_METRICS + "' actual '" +
-                                                end + "'" );
+                        end + "'" );
                 }
                 charMetricsRead = true;
                 fontMetrics.setCharMetrics(charMetrics);
             }
-            else if (!reducedDataset && START_COMPOSITES.equals(nextCommand))
+            else if( !reducedDataset && START_COMPOSITES.equals( nextCommand ) )
             {
                 int count = readInt();
                 for( int i=0; i<count; i++ )
@@ -495,10 +496,10 @@ public class AFMParser
                 if( !end.equals( END_COMPOSITES ) )
                 {
                     throw new IOException( "Error: Expected '" + END_COMPOSITES + "' actual '" +
-                                                end + "'" );
+                        end + "'" );
                 }
             }
-            else if (!reducedDataset && START_KERN_DATA.equals(nextCommand))
+            else if( !reducedDataset && START_KERN_DATA.equals( nextCommand ) )
             {
                 parseKernData( fontMetrics );
             }
@@ -543,7 +544,7 @@ public class AFMParser
                 if( !end.equals( END_TRACK_KERN ) )
                 {
                     throw new IOException( "Error: Expected '" + END_TRACK_KERN + "' actual '" +
-                                                end + "'" );
+                        end + "'" );
                 }
             }
             else if( START_KERN_PAIRS.equals( nextCommand ) )
@@ -558,7 +559,7 @@ public class AFMParser
                 if( !end.equals( END_KERN_PAIRS ) )
                 {
                     throw new IOException( "Error: Expected '" + END_KERN_PAIRS + "' actual '" +
-                                                end + "'" );
+                        end + "'" );
                 }
             }
             else if( START_KERN_PAIRS0.equals( nextCommand ) )
@@ -573,7 +574,7 @@ public class AFMParser
                 if( !end.equals( END_KERN_PAIRS ) )
                 {
                     throw new IOException( "Error: Expected '" + END_KERN_PAIRS + "' actual '" +
-                                                end + "'" );
+                        end + "'" );
                 }
             }
             else if( START_KERN_PAIRS1.equals( nextCommand ) )
@@ -588,7 +589,7 @@ public class AFMParser
                 if( !end.equals( END_KERN_PAIRS ) )
                 {
                     throw new IOException( "Error: Expected '" + END_KERN_PAIRS + "' actual '" +
-                                                end + "'" );
+                        end + "'" );
                 }
             }
             else
@@ -692,7 +693,7 @@ public class AFMParser
                 throw new IOException( "Error parsing AFM file:" + e );
             }
         }
-        return new String(data, Charsets.ISO_8859_1);
+        return new String( data, Charsets.ISO_8859_1 );
     }
 
     /**
@@ -918,7 +919,7 @@ public class AFMParser
             if( !semicolon.equals( ";" ) )
             {
                 throw new IOException( "Error: Expected semicolon in stream actual='" +
-                                            semicolon + "'" );
+                    semicolon + "'" );
             }
         }
         else
@@ -1029,7 +1030,7 @@ public class AFMParser
     private boolean isEOL( int character )
     {
         return character == 0x0D ||
-               character == 0x0A;
+            character == 0x0A;
     }
 
     /**
@@ -1042,8 +1043,8 @@ public class AFMParser
     private boolean isWhitespace( int character )
     {
         return character == ' ' ||
-               character == '\t' ||
-               character == 0x0D ||
-               character == 0x0A;
+            character == '\t' ||
+            character == 0x0D ||
+            character == 0x0A;
     }
 }
