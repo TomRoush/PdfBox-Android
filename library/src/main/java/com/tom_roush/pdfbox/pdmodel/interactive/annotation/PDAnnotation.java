@@ -32,6 +32,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceCMYK;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 
@@ -697,7 +698,7 @@ public abstract class PDAnnotation implements COSObjectable
                     colorSpace = PDDeviceRGB.INSTANCE;
                     break;
                 case 4:
-//                    colorSpace = PDDeviceCMYK.INSTANCE; TODO: PdfBox-Android
+                    colorSpace = PDDeviceCMYK.INSTANCE;
                     break;
                 default:
                     break;

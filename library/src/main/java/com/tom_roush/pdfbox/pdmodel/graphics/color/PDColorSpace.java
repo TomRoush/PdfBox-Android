@@ -115,11 +115,11 @@ public abstract class PDColorSpace implements COSObjectable
             }
 
             // built-in color spaces
-            /*if (name == COSName.DEVICECMYK)
+            if (name == COSName.DEVICECMYK)
             {
                 return PDDeviceCMYK.INSTANCE;
-            } TODO: PdfBox-Android
-            else*/
+            }
+            else
             if (name == COSName.DEVICERGB)
             {
                 return PDDeviceRGB.INSTANCE;
