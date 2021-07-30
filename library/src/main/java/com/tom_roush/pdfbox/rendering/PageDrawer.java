@@ -282,7 +282,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         Region clippingPath = getGraphicsState().getCurrentClippingPath();
         if (clippingPath != lastClip)
         {
-            canvas.clipPath(clippingPath.getBoundaryPath());
+//            canvas.clipPath(clippingPath.getBoundaryPath()); TODO: PdfBox-Android
             lastClip = clippingPath;
         }
     }
