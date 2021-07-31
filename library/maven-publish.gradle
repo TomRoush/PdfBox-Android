@@ -18,8 +18,8 @@ task androidJavadocs(type: Javadoc) {
 
     options.encoding = "UTF-8"
     options.docTitle("PdfBox-Android")
-    options.links("https://docs.oracle.com/javase/8/docs/api/")
-    options.linksOffline('http://developer.android.com/reference/', "${android.sdkDirectory}/docs/reference")
+    options.links("https://docs.oracle.com/en/java/javase/11/docs/api")
+    options.links("https://developer.android.com/reference/")
 
     exclude '**/BuildConfig.java'
     exclude '**/R.java'
