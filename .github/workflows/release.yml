@@ -18,8 +18,11 @@ jobs:
           java-version: 11
           distribution: 'adopt'
 
+      - name: Set Release Version Name
+        run: sed -e s/-SNAPSHOT//g -i gradle.properties;
+
       - name: Publish Maven Central Release
-        run: ./gradlew assembleRelease publish
+        run: ./gradlew publish
         env:
           ORG_GRADLE_PROJECT_signingKeyId: ${{ secrets.SIGNING_KEY_ID }}
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.SIGNING_KEY }}
