@@ -18,8 +18,8 @@ task androidJavadocs(type: Javadoc) {
 
     options.encoding = "UTF-8"
     options.docTitle("PdfBox-Android")
-    options.links("https://docs.oracle.com/javase/8/docs/api/")
-    options.linksOffline('http://developer.android.com/reference/', "${android.sdkDirectory}/docs/reference")
+    options.links("https://docs.oracle.com/en/java/javase/11/docs/api")
+    options.links("https://developer.android.com/reference/")
 
     exclude '**/BuildConfig.java'
     exclude '**/R.java'
@@ -65,51 +65,53 @@ def pomConfig = {
     }
 }
 
-publishing {
-    repositories {
-        maven {
-            def releaseRepo = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            def snapshotRepo = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-            url = isReleaseVersion ? releaseRepo : snapshotRepo
-            credentials {
-                username = project.hasProperty('ossrhUsername') ? ossrhUsername : System.getenv('OSSRH_USERNAME')
-                password = project.hasProperty('ossrhPassword') ? ossrhPassword : System.getenv('OSSRH_PASSWORD')
+project.afterEvaluate {
+    publishing {
+        repositories {
+            maven {
+                def releaseRepo = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                def snapshotRepo = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                url = isReleaseVersion ? releaseRepo : snapshotRepo
+                credentials {
+                    username = project.hasProperty('ossrhUsername') ? ossrhUsername : System.getenv('OSSRH_USERNAME')
+                    password = project.hasProperty('ossrhPassword') ? ossrhPassword : System.getenv('OSSRH_PASSWORD')
+                }
             }
         }
-    }
-    publications {
-        maven(MavenPublication) {
-            artifact "$buildDir/outputs/aar/pdfbox-android-release-${project.VERSION_NAME}.aar"
-            artifact androidJavadocsJar
-            artifact androidSourcesJar
+        publications {
+            maven(MavenPublication) {
+                artifact bundleReleaseAar
+                artifact androidJavadocsJar
+                artifact androidSourcesJar
 
-            groupId project.PUBLISH_GROUP_ID
-            artifactId project.PUBLISH_ARTIFACT_ID
-            version project.PUBLISH_VERSION
+                groupId project.PUBLISH_GROUP_ID
+                artifactId project.PUBLISH_ARTIFACT_ID
+                version project.PUBLISH_VERSION
 
-            pom.withXml {
-                def root = asNode()
-                root.appendNode('name', 'PdfBox-Android')
-                root.appendNode('description', 'The Apache PdfBox project ported to work on Android')
-                root.children().last() + pomConfig
+                pom.withXml {
+                    def root = asNode()
+                    root.appendNode('name', 'PdfBox-Android')
+                    root.appendNode('description', 'The Apache PdfBox project ported to work on Android')
+                    root.children().last() + pomConfig
 
-                // Manually add all the pom nodes for dependencies
-                def dependenciesNode = asNode().appendNode('dependencies')
-                configurations.api.allDependencies.each {
-                    def dependencyNode = dependenciesNode.appendNode('dependency')
-                    dependencyNode.appendNode('groupId', it.group)
-                    dependencyNode.appendNode('artifactId', it.name)
-                    dependencyNode.appendNode('version', it.version)
+                    // Manually add all the pom nodes for dependencies
+                    def dependenciesNode = asNode().appendNode('dependencies')
+                    configurations.api.allDependencies.each {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                    }
                 }
             }
         }
     }
-}
 
-signing {
-    def signingKeyId = findProperty("signingKeyId")
-    def signingKey = findProperty("signingKey")
-    def signingPassword = findProperty("signingPassword")
-    useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
-    sign publishing.publications.maven
+    signing {
+        def signingKeyId = findProperty("signingKeyId")
+        def signingKey = findProperty("signingKey")
+        def signingPassword = findProperty("signingPassword")
+        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+        sign publishing.publications.maven
+    }
 }
