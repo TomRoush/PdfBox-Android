@@ -177,7 +177,10 @@ public class TestSymmetricKeyEncryption
 
         // check permissions
         assertEquals(expectedPermissions.isOwnerPermission(), currentAccessPermission.isOwnerPermission());
-        assertEquals(expectedPermissions.isReadOnly(), currentAccessPermission.isReadOnly());
+        if (!expectedPermissions.isOwnerPermission())
+        {
+            assertEquals(true, currentAccessPermission.isReadOnly());
+        }
         assertEquals(expectedPermissions.canAssembleDocument(), currentAccessPermission.canAssembleDocument());
         assertEquals(expectedPermissions.canExtractContent(), currentAccessPermission.canExtractContent());
         assertEquals(expectedPermissions.canExtractForAccessibility(), currentAccessPermission.canExtractForAccessibility());

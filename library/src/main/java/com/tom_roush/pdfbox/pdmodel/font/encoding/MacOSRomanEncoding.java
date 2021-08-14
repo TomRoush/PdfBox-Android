@@ -24,6 +24,7 @@ import com.tom_roush.pdfbox.cos.COSBase;
  */
 public class MacOSRomanEncoding extends MacRomanEncoding
 {
+
     private static final int CHAR_CODE = 0;
     private static final int CHAR_NAME = 1;
 
@@ -67,15 +68,12 @@ public class MacOSRomanEncoding extends MacRomanEncoding
         // differences and additions to MacRomanEncoding
         for (Object[] encodingEntry : MAC_OS_ROMAN_ENCODING_TABLE)
         {
-            add((Integer)encodingEntry[CHAR_CODE], encodingEntry[CHAR_NAME].toString());
+            add((Integer) encodingEntry[CHAR_CODE], encodingEntry[CHAR_NAME].toString());
         }
+
     }
 
-    /**
-     * Convert this standard java object to a COS object.
-     *
-     * @return The cos object that matches this Java object.
-     */
+    @Override
     public COSBase getCOSObject()
     {
         return null;

@@ -153,8 +153,7 @@ public class KerningSubtable
         }
         else
         {
-            Log.w("PdfBox-Android",
-                "No kerning subtable data available due to an unsupported kerning subtable version");
+            Log.w("PdfBox-Android", "No kerning subtable data available due to an unsupported kerning subtable version");
         }
         return kerning;
     }
@@ -170,8 +169,7 @@ public class KerningSubtable
     {
         if (pairs == null)
         {
-            Log.w("PdfBox-Android",
-                "No kerning subtable data available due to an unsupported kerning subtable version");
+            Log.w("PdfBox-Android", "No kerning subtable data available due to an unsupported kerning subtable version");
             return 0;
         }
         return pairs.getKerning(l, r);
@@ -215,8 +213,7 @@ public class KerningSubtable
         }
         else
         {
-            Log.d("PdfBox-Android", "Skipped kerning subtable due to an unsupported kerning" +
-                " subtable version: " + format);
+            Log.d("PdfBox-Android", "Skipped kerning subtable due to an unsupported kerning subtable version: " + format);
         }
     }
 
@@ -264,7 +261,7 @@ public class KerningSubtable
         public void read(TTFDataStream data) throws IOException
         {
             int numPairs = data.readUnsignedShort();
-            searchRange = data.readUnsignedShort() / 6;
+            searchRange = data.readUnsignedShort()/6;
             int entrySelector = data.readUnsignedShort();
             int rangeShift = data.readUnsignedShort();
             pairs = new int[numPairs][3];
@@ -282,17 +279,11 @@ public class KerningSubtable
         @Override
         public int getKerning(int l, int r)
         {
-            int[] key = new int[]{l, r, 0};
-            int index;
-            index = Arrays.binarySearch(pairs, 0, searchRange, key, this);
+            int[] key = new int[] { l, r, 0 };
+            int index = Arrays.binarySearch(pairs, key, this);
             if (index >= 0)
             {
                 return pairs[index][2];
-            }
-            index = Arrays.binarySearch(pairs, searchRange, pairs.length, key, this);
-            if (index >= 0)
-            {
-                return pairs[searchRange + index][2];
             }
             return 0;
         }

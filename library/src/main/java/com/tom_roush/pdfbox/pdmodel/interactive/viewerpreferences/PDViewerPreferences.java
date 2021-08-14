@@ -18,6 +18,7 @@ package com.tom_roush.pdfbox.pdmodel.interactive.viewerpreferences;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
@@ -27,28 +28,28 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
  */
 public class PDViewerPreferences implements COSObjectable
 {
-    
+
     /**
      * From PDF Reference: "Neither document outline nor thumbnail images visible".
-     * 
+     *
      * @deprecated use {@link NON_FULL_SCREEN_PAGE_MODE} instead
      */
     public static final String NON_FULL_SCREEN_PAGE_MODE_USE_NONE = "UseNone";
     /**
      * From PDF Reference: "Document outline visible".
-     * 
+     *
      * @deprecated use {@link NON_FULL_SCREEN_PAGE_MODE} instead
      */
     public static final String NON_FULL_SCREEN_PAGE_MODE_USE_OUTLINES = "UseOutlines";
     /**
      * From PDF Reference: "Thumbnail images visible".
-     * 
+     *
      * @deprecated use {@link NON_FULL_SCREEN_PAGE_MODE} instead
      */
     public static final String NON_FULL_SCREEN_PAGE_MODE_USE_THUMBS = "UseThumbs";
     /**
      * From PDF Reference: "Optional content group panel visible".
-     * 
+     *
      * @deprecated use {@link NON_FULL_SCREEN_PAGE_MODE} instead
      */
     public static final String NON_FULL_SCREEN_PAGE_MODE_USE_OPTIONAL_CONTENT = "UseOC";
@@ -56,7 +57,7 @@ public class PDViewerPreferences implements COSObjectable
     /**
      * Enumeration containing all valid values for NonFullScreenPageMode.
      */
-    public static enum NON_FULL_SCREEN_PAGE_MODE
+    public enum NON_FULL_SCREEN_PAGE_MODE
     {
         /**
          *  From PDF Reference: "Neither document outline nor thumbnail images visible".
@@ -65,11 +66,11 @@ public class PDViewerPreferences implements COSObjectable
         /**
          * From PDF Reference: "Document outline visible".
          */
-        UseOutlines, 
+        UseOutlines,
         /**
          * From PDF Reference: "Thumbnail images visible".
          */
-        UseThumbs, 
+        UseThumbs,
         /**
          * From PDF Reference: "Optional content group panel visible".
          */
@@ -78,20 +79,20 @@ public class PDViewerPreferences implements COSObjectable
 
     /**
      * Reading direction.
-     * 
+     *
      * @deprecated use {@link READING_DIRECTION} instead
      */
     public static final String READING_DIRECTION_L2R = "L2R";
     /**
      * Reading direction.
-     * 
+     *
      * @deprecated use {@link READING_DIRECTION} instead
      */
     public static final String READING_DIRECTION_R2L = "R2L";
     /**
      * Enumeration containing all valid values for ReadingDirection.
      */
-    public static enum READING_DIRECTION
+    public enum READING_DIRECTION
     {
         /**
          * left to right.
@@ -105,55 +106,55 @@ public class PDViewerPreferences implements COSObjectable
 
     /**
      * Boundary constant.
-     * 
+     *
      * @deprecated use {@link BOUNDARY} instead
      */
     public static final String BOUNDARY_MEDIA_BOX = "MediaBox";
     /**
      * Boundary constant.
-     * 
+     *
      * @deprecated use {@link BOUNDARY} instead
      */
     public static final String BOUNDARY_CROP_BOX = "CropBox";
     /**
      * Boundary constant.
-     * 
+     *
      * @deprecated use {@link BOUNDARY} instead
      */
     public static final String BOUNDARY_BLEED_BOX = "BleedBox";
     /**
      * Boundary constant.
-     * 
+     *
      * @deprecated use {@link BOUNDARY} instead
      */
     public static final String BOUNDARY_TRIM_BOX = "TrimBox";
     /**
      * Boundary constant.
-     * 
+     *
      * @deprecated use {@link BOUNDARY} instead
      */
     public static final String BOUNDARY_ART_BOX = "ArtBox";
     /**
      * Enumeration containing all valid values for boundaries.
      */
-    public static enum BOUNDARY
+    public enum BOUNDARY
     {
         /**
          * use media box as boundary.
          */
-        MediaBox, 
+        MediaBox,
         /**
          * use crop box as boundary.
          */
-        CropBox, 
+        CropBox,
         /**
          * use bleed box as boundary.
          */
-        BleedBox, 
+        BleedBox,
         /**
          * use trim box as boundary.
          */
-        TrimBox, 
+        TrimBox,
         /**
          * use art box as boundary.
          */
@@ -163,7 +164,7 @@ public class PDViewerPreferences implements COSObjectable
     /**
      * Enumeration containing all valid values for duplex.
      */
-    public static enum DUPLEX
+    public enum DUPLEX
     {
         /**
          * simplex printing.
@@ -172,7 +173,7 @@ public class PDViewerPreferences implements COSObjectable
         /**
          * duplex printing, flip at short edge.
          */
-        DuplexFlipShortEdge, 
+        DuplexFlipShortEdge,
         /**
          * duplex printing, flip at long edge.
          */
@@ -182,12 +183,12 @@ public class PDViewerPreferences implements COSObjectable
     /**
      * Enumeration containing all valid values for printscaling.
      */
-    public static enum PRINT_SCALING
+    public enum PRINT_SCALING
     {
         /**
          * no scaling.
          */
-        None, 
+        None,
         /**
          * use app default.
          */
@@ -344,8 +345,8 @@ public class PDViewerPreferences implements COSObjectable
      */
     public String getNonFullScreenPageMode()
     {
-        return prefs.getNameAsString( COSName.NON_FULL_SCREEN_PAGE_MODE, 
-                NON_FULL_SCREEN_PAGE_MODE.UseNone.toString());
+        return prefs.getNameAsString( COSName.NON_FULL_SCREEN_PAGE_MODE,
+            NON_FULL_SCREEN_PAGE_MODE.UseNone.toString());
     }
 
     /**
@@ -362,7 +363,7 @@ public class PDViewerPreferences implements COSObjectable
      * Set the non full screen page mode preference.
      *
      * @param value Set the non full screen page mode preference.
-     * 
+     *
      * @deprecated
      */
     public void setNonFullScreenPageMode( String value )
@@ -394,7 +395,7 @@ public class PDViewerPreferences implements COSObjectable
      * Set the reading direction preference.
      *
      * @param value Set the reading direction preference.
-     * 
+     *
      * @deprecated
      */
     public void setReadingDirection( String value )
@@ -416,7 +417,7 @@ public class PDViewerPreferences implements COSObjectable
      * Set the ViewArea preference.  See BOUNDARY_XXX constants.
      *
      * @param value Set the ViewArea preference.
-     * 
+     *
      * @deprecated
      */
     public void setViewArea( String value )
@@ -458,7 +459,7 @@ public class PDViewerPreferences implements COSObjectable
      * Set the ViewClip preference.  See BOUNDARY_XXX constants.
      *
      * @param value Set the ViewClip preference.
-     * 
+     *
      * @deprecated
      */
     public void setViewClip( String value )
@@ -480,7 +481,7 @@ public class PDViewerPreferences implements COSObjectable
      * Set the PrintArea preference.  See BOUNDARY_XXX constants.
      *
      * @param value Set the PrintArea preference.
-     * 
+     *
      * @deprecated
      */
     public void setPrintArea( String value )
@@ -512,14 +513,14 @@ public class PDViewerPreferences implements COSObjectable
      * Set the PrintClip preference.  See BOUNDARY_XXX constants.
      *
      * @param value Set the PrintClip preference.
-     * 
+     *
      * @deprecated
      */
     public void setPrintClip( String value )
     {
         prefs.setName( COSName.PRINT_CLIP, value );
     }
-    
+
     /**
      * Set the PrintClip preference.  See BOUNDARY enumeration.
      *
@@ -529,7 +530,7 @@ public class PDViewerPreferences implements COSObjectable
     {
         prefs.setName( COSName.PRINT_CLIP, value.toString() );
     }
-    
+
     /**
      * Get the Duplex preference.  See DUPLEX enumeration.
      *
@@ -549,7 +550,7 @@ public class PDViewerPreferences implements COSObjectable
     {
         prefs.setName( COSName.DUPLEX, value.toString() );
     }
-    
+
     /**
      * Get the PrintScaling preference.  See PRINT_SCALING enumeration.
      *

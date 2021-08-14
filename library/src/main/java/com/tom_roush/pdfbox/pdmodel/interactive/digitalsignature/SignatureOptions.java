@@ -23,17 +23,22 @@ import java.io.InputStream;
 
 import com.tom_roush.pdfbox.cos.COSDocument;
 import com.tom_roush.pdfbox.io.RandomAccessBufferedFileInputStream;
+import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.pdfparser.PDFParser;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSigProperties;
 
 /**
- * TODO description needed
+ * This contains the visual signature as a COSDocument, its preferred size and the page.
  */
 public class SignatureOptions implements Closeable
 {
     private COSDocument visualSignature;
     private int preferredSignatureSize;
     private int pageNo;
+
+    // the pdf to be read
+    // this is done analog to PDDocument
+    private RandomAccessRead pdfSource = null;
 
     public static final int DEFAULT_SIGNATURE_SIZE = 0x2500;
 
@@ -47,20 +52,20 @@ public class SignatureOptions implements Closeable
 
     /**
      * Set the 0-based page number.
-     * 
+     *
      * @param pageNo the page number
      */
     public void setPage(int pageNo)
     {
         this.pageNo = pageNo;
     }
-  
+
     /**
      * Get the 0-based page number.
-     * 
+     *
      * @return the page number
      */
-    public int getPage() 
+    public int getPage()
     {
         return pageNo;
     }
@@ -73,7 +78,8 @@ public class SignatureOptions implements Closeable
      */
     public void setVisualSignature(File file) throws IOException
     {
-        PDFParser parser = new PDFParser(new RandomAccessBufferedFileInputStream(file));
+        pdfSource = new RandomAccessBufferedFileInputStream(file);
+        PDFParser parser = new PDFParser(pdfSource);
         parser.parse();
         visualSignature = parser.getDocument();
     }
@@ -86,33 +92,35 @@ public class SignatureOptions implements Closeable
      */
     public void setVisualSignature(InputStream is) throws IOException
     {
-        PDFParser parser = new PDFParser(new RandomAccessBufferedFileInputStream(is));
+        pdfSource = new RandomAccessBufferedFileInputStream(is);
+        PDFParser parser = new PDFParser(pdfSource);
         parser.parse();
         visualSignature = parser.getDocument();
     }
-    
+
     /**
      * Reads the visual signature from the given visual signature properties
-     *  
-     * @param visSignatureProperties the <code>PDVisibleSigProperties</code> object containing the visual signature
-     * 
+     *
+     * @param visSignatureProperties the <code>PDVisibleSigProperties</code> object containing the
+     * visual signature
+     *
      * @throws IOException when something went wrong during parsing
      */
     public void setVisualSignature(PDVisibleSigProperties visSignatureProperties) throws IOException
-    { 
+    {
         setVisualSignature(visSignatureProperties.getVisibleSignature());
     }
 
     /**
      * Get the visual signature.
-     * 
+     *
      * @return the visual signature
      */
     public COSDocument getVisualSignature()
     {
         return visualSignature;
     }
-  
+
     /**
      * Get the preferred size of the signature.
      *
@@ -122,7 +130,7 @@ public class SignatureOptions implements Closeable
     {
         return preferredSignatureSize;
     }
-  
+
     /**
      * Set the preferred size of the signature.
      *
@@ -147,6 +155,10 @@ public class SignatureOptions implements Closeable
         if (visualSignature != null)
         {
             visualSignature.close();
+        }
+        if (pdfSource != null)
+        {
+            pdfSource.close();
         }
     }
 }

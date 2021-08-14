@@ -1,4 +1,5 @@
 /*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -125,18 +126,18 @@ public class DictionaryEncoding extends Encoding
     private void applyDifferences()
     {
         // now replace with the differences
-        COSArray differences = (COSArray) encoding.getDictionaryObject(COSName.DIFFERENCES);
+        COSArray differences = (COSArray)encoding.getDictionaryObject( COSName.DIFFERENCES );
         int currentIndex = -1;
-        for (int i = 0; differences != null && i < differences.size(); i++)
+        for( int i=0; differences != null && i<differences.size(); i++ )
         {
-            COSBase next = differences.getObject(i);
-            if (next instanceof COSNumber)
+            COSBase next = differences.getObject( i );
+            if( next instanceof COSNumber)
             {
-                currentIndex = ((COSNumber) next).intValue();
+                currentIndex = ((COSNumber)next).intValue();
             }
-            else if (next instanceof COSName)
+            else if( next instanceof COSName )
             {
-                COSName name = (COSName) next;
+                COSName name = (COSName)next;
                 add(currentIndex, name.getName());
                 this.differences.put(currentIndex, name.getName());
                 currentIndex++;
@@ -160,11 +161,7 @@ public class DictionaryEncoding extends Encoding
         return differences;
     }
 
-    /**
-     * Convert this standard java object to a COS object.
-     *
-     * @return The cos object that matches this Java object.
-     */
+    @Override
     public COSBase getCOSObject()
     {
         return encoding;

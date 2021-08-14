@@ -27,7 +27,7 @@ import com.tom_roush.fontbox.util.BoundingBox;
 
 /**
  * An Adobe Compact Font Format (CFF) font. Thread safe.
- * 
+ *
  * @author Villu Ruusmann
  * @author John Hewson
  */
@@ -63,7 +63,7 @@ public abstract class CFFFont implements FontBoxFont
 
     /**
      * Adds the given key/value pair to the top dictionary.
-     * 
+     *
      * @param name the given key
      * @param value the given value
      */
@@ -77,7 +77,7 @@ public abstract class CFFFont implements FontBoxFont
 
     /**
      * Returns the top dictionary.
-     * 
+     *
      * @return the dictionary
      */
     public Map<String, Object> getTopDict()
@@ -103,7 +103,7 @@ public abstract class CFFFont implements FontBoxFont
 
     /**
      * Returns the CFFCharset of the font.
-     * 
+     *
      * @return the charset
      */
     public CFFCharset getCharset()
@@ -113,7 +113,7 @@ public abstract class CFFFont implements FontBoxFont
 
     /**
      * Sets the CFFCharset of the font.
-     * 
+     *
      * @param charset the given CFFCharset
      */
     void setCharset(CFFCharset charset)
@@ -158,7 +158,7 @@ public abstract class CFFFont implements FontBoxFont
     /**
      * Sets the global subroutine index data.
      *
-     * @param globalSubrIndexValue a list containing the global subroutines
+     * @param globalSubrIndexValue an list containing the global subroutines
      */
     void setGlobalSubrIndex(byte[][] globalSubrIndexValue)
     {
@@ -186,8 +186,8 @@ public abstract class CFFFont implements FontBoxFont
     @Override
     public String toString()
     {
-        return getClass().getSimpleName() + "[name=" + fontName + ", topDict=" + topDict +
-            ", charset=" + charset + ", charStrings=" + Arrays.deepToString(charStrings)
-                + "]";
+        return getClass().getSimpleName() + "[name=" + fontName + ", topDict=" + topDict
+            + ", charset=" + charset + ", charStrings=" + Arrays.deepToString(charStrings)
+            + "]";
     }
 }

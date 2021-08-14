@@ -261,7 +261,7 @@ public abstract class PDCIDFont implements COSObjectable, PDFontLike, PDVectorFo
         Vector v = positionVectors.get(cid);
         if (v == null)
         {
-            return getDefaultPositionVector(cid);
+            v = getDefaultPositionVector(cid);
         }
         return v;
     }
@@ -278,7 +278,7 @@ public abstract class PDCIDFont implements COSObjectable, PDFontLike, PDVectorFo
         Float w1y = verticalDisplacementY.get(cid);
         if (w1y == null)
         {
-            return dw2[1];
+            w1y = dw2[1];
         }
         return w1y;
     }
@@ -292,7 +292,6 @@ public abstract class PDCIDFont implements COSObjectable, PDFontLike, PDVectorFo
         // these widths are supposed to be consistent with the actual widths given in the CIDFont
         // program, but PDFBOX-563 shows that when they are not, Acrobat overrides the embedded
         // font widths with the widths given in the font dictionary
-
         return getWidthForCID(codeToCID(code));
     }
 
@@ -319,7 +318,7 @@ public abstract class PDCIDFont implements COSObjectable, PDFontLike, PDVectorFo
                     totalWidths += width;
                 }
             }
-            float averageWidth = totalWidths / characterCount;
+            averageWidth = totalWidths / characterCount;
             if (averageWidth <= 0 || Float.isNaN(averageWidth))
             {
                 averageWidth = getDefaultWidth();

@@ -21,11 +21,12 @@ import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * This the win ansi encoding.
- * 
+ *
  * @author Ben Litchfield
  */
 public class WinAnsiEncoding extends Encoding
 {
+
     private static final int CHAR_CODE = 0;
     private static final int CHAR_NAME = 1;
 
@@ -248,15 +249,12 @@ public class WinAnsiEncoding extends Encoding
         {0245, "yen"},
         {0172, "z"},
         {0236, "zcaron"},
-        {060, "zero"},
-        // adding some additional mappings as defined in Appendix D of the pdf spec
-        {0240, "space"},
-        {0255, "hyphen"}
+        {060, "zero"}
     };
 
     /**
      * Singleton instance of this class.
-     * 
+     *
      * @since Apache PDFBox 1.3.0
      */
     public static final WinAnsiEncoding INSTANCE = new WinAnsiEncoding();
@@ -268,8 +266,13 @@ public class WinAnsiEncoding extends Encoding
     {
         for (Object[] encodingEntry : WIN_ANSI_ENCODING_TABLE)
         {
-            add((Integer)encodingEntry[CHAR_CODE], encodingEntry[CHAR_NAME].toString());
+            add((Integer) encodingEntry[CHAR_CODE], encodingEntry[CHAR_NAME].toString());
         }
+
+        // adding some additional mappings as defined in Appendix D of the pdf spec
+        // don't add the reverse mapping as we have to preserve the origin mapping for the given glyph names
+        codeToName.put(0240, "space");
+        codeToName.put(0255, "hyphen");
 
         // From the PDF specification:
         // In WinAnsiEncoding, all unused codes greater than 40 map to the bullet character.
@@ -282,11 +285,7 @@ public class WinAnsiEncoding extends Encoding
         }
     }
 
-    /**
-     * Convert this standard java object to a COS object.
-     * 
-     * @return The cos object that matches this Java object.
-     */
+    @Override
     public COSBase getCOSObject()
     {
         return COSName.WIN_ANSI_ENCODING;

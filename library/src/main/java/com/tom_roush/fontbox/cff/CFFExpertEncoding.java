@@ -18,11 +18,12 @@ package com.tom_roush.fontbox.cff;
 
 /**
  * This is specialized CFFEncoding. It's used if the EncodingId of a font is set to 1.
- * 
+ *
  * @author Villu Ruusmann
  */
 public final class CFFExpertEncoding extends CFFEncoding
 {
+
     private static final int CHAR_CODE = 0;
     private static final int CHAR_SID = 1;
 

@@ -78,7 +78,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
     @Override
     public boolean containsKey(Object key)
     {
-        return map.keySet().contains( key );
+        return actuals.containsKey( key );
     }
 
     /**
@@ -208,13 +208,13 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
      *
      * @return A proper COSDictionary
      */
-    public static COSDictionary convert(Map<String,?> someMap)
+    public static COSDictionary convert(Map<String, ?> someMap)
     {
         COSDictionary dic = new COSDictionary();
         for (Entry<String, ?> entry : someMap.entrySet())
         {
             String name = entry.getKey();
-            COSObjectable object = (COSObjectable)entry.getValue();
+            COSObjectable object = (COSObjectable) entry.getValue();
             dic.setItem( COSName.getPDFName( name ), object.getCOSObject() );
         }
         return dic;
@@ -238,11 +238,11 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
             {
                 COSBase cosObj = map.getDictionaryObject( key );
                 Object actualObject = null;
-                if( cosObj instanceof COSString )
+                if( cosObj instanceof COSString)
                 {
                     actualObject = ((COSString)cosObj).getString();
                 }
-                else if( cosObj instanceof COSInteger )
+                else if( cosObj instanceof COSInteger)
                 {
                     actualObject = ((COSInteger)cosObj).intValue();
                 }
@@ -250,11 +250,11 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
                 {
                     actualObject = ((COSName)cosObj).getName();
                 }
-                else if( cosObj instanceof COSFloat )
+                else if( cosObj instanceof COSFloat)
                 {
                     actualObject = ((COSFloat)cosObj).floatValue();
                 }
-                else if( cosObj instanceof COSBoolean )
+                else if( cosObj instanceof COSBoolean)
                 {
                     actualObject = ((COSBoolean)cosObj).getValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
