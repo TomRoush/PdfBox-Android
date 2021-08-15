@@ -17,14 +17,14 @@
 
 package com.tom_roush.fontbox.type1;
 
-import com.tom_roush.fontbox.encoding.BuiltInEncoding;
-import com.tom_roush.fontbox.encoding.StandardEncoding;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.tom_roush.fontbox.encoding.BuiltInEncoding;
+import com.tom_roush.fontbox.encoding.StandardEncoding;
 
 /**
  * Parses an Adobe Type 1 (.pfb) font. It is used exclusively by Type1Font.
@@ -143,7 +143,7 @@ final class Type1Parser
     private void readSimpleValue(String key) throws IOException
     {
         List<Token> value = readDictValue();
-        
+
         if (key.equals("FontName"))
         {
             font.fontName = value.get(0).getText();
@@ -183,7 +183,7 @@ final class Type1Parser
         if (lexer.peekToken().getKind() == Token.NAME)
         {
             String name = lexer.nextToken().getText();
-            
+
             if (name.equals("StandardEncoding"))
             {
                 font.encoding = StandardEncoding.INSTANCE;
@@ -199,21 +199,21 @@ final class Type1Parser
         {
             read(Token.INTEGER).intValue();
             readMaybe(Token.NAME, "array");
-            
+
             // 0 1 255 {1 index exch /.notdef put } for
             // we have to check "readonly" and "def" too
             // as some fonts don't provide any dup-values, see PDFBOX-2134
             while (!(lexer.peekToken().getKind() == Token.NAME &&
-                    (lexer.peekToken().getText().equals("dup") ||
+                (lexer.peekToken().getText().equals("dup") ||
                     lexer.peekToken().getText().equals("readonly") ||
                     lexer.peekToken().getText().equals("def"))))
             {
                 lexer.nextToken();
             }
-            
+
             Map<Integer, String> codeToName = new HashMap<Integer, String>();
             while (lexer.peekToken().getKind() == Token.NAME &&
-                    lexer.peekToken().getText().equals("dup"))
+                lexer.peekToken().getText().equals("dup"))
             {
                 read(Token.NAME, "dup");
                 int code = read(Token.INTEGER).intValue();
@@ -246,7 +246,7 @@ final class Type1Parser
             }
             else
             {
-               throw new IOException("Expected INTEGER or REAL but got " + token.getKind());
+                throw new IOException("Expected INTEGER or REAL but got " + token.getKind());
             }
         }
         return numbers;
@@ -317,7 +317,7 @@ final class Type1Parser
         for (int i = 0; i < length; i++)
         {
             if (lexer.peekToken().getKind() == Token.NAME &&
-               !lexer.peekToken().getText().equals("end"))
+                !lexer.peekToken().getText().equals("end"))
             {
                 read(Token.NAME);
             }
@@ -462,9 +462,15 @@ final class Type1Parser
         lexer = new Type1Lexer(decrypted);
 
         // find /Private dict
-        while (!lexer.peekToken().getText().equals("Private"))
+        Token peekToken = lexer.peekToken();
+        while (peekToken != null && !peekToken.getText().equals("Private"))
         {
             lexer.nextToken();
+            peekToken = lexer.peekToken();
+        }
+        if (peekToken == null)
+        {
+            throw new IOException("/Private token not found");
         }
 
         // Private dict
@@ -527,7 +533,7 @@ final class Type1Parser
         // sometimes followed by "put". Either way, we just skip until
         // the /CharStrings dict is found
         while (!(lexer.peekToken().getKind() == Token.LITERAL &&
-                 lexer.peekToken().getText().equals("CharStrings")))
+            lexer.peekToken().getText().equals("CharStrings")))
         {
             lexer.nextToken();
         }
@@ -614,7 +620,7 @@ final class Type1Parser
         {
             // premature end
             if (!(lexer.peekToken().getKind() == Token.NAME &&
-                  lexer.peekToken().getText().equals("dup")))
+                lexer.peekToken().getText().equals("dup")))
             {
                 break;
             }
@@ -725,12 +731,12 @@ final class Type1Parser
         {
             return;
         }
-        else if (token.getText().equals("noaccess")) 
+        else if (token.getText().equals("noaccess"))
         {
             token = read(Token.NAME);
         }
 
-        if (token.getText().equals("put")) 
+        if (token.getText().equals("put"))
         {
             return;
         }

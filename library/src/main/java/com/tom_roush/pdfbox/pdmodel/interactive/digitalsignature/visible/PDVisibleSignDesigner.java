@@ -19,6 +19,7 @@ package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,13 +54,16 @@ public class PDVisibleSignDesigner
      * @param filename Path of the PDF file
      * @param imageStream image as a stream
      * @param page The 1-based page number for which the page size should be calculated.
-     *
      * @throws IOException
      */
     public PDVisibleSignDesigner(String filename, InputStream imageStream, int page)
         throws IOException
     {
-        this(new FileInputStream(filename), imageStream, page);
+        // set visible signature image Input stream
+        readImageStream(imageStream);
+
+        // calculate height and width of document page
+        calculatePageSizeFromFile(filename, page);
     }
 
     /**
@@ -68,7 +72,6 @@ public class PDVisibleSignDesigner
      * @param documentStream Original PDF document as stream
      * @param imageStream Image as a stream
      * @param page The 1-based page number for which the page size should be calculated.
-     *
      * @throws IOException
      */
     public PDVisibleSignDesigner(InputStream documentStream, InputStream imageStream, int page)
@@ -77,13 +80,8 @@ public class PDVisibleSignDesigner
         // set visible signature image Input stream
         readImageStream(imageStream);
 
-        // create PD document
-        PDDocument document = PDDocument.load(documentStream);
-
         // calculate height and width of document page
-        calculatePageSize(document, page);
-
-        document.close();
+        calculatePageSizeFromStream(documentStream, page);
     }
 
     /**
@@ -92,11 +90,9 @@ public class PDVisibleSignDesigner
      * @param document Already created PDDocument of your PDF document.
      * @param imageStream Image as a stream.
      * @param page The 1-based page number for which the page size should be calculated.
-     *
      * @throws IOException If we can't read, flush, or can't close stream.
      */
-    public PDVisibleSignDesigner(PDDocument document, InputStream imageStream, int page)
-        throws IOException
+    public PDVisibleSignDesigner(PDDocument document, InputStream imageStream, int page) throws IOException
     {
         readImageStream(imageStream);
         calculatePageSize(document, page);
@@ -108,12 +104,16 @@ public class PDVisibleSignDesigner
      * @param filename Path of the PDF file
      * @param image
      * @param page The 1-based page number for which the page size should be calculated.
-     *
      * @throws IOException
      */
-    public PDVisibleSignDesigner(String filename, Bitmap image, int page) throws IOException
+    public PDVisibleSignDesigner(String filename, Bitmap image, int page)
+        throws IOException
     {
-        this(new FileInputStream(filename), image, page);
+        // set visible signature image
+        setImage(image);
+
+        // calculate height and width of document page
+        calculatePageSizeFromFile(filename, page);
     }
 
     /**
@@ -130,13 +130,8 @@ public class PDVisibleSignDesigner
         // set visible signature image
         setImage(image);
 
-        // create PD document
-        PDDocument document = PDDocument.load(documentStream);
-
         // calculate height and width of document page
-        calculatePageSize(document, page);
-
-        document.close();
+        calculatePageSizeFromStream(documentStream, page);
     }
 
     /**
@@ -152,10 +147,32 @@ public class PDVisibleSignDesigner
         calculatePageSize(document, page);
     }
 
+    private void calculatePageSizeFromFile(String filename, int page) throws IOException
+    {
+        // create PD document
+        PDDocument document = PDDocument.load(new File(filename));
+
+        // calculate height and width of document page
+        calculatePageSize(document, page);
+
+        document.close();
+    }
+
+    private void calculatePageSizeFromStream(InputStream documentStream, int page) throws IOException
+    {
+        // create PD document
+        PDDocument document = PDDocument.load(documentStream);
+
+        // calculate height and width of document page
+        calculatePageSize(document, page);
+
+        document.close();
+    }
+
     /**
      * Each page of document can be different sizes. This method calculates the page size based on
      * the page media box.
-     * 
+     *
      * @param document
      * @param page The 1-based page number for which the page size should be calculated.
      * @throws IllegalArgumentException if the page argument is lower than 0.
@@ -195,7 +212,7 @@ public class PDVisibleSignDesigner
 
     /**
      * Zoom signature image with some percent.
-     * 
+     *
      * @param percent increase image with x percent.
      * @return Visible Signature Configuration Object
      */
@@ -260,7 +277,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @return signature image width
      */
     public float getWidth()
@@ -269,7 +286,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @param width signature image width
      * @return Visible Signature Configuration Object
      */
@@ -280,7 +297,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @return signature image height
      */
     public float getHeight()
@@ -300,7 +317,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @return template height
      */
     protected float getTemplateHeight()
@@ -309,7 +326,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @param templateHeight
      * @return Visible Signature Configuration Object
      */
@@ -320,7 +337,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @return signature field name
      */
     public String getSignatureFieldName()
@@ -329,7 +346,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @param signatureFieldName
      * @return Visible Signature Configuration Object
      */
@@ -340,7 +357,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @return image Image
      */
     public Bitmap getImage()
@@ -367,12 +384,12 @@ public class PDVisibleSignDesigner
     private void setImage(Bitmap image)
     {
         this.image = image;
-        imageHeight = (float)image.getHeight();
-        imageWidth = (float)image.getWidth();
+        imageHeight = (float) image.getHeight();
+        imageWidth = (float) image.getWidth();
     }
 
     /**
-     * 
+     *
      * @return Affine Transform parameters of for PDF Matrix
      */
     public byte[] getAffineTransformParams()
@@ -381,7 +398,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @param affineTransformParams
      * @return Visible Signature Configuration Object
      */
@@ -392,7 +409,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @return formatter PDRectanle parameters
      */
     public byte[] getFormatterRectangleParams()
@@ -413,7 +430,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @return page width
      */
     public float getPageWidth()
@@ -422,7 +439,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @param pageWidth pageWidth
      * @return Visible Signature Configuration Object
      */
@@ -433,7 +450,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @return page height
      */
     public float getPageHeight()
@@ -450,10 +467,10 @@ public class PDVisibleSignDesigner
         return imageSizeInPercents;
     }
 
-   /**
-    * 
-    * @param imageSizeInPercents
-    */
+    /**
+     *
+     * @param imageSizeInPercents
+     */
     public void imageSizeInPercents(float imageSizeInPercents)
     {
         this.imageSizeInPercents = imageSizeInPercents;
@@ -469,7 +486,7 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     * 
+     *
      * @param signatureText - adds the text on visible signature
      * @return the signature design
      */

@@ -19,14 +19,9 @@ package com.tom_roush.pdfbox.filter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.filter.ccitt.CCITTFaxG31DDecodeInputStream;
-import com.tom_roush.pdfbox.filter.ccitt.FillOrderChangeInputStream;
-import com.tom_roush.pdfbox.filter.ccitt.TIFFFaxDecoder;
-import com.tom_roush.pdfbox.io.IOUtils;
 
 /**
  * Decodes image data that has been encoded using either Group 3 or Group 4
@@ -40,7 +35,7 @@ final class CCITTFaxFilter extends Filter
 {
     @Override
     public DecodeResult decode(InputStream encoded, OutputStream decoded,
-                                         COSDictionary parameters, int index) throws IOException
+        COSDictionary parameters, int index) throws IOException
     {
         DecodeResult result = new DecodeResult(new COSDictionary());
         result.getParameters().addAll(parameters);
@@ -68,30 +63,32 @@ final class CCITTFaxFilter extends Filter
         boolean encodedByteAlign = decodeParms.getBoolean(COSName.ENCODED_BYTE_ALIGN, false);
         int arraySize = (cols + 7) / 8 * rows;
         // TODO possible options??
-        long tiffOptions = 0;
-        byte[] decompressed;
+        byte[] decompressed = new byte[arraySize];
+        CCITTFaxDecoderStream s;
+        int type;
+        long tiffOptions;
         if (k == 0)
         {
-            InputStream in = new CCITTFaxG31DDecodeInputStream(encoded, cols, rows, encodedByteAlign);
-            in = new FillOrderChangeInputStream(in);
-            decompressed = IOUtils.toByteArray(in);
-            in.close();
+            tiffOptions = encodedByteAlign ? TIFFExtension.GROUP3OPT_BYTEALIGNED : 0;
+            type = TIFFExtension.COMPRESSION_CCITT_MODIFIED_HUFFMAN_RLE;
         }
         else
         {
-            TIFFFaxDecoder faxDecoder = new TIFFFaxDecoder(1, cols, rows);
-            byte[] compressed = IOUtils.toByteArray(encoded);
-            decompressed = new byte[arraySize];
             if (k > 0)
             {
-                faxDecoder.decode2D(decompressed, compressed, 0, rows, tiffOptions);
+                tiffOptions = encodedByteAlign ? TIFFExtension.GROUP3OPT_BYTEALIGNED : 0;
+                tiffOptions |= TIFFExtension.GROUP3OPT_2DENCODING;
+                type = TIFFExtension.COMPRESSION_CCITT_T4;
             }
             else
             {
                 // k < 0
-                faxDecoder.decodeT6(decompressed, compressed, 0, rows, tiffOptions, encodedByteAlign);
+                tiffOptions = encodedByteAlign ? TIFFExtension.GROUP4OPT_BYTEALIGNED : 0;
+                type = TIFFExtension.COMPRESSION_CCITT_T6;
             }
         }
+        s = new CCITTFaxDecoderStream(encoded, cols, type, TIFFExtension.FILL_LEFT_TO_RIGHT, tiffOptions);
+        readFromDecoderStream(s, decompressed);
 
         // invert bitmap
         boolean blackIsOne = decodeParms.getBoolean(COSName.BLACK_IS_1, false);
@@ -114,6 +111,22 @@ final class CCITTFaxFilter extends Filter
         return new DecodeResult(parameters);
     }
 
+    public void readFromDecoderStream(CCITTFaxDecoderStream decoderStream, byte[] result)
+        throws IOException
+    {
+        int pos = 0;
+        int read;
+        while ((read = decoderStream.read(result, pos, result.length - pos)) > -1)
+        {
+            pos += read;
+            if (pos >= result.length)
+            {
+                break;
+            }
+        }
+        decoderStream.close();
+    }
+
     private void invertBitmap(byte[] bufferData)
     {
         for (int i = 0, c = bufferData.length; i < c; i++)
@@ -124,9 +137,8 @@ final class CCITTFaxFilter extends Filter
 
     @Override
     protected void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
-            throws IOException
+        throws IOException
     {
-        throw new UnsupportedEncodingException(
-            "CCITTFaxDecode encoding is not implemented, use the CCITTFactory methods instead.");
+        throw new UnsupportedOperationException("CCITTFaxFilter encoding not implemented, use the CCITTFactory methods instead");
     }
 }

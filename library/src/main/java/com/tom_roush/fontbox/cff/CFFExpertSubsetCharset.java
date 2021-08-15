@@ -19,11 +19,12 @@ package com.tom_roush.fontbox.cff;
 
 /**
  * This is specialized CFFCharset. It's used if the CharsetId of a font is set to 2.
- * 
+ *
  * @author Villu Ruusmann
  */
 public final class CFFExpertSubsetCharset extends CFFCharset
 {
+
     private static final int CHAR_CODE = 0;
     private static final int CHAR_NAME = 1;
 
@@ -141,8 +142,7 @@ public final class CFFExpertSubsetCharset extends CFFCharset
         int gid = 0;
         for (Object[] charsetEntry : CFF_EXPERT_SUBSET_CHARSET_TABLE)
         {
-            INSTANCE.addSID(gid++, (Integer)charsetEntry[CHAR_CODE],
-                charsetEntry[CHAR_NAME].toString());
+            INSTANCE.addSID(gid++, (Integer) charsetEntry[CHAR_CODE], charsetEntry[CHAR_NAME].toString());
         }
     }
 }

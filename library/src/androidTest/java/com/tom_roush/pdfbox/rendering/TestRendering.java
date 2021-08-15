@@ -50,7 +50,7 @@ public class TestRendering
 
     Context testContext;
 
-    private boolean findAssetPDFs(String path, ArrayList pdfs)
+    private boolean findAssetPDFs(String path, ArrayList<String> pdfs)
     {
         try
         {

@@ -19,12 +19,13 @@ package com.tom_roush.pdfbox.pdmodel.common.function.type4;
 /**
  * Parser for PDF Type 4 functions. This implements a small subset of the PostScript
  * language but is no full PostScript interpreter.
+ *
  */
 public final class Parser
 {
 
     /** Used to indicate the parsers current state. */
-    private static enum State
+    private enum State
     {
         NEWLINE, WHITESPACE, COMMENT, TOKEN
     }

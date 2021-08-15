@@ -31,8 +31,6 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 import com.tom_roush.fontbox.FontBoxFont;
-import com.tom_roush.fontbox.cff.CFFFont;
-import com.tom_roush.fontbox.cff.CFFType1Font;
 import com.tom_roush.fontbox.ttf.OpenTypeFont;
 import com.tom_roush.fontbox.ttf.TTFParser;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
@@ -51,9 +49,7 @@ final class FontMapperImpl implements FontMapper
     private Map<String, FontInfo> fontInfoByName;
     private final TrueTypeFont lastResortFont;
 
-    /**
-     * Map of PostScript name substitutes, in priority order.
-     */
+    /** Map of PostScript name substitutes, in priority order. */
     private final Map<String, List<String>> substitutes = new HashMap<String, List<String>>();
 
     FontMapperImpl()
@@ -64,27 +60,27 @@ final class FontMapperImpl implements FontMapper
                 "DroidSansMono"));
         substitutes.put("Courier-Bold",
             Arrays.asList("CourierNewPS-BoldMT", "CourierNew-Bold", "LiberationMono-Bold",
-                "NimbusMonL-Bold","DroidSansMono"));
+                "NimbusMonL-Bold", "DroidSansMono"));
         substitutes.put("Courier-Oblique",
             Arrays.asList("CourierNewPS-ItalicMT","CourierNew-Italic",
-                "LiberationMono-Italic", "NimbusMonL-ReguObli","DroidSansMono"));
+                "LiberationMono-Italic", "NimbusMonL-ReguObli", "DroidSansMono"));
         substitutes.put("Courier-BoldOblique",
             Arrays.asList("CourierNewPS-BoldItalicMT","CourierNew-BoldItalic",
-                "LiberationMono-BoldItalic", "NimbusMonL-BoldObli","DroidSansMono"));
+                "LiberationMono-BoldItalic", "NimbusMonL-BoldObli", "DroidSansMono"));
         substitutes.put("Helvetica",
-            Arrays.asList("ArialMT", "Arial", "LiberationSans", "NimbusSanL-Regu","Roboto-Regular"));
+            Arrays.asList("ArialMT", "Arial", "LiberationSans", "NimbusSanL-Regu", "Roboto-Regular"));
         substitutes.put("Helvetica-Bold",
             Arrays.asList("Arial-BoldMT", "Arial-Bold", "LiberationSans-Bold",
-                "NimbusSanL-Bold","Roboto-Bold"));
+                "NimbusSanL-Bold", "Roboto-Bold"));
         substitutes.put("Helvetica-Oblique",
             Arrays.asList("Arial-ItalicMT", "Arial-Italic", "Helvetica-Italic",
                 "LiberationSans-Italic", "NimbusSanL-ReguItal", "Roboto-Italic"));
         substitutes.put("Helvetica-BoldOblique",
             Arrays.asList("Arial-BoldItalicMT", "Helvetica-BoldItalic",
-                "LiberationSans-BoldItalic", "NimbusSanL-BoldItal","Roboto-BoldItalic"));
+                "LiberationSans-BoldItalic", "NimbusSanL-BoldItal", "Roboto-BoldItalic"));
         substitutes.put("Times-Roman",
             Arrays.asList("TimesNewRomanPSMT", "TimesNewRoman", "TimesNewRomanPS",
-                "LiberationSerif", "NimbusRomNo9L-Regu","DroidSerif-Regular", "Roboto-Regular"));
+                "LiberationSerif", "NimbusRomNo9L-Regu", "DroidSerif-Regular", "Roboto-Regular"));
         substitutes.put("Times-Bold",
             Arrays.asList("TimesNewRomanPS-BoldMT", "TimesNewRomanPS-Bold",
                 "TimesNewRoman-Bold", "LiberationSerif-Bold",
@@ -92,11 +88,11 @@ final class FontMapperImpl implements FontMapper
         substitutes.put("Times-Italic",
             Arrays.asList("TimesNewRomanPS-ItalicMT", "TimesNewRomanPS-Italic",
                 "TimesNewRoman-Italic", "LiberationSerif-Italic",
-                "NimbusRomNo9L-ReguItal","DroidSerif-Italic", "Roboto-Italic"));
+                "NimbusRomNo9L-ReguItal", "DroidSerif-Italic", "Roboto-Italic"));
         substitutes.put("Times-BoldItalic",
             Arrays.asList("TimesNewRomanPS-BoldItalicMT", "TimesNewRomanPS-BoldItalic",
                 "TimesNewRoman-BoldItalic", "LiberationSerif-BoldItalic",
-                "NimbusRomNo9L-MediItal","DroidSerif-BoldItalic", "Roboto-BoldItalic"));
+                "NimbusRomNo9L-MediItal", "DroidSerif-BoldItalic", "Roboto-BoldItalic"));
         substitutes.put("Symbol", Arrays.asList("Symbol", "SymbolMT", "StandardSymL"));
         substitutes.put("ZapfDingbats", Arrays.asList("ZapfDingbatsITC", "Dingbats", "MS-Gothic"));
         // TODO: PdfBox-Android load extra fonts? (DroidSerif for times and a symbol font)
@@ -261,8 +257,9 @@ final class FontMapperImpl implements FontMapper
             if (name != null)
             {
                 String lower = fontDescriptor.getFontName().toLowerCase();
-                isBold = lower.contains("bold") || lower.contains("black") || lower.contains(
-                    "heavy");
+                isBold = lower.contains("bold") ||
+                    lower.contains("black") ||
+                    lower.contains("heavy");
             }
 
             // font descriptor flags should describe the style
@@ -345,7 +342,7 @@ final class FontMapperImpl implements FontMapper
         {
             // fallback - todo: i.e. fuzzy match
             String fontName = getFallbackFontName(fontDescriptor);
-            ttf = (TrueTypeFont)findFont(FontFormat.TTF, fontName);
+            ttf = (TrueTypeFont) findFont(FontFormat.TTF, fontName);
             if (ttf == null)
             {
                 // we have to return something here as TTFs aren't strictly required on the system
@@ -362,7 +359,8 @@ final class FontMapperImpl implements FontMapper
      * @param fontDescriptor the FontDescriptor of the font to find
      */
     @Override
-    public FontMapping<FontBoxFont> getFontBoxFont(String baseFont, PDFontDescriptor fontDescriptor)
+    public FontMapping<FontBoxFont> getFontBoxFont(String baseFont,
+        PDFontDescriptor fontDescriptor)
     {
         FontBoxFont font = findFontBoxFont(baseFont);
         if (font != null)
@@ -395,16 +393,17 @@ final class FontMapperImpl implements FontMapper
         {
             return t1;
         }
-        CFFFont cff = (CFFFont)findFont(FontFormat.OTF, postScriptName);
-        if (cff instanceof CFFType1Font)
-        {
-            return cff;
-        }
 
         TrueTypeFont ttf = (TrueTypeFont)findFont(FontFormat.TTF, postScriptName);
         if (ttf != null)
         {
             return ttf;
+        }
+
+        OpenTypeFont otf = (OpenTypeFont) findFont(FontFormat.OTF, postScriptName);
+        if (otf != null)
+        {
+            return otf;
         }
 
         return null;
@@ -710,10 +709,10 @@ final class FontMapperImpl implements FontMapper
         {
             FontMatch match = queue.poll();
             FontInfo info = match.info;
-            System.out.println(
-                match.score + " | " + info.getMacStyle() + " " + info.getFamilyClass() + " " +
-                    info.getPanose() + " " + info.getCIDSystemInfo() + " " +
-                    info.getPostScriptName() + " " + info.getFormat());
+            System.out.println(match.score + " | " + info.getMacStyle() + " " +
+                info.getFamilyClass() + " " + info.getPanose() + " " +
+                info.getCIDSystemInfo() + " " + info.getPostScriptName() + " " +
+                info.getFormat());
         }
         System.out.println("-------");
         return bestMatch;

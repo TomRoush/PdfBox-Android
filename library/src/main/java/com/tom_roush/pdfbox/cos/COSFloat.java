@@ -24,6 +24,7 @@ import java.math.BigDecimal;
  * This class represents a floating point number in a PDF document.
  *
  * @author Ben Litchfield
+ *
  */
 public class COSFloat extends COSNumber
 {
@@ -60,26 +61,24 @@ public class COSFloat extends COSNumber
         }
         catch( NumberFormatException e )
         {
-            if (aFloat.startsWith("0.00000-"))
+            if (aFloat.matches("^0\\.0+\\-\\d+"))
             {
                 // PDFBOX-2990 has 0.00000-33917698
-                // Let's wait what other floats will be coming before doing a more general workaround.
+                // PDFBOX-3369 has 0.00-35095424
                 try
                 {
-                    valueAsString = "-0.00000" + aFloat.substring(8);
+                    valueAsString = "-" + valueAsString.replaceFirst("\\-", "");
                     value = new BigDecimal(valueAsString);
                     checkMinMaxValues();
                 }
                 catch (NumberFormatException e2)
                 {
-                    throw new IOException(
-                        "Error expected floating point number actual='" + aFloat + "'", e2);
+                    throw new IOException("Error expected floating point number actual='" + aFloat + "'", e2);
                 }
             }
             else
             {
-                throw new IOException(
-                    "Error expected floating point number actual='" + aFloat + "'", e);
+                throw new IOException("Error expected floating point number actual='" + aFloat + "'", e);
             }
         }
     }
@@ -90,7 +89,7 @@ public class COSFloat extends COSNumber
         double doubleValue = value.doubleValue();
         boolean valueReplaced = false;
         // check for huge values
-        if (floatValue == Float.NEGATIVE_INFINITY || floatValue == Float.POSITIVE_INFINITY)
+        if (floatValue == Float.NEGATIVE_INFINITY  || floatValue == Float.POSITIVE_INFINITY )
         {
 
             if (Math.abs(doubleValue) > Float.MAX_VALUE)
@@ -102,10 +101,10 @@ public class COSFloat extends COSNumber
         // check for very small values
         else if (floatValue == 0 && doubleValue != 0)
         {
-            if (Math.abs(doubleValue) < Float.MIN_NORMAL)
+            if (Math.abs(doubleValue) < Float.MIN_NORMAL )
             {
                 floatValue = Float.MIN_NORMAL;
-                floatValue *= doubleValue >= 0 ? 1 : -1;
+                floatValue *= doubleValue >= 0  ? 1 : -1;
                 valueReplaced = true;
             }
         }
@@ -179,8 +178,8 @@ public class COSFloat extends COSNumber
     @Override
     public boolean equals( Object o )
     {
-        return o instanceof COSFloat && Float.floatToIntBits(((COSFloat)o).value.floatValue()) ==
-            Float.floatToIntBits(value.floatValue());
+        return o instanceof COSFloat &&
+            Float.floatToIntBits(((COSFloat)o).value.floatValue()) == Float.floatToIntBits(value.floatValue());
     }
 
     /**

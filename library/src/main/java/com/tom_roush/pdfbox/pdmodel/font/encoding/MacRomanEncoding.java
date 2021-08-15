@@ -26,6 +26,7 @@ import com.tom_roush.pdfbox.cos.COSName;
  */
 public class MacRomanEncoding extends Encoding
 {
+
     private static final int CHAR_CODE = 0;
     private static final int CHAR_NAME = 1;
 
@@ -239,9 +240,7 @@ public class MacRomanEncoding extends Encoding
         {0330, "ydieresis"},
         {0264, "yen"},
         {0172, "z"},
-        {060, "zero"},
-        // adding an additional mapping as defined in Appendix D of the pdf spec
-        {0312, "space"}
+        {060, "zero"}
     };
 
     /**
@@ -258,15 +257,14 @@ public class MacRomanEncoding extends Encoding
     {
         for (Object[] encodingEntry : MAC_ROMAN_ENCODING_TABLE)
         {
-            add((Integer)encodingEntry[CHAR_CODE], encodingEntry[CHAR_NAME].toString());
+            add((Integer) encodingEntry[CHAR_CODE], encodingEntry[CHAR_NAME].toString());
         }
+        // adding an additional mapping as defined in Appendix D of the pdf spec
+        // don't add the reverse mapping as we have to preserve the origin mapping for the given glyph name
+        codeToName.put(0312, "space");
     }
-    
-    /**
-     * Convert this standard java object to a COS object.
-     *
-     * @return The cos object that matches this Java object.
-     */
+
+    @Override
     public COSBase getCOSObject()
     {
         return COSName.MAC_ROMAN_ENCODING;

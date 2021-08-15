@@ -31,7 +31,8 @@ import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 /**
  * This class represents a function in a PDF document.
  *
- * @author Ben Litchfield 
+ * @author Ben Litchfield
+ *
  */
 public abstract class PDFunction implements COSObjectable
 {
@@ -47,14 +48,14 @@ public abstract class PDFunction implements COSObjectable
      * Constructor.
      *
      * @param function The function stream.
-     * 
+     *
      */
     public PDFunction( COSBase function )
     {
         if (function instanceof COSStream)
         {
             functionStream = new PDStream( (COSStream)function );
-            functionStream.getCOSObject().setItem(COSName.TYPE, COSName.FUNCTION);
+            functionStream.getCOSObject().setItem( COSName.TYPE, COSName.FUNCTION );
         }
         else if (function instanceof COSDictionary)
         {
@@ -64,14 +65,14 @@ public abstract class PDFunction implements COSObjectable
 
     /**
      * Returns the function type.
-     * 
+     *
      * Possible values are:
-     * 
+     *
      * 0 - Sampled function
      * 2 - Exponential interpolation function
      * 3 - Stitching function
      * 4 - PostScript calculator function
-     * 
+     *
      * @return the function type.
      */
     public abstract int getFunctionType();
@@ -87,7 +88,7 @@ public abstract class PDFunction implements COSObjectable
         {
             return functionStream.getCOSObject();
         }
-        else 
+        else
         {
             return functionDictionary;
         }
@@ -118,7 +119,7 @@ public abstract class PDFunction implements COSObjectable
         }
 
         PDFunction retval = null;
-        if( function instanceof COSObject )
+        if( function instanceof COSObject)
         {
             function = ((COSObject)function).getObject();
         }
@@ -152,9 +153,9 @@ public abstract class PDFunction implements COSObjectable
      * have a range specified.  A range for output parameters
      * is optional so this may return zero for a function
      * that does have output parameters, this will simply return the
-     * number that have the rnage specified.
+     * number that have the range specified.
      *
-     * @return The number of input parameters that have a range
+     * @return The number of output parameters that have a range
      * specified.
      */
     public int getNumberOfOutputParameters()
@@ -219,7 +220,7 @@ public abstract class PDFunction implements COSObjectable
      *
      * @return The domain range for this component.
      */
-    public PDRange getDomainForInput(int n) 
+    public PDRange getDomainForInput(int n)
     {
         COSArray domainValues = getDomainValues();
         return new PDRange( domainValues, n );
@@ -239,6 +240,7 @@ public abstract class PDFunction implements COSObjectable
     /**
      * @deprecated Replaced by {@link #eval(float[] input)}
      */
+    @Deprecated
     public COSArray eval(COSArray input) throws IOException
     {
         float[] outputValues = eval(input.toFloatArray());
@@ -253,22 +255,22 @@ public abstract class PDFunction implements COSObjectable
      *
      * @param input The array of input values for the function. 
      * In many cases will be an array of a single value, but not always.
-     * 
+     *
      * @return The of outputs the function returns based on those inputs. 
      * In many cases will be an array of a single value, but not always.
-     * 
+     *
      * @throws IOException an IOExcpetion is thrown if something went wrong processing the function.  
      */
     public abstract float[] eval(float[] input) throws IOException;
-    
+
     /**
      * Returns all ranges for the output values as COSArray .
      * Required for type 0 and type 4 functions
      * @return the ranges array. 
      */
-    protected COSArray getRangeValues() 
+    protected COSArray getRangeValues()
     {
-        if (range == null) 
+        if (range == null)
         {
             range = (COSArray) getCOSObject().getDictionaryObject(COSName.RANGE);
         }
@@ -291,15 +293,15 @@ public abstract class PDFunction implements COSObjectable
 
     /**
      * Clip the given input values to the ranges.
-     * 
+     *
      * @param inputValues the input values
      * @return the clipped values
      */
-    protected float[] clipToRange(float[] inputValues) 
+    protected float[] clipToRange(float[] inputValues)
     {
         COSArray rangesArray = getRangeValues();
         float[] result;
-        if (rangesArray != null) 
+        if (rangesArray != null)
         {
             float[] rangeValues = rangesArray.toFloatArray();
             int numberOfRanges = rangeValues.length/2;
@@ -319,14 +321,14 @@ public abstract class PDFunction implements COSObjectable
 
     /**
      * Clip the given input value to the given range.
-     * 
+     *
      * @param x the input value
      * @param rangeMin the min value of the range
      * @param rangeMax the max value of the range
 
      * @return the clipped value
      */
-    protected float clipToRange(float x, float rangeMin, float rangeMax) 
+    protected float clipToRange(float x, float rangeMin, float rangeMax)
     {
         if (x < rangeMin)
         {
@@ -343,7 +345,7 @@ public abstract class PDFunction implements COSObjectable
      * For a given value of x, interpolate calculates the y value 
      * on the line defined by the two points (xRangeMin , xRangeMax ) 
      * and (yRangeMin , yRangeMax ).
-     * 
+     *
      * @param x the to be interpolated value.
      * @param xRangeMin the min value of the x range
      * @param xRangeMax the max value of the x range
@@ -351,7 +353,7 @@ public abstract class PDFunction implements COSObjectable
      * @param yRangeMax the max value of the y range
      * @return the interpolated y value
      */
-    protected float interpolate(float x, float xRangeMin, float xRangeMax, float yRangeMin, float yRangeMax) 
+    protected float interpolate(float x, float xRangeMin, float xRangeMax, float yRangeMin, float yRangeMax)
     {
         return yRangeMin + ((x - xRangeMin) * (yRangeMax - yRangeMin)/(xRangeMax - xRangeMin));
     }
