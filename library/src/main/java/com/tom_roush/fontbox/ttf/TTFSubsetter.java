@@ -16,6 +16,8 @@
  */
 package com.tom_roush.fontbox.ttf;
 
+import android.util.Log;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -125,7 +127,7 @@ public final class TTFSubsetter
     }
 
     /**
-     * Returns the map of new -> old GIDs.
+     * Returns the map of new -&gt; old GIDs.
      */
     public Map<Integer, Integer> getGIDMap() throws IOException
     {
@@ -250,9 +252,10 @@ public final class TTFSubsetter
         writeSInt16(out, h.getReserved5());
         writeSInt16(out, h.getMetricDataFormat());
 
-        // is there a GID >= numberOfHMetrics ? Then keep the last entry of original hmtx table
+        // is there a GID >= numberOfHMetrics ? Then keep the last entry of original hmtx table,
+        // (add if it isn't in our set of GIDs), see also in buildHmtxTable()
         int hmetrics = glyphIds.subSet(0, h.getNumberOfHMetrics()).size();
-        if (glyphIds.last() >= h.getNumberOfHMetrics())
+        if (glyphIds.last() >= h.getNumberOfHMetrics() && !glyphIds.contains(h.getNumberOfHMetrics()-1))
         {
             ++hmetrics;
         }
@@ -395,7 +398,7 @@ public final class TTFSubsetter
     private byte[] buildOS2Table() throws IOException
     {
         OS2WindowsMetricsTable os2 = ttf.getOS2Windows();
-        if (os2 == null || keepTables != null && !keepTables.contains("OS/2"))
+        if (os2 == null || uniToGID.isEmpty() || keepTables != null && !keepTables.contains("OS/2"))
         {
             return null;
         }
@@ -432,12 +435,8 @@ public final class TTFSubsetter
 
         out.write(os2.getAchVendId().getBytes("US-ASCII"));
 
-        Iterator<Entry<Integer, Integer>> it = uniToGID.entrySet().iterator();
-        it.next();
-        Entry<Integer, Integer> first = it.next();
-
         writeUint16(out, os2.getFsSelection());
-        writeUint16(out, first.getKey());
+        writeUint16(out, uniToGID.firstKey());
         writeUint16(out, uniToGID.lastKey());
         writeUint16(out, os2.getTypoAscender());
         writeUint16(out, os2.getTypoDescender());
@@ -685,7 +684,7 @@ public final class TTFSubsetter
 
     private byte[] buildCmapTable() throws IOException
     {
-        if (ttf.getCmap() == null || keepTables != null && !keepTables.contains("cmap"))
+        if (ttf.getCmap() == null || uniToGID.isEmpty() || keepTables != null && !keepTables.contains("cmap"))
         {
             return null;
         }
@@ -704,14 +703,14 @@ public final class TTFSubsetter
 
         // build Format 4 subtable (Unicode BMP)
         Iterator<Entry<Integer, Integer>> it = uniToGID.entrySet().iterator();
-        it.next();
         Entry<Integer, Integer> lastChar = it.next();
         Entry<Integer, Integer> prevChar = lastChar;
         int lastGid = getNewGlyphId(lastChar.getValue());
 
-        int[] startCode = new int[uniToGID.size()];
-        int[] endCode = new int[uniToGID.size()];
-        int[] idDelta = new int[uniToGID.size()];
+        // +1 because .notdef is missing in uniToGID
+        int[] startCode = new int[uniToGID.size()+1];
+        int[] endCode = new int[uniToGID.size()+1];
+        int[] idDelta = new int[uniToGID.size()+1];
         int segCount = 0;
         while(it.hasNext())
         {
@@ -869,51 +868,48 @@ public final class TTFSubsetter
 
         HorizontalHeaderTable h = ttf.getHorizontalHeader();
         HorizontalMetricsTable hm = ttf.getHorizontalMetrics();
-        byte [] buf = new byte[4];
         InputStream is = ttf.getOriginalData();
 
-        // is there a GID >= numberOfHMetrics ? Then keep the last entry of original hmtx table
-        SortedSet<Integer> gidSet = glyphIds;
-        if (glyphIds.last() >= h.getNumberOfHMetrics())
+        // more info: https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6hmtx.html
+        int lastgid = h.getNumberOfHMetrics() - 1;
+        // true if lastgid is not in the set: we'll need its width (but not its left side bearing) later
+        boolean needLastGidWidth = false;
+        if (glyphIds.last() > lastgid && !glyphIds.contains(lastgid))
         {
-            // Create a deep copy of the glyph set that has the last entry
-            gidSet = new TreeSet<Integer>(glyphIds);
-            gidSet.add(ttf.getHorizontalHeader().getNumberOfHMetrics() - 1);
+            needLastGidWidth = true;
         }
 
         try
         {
             is.skip(hm.getOffset());
-            long lastOff = 0;
-            for (Integer glyphId : gidSet)
+            long lastOffset = 0;
+            for (Integer glyphId : glyphIds)
             {
                 // offset in original file
-                long off;
-                if (glyphId < h.getNumberOfHMetrics())
+                long offset;
+                if (glyphId <= lastgid)
                 {
-                    off = glyphId * 4;
+                    // copy width and lsb
+                    offset = glyphId * 4;
+                    lastOffset = copyBytes(is, bos, offset, lastOffset, 4);
                 }
                 else
                 {
-                    off = h.getNumberOfHMetrics() * 4 + (glyphId - h.getNumberOfHMetrics()) * 2;
-                }
-                // skip over from last original offset
-                if (off != lastOff)
-                {
-                    long nskip = off-lastOff;
-                    if (nskip != is.skip(nskip))
+                    if (needLastGidWidth)
                     {
-                        throw new EOFException("Unexpected EOF exception parsing glyphId of hmtx table.");
+                        // one time only: copy width from lastgid, whose width applies
+                        // to all later glyphs
+                        needLastGidWidth = false;
+                        offset = lastgid * 4;
+                        lastOffset = copyBytes(is, bos, offset, lastOffset, 2);
+
+                        // then go on with lsb from actual glyph (lsb are individual even in monotype fonts)
                     }
+
+                    // copy lsb only, as we are beyond numOfHMetrics
+                    offset = h.getNumberOfHMetrics() * 4 + (glyphId - h.getNumberOfHMetrics()) * 2;
+                    lastOffset = copyBytes(is, bos, offset, lastOffset, 2);
                 }
-                // read left side bearings only, if we are beyond numOfHMetrics
-                int n = glyphId < h.getNumberOfHMetrics() ? 4 : 2;
-                if (n != is.read(buf, 0, n))
-                {
-                    throw new EOFException("Unexpected EOF exception parsing glyphId of hmtx table.");
-                }
-                bos.write(buf, 0, n);
-                lastOff = off + n;
             }
 
             return bos.toByteArray();
@@ -922,6 +918,24 @@ public final class TTFSubsetter
         {
             is.close();
         }
+    }
+
+    private long copyBytes(InputStream is, OutputStream os, long newOffset, long lastOffset, int count)
+        throws IOException
+    {
+        // skip over from last original offset
+        long nskip = newOffset - lastOffset;
+        if (nskip != is.skip(nskip))
+        {
+            throw new EOFException("Unexpected EOF exception parsing glyphId of hmtx table.");
+        }
+        byte[] buf = new byte[count];
+        if (count != is.read(buf, 0, count))
+        {
+            throw new EOFException("Unexpected EOF exception parsing glyphId of hmtx table.");
+        }
+        os.write(buf, 0, count);
+        return newOffset + count;
     }
 
     /**
@@ -935,7 +949,7 @@ public final class TTFSubsetter
     {
         if (glyphIds.isEmpty() || uniToGID.isEmpty())
         {
-            throw new IllegalStateException("subset is empty");
+            Log.i("PdfBox-Android", "font subset is empty");
         }
 
         addCompoundReferences();

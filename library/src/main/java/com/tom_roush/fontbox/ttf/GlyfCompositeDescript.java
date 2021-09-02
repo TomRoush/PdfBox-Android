@@ -23,7 +23,6 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -95,10 +94,8 @@ public class GlyfCompositeDescript extends GlyfDescript
         int firstIndex = 0;
         int firstContour = 0;
 
-        Iterator<GlyfCompositeComp> i = components.iterator();
-        while (i.hasNext())
+        for (GlyfCompositeComp comp : components)
         {
-            GlyfCompositeComp comp = i.next();
             comp.setFirstIndex(firstIndex);
             comp.setFirstContour(firstContour);
 

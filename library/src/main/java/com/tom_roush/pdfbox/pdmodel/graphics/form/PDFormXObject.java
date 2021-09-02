@@ -46,7 +46,7 @@ See PDF 32000 p111
 
 When doing this all methods on PDFormXObject should probably be made
 final and all fields private.
- */
+*/
 
 /**
  * A Form XObject.
@@ -80,7 +80,6 @@ public class PDFormXObject extends PDXObject implements PDContentStream
 
     /**
      * Creates a Form XObject for reading.
-     *
      * @param stream The XObject stream
      */
     public PDFormXObject(COSStream stream, ResourceCache cache)
@@ -147,10 +146,10 @@ public class PDFormXObject extends PDXObject implements PDContentStream
     }
 
     /**
-     * This will get the resources at this page and not look up the hierarchy.
-     * This attribute is inheritable, and findResources() should probably used.
-     * This will return null if no resources are available at this level.
-     * @return The resources at this level in the hierarchy.
+     * This will get the resources for this Form XObject.
+     * This will return null if no resources are available.
+     *
+     * @return The resources for this Form XObject.
      */
     @Override
     public PDResources getResources()
@@ -259,6 +258,6 @@ public class PDFormXObject extends PDXObject implements PDContentStream
      */
     public void setStructParents(int structParent)
     {
-        getCOSStream().setInt(COSName.STRUCT_PARENTS, structParent);
+        getCOSObject().setInt(COSName.STRUCT_PARENTS, structParent);
     }
 }

@@ -81,12 +81,11 @@ public class Type1CharStringParser
                 Object obj = sequence.remove(sequence.size() - 1);
                 if (!(obj instanceof Integer))
                 {
-                    Log.w("PdfBox-Android", "Parameter " + obj +
-                        " for CALLSUBR is ignored, integer expected in glyph '" + glyphName +
-                        "' of font " + fontName);
+                    Log.w("PdfBox-Android", "Parameter " + obj + " for CALLSUBR is ignored, integer expected in glyph '"
+                        + glyphName + "' of font " + fontName);
                     continue;
                 }
-                Integer operand = (Integer)obj;
+                Integer operand = (Integer) obj;
 
                 if (operand >= 0 && operand < subrs.size())
                 {
@@ -94,7 +93,7 @@ public class Type1CharStringParser
                     parse(subrBytes, subrs, sequence);
                     Object lastItem = sequence.get(sequence.size()-1);
                     if (lastItem instanceof CharStringCommand &&
-                          ((CharStringCommand)lastItem).getKey().getValue()[0] == RETURN)
+                        ((CharStringCommand)lastItem).getKey().getValue()[0] == RETURN)
                     {
                         sequence.remove(sequence.size()-1); // remove "return" command
                     }
@@ -149,17 +148,17 @@ public class Type1CharStringParser
 
                 if (results.size() > 0)
                 {
-                	Log.w("PdfBox-Android", "Value left on the PostScript stack in glyph " + glyphName + " of font " + fontName);
+                    Log.w("PdfBox-Android", "Value left on the PostScript stack in glyph " + glyphName + " of font " + fontName);
                 }
             }
             else if (b0 >= 0 && b0 <= 31)
             {
                 sequence.add(readCommand(input, b0));
-            } 
+            }
             else if (b0 >= 32 && b0 <= 255)
             {
                 sequence.add(readNumber(input, b0));
-            } 
+            }
             else
             {
                 throw new IllegalArgumentException();
@@ -177,13 +176,13 @@ public class Type1CharStringParser
         {
             return (Integer)item;
         }
-        CharStringCommand command = (CharStringCommand)item;
+        CharStringCommand command = (CharStringCommand) item;
 
         // div
         if (command.getKey().getValue()[0] == 12 && command.getKey().getValue()[1] == 12)
         {
-            int a = (Integer)sequence.remove(sequence.size() - 1);
-            int b = (Integer)sequence.remove(sequence.size() - 1);
+            int a = (Integer) sequence.remove(sequence.size() - 1);
+            int b = (Integer) sequence.remove(sequence.size() - 1);
             return b / a;
         }
         throw new IOException("Unexpected char string command: " + command.getKey());
@@ -204,21 +203,21 @@ public class Type1CharStringParser
         if (b0 >= 32 && b0 <= 246)
         {
             return b0 - 139;
-        } 
+        }
         else if (b0 >= 247 && b0 <= 250)
         {
             int b1 = input.readUnsignedByte();
             return (b0 - 247) * 256 + b1 + 108;
-        } 
+        }
         else if (b0 >= 251 && b0 <= 254)
         {
             int b1 = input.readUnsignedByte();
             return -(b0 - 251) * 256 - b1 - 108;
-        } 
+        }
         else if (b0 == 255)
         {
             return input.readInt();
-        } 
+        }
         else
         {
             throw new IllegalArgumentException();

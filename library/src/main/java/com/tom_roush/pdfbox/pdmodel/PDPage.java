@@ -125,7 +125,7 @@ public class PDPage implements COSObjectable, PDContentStream
         }
         else if (base instanceof COSArray && ((COSArray) base).size() > 0)
         {
-            COSArray array = (COSArray) base;
+            COSArray array = (COSArray)base;
             for (int i = 0; i < array.size(); i++)
             {
                 COSStream stream = (COSStream) array.getObject(i);
@@ -143,14 +143,14 @@ public class PDPage implements COSObjectable, PDContentStream
         {
             return ((COSStream)base).createInputStream();
         }
-        else if (base instanceof COSArray && ((COSArray)base).size() > 0)
+        else if (base instanceof COSArray && ((COSArray) base).size() > 0)
         {
-            COSArray streams = (COSArray) base;
-            byte[] delimiter = new byte[]{'\n'};
+            COSArray streams = (COSArray)base;
+            byte[] delimiter = new byte[] { '\n' };
             List<InputStream> inputStreams = new ArrayList<InputStream>();
             for (int i = 0; i < streams.size(); i++)
             {
-                COSStream stream = (COSStream) streams.getObject(i);
+                COSStream stream = (COSStream)streams.getObject(i);
                 inputStreams.add(stream.createInputStream());
                 inputStreams.add(new ByteArrayInputStream(delimiter));
             }
@@ -509,12 +509,12 @@ public class PDPage implements COSObjectable, PDContentStream
         page.setItem(COSName.CONTENTS, array);
     }
 
-
     /**
-     * This will get a list of PDThreadBead objects, which are article threads in the document.
-     * This will return an empty list if there are no thread beads.
+     * This will get a list of PDThreadBead objects, which are article threads in the document. This
+     * will return an empty list if there are no thread beads.
      *
-     * @return A list of article threads on this page.
+     * @return A list of article threads on this page, never null. The returned list is backed by
+     * the beads COSArray, so any adding or deleting in this list will change the document too.
      */
     public List<PDThreadBead> getThreadBeads()
     {
@@ -536,7 +536,6 @@ public class PDPage implements COSObjectable, PDContentStream
             pdObjects.add(bead);
         }
         return new COSArrayList<PDThreadBead>(pdObjects, beads);
-
     }
 
     /**
@@ -633,9 +632,11 @@ public class PDPage implements COSObjectable, PDContentStream
     }
 
     /**
-     * This will return a list of the Annotations for this page.
+     * This will return a list of the annotations for this page.
      *
-     * @return List of the PDAnnotation objects, never null.
+     * @return List of the PDAnnotation objects, never null. The returned list is backed by the
+     * annotations COSArray, so any adding or deleting in this list will change the document too.
+     *
      * @throws IOException If there is an error while creating the annotation list.
      */
     public List<PDAnnotation> getAnnotations() throws IOException
@@ -644,9 +645,7 @@ public class PDPage implements COSObjectable, PDContentStream
         COSArray annots = (COSArray) page.getDictionaryObject(COSName.ANNOTS);
         if (annots == null)
         {
-            annots = new COSArray();
-            page.setItem(COSName.ANNOTS, annots);
-            retval = new COSArrayList<PDAnnotation>(new ArrayList<PDAnnotation>(), annots);
+            return new COSArrayList<PDAnnotation>(page, COSName.ANNOTS);
         }
         else
         {

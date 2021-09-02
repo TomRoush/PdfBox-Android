@@ -19,7 +19,6 @@ package com.tom_roush.pdfbox.pdmodel.interactive.form;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
-
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -40,7 +39,7 @@ public class PDSignatureField extends PDTerminalField
      *
      * @param acroForm The acroForm for this field.
      * @throws IOException If there is an error while resolving partial name for the signature field
-     * or getting the widget object.
+     *         or getting the widget object.
      */
     public PDSignatureField(PDAcroForm acroForm) throws IOException
     {
@@ -75,17 +74,17 @@ public class PDSignatureField extends PDTerminalField
         // fixme: this ignores non-terminal fields, so will miss any descendant signatures
         for (PDField field : getAcroForm().getFields())
         {
-            if (field instanceof PDSignatureField)
+            if(field instanceof PDSignatureField)
             {
                 sigNames.add(field.getPartialName());
             }
         }
         int i = 1;
-        while (sigNames.contains(fieldName + i))
+        while(sigNames.contains(fieldName+i))
         {
             ++i;
         }
-        return fieldName + i;
+        return fieldName+i;
     }
 
     /**
@@ -101,9 +100,10 @@ public class PDSignatureField extends PDTerminalField
     }
 
     /**
-     * Get the signature getCOSObject().
+     * Get the signature dictionary.
      *
      * @return the signature dictionary
+     *
      */
     public PDSignature getSignature()
     {
@@ -125,7 +125,7 @@ public class PDSignatureField extends PDTerminalField
      * Sets the value of this field.
      *
      * <b>This will throw an UnsupportedOperationException if used as the signature fields
-     * value can't be set using a String</>
+     * value can't be set using a String</b>
      *
      * @param value the plain text value.
      *
@@ -134,10 +134,10 @@ public class PDSignatureField extends PDTerminalField
     @Override
     public void setValue(String value) throws UnsupportedOperationException
     {
-        throw new UnsupportedOperationException(
-            "Signature fields don't support setting the value as String " +
-                "- use setValue(PDSignature value) instead");
+        throw new UnsupportedOperationException("Signature fields don't support setting the value as String "
+            + "- use setValue(PDSignature value) instead");
     }
+
 
     /**
      * Sets the default value of this field to be the given signature.
@@ -161,7 +161,7 @@ public class PDSignatureField extends PDTerminalField
         {
             return null;
         }
-        return new PDSignature((COSDictionary) value);
+        return new PDSignature((COSDictionary)value);
     }
 
     /**
@@ -176,7 +176,7 @@ public class PDSignatureField extends PDTerminalField
         {
             return null;
         }
-        return new PDSignature((COSDictionary) value);
+        return new PDSignature((COSDictionary)value);
     }
 
     @Override
@@ -195,7 +195,7 @@ public class PDSignatureField extends PDTerminalField
      */
     public PDSeedValue getSeedValue()
     {
-        COSDictionary dict = (COSDictionary)getCOSObject().getDictionaryObject(COSName.SV);
+        COSDictionary dict = (COSDictionary) getCOSObject().getDictionaryObject(COSName.SV);
         PDSeedValue sv = null;
         if (dict != null)
         {
@@ -226,8 +226,9 @@ public class PDSignatureField extends PDTerminalField
         if (widget != null)
         {
             // check if the signature is visible
-            if (widget.getRectangle() == null || widget.getRectangle().getHeight() == 0 &&
-                widget.getRectangle().getWidth() == 0 || widget.isNoView() || widget.isHidden())
+            if (widget.getRectangle() == null ||
+                widget.getRectangle().getHeight() == 0 && widget.getRectangle().getWidth() == 0 ||
+                widget.isNoView() ||  widget.isHidden())
             {
                 return;
             }

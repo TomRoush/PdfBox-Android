@@ -19,18 +19,20 @@ package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.visible;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 
 /**
- * Builder for visible signature design.
- * Uses use param() instead of setParam()
+ * Class for visible signature design properties. Setters use param() instead of setParam() to allow
+ * chaining.
  *
  * @author Vakhtang Koroghlishvili
  */
@@ -188,25 +190,28 @@ public class PDVisibleSignDesigner
         PDRectangle mediaBox = firstPage.getMediaBox();
         pageHeight(mediaBox.getHeight());
         pageWidth = mediaBox.getWidth();
-
-        float x = pageWidth;
-        float y = 0;
-        pageWidth += y;
-        float tPercent = (100 * y / (x + y));
-        imageSizeInPercents = 100 - tPercent;
+        imageSizeInPercents = 100;
     }
 
     /**
      * Set the image for the signature.
      *
-     * @param path of image location
-     * @return image Stream
+     * @param path Path of the image file.
+     * @return Visible Signature Configuration Object
      * @throws IOException
      */
     public PDVisibleSignDesigner signatureImage(String path) throws IOException
     {
-        InputStream fin = new FileInputStream(path);
-        readImageStream(fin);
+        InputStream in = null;
+        try
+        {
+            in = new BufferedInputStream(new FileInputStream(path));
+            readImageStream(in);
+        }
+        finally
+        {
+            IOUtils.closeQuietly(in);
+        }
         return this;
     }
 

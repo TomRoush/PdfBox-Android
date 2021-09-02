@@ -55,8 +55,6 @@ public class Overlay
         FOREGROUND, BACKGROUND
     }
 
-    ;
-
     private LayoutPage defaultOverlayPage;
     private LayoutPage firstPageOverlayPage;
     private LayoutPage lastPageOverlayPage;
@@ -89,6 +87,7 @@ public class Overlay
     private String evenPageOverlayFilename = null;
     private PDDocument evenPageOverlay = null;
 
+
     private int numberOfOverlayPages = 0;
     private boolean useAllOverlayPages = false;
 
@@ -96,10 +95,13 @@ public class Overlay
      * This will add overlays to a documents.
      *
      * @param specificPageOverlayFile map of overlay files for specific pages
+     *
      * @return the resulting pdf, which has to be saved and closed be the caller
+     *
      * @throws IOException if something went wrong
      */
-    public PDDocument overlay(Map<Integer, String> specificPageOverlayFile) throws IOException
+    public PDDocument overlay(Map<Integer, String> specificPageOverlayFile)
+        throws IOException
     {
         loadPDFs();
         for (Map.Entry<Integer, String> e : specificPageOverlayFile.entrySet())
@@ -329,22 +331,22 @@ public class Overlay
             COSArray contentArray = new COSArray();
             switch (position)
             {
-                case FOREGROUND:
-                    // save state
-                    contentArray.add(createStream("q\n"));
-                    addOriginalContent(contents, contentArray);
-                    // restore state
-                    contentArray.add(createStream("Q\n"));
-                    // overlay content
-                    overlayPage(contentArray, page, pageCount + 1, document.getNumberOfPages());
-                    break;
-                case BACKGROUND:
-                    // overlay content
-                    overlayPage(contentArray, page, pageCount + 1, document.getNumberOfPages());
-                    addOriginalContent(contents, contentArray);
-                    break;
-                default:
-                    throw new IOException("Unknown type of position:" + position);
+            case FOREGROUND:
+                // save state
+                contentArray.add(createStream("q\n"));
+                addOriginalContent(contents, contentArray);
+                // restore state
+                contentArray.add(createStream("Q\n"));
+                // overlay content
+                overlayPage(contentArray, page, pageCount + 1, document.getNumberOfPages());
+                break;
+            case BACKGROUND:
+                // overlay content
+                overlayPage(contentArray, page, pageCount + 1, document.getNumberOfPages());
+                addOriginalContent(contents, contentArray);
+                break;
+            default:
+                throw new IOException("Unknown type of position:" + position);
             }
             pageDictionary.setItem(COSName.CONTENTS, contentArray);
             pageCount++;
@@ -445,7 +447,7 @@ public class Overlay
 
     private String float2String(float floatValue)
     {
-        // use a BigDecimal as intermediate state to avoid
+        // use a BigDecimal as intermediate state to avoid 
         // a floating point string representation of the float value
         BigDecimal value = new BigDecimal(String.valueOf(floatValue));
         String stringValue = value.toPlainString();

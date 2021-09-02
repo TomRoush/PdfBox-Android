@@ -28,7 +28,7 @@ import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 
 /**
- * Renders a PDF document to an AWT BufferedImage.
+ * Renders a PDF document to a Bitmap.
  * This class may be overridden in order to perform custom rendering.
  *
  * @author John Hewson
@@ -143,7 +143,12 @@ public class PDFRenderer
         canvas.drawRect(0, 0, image.getWidth(), image.getHeight(), paint);
         paint.reset();
 
-        renderPage(page, paint, canvas, image.getWidth(), image.getHeight(), scale, scale);
+        transform(canvas, page, scale);
+
+        // the end-user may provide a custom PageDrawer
+        PageDrawerParameters parameters = new PageDrawerParameters(this, page);
+        PageDrawer drawer = createPageDrawer(parameters);
+        drawer.drawPage(paint, canvas, page.getCropBox());
 
         return image;
     }
@@ -173,21 +178,26 @@ public class PDFRenderer
     {
         PDPage page = document.getPage(pageIndex);
         // TODO need width/wight calculations? should these be in PageDrawer?
-        PDRectangle adjustedCropBox = page.getCropBox();
-        renderPage(page, paint, canvas, (int)adjustedCropBox.getWidth(), (int)adjustedCropBox.getHeight(), scale, scale);
-    }
 
-    // renders a page to the given graphics
-    private void renderPage(PDPage page, Paint paint, Canvas canvas, int width, int height, float scaleX,
-        float scaleY) throws IOException
-    {
-        canvas.scale(scaleX, scaleY);
-        // TODO should we be passing the scale to PageDrawer rather than messing with Graphics?
-
-//        graphics.clearRect(0, 0, width, height);
+        transform(canvas, page, scale);
 
         PDRectangle cropBox = page.getCropBox();
+        canvas.drawRect(0, 0, cropBox.getWidth(), cropBox.getHeight(), paint);
+
+        // the end-user may provide a custom PageDrawer
+        PageDrawerParameters parameters = new PageDrawerParameters(this, page);
+        PageDrawer drawer = createPageDrawer(parameters);
+        drawer.drawPage(paint, canvas, cropBox);
+    }
+
+    // scale rotate translate
+    private void transform(Canvas canvas, PDPage page, float scale)
+    {
+        canvas.scale(scale, scale);
+
+        // TODO should we be passing the scale to PageDrawer rather than messing with Graphics?
         int rotationAngle = page.getRotation();
+        PDRectangle cropBox = page.getCropBox();
 
         if (rotationAngle != 0)
         {
@@ -209,11 +219,6 @@ public class PDFRenderer
             canvas.translate(translateX, translateY);
             canvas.rotate((float) Math.toRadians(rotationAngle));
         }
-
-        // the end-user may provide a custom PageDrawer
-        PageDrawerParameters parameters = new PageDrawerParameters(this, page);
-        PageDrawer drawer = createPageDrawer(parameters);
-        drawer.drawPage(paint, canvas, cropBox);
     }
 
     /**

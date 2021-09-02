@@ -16,6 +16,13 @@
  */
 package com.tom_roush.pdfbox.pdmodel.graphics.blend;
 
-public class SoftMaskPaint {
+/**
+ * AWT Paint that adds a soft mask to the alpha channel of the existing parent paint. If the parent
+ * paint does not have an alpha channel, a new raster is created.
+ *
+ * @author Kühn &amp; Weyh Software GmbH
+ */
+public final class SoftMaskPaint
+{
 
 }

@@ -32,13 +32,10 @@ import com.tom_roush.pdfbox.cos.COSName;
  */
 public final class PDDeviceRGB extends PDDeviceColorSpace
 {
-    /**
-     * This is the single instance of this class.
-     */
+    /**  This is the single instance of this class. */
     public static final PDDeviceRGB INSTANCE = new PDDeviceRGB();
 
-    private final PDColor initialColor = new PDColor(new float[]{0, 0, 0}, this);
-
+    private final PDColor initialColor = new PDColor(new float[] { 0, 0, 0 }, this);
 //    private volatile ColorSpace awtColorSpace;
 
     private PDDeviceRGB()
@@ -78,7 +75,7 @@ public final class PDDeviceRGB extends PDDeviceColorSpace
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     @Override
     public int getNumberOfComponents()
@@ -89,11 +86,12 @@ public final class PDDeviceRGB extends PDDeviceColorSpace
     @Override
     public float[] getDefaultDecode(int bitsPerComponent)
     {
-        return new float[]{0, 1, 0, 1, 0, 1};
+        return new float[] { 0, 1, 0, 1, 0, 1 };
     }
 
     @Override
-    public PDColor getInitialColor() {
+    public PDColor getInitialColor()
+    {
         return initialColor;
     }
 
@@ -101,9 +99,12 @@ public final class PDDeviceRGB extends PDDeviceColorSpace
     public float[] toRGB(float[] value)
     {
         // This is just assuming that the values being sent to it are already in RGB color space.
-        if (value.length == 3) {
+        if (value.length == 3)
+        {
             return value;
-        } else {
+        }
+        else
+        {
 //            init();
 //            return awtColorSpace.toRGB(value); TODO: PdfBox-Android
             return initialColor.getComponents();
@@ -119,9 +120,9 @@ public final class PDDeviceRGB extends PDDeviceColorSpace
         }
         return raster;
 
-//        inti();
+//        init();
 //        ColorModel colorModel = new ComponentColorModel(awtColorSpace,
-//                false, false, Transparency.OPAQUE, raster.getDataBuffer().getDataType());
+//            false, false, Transparency.OPAQUE, raster.getDataBuffer().getDataType());
 //
 //        return new BufferedImage(colorModel, raster, false, null); TODO: PdfBox-Android
     }

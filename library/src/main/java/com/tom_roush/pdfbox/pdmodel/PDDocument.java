@@ -43,11 +43,11 @@ import com.tom_roush.pdfbox.io.RandomAccessBuffer;
 import com.tom_roush.pdfbox.io.RandomAccessBufferedFileInputStream;
 import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.io.ScratchFile;
-import com.tom_roush.pdfbox.multipdf.PDFCloneUtility;
 import com.tom_roush.pdfbox.pdfparser.PDFParser;
 import com.tom_roush.pdfbox.pdfwriter.COSWriter;
 import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
 import com.tom_roush.pdfbox.pdmodel.encryption.PDEncryption;
 import com.tom_roush.pdfbox.pdmodel.encryption.ProtectionPolicy;
@@ -56,9 +56,11 @@ import com.tom_roush.pdfbox.pdmodel.encryption.SecurityHandlerFactory;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
+import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.ExternalSigningSupport;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
+import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.SigningSupport;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
@@ -99,6 +101,9 @@ public class PDDocument implements Closeable
 
     // Signature interface
     private SignatureInterface signInterface;
+
+    // helper class used to create external signature
+    private SigningSupport signingSupport;
 
     // document-wide cached resources
     private ResourceCache resourceCache = new DefaultResourceCache();
@@ -170,7 +175,34 @@ public class PDDocument implements Closeable
     }
 
     /**
-     * Add a signature.
+     * Add parameters of signature to be created externally using default signature options. See
+     * {@link #saveIncrementalForExternalSigning(OutputStream)} method description on external
+     * signature creation scenario details.
+     *
+     * @param sigObject is the PDSignatureField model
+     * @throws IOException if there is an error creating required fields
+     */
+    public void addSignature(PDSignature sigObject) throws IOException
+    {
+        addSignature(sigObject, new SignatureOptions());
+    }
+
+    /**
+     * Add parameters of signature to be created externally. See
+     * {@link #saveIncrementalForExternalSigning(OutputStream)} method description on external
+     * signature creation scenario details.
+     *
+     * @param sigObject is the PDSignatureField model
+     * @param options signature options
+     * @throws IOException if there is an error creating required fields
+     */
+    public void addSignature(PDSignature sigObject, SignatureOptions options) throws IOException
+    {
+        addSignature(sigObject, null, options);
+    }
+
+    /**
+     * Add a signature to be created using the instance of given interface.
      *
      * @param sigObject is the PDSignatureField model
      * @param signatureInterface is an interface which provides signing capabilities
@@ -500,17 +532,17 @@ public class PDDocument implements Closeable
     /**
      * This will import and copy the contents from another location. Currently the content stream is stored in a scratch
      * file. The scratch file is associated with the document. If you are adding a page to this document from another
-     * document and want to copy the contents to this document's scratch file then use this method otherwise just use
-     * the {@link #addPage} method.
-     *
-     * Unlike {@link #addPage}, this method does a deep clone. This will be slower and have a larger
-     * memory footprint. However the deep clone is important to avoid resources getting lost if the
-     * source document is closed when the destination document is saved.
-     *
-     * If your page has annotations, and if these link to pages not in the target document, then the
-     * target document might become huge. What you need to do is to delete page references of such
-     * annotations. See
+     * document and want to copy the contents to this
+     * document's scratch file then use this method otherwise just use the {@link #addPage addPage}
+     * method.
+     * <p>
+     * Unlike {@link #addPage addPage}, this method creates a new PDPage object. If your page has
+     * annotations, and if these link to pages not in the target document, then the target document
+     * might become huge. What you need to do is to delete page references of such annotations. See
      * <a href="http://stackoverflow.com/a/35477351/535646">here</a> for how to do this.
+     * <p>
+     * Inherited (global) resources are ignored. If you need them, call
+     * <code>importedPage.setRotation(page.getRotation());</code>
      *
      * @param page The page to import.
      * @return The page that was imported.
@@ -519,10 +551,30 @@ public class PDDocument implements Closeable
      */
     public PDPage importPage(PDPage page) throws IOException
     {
-        PDFCloneUtility cloner = new PDFCloneUtility(this);
-        COSBase pageBase = cloner.cloneForNewDocument(page.getCOSObject());
-        PDPage importedPage = new PDPage((COSDictionary) pageBase, resourceCache);
-        addPage(importedPage);
+        PDPage importedPage = new PDPage(new COSDictionary(page.getCOSObject()), resourceCache);
+        InputStream in = null;
+        try
+        {
+            in = page.getContents();
+            if (in != null)
+            {
+                PDStream dest = new PDStream(this, in, COSName.FLATE_DECODE);
+                importedPage.setContents(dest);
+            }
+            addPage(importedPage);
+        }
+        catch (IOException e)
+        {
+            IOUtils.closeQuietly(in);
+        }
+        importedPage.setCropBox(page.getCropBox());
+        importedPage.setMediaBox(page.getMediaBox());
+        importedPage.setRotation(page.getRotation());
+        if (page.getResources() != null && !page.getCOSObject().containsKey(COSName.RESOURCES))
+        {
+            Log.w("PdfBox-Android", "inherited resources of source document are not imported to destination page");
+            Log.w("PdfBox-Android", "call importedPage.setResources(page.getResources()) to do this");
+        }
         return importedPage;
     }
 
@@ -1129,6 +1181,55 @@ public class PDDocument implements Closeable
     }
 
     /**
+     * <p>
+     * <b>(This is a new feature for 2.0.3. The API for external signing might change based on feedback after release!)</b>
+     * <p>
+     * Save PDF incrementally without closing for external signature creation scenario. The general
+     * sequence is:
+     * <pre>
+     *    PDDocument pdDocument = ...;
+     *    OutputStream outputStream = ...;
+     *    SignatureOptions signatureOptions = ...; // options to specify fine tuned signature options or null for defaults
+     *    PDSignature pdSignature = ...;
+     *
+     *    // add signature parameters to be used when creating signature dictionary
+     *    pdDocument.addSignature(pdSignature, signatureOptions);
+     *    // prepare PDF for signing and obtain helper class to be used
+     *    ExternalSigningSupport externalSigningSupport = pdDocument.saveIncrementalForExternalSigning(outputStream);
+     *    // get data to be signed
+     *    InputStream dataToBeSigned = externalSigningSupport.getContent();
+     *    // invoke signature service
+     *    byte[] signature = sign(dataToBeSigned);
+     *    // set resulted CMS signature
+     *    externalSigningSupport.setSignature(signature);
+     *
+     *    // last step is to close the document
+     *    pdDocument.close();
+     * </pre>
+     * <p>
+     * Note that after calling this method, only {@code close()} method may invoked for
+     * {@code PDDocument} instance and only AFTER {@link ExternalSigningSupport} instance is used.
+     * </p>
+     *
+     * @param output stream to write final PDF
+     * @return instance to be used for external signing and setting CMS signature
+     * @throws IOException if the output could not be written
+     * @throws IllegalStateException if the document was not loaded from a file or a stream or
+     * signature optionss were not set.
+     */
+    public ExternalSigningSupport saveIncrementalForExternalSigning(OutputStream output) throws IOException
+    {
+        if (pdfSource == null)
+        {
+            throw new IllegalStateException("document was not loaded from a file or a stream");
+        }
+        COSWriter writer = new COSWriter(output, pdfSource);
+        writer.write(this);
+        signingSupport = new SigningSupport(writer);
+        return signingSupport;
+    }
+
+    /**
      * Returns the page at the given index.
      *
      * @param pageIndex the page index
@@ -1169,6 +1270,12 @@ public class PDDocument implements Closeable
     {
         if (!document.isClosed())
         {
+            // close resources and COSWriter
+            if (signingSupport != null)
+            {
+                signingSupport.close();
+            }
+
             // close all intermediate I/O streams
             document.close();
 

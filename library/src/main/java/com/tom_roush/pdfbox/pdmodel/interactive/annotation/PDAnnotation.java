@@ -86,7 +86,8 @@ public abstract class PDAnnotation implements COSObjectable
      *
      * @param base The COS object that is the annotation.
      * @return The correctly typed annotation object.
-     * @throws IOException If there is an error while creating the annotation.
+     *
+     * @throws IOException If the annotation type is unknown.
      */
     public static PDAnnotation createAnnotation(COSBase base) throws IOException
     {
@@ -197,11 +198,10 @@ public abstract class PDAnnotation implements COSObjectable
         PDRectangle rectangle = null;
         if (rectArray != null)
         {
-            if (rectArray.size() == 4
-                && rectArray.get(0) instanceof COSNumber
-                && rectArray.get(1) instanceof COSNumber
-                && rectArray.get(2) instanceof COSNumber
-                && rectArray.get(3) instanceof COSNumber)
+            if (rectArray.size() == 4 && rectArray.getObject(0) instanceof COSNumber
+                && rectArray.getObject(1) instanceof COSNumber
+                && rectArray.getObject(2) instanceof COSNumber
+                && rectArray.getObject(3) instanceof COSNumber)
             {
                 rectangle = new PDRectangle(rectArray);
             }
@@ -255,8 +255,8 @@ public abstract class PDAnnotation implements COSObjectable
     }
 
     /**
-     * Returns the annotations appearance state, which selects the applicable appearance stream
-     * from an appearance subdictionary.
+     * Returns the annotations appearance state, which selects the applicable appearance stream from an appearance
+     * subdictionary.
      */
     public COSName getAppearanceState()
     {
@@ -316,8 +316,8 @@ public abstract class PDAnnotation implements COSObjectable
     }
 
     /**
-     * Returns the appearance stream for this annotation, if any. The annotation state is taken
-     * into account, if present.
+     * Returns the appearance stream for this annotation, if any. The annotation state is taken into account, if
+     * present.
      */
     public PDAppearanceStream getNormalAppearanceStream()
     {
@@ -351,7 +351,7 @@ public abstract class PDAnnotation implements COSObjectable
      */
     public boolean isInvisible()
     {
-        return getCOSObject().getFlag( COSName.F, FLAG_INVISIBLE);
+        return getCOSObject().getFlag(COSName.F, FLAG_INVISIBLE);
     }
 
     /**
@@ -361,7 +361,7 @@ public abstract class PDAnnotation implements COSObjectable
      */
     public void setInvisible(boolean invisible)
     {
-        getCOSObject().setFlag( COSName.F, FLAG_INVISIBLE, invisible);
+        getCOSObject().setFlag(COSName.F, FLAG_INVISIBLE, invisible);
     }
 
     /**
@@ -639,7 +639,7 @@ public abstract class PDAnnotation implements COSObjectable
         }
         else
         {
-            border = (COSArray)base;
+            border = (COSArray) base;
         }
         return border;
     }
@@ -669,13 +669,15 @@ public abstract class PDAnnotation implements COSObjectable
     }
 
     /**
-     * This will retrieve the color used in drawing various elements. As of PDF
-     * 1.6 these are :
+     * This will retrieve the color used in drawing various elements. As of PDF 1.6 these are :
      * <ul>
      * <li>Background of icon when closed</li>
      * <li>Title bar of popup window</li>
-     * <li>Border of a link annotation</li></ul>
+     * <li>Border of a link annotation</li>
+     * </ul>
+     *
      * @return Color object representing the colour
+     *
      */
     public PDColor getColor()
     {
@@ -690,17 +692,17 @@ public abstract class PDAnnotation implements COSObjectable
             PDColorSpace colorSpace = null;
             switch (((COSArray) c).size())
             {
-                case 1:
-                    colorSpace = PDDeviceGray.INSTANCE;
-                    break;
-                case 3:
-                    colorSpace = PDDeviceRGB.INSTANCE;
-                    break;
-                case 4:
-//                    colorSpace = PDDeviceCMYK.INSTANCE; TODO: PdfBox-Android
-                    break;
-                default:
-                    break;
+            case 1:
+                colorSpace = PDDeviceGray.INSTANCE;
+                break;
+            case 3:
+                colorSpace = PDDeviceRGB.INSTANCE;
+                break;
+            case 4:
+//                colorSpace = PDDeviceCMYK.INSTANCE; TODO: PdfBox-Android
+                break;
+            default:
+                break;
             }
             return new PDColor((COSArray) c, colorSpace);
         }

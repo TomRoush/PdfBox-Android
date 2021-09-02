@@ -18,10 +18,10 @@ package com.tom_roush.pdfbox.util;
 
 import android.graphics.PointF;
 
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSNumber;
-import com.tom_roush.harmony.awt.geom.AffineTransform;
 
 /**
  * This class will be used for matrix manipulation.
@@ -32,9 +32,9 @@ public final class Matrix implements Cloneable
 {
     static final float[] DEFAULT_SINGLE =
         {
-            1,0,0,  //  a  b  0		sx hy 0 note: hx and hy are reversed vs. the PDF spec as we use
-            0,1,0,  //  c  d  0		hx sy 0 AffineTransform's definition x and y shear
-            0,0,1   //  tx ty 1		tx ty 1
+            1,0,0,  //  a  b  0     sx hy 0    note: hx and hy are reversed vs. the PDF spec as we use
+            0,1,0,  //  c  d  0  =  hx sy 0          AffineTransform's definition x and y shear
+            0,0,1   //  tx ty 1     tx ty 1
         };
 
     private final float[] single;
@@ -224,7 +224,7 @@ public final class Matrix implements Cloneable
     }
 
     /**
-     * Translates this matrix by the given amount.
+     * Translates this matrix by the given ammount.
      *
      * @param tx x-translation
      * @param ty y-translation
@@ -248,7 +248,7 @@ public final class Matrix implements Cloneable
     }
 
     /**
-     * Rotates this matrix by the given factors.
+     * Rotares this matrix by the given factors.
      *
      * @param theta The angle of rotation measured in radians
      */
@@ -274,7 +274,7 @@ public final class Matrix implements Cloneable
      * This method multiplies this Matrix with the specified other Matrix, storing the product in the specified
      * result Matrix. By reusing Matrix instances like this, multiplication chains can be executed without having
      * to create many temporary Matrix objects.
-     * <p/>
+     * <p>
      * It is allowed to have (other == this) or (result == this) or indeed (other == result) but if this is done,
      * the backing float[] matrix values may be copied in order to ensure a correct product.
      *
@@ -358,8 +358,8 @@ public final class Matrix implements Cloneable
      */
     public void transform(PointF point)
     {
-        float x = point.x;
-        float y = point.y;
+        float x = (float)point.x;
+        float y = (float)point.y;
         float a = single[0];
         float b = single[1];
         float c = single[3];
@@ -375,7 +375,7 @@ public final class Matrix implements Cloneable
      * @param x x-coordinate
      * @param y y-coordinate
      */
-    public PointF transformPoint(double x, double y)
+    public PointF transformPoint(float x, float y)
     {
         float a = single[0];
         float b = single[1];
@@ -383,13 +383,13 @@ public final class Matrix implements Cloneable
         float d = single[4];
         float e = single[6];
         float f = single[7];
-        return new PointF((float)(x * a + y * c + e), (float)(x * b + y * d + f));
+        return new PointF(x * a + y * c + e, x * b + y * d + f);
     }
 
     /**
      * Transforms the given point by this matrix.
      *
-     * @param vector @2D vector
+     * @param vector 2D vector
      */
     public Vector transform(Vector vector)
     {
@@ -490,6 +490,7 @@ public final class Matrix implements Cloneable
     {
         float cosTheta = (float)Math.cos(theta);
         float sinTheta = (float)Math.sin(theta);
+
         Matrix matrix = new Matrix();
         matrix.single[0] = cosTheta;
         matrix.single[1] = sinTheta;

@@ -71,9 +71,9 @@ public class TestDateUtil extends TestCase
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
         assertCalendarEquals( new GregorianCalendar( 2005, 4, 12 ),
-                DateConverter.toCalendar( "D:05/12/2005" ) );
+            DateConverter.toCalendar( "D:05/12/2005" ) );
         assertCalendarEquals( new GregorianCalendar( 2005, 4,12,15,57,16 ),
-                DateConverter.toCalendar( "5/12/2005 15:57:16" ) );
+            DateConverter.toCalendar( "5/12/2005 15:57:16" ) );
 
         TimeZone.setDefault(timezone);
         // check that new toCalendarSTATIC gives null for a null arg
@@ -90,7 +90,7 @@ public class TestDateUtil extends TestCase
     {
         assertEquals( expect.getTimeInMillis(), was.getTimeInMillis() );
         assertEquals( expect.getTimeZone().getRawOffset(),
-                was.getTimeZone().getRawOffset() );
+            was.getTimeZone().getRawOffset() );
     }
 
     /**
@@ -126,14 +126,14 @@ public class TestDateUtil extends TestCase
      * @throws Exception If an unexpected error occurs.
      */
     private static void checkParse(int yr, int mon, int day,
-                                   int hr, int min, int sec, int offsetHours, int offsetMinutes,
-                                   String orig) throws Exception
+        int hr, int min, int sec, int offsetHours, int offsetMinutes,
+        String orig) throws Exception
     {
         String pdfDate = String.format(Locale.US, "D:%04d%02d%02d%02d%02d%02d%+03d'%02d'",
-                yr,mon,day,hr,min,sec,offsetHours,offsetMinutes);
+            yr,mon,day,hr,min,sec,offsetHours,offsetMinutes);
         String iso8601Date = String.format(Locale.US, "%04d-%02d-%02d"
-                        + "T%02d:%02d:%02d%+03d:%02d",
-                yr,mon,day,hr,min,sec,offsetHours,offsetMinutes);
+                + "T%02d:%02d:%02d%+03d:%02d",
+            yr,mon,day,hr,min,sec,offsetHours,offsetMinutes);
         Calendar cal = DateConverter.toCalendar(orig);
         if (cal != null)
         {
@@ -208,7 +208,7 @@ public class TestDateUtil extends TestCase
         checkParse(BAD, 0, 0, 0, 0, 0,  0, 0,  "19920401 24:25");
 
         checkParse(BAD, 0, 0, 0, 0, 0,  0, 0,
-                "20070430193647+713'00' illegal tz hr");  // PDFBOX-465
+            "20070430193647+713'00' illegal tz hr");  // PDFBOX-465
         checkParse(BAD, 0, 0, 0, 0, 0,  0, 0, "nodigits");
         checkParse(BAD, 0, 0, 0, 0, 0,  0, 0, "Unknown"); // PDFBOX-465
         checkParse(BAD, 0, 0, 0, 0, 0,  0, 0, "333three digit year");
@@ -219,14 +219,14 @@ public class TestDateUtil extends TestCase
         checkParse(2012, 2,29, 0, 0, 0,+11, 0, "2012 Feb 29 GMT+11"); // valid date
         checkParse(BAD, 0, 0, 0, 0, 0,  0, 0, "2012 Feb 30 GMT+11"); // invalid date
 
-        checkParse(1970,12,23, 0, 8, 0,  0, 0, "1970 12 23:08");  // test ambiguous date
+        checkParse(1970,12,23, 0, 8, 0,  0, 0, "1970 12 23:08");  // test ambiguous date 
 
         // cannot have P for PM
         // cannot have Sat. instead of Sat
         // EST works, but EDT does not; EST is a special kludge in Java
 
         // test cases for all entries on old formats list
-        //  "E, dd MMM yyyy hh:mm:ss a"
+        //  "E, dd MMM yyyy hh:mm:ss a"  
         checkParse(1971, 7, 6, 17, 22, 1, 0, 0, "Tuesday, 6 Jul 1971 5:22:1 PM");
         //  "EE, MMM dd, yyyy hh:mm:ss a"
         checkParse(1972, 7, 6, 17, 22, 1, 0, 0, "Thu, July 6, 1972 5:22:1 pm");
@@ -269,11 +269,11 @@ public class TestDateUtil extends TestCase
 
         // test ends of range of two digit years
         checkParse(year-79, 1, 1, 0, 0, 0, 0, 0, "1/1/" + ((year-79)%100)
-                + " 00:00:00");   //  "M/d/yy hh:mm:ss"
+            + " 00:00:00");   //  "M/d/yy hh:mm:ss"
         //  "M/d/yy"
         checkParse(year+19, 1, 1, 0, 0, 0, 0, 0, "1/1/" + ((year+19)%100));
 
-        //  "yyyyMMdd hh:mm:ss Z"
+        //  "yyyyMMdd hh:mm:ss Z"  
         checkParse(1991, 7, 6, 17, 7, 1, +6, 0, "19910706 17:7:1 Z+0600");
         //  "yyyyMMdd hh:mm:ss"
         checkParse(1992, 7, 6, 17, 7, 1, 0, 0, "19920706 17:07:01");
@@ -295,21 +295,23 @@ public class TestDateUtil extends TestCase
         // ambiguous big-endian date
         checkParse(2073,12,25, 0, 8, 0, 0, 0, "2073 12 25:08");
 
+        // PDFBOX-3315 GMT+12
+        checkParse(2016, 4,11,16,01,15, 12, 0, "D:20160411160115+12'00'");
     }
 
     private static void checkToString(int yr, int mon, int day,
-                                      int hr, int min, int sec,
-                                      TimeZone tz, int offsetHours, int offsetMinutes) throws Exception
+        int hr, int min, int sec,
+        TimeZone tz, int offsetHours, int offsetMinutes) throws Exception
     {
         // construct a GregoreanCalendar from args
         GregorianCalendar cal = new GregorianCalendar(tz, Locale.ENGLISH);
         cal.set(yr, mon-1, day, hr, min, sec);
         // create expected strings
         String pdfDate = String.format(Locale.US, "D:%04d%02d%02d%02d%02d%02d%+03d'%02d'",
-                yr,mon,day,hr,min,sec,offsetHours, offsetMinutes);
+            yr,mon,day,hr,min,sec,offsetHours, offsetMinutes);
         String iso8601Date = String.format(Locale.US, "%04d-%02d-%02d"
-                        + "T%02d:%02d:%02d%+03d:%02d",
-                yr,mon,day,hr,min,sec,offsetHours, offsetMinutes);
+                + "T%02d:%02d:%02d%+03d:%02d",
+            yr,mon,day,hr,min,sec,offsetHours, offsetMinutes);
         // compare outputs from toString and toISO8601 with expected values
         assertEquals(pdfDate, DateConverter.toString(cal));
         assertEquals(iso8601Date, DateConverter.toISO8601(cal));
@@ -370,27 +372,33 @@ public class TestDateUtil extends TestCase
      */
     public void testParseTZ()
     {
+        // 1st parameter is what to expect
         checkParseTZ(0*HRS+0*MINS, "+00:00");
         checkParseTZ(0*HRS+0*MINS, "-0000");
         checkParseTZ(1*HRS+0*MINS, "+1:00");
         checkParseTZ(-(1*HRS+0*MINS), "-1:00");
         checkParseTZ(-(1*HRS+30*MINS), "-0130");
         checkParseTZ(11*HRS+59*MINS, "1159");
-        checkParseTZ(-(11*HRS+30*MINS), "1230");
-        checkParseTZ(11*HRS+30*MINS, "-12:30");
+        checkParseTZ(12*HRS+30*MINS, "1230");
+        checkParseTZ(-(12*HRS+30*MINS), "-12:30");
         checkParseTZ(0*HRS+0*MINS, "Z");
         checkParseTZ(-(8*HRS+0*MINS), "PST");
         checkParseTZ(0*HRS+0*MINS, "EDT");  // EDT does not parse
         checkParseTZ(-(3*HRS+0*MINS), "GMT-0300");
         checkParseTZ(+(11*HRS+0*MINS), "GMT+11:00");
         checkParseTZ(-(6*HRS+0*MINS), "America/Chicago");
-// disable this while hoping for correct JDK6, see PDFBOX-2460
+// disable this while hoping for correct JDK6, see PDFBOX-2460        
 //        checkParseTZ(+(4*HRS+0*MINS), "Europe/Moscow");
         checkParseTZ(+(9*HRS+30*MINS), "Australia/Adelaide");
         checkParseTZ((5*HRS+0*MINS), "0500");
         checkParseTZ((5*HRS+0*MINS), "+0500");
         checkParseTZ((11*HRS+0*MINS), "+11'00'");
         checkParseTZ(0, "Z");
+        // PDFBOX-3315, PDFBOX-2420
+        checkParseTZ(12*HRS+0*MINS, "+12:00");
+        checkParseTZ(-(12*HRS+0*MINS), "-12:00");
+        checkParseTZ(14*HRS+0*MINS, "1400");
+        checkParseTZ(-(14*HRS+0*MINS), "-1400");
     }
 
     private static void checkFormatOffset(double off, String expect)
@@ -405,16 +413,17 @@ public class TestDateUtil extends TestCase
      */
     public void testFormatTZoffset()
     {
-        checkFormatOffset(-12.1, "+11:54");
-        checkFormatOffset(12.1, "-11:54");
+        // 2nd parameter is what to expect
+        checkFormatOffset(-12.1, "-12:06");
+        checkFormatOffset(12.1, "+12:06");
         checkFormatOffset(0, "+00:00");
         checkFormatOffset(-1, "-01:00");
         checkFormatOffset(.5, "+00:30");
         checkFormatOffset(-0.5, "-00:30");
         checkFormatOffset(.1, "+00:06");
         checkFormatOffset(-0.1, "-00:06");
-        checkFormatOffset(-12, "+00:00");
-        checkFormatOffset(12, "+00:00");
+        checkFormatOffset(-12, "-12:00");
+        checkFormatOffset(12, "+12:00");
         checkFormatOffset(-11.5, "-11:30");
         checkFormatOffset(11.5, "+11:30");
         checkFormatOffset(11.9, "+11:54");
@@ -444,9 +453,9 @@ public class TestDateUtil extends TestCase
     public static void main( String[] args )
     {
         String[] arg =
-                {
-                        TestDateUtil.class.getName()
-                };
+            {
+                TestDateUtil.class.getName()
+            };
         junit.textui.TestRunner.main( arg );
     }
 }

@@ -107,7 +107,6 @@ public class PDType3Font extends PDSimpleFont
         throw new UnsupportedOperationException("not supported for Type 3 fonts");
     }
 
-
     @Override
     public Vector getDisplacement(int code) throws IOException
     {
@@ -121,7 +120,8 @@ public class PDType3Font extends PDSimpleFont
         int lastChar = dict.getInt(COSName.LAST_CHAR, -1);
         if (getWidths().size() > 0 && code >= firstChar && code <= lastChar)
         {
-            return getWidths().get(code - firstChar);
+            Float w = getWidths().get(code - firstChar);
+            return w == null ? 0 : w;
         }
         else
         {
@@ -274,8 +274,8 @@ public class PDType3Font extends PDSimpleFont
     private BoundingBox generateBoundingBox()
     {
         PDRectangle rect = getFontBBox();
-        if (rect.getLowerLeftX() == 0 && rect.getLowerLeftY() == 0 && rect.getUpperRightX() == 0 &&
-            rect.getUpperRightY() == 0)
+        if (rect.getLowerLeftX() == 0 && rect.getLowerLeftY() == 0
+            && rect.getUpperRightX() == 0 && rect.getUpperRightY() == 0)
         {
             // Plan B: get the max bounding box of the glyphs
             COSDictionary cp = getCharProcs();
@@ -284,7 +284,7 @@ public class PDType3Font extends PDSimpleFont
                 COSBase base = cp.getDictionaryObject(name);
                 if (base instanceof COSStream)
                 {
-                    PDType3CharProc charProc = new PDType3CharProc(this, (COSStream)base);
+                    PDType3CharProc charProc = new PDType3CharProc(this, (COSStream) base);
                     try
                     {
                         PDRectangle glyphBBox = charProc.getGlyphBBox();
@@ -292,14 +292,10 @@ public class PDType3Font extends PDSimpleFont
                         {
                             continue;
                         }
-                        rect.setLowerLeftX(
-                            Math.min(rect.getLowerLeftX(), glyphBBox.getLowerLeftX()));
-                        rect.setLowerLeftY(
-                            Math.min(rect.getLowerLeftY(), glyphBBox.getLowerLeftY()));
-                        rect.setUpperRightX(
-                            Math.max(rect.getUpperRightX(), glyphBBox.getUpperRightX()));
-                        rect.setUpperRightY(
-                            Math.max(rect.getUpperRightY(), glyphBBox.getUpperRightY()));
+                        rect.setLowerLeftX(Math.min(rect.getLowerLeftX(), glyphBBox.getLowerLeftX()));
+                        rect.setLowerLeftY(Math.min(rect.getLowerLeftY(), glyphBBox.getLowerLeftY()));
+                        rect.setUpperRightX(Math.max(rect.getUpperRightX(), glyphBBox.getUpperRightX()));
+                        rect.setUpperRightY(Math.max(rect.getUpperRightY(), glyphBBox.getUpperRightY()));
                     }
                     catch (IOException ex)
                     {
@@ -308,8 +304,8 @@ public class PDType3Font extends PDSimpleFont
                 }
             }
         }
-        return new BoundingBox(rect.getLowerLeftX(), rect.getLowerLeftY(), rect.getWidth(),
-            rect.getHeight());
+        return new BoundingBox(rect.getLowerLeftX(), rect.getLowerLeftY(),
+            rect.getUpperRightX(), rect.getUpperRightY());
     }
 
     /**

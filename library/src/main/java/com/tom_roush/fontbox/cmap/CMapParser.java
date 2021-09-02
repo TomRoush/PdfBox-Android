@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.tom_roush.pdfbox.util.Charsets;
-import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
+import com.tom_roush.fontbox.util.Charsets;
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
 /**
  * Parses a CMap stream.
@@ -51,7 +51,7 @@ public class CMapParser
 
     /**
      * Parse a CMAP file on the file system.
-     * 
+     *
      * @param file The file to parse.
      * @return A parsed CMAP file.
      * @throws IOException If there is an issue while parsing the CMAP.
@@ -238,7 +238,7 @@ public class CMapParser
                 if (!((Operator) nextToken).op.equals("endcodespacerange"))
                 {
                     throw new IOException("Error : ~codespacerange contains an unexpected operator : "
-                            + ((Operator) nextToken).op);
+                        + ((Operator) nextToken).op);
                 }
                 break;
             }
@@ -262,7 +262,7 @@ public class CMapParser
                 if (!((Operator) nextToken).op.equals("endbfchar"))
                 {
                     throw new IOException("Error : ~bfchar contains an unexpected operator : "
-                            + ((Operator) nextToken).op);
+                        + ((Operator) nextToken).op);
                 }
                 break;
             }
@@ -281,7 +281,7 @@ public class CMapParser
             else
             {
                 throw new IOException("Error parsing CMap beginbfchar, expected{COSString "
-                        + "or COSName} and not " + nextToken);
+                    + "or COSName} and not " + nextToken);
             }
         }
     }
@@ -297,7 +297,7 @@ public class CMapParser
                 if (!((Operator) nextToken).op.equals("endcidrange"))
                 {
                     throw new IOException("Error : ~cidrange contains an unexpected operator : "
-                            + ((Operator) nextToken).op);
+                        + ((Operator) nextToken).op);
                 }
                 break;
             }
@@ -335,7 +335,7 @@ public class CMapParser
                 if (!((Operator) nextToken).op.equals("endcidchar"))
                 {
                     throw new IOException("Error : ~cidchar contains an unexpected operator : "
-                            + ((Operator) nextToken).op);
+                        + ((Operator) nextToken).op);
                 }
                 break;
             }
@@ -358,7 +358,7 @@ public class CMapParser
                 if (!((Operator) nextToken).op.equals("endbfrange"))
                 {
                     throw new IOException("Error : ~bfrange contains an unexpected operator : "
-                            + ((Operator) nextToken).op);
+                        + ((Operator) nextToken).op);
                 }
                 break;
             }
@@ -375,6 +375,11 @@ public class CMapParser
             else
             {
                 tokenBytes = (byte[]) nextToken;
+            }
+            if (tokenBytes.length == 0)
+            {
+                // PDFBOX-3450: ignore <>
+                continue;
             }
             boolean done = false;
 
@@ -410,11 +415,11 @@ public class CMapParser
      */
     protected InputStream getExternalCMap(String name) throws IOException
     {
-    	if (PDFBoxResourceLoader.isReady()) {
-    		return PDFBoxResourceLoader.getStream("com/tom_roush/fontbox/resources/cmap/" + name);
-    	}
+        if (PDFBoxResourceLoader.isReady()) {
+            return PDFBoxResourceLoader.getStream("com/tom_roush/fontbox/resources/cmap/" + name);
+        }
 
-    	// Fallback
+        // Fallback
         URL url = getClass().getResource("/com/tom_roush/fontbox/resources/cmap/" + name);
         if (url == null)
         {
@@ -480,7 +485,7 @@ public class CMapParser
             List<Object> list = new ArrayList<Object>();
 
             Object nextToken = parseNextToken(is);
-            while (nextToken != null && MARK_END_OF_ARRAY.equals(nextToken))
+            while (nextToken != null && !MARK_END_OF_ARRAY.equals(nextToken))
             {
                 list.add(nextToken);
                 nextToken = parseNextToken(is);
@@ -496,7 +501,7 @@ public class CMapParser
                 Map<String, Object> result = new HashMap<String, Object>();
                 // we are reading a dictionary
                 Object key = parseNextToken(is);
-                while (key instanceof LiteralName && MARK_END_OF_DICTIONARY.equals(key))
+                while (key instanceof LiteralName && !MARK_END_OF_DICTIONARY.equals(key))
                 {
                     Object value = parseNextToken(is);
                     result.put(((LiteralName) key).name, value);
@@ -536,7 +541,7 @@ public class CMapParser
                     else
                     {
                         throw new IOException("Error: expected hex character and not " + (char) theNextByte + ":"
-                                + theNextByte);
+                            + theNextByte);
                     }
                     intValue *= multiplyer;
                     if (multiplyer == 16)
@@ -568,7 +573,7 @@ public class CMapParser
                 buffer.append((char) stringByte);
                 stringByte = is.read();
             }
-            if (isDelimiter( stringByte)) 
+            if (isDelimiter( stringByte))
             {
                 is.unread(stringByte);
             }
@@ -604,7 +609,7 @@ public class CMapParser
             String value = buffer.toString();
             if (value.indexOf('.') >= 0)
             {
-                retval = new Double(value);
+                retval = Double.valueOf(value);
             }
             else
             {
@@ -655,21 +660,21 @@ public class CMapParser
     /** Is this a standard PDF delimiter character? */
     private boolean isDelimiter(int aByte)
     {
-        switch (aByte) 
+        switch (aByte)
         {
-            case '(':
-            case ')':
-            case '<':
-            case '>':
-            case '[':
-            case ']':
-            case '{':
-            case '}':
-            case '/':
-            case '%':
-                return true;
-            default:
-                return false;
+        case '(':
+        case ')':
+        case '<':
+        case '>':
+        case '[':
+        case ']':
+        case '{':
+        case '}':
+        case '/':
+        case '%':
+            return true;
+        default:
+            return false;
         }
     }
 

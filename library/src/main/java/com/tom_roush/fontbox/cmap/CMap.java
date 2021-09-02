@@ -64,7 +64,7 @@ public class CMap
 
     /**
      * This will tell if this cmap has any CID mappings.
-     * 
+     *
      * @return true If there are any CID mappings, false otherwise.
      */
     public boolean hasCIDMappings()
@@ -95,7 +95,7 @@ public class CMap
 
     /**
      * Reads a character code from a string in the content stream.
-     * <p>>See "CMap Mapping" and "Handling Undefined Characters" in PDF32000 for more details.
+     * <p>See "CMap Mapping" and "Handling Undefined Characters" in PDF32000 for more details.
      *
      * @param in string stream
      * @return character code
@@ -104,10 +104,10 @@ public class CMap
     public int readCode(InputStream in) throws IOException
     {
         byte[] bytes = new byte[maxCodeLength];
-        in.read(bytes, 0, minCodeLength);
-        for (int i = minCodeLength - 1; i < maxCodeLength; i++)
+        in.read(bytes,0,minCodeLength);
+        for (int i = minCodeLength-1; i < maxCodeLength; i++)
         {
-            final int byteCount = i + 1;
+            final int byteCount = i+1;
             for (CodespaceRange range : codespaceRanges)
             {
                 if (range.isFullMatch(bytes, byteCount))
@@ -232,11 +232,11 @@ public class CMap
         maxCodeLength = Math.max(maxCodeLength, range.getCodeLength());
         minCodeLength = Math.min(minCodeLength, range.getCodeLength());
     }
-    
+
     /**
      * Implementation of the usecmap operator.  This will
      * copy all of the mappings from one cmap to another.
-     * 
+     *
      * @param cmap The cmap to load mappings from.
      */
     void useCmap( CMap cmap )
@@ -254,147 +254,147 @@ public class CMap
      * Returns the WMode of a CMap.
      *
      * 0 represents a horizontal and 1 represents a vertical orientation.
-     * 
+     *
      * @return the wmode
      */
-    public int getWMode() 
+    public int getWMode()
     {
         return wmode;
     }
 
     /**
      * Sets the WMode of a CMap.
-     * 
+     *
      * @param newWMode the new WMode.
      */
-    public void setWMode(int newWMode) 
+    public void setWMode(int newWMode)
     {
         wmode = newWMode;
     }
 
     /**
      * Returns the name of the CMap.
-     * 
+     *
      * @return the CMap name.
      */
-    public String getName() 
+    public String getName()
     {
         return cmapName;
     }
 
     /**
      * Sets the name of the CMap.
-     * 
+     *
      * @param name the CMap name.
      */
-    public void setName(String name) 
+    public void setName(String name)
     {
         cmapName = name;
     }
 
     /**
      * Returns the version of the CMap.
-     * 
+     *
      * @return the CMap version.
      */
-    public String getVersion() 
+    public String getVersion()
     {
         return cmapVersion;
     }
 
     /**
      * Sets the version of the CMap.
-     * 
+     *
      * @param version the CMap version.
      */
-    public void setVersion(String version) 
+    public void setVersion(String version)
     {
         cmapVersion = version;
     }
 
     /**
      * Returns the type of the CMap.
-     * 
+     *
      * @return the CMap type.
      */
-    public int getType() 
+    public int getType()
     {
         return cmapType;
     }
 
     /**
      * Sets the type of the CMap.
-     * 
+     *
      * @param type the CMap type.
      */
-    public void setType(int type) 
+    public void setType(int type)
     {
         cmapType = type;
     }
 
     /**
      * Returns the registry of the CIDSystemInfo.
-     * 
+     *
      * @return the registry.
      */
-    public String getRegistry() 
+    public String getRegistry()
     {
         return registry;
     }
 
     /**
      * Sets the registry of the CIDSystemInfo.
-     * 
+     *
      * @param newRegistry the registry.
      */
-    public void setRegistry(String newRegistry) 
+    public void setRegistry(String newRegistry)
     {
         registry = newRegistry;
     }
 
     /**
      * Returns the ordering of the CIDSystemInfo.
-     * 
+     *
      * @return the ordering.
      */
-    public String getOrdering() 
+    public String getOrdering()
     {
         return ordering;
     }
 
     /**
      * Sets the ordering of the CIDSystemInfo.
-     * 
+     *
      * @param newOrdering the ordering.
      */
-    public void setOrdering(String newOrdering) 
+    public void setOrdering(String newOrdering)
     {
         ordering = newOrdering;
     }
 
     /**
      * Returns the supplement of the CIDSystemInfo.
-     * 
+     *
      * @return the supplement.
      */
-    public int getSupplement() 
+    public int getSupplement()
     {
         return supplement;
     }
 
     /**
      * Sets the supplement of the CIDSystemInfo.
-     * 
+     *
      * @param newSupplement the supplement.
      */
-    public void setSupplement(int newSupplement) 
+    public void setSupplement(int newSupplement)
     {
         supplement = newSupplement;
     }
-    
-    /** 
+
+    /**
      * Returns the mapping for the space character.
-     * 
+     *
      * @return the mapped code for the space character
      */
     public int getSpaceMapping()

@@ -122,12 +122,12 @@ public final class DateConverter
             "M/d/yy HH:mm",
             "M/d/yy",
 
-            // proposed rule that is unreachable due to "dd MMM yy HH:mm:ss"
-            //     "yyyy MMM d HH:mm:ss",
+            // proposed rule that is unreachable due to "dd MMM yy HH:mm:ss" 
+            //     "yyyy MMM d HH:mm:ss", 
 
             // rules made unreachable by "M/d/yy HH:mm:ss" "M/d/yy HH:mm"  "M/d/yy",
             // (incoming digit strings do not mark themselves as y, m, or d!)
-            // "d/MM/yyyy HH:mm:ss", // PDFBOX-164 and PDFBOX-170
+            // "d/MM/yyyy HH:mm:ss", // PDFBOX-164 and PDFBOX-170 
             // "M/dd/yyyy hh:mm:ss",
             // "MM/d/yyyy hh:mm:ss",
             // "M/d/yyyy HH:mm:ss",
@@ -139,11 +139,11 @@ public final class DateConverter
             // subsumed by big-endian parse
             // "yyyy-MM-dd'T'HH:mm:ss",
             // "yyyy-MM-dd'T'HH:mm:ss",
-            // "yyyymmdd hh:mm:ss",
-            // "yyyymmdd",
-            // "yyyymmddX''00''",  // covers 24 cases
-            //    (orignally the above ended with '+00''00''';
-            //      the first apostrophe quoted the plus,
+            // "yyyymmdd hh:mm:ss", 
+            // "yyyymmdd", 
+            // "yyyymmddX''00''",  // covers 24 cases 
+            //    (orignally the above ended with '+00''00'''; 
+            //      the first apostrophe quoted the plus, 
             //      '' mapped to a single ', and the ''' was invalid)
         };
 
@@ -154,7 +154,7 @@ public final class DateConverter
      * @param cal The date to convert to a string. May be null.
      * The DST_OFFSET is included when computing the output time zone.
      *
-     * @return The date as a String to be used in a PDF document,
+     * @return The date as a String to be used in a PDF document, 
      *      or null if the cal value is null
      */
     public static String toString(Calendar cal)
@@ -166,8 +166,8 @@ public final class DateConverter
         String offset = formatTZoffset(cal.get(Calendar.ZONE_OFFSET) +
             cal.get(Calendar.DST_OFFSET), "'");
         return String.format(Locale.US, "D:"
-                + "%1$4tY%1$2tm%1$2td"   // yyyyMMdd
-                + "%1$2tH%1$2tM%1$2tS"   // HHmmss
+                + "%1$4tY%1$2tm%1$2td"   // yyyyMMdd 
+                + "%1$2tH%1$2tM%1$2tS"   // HHmmss 
                 + "%2$s"                 // time zone
                 + "'",                   // trailing apostrophe
             cal, offset);
@@ -197,12 +197,23 @@ public final class DateConverter
     }
 
     /*
-     * Constrain a timezone offset to the range  [-11:59 thru +11:59].
+     * Constrain a timezone offset to the range [-14:00 thru +14:00].
      * by adding or subtracting multiples of a full day.
      */
     private static int restrainTZoffset(long proposedOffset)
     {
+        if (proposedOffset <= 14 * MILLIS_PER_HOUR && proposedOffset >= -14 * MILLIS_PER_HOUR)
+        {
+            // https://www.w3.org/TR/xmlschema-2/#dateTime-timezones
+            // Timezones between 14:00 and -14:00 are valid
+            return (int) proposedOffset;
+        }
+        // Constrain a timezone offset to the range  [-11:59 thru +12:00].
         proposedOffset = ((proposedOffset + HALF_DAY) % DAY + DAY) % DAY;
+        if (proposedOffset == 0)
+        {
+            return HALF_DAY;
+        }
         // 0 <= proposedOffset < DAY
         proposedOffset = (proposedOffset - HALF_DAY) % HALF_DAY;
         // -HALF_DAY < proposedOffset < HALF_DAY
@@ -480,11 +491,11 @@ public final class DateConverter
         }
         else if (pm == '+' && hh <= 12)
         {
-            tz.setID(String.format("GMT+%02d:%02d", hh, mm));
+            tz.setID(String.format(Locale.US, "GMT+%02d:%02d", hh, mm));
         }
         else if (pm == '-' && hh <= 14)
         {
-            tz.setID(String.format("GMT-%02d:%02d", hh, mm));
+            tz.setID(String.format(Locale.US, "GMT-%02d:%02d", hh, mm));
         }
         else
         {

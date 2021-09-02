@@ -19,7 +19,7 @@ package com.tom_roush.pdfbox.pdmodel.graphics.blend;
 /**
  * Non-separable blend mode (supports blend function).
  *
- * @author Kühn & Weyh Software, GmbH
+ * @author Kühn &amp; Weyh Software GmbH
  */
 public abstract class NonSeparableBlendMode extends BlendMode
 {

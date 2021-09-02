@@ -229,7 +229,7 @@ public class PDGraphicsState implements Cloneable
      *
      * @return The value of the non-stroke alpha constants parameter.
      */
-    public double getNonStrokeAlphaConstant()
+    public double getNonStrokeAlphaConstants()
     {
         return nonStrokingAlphaConstant;
     }
@@ -239,7 +239,7 @@ public class PDGraphicsState implements Cloneable
      *
      * @param value The value of the non-stroke alpha constants parameter.
      */
-    public void setNonStrokeAlphaConstant(double value)
+    public void setNonStrokeAlphaConstants(double value)
     {
         nonStrokingAlphaConstant = value;
     }

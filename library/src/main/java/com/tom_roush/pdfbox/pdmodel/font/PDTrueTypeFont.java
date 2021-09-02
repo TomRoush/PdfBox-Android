@@ -60,8 +60,7 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
     private static final int START_RANGE_F100 = 0xF100;
     private static final int START_RANGE_F200 = 0xF200;
 
-    private static final Map<String, Integer> INVERTED_MACOS_ROMAN = new HashMap<String, Integer>(
-        250);
+    private static final Map<String, Integer> INVERTED_MACOS_ROMAN = new HashMap<String, Integer>(250);
     static
     {
         Map<Integer, String> codeToName = MacOSRomanEncoding.INSTANCE.getCodeToNameMap();
@@ -194,8 +193,9 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
         // substitute
         if (ttfFont == null)
         {
-            FontMapping<TrueTypeFont> mapping = FontMappers.instance().getTrueTypeFont(
-                getBaseFont(), getFontDescriptor());
+            FontMapping<TrueTypeFont> mapping = FontMappers.instance()
+                .getTrueTypeFont(getBaseFont(),
+                    getFontDescriptor());
             ttfFont = mapping.getFont();
 
             if (mapping.isFallback())
@@ -228,7 +228,7 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
             // non-symbolic fonts don't have a built-in encoding per se, but there encoding is
             // assumed to be StandardEncoding by the PDF spec unless an explicit Encoding is present
             // which will override this anyway
-            if (getSymbolicFlag() != null && !getSymbolicFlag())
+            if (getSymbolicFlag() != null &&!getSymbolicFlag())
             {
                 return StandardEncoding.INSTANCE;
             }
@@ -237,7 +237,8 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
             String standard14Name = Standard14Fonts.getMappedFontName(getName());
 
             // likewise, if the font is standard 14 then we know it's Standard Encoding
-            if (isStandard14() && !standard14Name.equals("Symbol") &&
+            if (isStandard14() &&
+                !standard14Name.equals("Symbol") &&
                 !standard14Name.equals("ZapfDingbats"))
             {
                 return StandardEncoding.INSTANCE;
@@ -308,11 +309,13 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
 
     private BoundingBox generateBoundingBox() throws IOException
     {
-        if (getFontDescriptor() != null)
-        {
+        if (getFontDescriptor() != null) {
             PDRectangle bbox = getFontDescriptor().getFontBoundingBox();
-            return new BoundingBox(bbox.getLowerLeftX(), bbox.getLowerLeftY(),
-                bbox.getUpperRightX(), bbox.getUpperRightY());
+            if (bbox != null)
+            {
+                return new BoundingBox(bbox.getLowerLeftX(), bbox.getLowerLeftY(),
+                    bbox.getUpperRightX(), bbox.getUpperRightY());
+            }
         }
         return ttf.getFontBBox();
     }
@@ -363,9 +366,9 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
         {
             if (!encoding.contains(getGlyphList().codePointToName(unicode)))
             {
-                throw new IllegalArgumentException(String
-                    .format("U+%04X is not available in this font's encoding: %s", unicode,
-                        encoding.getEncodingName()));
+                throw new IllegalArgumentException(
+                    String.format("U+%04X is not available in this font's encoding: %s",
+                        unicode, encoding.getEncodingName()));
             }
 
             String name = getGlyphList().codePointToName(unicode);
@@ -383,7 +386,7 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
             }
 
             int code = inverted.get(name);
-            return new byte[]{(byte) code};
+            return new byte[] { (byte)code };
         }
         else
         {
@@ -404,12 +407,12 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
                     String.format("U+%04X is not available in this font's Encoding", unicode));
             }
 
-            return new byte[]{(byte) (int) code};
+            return new byte[] { (byte)(int)code };
         }
     }
 
     /**
-     * Inverts the font's code -> GID mapping. Any duplicate (GID -> code) mappings will be lost.
+     * Inverts the font's code -&gt; GID mapping. Any duplicate (GID -&gt; code) mappings will be lost.
      */
     protected Map<Integer, Integer> getGIDToCode() throws IOException
     {
