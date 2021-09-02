@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,8 +36,8 @@ public class PDFTextStripperByArea extends PDFTextStripper
 {
     private final List<String> regions = new ArrayList<String>();
     private final Map<String, RectF> regionArea = new HashMap<String, RectF>();
-    private final Map<String, ArrayList<List<TextPosition>>> regionCharacterList =
-        new HashMap<String, ArrayList<List<TextPosition>>>();
+    private final Map<String, ArrayList<List<TextPosition>>> regionCharacterList
+        = new HashMap<String, ArrayList<List<TextPosition>>>();
     private final Map<String, StringWriter> regionText = new HashMap<String, StringWriter>();
 
     /**
@@ -115,25 +114,25 @@ public class PDFTextStripperByArea extends PDFTextStripper
      */
     public void extractRegions( PDPage page ) throws IOException
     {
-        Iterator<String> regionIter = regions.iterator();
-        while( regionIter.hasNext() )
+        for (String region : regions)
         {
             setStartPage(getCurrentPageNo());
             setEndPage(getCurrentPageNo());
             //reset the stored text for the region so this class
             //can be reused.
-            String regionName = regionIter.next();
+            String regionName = region;
             ArrayList<List<TextPosition>> regionCharactersByArticle = new ArrayList<List<TextPosition>>();
             regionCharactersByArticle.add( new ArrayList<TextPosition>() );
             regionCharacterList.put( regionName, regionCharactersByArticle );
             regionText.put( regionName, new StringWriter() );
         }
 
-        if (page.hasContents())
+        if( page.hasContents() )
         {
-        	processPage( page );
+            processPage( page );
         }
     }
+
 
     /**
      * {@inheritDoc}
@@ -141,10 +140,8 @@ public class PDFTextStripperByArea extends PDFTextStripper
     @Override
     protected void processTextPosition( TextPosition text )
     {
-        Iterator<String> regionIter = regionArea.keySet().iterator();
-        while( regionIter.hasNext() )
+        for (String region : regionArea.keySet())
         {
-            String region = regionIter.next();
             RectF rect = regionArea.get( region );
             if( rect.contains( text.getX(), text.getY() ) )
             {
@@ -154,7 +151,7 @@ public class PDFTextStripperByArea extends PDFTextStripper
         }
     }
 
-    
+
     /**
      * This will print the processed page text to the output stream.
      *
@@ -163,10 +160,8 @@ public class PDFTextStripperByArea extends PDFTextStripper
     @Override
     protected void writePage() throws IOException
     {
-        Iterator<String> regionIter = regionArea.keySet().iterator();
-        while( regionIter.hasNext() )
+        for (String region : regionArea.keySet())
         {
-            String region = regionIter.next();
             charactersByArticle = regionCharacterList.get( region );
             output = regionText.get( region );
             super.writePage();

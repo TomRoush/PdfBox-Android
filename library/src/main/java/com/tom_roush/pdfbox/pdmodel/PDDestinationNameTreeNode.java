@@ -17,7 +17,6 @@
 package com.tom_roush.pdfbox.pdmodel;
 
 import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -51,7 +50,7 @@ public class PDDestinationNameTreeNode extends PDNameTreeNode<PDPageDestination>
     }
 
     @Override
-    protected PDPageDestination convertCOSToPD(COSBase base) throws IOException
+    protected PDPageDestination convertCOSToPD( COSBase base ) throws IOException
     {
         COSBase destination = base;
         if( base instanceof COSDictionary )
@@ -61,11 +60,11 @@ public class PDDestinationNameTreeNode extends PDNameTreeNode<PDPageDestination>
             //it for now
             destination = ((COSDictionary)base).getDictionaryObject( COSName.D );
         }
-        return (PDPageDestination)PDDestination.create(destination);
+        return (PDPageDestination)PDDestination.create( destination );
     }
 
     @Override
-    protected PDNameTreeNode createChildNode( COSDictionary dic )
+    protected PDNameTreeNode<PDPageDestination> createChildNode( COSDictionary dic )
     {
         return new PDDestinationNameTreeNode(dic);
     }

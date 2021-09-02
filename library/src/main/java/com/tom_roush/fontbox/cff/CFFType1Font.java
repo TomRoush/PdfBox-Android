@@ -39,7 +39,7 @@ public class CFFType1Font extends CFFFont implements EncodedFont
     private CFFEncoding encoding;
 
     private final Map<Integer, Type2CharString> charStringCache =
-            new ConcurrentHashMap<Integer, Type2CharString>();
+        new ConcurrentHashMap<Integer, Type2CharString>();
 
     private final PrivateType1CharStringReader reader = new PrivateType1CharStringReader();
 
@@ -142,7 +142,7 @@ public class CFFType1Font extends CFFFont implements EncodedFont
             Type2CharStringParser parser = new Type2CharStringParser(fontName, name);
             List<Object> type2seq = parser.parse(bytes, globalSubrIndex, getLocalSubrIndex());
             type2 = new Type2CharString(reader, fontName, name, gid, type2seq, getDefaultWidthX(),
-                    getNominalWidthX());
+                getNominalWidthX());
             charStringCache.put(gid, type2);
         }
         return type2;

@@ -89,9 +89,8 @@ public class PDFXRefStream implements PDFXRef
 
         int[] wEntry = getWEntry();
         COSArray wAsArray = new COSArray();
-        for ( int i = 0; i < wEntry.length; i++ )
+        for (int j : wEntry)
         {
-            int j = wEntry[i];
             wAsArray.add(COSInteger.get(j));
         }
         stream.setItem(COSName.W, wAsArray);
@@ -104,7 +103,7 @@ public class PDFXRefStream implements PDFXRef
         Set<COSName> keySet = this.stream.keySet();
         for ( COSName cosName : keySet )
         {
-            // "Other cross-reference stream entries not listed in Table 17 may be indirect; in fact,
+            // "Other cross-reference stream entries not listed in Table 17 may be indirect; in fact, 
             // some (such as Root in Table 15) shall be indirect."
             if (COSName.ROOT.equals(cosName) || COSName.INFO.equals(cosName) || COSName.PREV.equals(cosName))
             {

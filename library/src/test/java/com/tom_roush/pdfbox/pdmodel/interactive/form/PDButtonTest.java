@@ -18,7 +18,6 @@ package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
@@ -34,12 +33,13 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Test for the PDButton class.
+ *
  */
 public class PDButtonTest
 {
 
 
-    private static final String IN_DIR = "/pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/form/";
+    private static final File IN_DIR = new File("src/test/resources/pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/form");
     private static final String NAME_OF_PDF = "AcroFormsBasicFields.pdf";
 
     private PDDocument document;
@@ -55,14 +55,7 @@ public class PDButtonTest
         document = new PDDocument();
         acroForm = new PDAcroForm(document);
 
-        try
-        {
-            acrobatDocument = PDDocument.load(new File(getClass().getResource(IN_DIR + NAME_OF_PDF).toURI()));
-        }
-        catch (URISyntaxException e)
-        {
-            e.printStackTrace();
-        }
+        acrobatDocument = PDDocument.load(new File(IN_DIR, NAME_OF_PDF));
         acrobatAcroForm = acrobatDocument.getDocumentCatalog().getAcroForm();
     }
 
@@ -71,8 +64,7 @@ public class PDButtonTest
     {
         PDButton buttonField = new PDCheckBox(acroForm);
 
-        assertEquals(buttonField.getFieldType(),
-            buttonField.getCOSObject().getNameAsString(COSName.FT));
+        assertEquals(buttonField.getFieldType(), buttonField.getCOSObject().getNameAsString(COSName.FT));
         assertEquals(buttonField.getFieldType(), "Btn");
         assertFalse(buttonField.isPushButton());
         assertFalse(buttonField.isRadioButton());
@@ -83,8 +75,7 @@ public class PDButtonTest
     {
         PDButton buttonField = new PDPushButton(acroForm);
 
-        assertEquals(buttonField.getFieldType(),
-            buttonField.getCOSObject().getNameAsString(COSName.FT));
+        assertEquals(buttonField.getFieldType(), buttonField.getCOSObject().getNameAsString(COSName.FT));
         assertEquals(buttonField.getFieldType(), "Btn");
         assertTrue(buttonField.isPushButton());
         assertFalse(buttonField.isRadioButton());
@@ -95,8 +86,7 @@ public class PDButtonTest
     {
         PDButton buttonField = new PDRadioButton(acroForm);
 
-        assertEquals(buttonField.getFieldType(),
-            buttonField.getCOSObject().getNameAsString(COSName.FT));
+        assertEquals(buttonField.getFieldType(), buttonField.getCOSObject().getNameAsString(COSName.FT));
         assertEquals(buttonField.getFieldType(), "Btn");
         assertTrue(buttonField.isRadioButton());
         assertFalse(buttonField.isPushButton());
@@ -146,20 +136,20 @@ public class PDButtonTest
         PDField checkbox = acrobatAcroForm.getField("Checkbox");
 
         checkbox.setValue("Yes");
-        assertEquals(checkbox.getValueAsString(), ((PDCheckBox)checkbox).getOnValue());
-        assertEquals(((PDCheckBox)checkbox).isChecked(), true);
+        assertEquals(checkbox.getValueAsString(), ((PDCheckBox) checkbox).getOnValue());
+        assertEquals(((PDCheckBox) checkbox).isChecked(), true);
         assertEquals(checkbox.getCOSObject().getDictionaryObject(COSName.AS), COSName.YES);
 
         checkbox.setValue("Off");
         assertEquals(checkbox.getValueAsString(), COSName.Off.getName());
-        assertEquals(((PDCheckBox)checkbox).isChecked(), false);
+        assertEquals(((PDCheckBox) checkbox).isChecked(), false);
         assertEquals(checkbox.getCOSObject().getDictionaryObject(COSName.AS), COSName.Off);
     }
 
     @Test
     public void testAcrobatCheckBoxGroupProperties() throws IOException
     {
-        PDCheckBox checkbox = (PDCheckBox)acrobatAcroForm.getField("CheckboxGroup");
+        PDCheckBox checkbox = (PDCheckBox) acrobatAcroForm.getField("CheckboxGroup");
         assertEquals(checkbox.getValue(), "");
         assertEquals(checkbox.isChecked(), false);
 
@@ -174,28 +164,28 @@ public class PDButtonTest
 
         // test a value which sets one of the individual checkboxes within the group
         checkbox.setValue("Option1");
-        assertEquals("Option1", checkbox.getValue());
-        assertEquals("Option1", checkbox.getValueAsString());
+        assertEquals("Option1",checkbox.getValue());
+        assertEquals("Option1",checkbox.getValueAsString());
 
         // ensure that for the widgets representing the individual checkboxes
         // the AS entry has been set
-        assertEquals("Option1", checkbox.getWidgets().get(0).getAppearanceState().getName());
-        assertEquals("Off", checkbox.getWidgets().get(1).getAppearanceState().getName());
-        assertEquals("Off", checkbox.getWidgets().get(2).getAppearanceState().getName());
-        assertEquals("Off", checkbox.getWidgets().get(3).getAppearanceState().getName());
+        assertEquals("Option1",checkbox.getWidgets().get(0).getAppearanceState().getName());
+        assertEquals("Off",checkbox.getWidgets().get(1).getAppearanceState().getName());
+        assertEquals("Off",checkbox.getWidgets().get(2).getAppearanceState().getName());
+        assertEquals("Off",checkbox.getWidgets().get(3).getAppearanceState().getName());
 
         // test a value which sets two of the individual chekboxes within the group
         // as the have the same name entry for being checked
         checkbox.setValue("Option3");
-        assertEquals("Option3", checkbox.getValue());
-        assertEquals("Option3", checkbox.getValueAsString());
+        assertEquals("Option3",checkbox.getValue());
+        assertEquals("Option3",checkbox.getValueAsString());
 
         // ensure that for both widgets representing the individual checkboxes
         // the AS entry has been set
-        assertEquals("Off", checkbox.getWidgets().get(0).getAppearanceState().getName());
-        assertEquals("Off", checkbox.getWidgets().get(1).getAppearanceState().getName());
-        assertEquals("Option3", checkbox.getWidgets().get(2).getAppearanceState().getName());
-        assertEquals("Option3", checkbox.getWidgets().get(3).getAppearanceState().getName());
+        assertEquals("Off",checkbox.getWidgets().get(0).getAppearanceState().getName());
+        assertEquals("Off",checkbox.getWidgets().get(1).getAppearanceState().getName());
+        assertEquals("Option3",checkbox.getWidgets().get(2).getAppearanceState().getName());
+        assertEquals("Option3",checkbox.getWidgets().get(3).getAppearanceState().getName());
     }
 
     @Test
@@ -205,57 +195,57 @@ public class PDButtonTest
 
         // test a value which sets one of the individual checkboxes within the group
         checkbox.setValue("Option1");
-        assertEquals("Option1", checkbox.getValueAsString());
+        assertEquals("Option1",checkbox.getValueAsString());
 
         // ensure that for the widgets representing the individual checkboxes
         // the AS entry has been set
-        assertEquals("Option1", checkbox.getWidgets().get(0).getAppearanceState().getName());
-        assertEquals("Off", checkbox.getWidgets().get(1).getAppearanceState().getName());
-        assertEquals("Off", checkbox.getWidgets().get(2).getAppearanceState().getName());
-        assertEquals("Off", checkbox.getWidgets().get(3).getAppearanceState().getName());
+        assertEquals("Option1",checkbox.getWidgets().get(0).getAppearanceState().getName());
+        assertEquals("Off",checkbox.getWidgets().get(1).getAppearanceState().getName());
+        assertEquals("Off",checkbox.getWidgets().get(2).getAppearanceState().getName());
+        assertEquals("Off",checkbox.getWidgets().get(3).getAppearanceState().getName());
 
         // test a value which sets two of the individual chekboxes within the group
         // as the have the same name entry for being checked
         checkbox.setValue("Option3");
-        assertEquals("Option3", checkbox.getValueAsString());
+        assertEquals("Option3",checkbox.getValueAsString());
 
         // ensure that for both widgets representing the individual checkboxes
         // the AS entry has been set
-        assertEquals("Off", checkbox.getWidgets().get(0).getAppearanceState().getName());
-        assertEquals("Off", checkbox.getWidgets().get(1).getAppearanceState().getName());
-        assertEquals("Option3", checkbox.getWidgets().get(2).getAppearanceState().getName());
-        assertEquals("Option3", checkbox.getWidgets().get(3).getAppearanceState().getName());
+        assertEquals("Off",checkbox.getWidgets().get(0).getAppearanceState().getName());
+        assertEquals("Off",checkbox.getWidgets().get(1).getAppearanceState().getName());
+        assertEquals("Option3",checkbox.getWidgets().get(2).getAppearanceState().getName());
+        assertEquals("Option3",checkbox.getWidgets().get(3).getAppearanceState().getName());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected=IllegalArgumentException.class)
     public void setCheckboxInvalidValue() throws IOException
     {
         PDCheckBox checkbox = (PDCheckBox) acrobatAcroForm.getField("Checkbox");
-        // Set a value which doesn't match the radio button list
+        // Set a value which doesn't match the radio button list 
         checkbox.setValue("InvalidValue");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected=IllegalArgumentException.class)
     public void setCheckboxGroupInvalidValue() throws IOException
     {
-        PDCheckBox checkbox = (PDCheckBox)acrobatAcroForm.getField("CheckboxGroup");
-        // Set a value which doesn't match the radio button list
+        PDCheckBox checkbox = (PDCheckBox) acrobatAcroForm.getField("CheckboxGroup");
+        // Set a value which doesn't match the radio button list 
         checkbox.setValue("InvalidValue");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected=IllegalArgumentException.class)
     public void setAbstractedCheckboxInvalidValue() throws IOException
     {
         PDField checkbox = acrobatAcroForm.getField("Checkbox");
-        // Set a value which doesn't match the radio button list
+        // Set a value which doesn't match the radio button list 
         checkbox.setValue("InvalidValue");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected=IllegalArgumentException.class)
     public void setAbstractedCheckboxGroupInvalidValue() throws IOException
     {
         PDField checkbox = acrobatAcroForm.getField("CheckboxGroup");
-        // Set a value which doesn't match the radio button list
+        // Set a value which doesn't match the radio button list 
         checkbox.setValue("InvalidValue");
     }
 
@@ -317,19 +307,19 @@ public class PDButtonTest
             COSName.getPDFName("RadioButton02"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected=IllegalArgumentException.class)
     public void setRadioButtonInvalidValue() throws IOException
     {
         PDRadioButton radioButton = (PDRadioButton) acrobatAcroForm.getField("RadioButtonGroup");
-        // Set a value which doesn't match the radio button list
+        // Set a value which doesn't match the radio button list 
         radioButton.setValue("InvalidValue");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected=IllegalArgumentException.class)
     public void setAbstractedRadioButtonInvalidValue() throws IOException
     {
         PDField radioButton = acrobatAcroForm.getField("RadioButtonGroup");
-        // Set a value which doesn't match the radio button list
+        // Set a value which doesn't match the radio button list 
         radioButton.setValue("InvalidValue");
     }
 
@@ -339,4 +329,6 @@ public class PDButtonTest
         document.close();
         acrobatDocument.close();
     }
+
 }
+

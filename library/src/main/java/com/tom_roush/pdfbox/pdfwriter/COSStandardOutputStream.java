@@ -47,7 +47,7 @@ public class COSStandardOutputStream extends FilterOutputStream
 
     // flag to prevent generating two newlines in sequence
     private boolean onNewLine = false;
-    
+
     /**
      * COSOutputStream constructor comment.
      *
@@ -63,13 +63,27 @@ public class COSStandardOutputStream extends FilterOutputStream
      *
      * @param out The underlying stream to write to.
      * @param position The current position of output stream.
+     * @deprecated use {@link COSStandardOutputStream#COSStandardOutputStream(java.io.OutputStream, long) }
      */
+    @Deprecated
     public COSStandardOutputStream(OutputStream out, int position)
     {
         super(out);
         this.position = position;
     }
-    
+
+    /**
+     * COSOutputStream constructor comment.
+     *
+     * @param out The underlying stream to write to.
+     * @param position The current position of output stream.
+     */
+    public COSStandardOutputStream(OutputStream out, long position)
+    {
+        super(out);
+        this.position = position;
+    }
+
     /**
      * This will get the current position in the stream.
      *
@@ -79,7 +93,7 @@ public class COSStandardOutputStream extends FilterOutputStream
     {
         return position;
     }
-    
+
     /**
      * This will tell if we are on a newline.
      *
@@ -130,7 +144,7 @@ public class COSStandardOutputStream extends FilterOutputStream
         out.write(b);
         position++;
     }
-    
+
     /**
      * This will write a CRLF to the stream.
      *

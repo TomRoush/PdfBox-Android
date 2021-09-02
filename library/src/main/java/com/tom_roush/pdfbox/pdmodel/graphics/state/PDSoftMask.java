@@ -32,7 +32,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.form.PDTransparencyGroup;
 /**
  * Soft mask.
  *
- * @author K�hn & Weyh Software, GmbH
+ * @author Kühn &amp; Weyh Software GmbH
  */
 public final class PDSoftMask implements COSObjectable
 {
@@ -101,7 +101,7 @@ public final class PDSoftMask implements COSObjectable
 
     /**
      * Returns the G entry of the soft mask object
-     * 
+     *
      * @return form containing the transparency group
      * @throws IOException
      */
@@ -112,7 +112,7 @@ public final class PDSoftMask implements COSObjectable
             COSBase cosGroup = getCOSObject().getDictionaryObject(COSName.G);
             if (cosGroup != null)
             {
-                group = (PDTransparencyGroup)PDXObject.createXObject(cosGroup, null);
+                group = (PDTransparencyGroup) PDXObject.createXObject(cosGroup, null);
             }
         }
         return group;

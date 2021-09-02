@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tom_roush.pdfbox.android.PDFBoxConfig;
 import com.tom_roush.pdfbox.filter.Filter;
 import com.tom_roush.pdfbox.filter.FilterFactory;
 import com.tom_roush.pdfbox.io.IOUtils;
@@ -62,8 +63,7 @@ public class COSStream extends COSDictionary implements Closeable
     public COSStream(ScratchFile scratchFile)
     {
         super();
-        this.scratchFile =
-            scratchFile != null ? scratchFile : ScratchFile.getMainMemoryOnlyInstance();
+        this.scratchFile = scratchFile != null ? scratchFile : ScratchFile.getMainMemoryOnlyInstance();
     }
 
     /**
@@ -96,20 +96,19 @@ public class COSStream extends COSDictionary implements Closeable
      * Ensures {@link #randomAccess} is not <code>null</code> by creating a
      * buffer from {@link #scratchFile} if needed.
      *
-     * @param forInputStream if <code>true</code> and {@link #randomAccess} is <code>null</code>
-     * a debug message is logged - input stream should be retrieved after
-     * data being written to stream
+     * @param forInputStream  if <code>true</code> and {@link #randomAccess} is <code>null</code>
+     *                        a debug message is logged - input stream should be retrieved after
+     *                        data being written to stream
      * @throws IOException
      */
     private void ensureRandomAccessExists(boolean forInputStream) throws IOException
     {
         if (randomAccess == null)
         {
-            if (forInputStream)
+            if (forInputStream && PDFBoxConfig.isDebugEnabled())
             {
                 // no data written to stream - maybe this should be an exception
-                Log.d("PdfBox-Android",
-                    "Create InputStream called without data being written before to stream.");
+                Log.d("PdfBox-Android", "Create InputStream called without data being written before to stream.");
             }
             randomAccess = scratchFile.createBuffer();
         }
@@ -206,8 +205,7 @@ public class COSStream extends COSDictionary implements Closeable
         {
             setItem(COSName.FILTER, filters);
         }
-        randomAccess =
-            scratchFile.createBuffer(); // discards old data - TODO: close existing buffer?
+        randomAccess = scratchFile.createBuffer(); // discards old data - TODO: close existing buffer?
         OutputStream randomOut = new RandomAccessOutputStream(randomAccess);
         OutputStream cosOut = new COSOutputStream(getFilterList(), this, randomOut, scratchFile);
         isWriting = true;
@@ -223,7 +221,7 @@ public class COSStream extends COSDictionary implements Closeable
             public void close() throws IOException
             {
                 super.close();
-                setInt(COSName.LENGTH, (int) randomAccess.length());
+                setInt(COSName.LENGTH, (int)randomAccess.length());
                 isWriting = false;
             }
         };
@@ -257,8 +255,7 @@ public class COSStream extends COSDictionary implements Closeable
         {
             throw new IllegalStateException("Cannot have more than one open stream writer.");
         }
-        randomAccess =
-            scratchFile.createBuffer(); // discards old data - TODO: close existing buffer?
+        randomAccess = scratchFile.createBuffer(); // discards old data - TODO: close existing buffer?
         OutputStream out = new RandomAccessOutputStream(randomAccess);
         isWriting = true;
         return new FilterOutputStream(out)
@@ -273,7 +270,7 @@ public class COSStream extends COSDictionary implements Closeable
             public void close() throws IOException
             {
                 super.close();
-                setInt(COSName.LENGTH, (int) randomAccess.length());
+                setInt(COSName.LENGTH, (int)randomAccess.length());
                 isWriting = false;
             }
         };
@@ -288,14 +285,14 @@ public class COSStream extends COSDictionary implements Closeable
         COSBase filters = getFilters();
         if (filters instanceof COSName)
         {
-            filterList.add(FilterFactory.INSTANCE.getFilter((COSName) filters));
+            filterList.add(FilterFactory.INSTANCE.getFilter((COSName)filters));
         }
         else if (filters instanceof COSArray)
         {
-            COSArray filterArray = (COSArray) filters;
+            COSArray filterArray = (COSArray)filters;
             for (int i = 0; i < filterArray.size(); i++)
             {
-                COSName filterName = (COSName) filterArray.get(i);
+                COSName filterName = (COSName)filterArray.get(i);
                 filterList.add(FilterFactory.INSTANCE.getFilter(filterName));
             }
         }

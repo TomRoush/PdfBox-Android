@@ -17,9 +17,9 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
 import java.io.IOException;
-import java.text.AttributedCharacterIterator.Attribute;
 import java.text.AttributedString;
 import java.text.BreakIterator;
+import java.text.AttributedCharacterIterator.Attribute;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,17 +44,22 @@ class PlainText
      * Construct the text block from a single value.
      *
      * Constructs the text block from a single value splitting
-     * into individual {@link Paragraph} when a new line character is
+     * into individual {@link Paragraph} when a new line character is 
      * encountered.
      *
      * @param textValue the text block string.
      */
     PlainText(String textValue)
     {
-        List<String> parts = Arrays.asList(textValue.split("\\n"));
+        List<String> parts = Arrays.asList(textValue.replaceAll("\t", " ").split("\\r\\n|\\n|\\r|\\u2028|\\u2029"));
         paragraphs = new ArrayList<Paragraph>();
         for (String part : parts)
         {
+            // Acrobat prints a space for an empty paragraph
+            if (part.length() == 0)
+            {
+                part = " ";
+            }
             paragraphs.add(new Paragraph(part));
         }
     }
@@ -173,8 +178,7 @@ class PlainText
                 // check if the last word would fit without the whitespace ending it
                 if (lineWidth >= width && Character.isWhitespace(word.charAt(word.length()-1)))
                 {
-                    float whitespaceWidth =
-                        font.getStringWidth(word.substring(word.length() - 1)) * scale;
+                    float whitespaceWidth = font.getStringWidth(word.substring(word.length()-1)) * scale;
                     lineWidth = lineWidth - whitespaceWidth;
                 }
 

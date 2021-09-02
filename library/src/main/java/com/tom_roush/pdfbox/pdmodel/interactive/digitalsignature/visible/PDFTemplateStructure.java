@@ -42,7 +42,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
 
 /**
  * Structure of PDF document with visible signature.
- * 
+ *
  * @author Vakhtang Koroghlishvili
  */
 public class PDFTemplateStructure
@@ -62,7 +62,7 @@ public class PDFTemplateStructure
     private PDResources holderFormResources;
     private PDFormXObject holderForm;
     private PDAppearanceDictionary appearanceDictionary;
-    private PDStream innterFormStream;
+    private PDStream innerFormStream;
     private PDResources innerFormResources;
     private PDFormXObject innerForm;
     private PDStream imageFormStream;
@@ -182,7 +182,7 @@ public class PDFTemplateStructure
     /**
      * Acroform have its Dictionary, so we here set
      * the Dictionary  which is in this location:
-     * <b> AcroForm/DR <b>
+     * <b> AcroForm/DR </b>
      * @param acroFormDictionary
      */
     public void setAcroFormDictionary(COSDictionary acroFormDictionary)
@@ -201,11 +201,11 @@ public class PDFTemplateStructure
 
     /**
      * Sets SignatureRectangle
-     * @param singatureRectangle
+     * @param signatureRectangle
      */
-    public void setSignatureRectangle(PDRectangle singatureRectangle)
+    public void setSignatureRectangle(PDRectangle signatureRectangle)
     {
-        this.signatureRectangle = singatureRectangle;
+        this.signatureRectangle = signatureRectangle;
     }
 
     /**
@@ -363,16 +363,16 @@ public class PDFTemplateStructure
      */
     public PDStream getInnerFormStream()
     {
-        return innterFormStream;
+        return innerFormStream;
     }
 
     /**
      * Sets inner form stream
-     * @param innterFormStream
+     * @param innerFormStream
      */
-    public void setInnterFormStream(PDStream innterFormStream)
+    public void setInnterFormStream(PDStream innerFormStream)
     {
-        this.innterFormStream = innterFormStream;
+        this.innerFormStream = innerFormStream;
     }
 
     /**
@@ -541,7 +541,7 @@ public class PDFTemplateStructure
     }
 
     /**
-     * 
+     *
      * Sets COSDocument of visible Signature.
      * @see com.tom_roush.pdfbox.cos.COSDocument
      * @param visualSignature
@@ -568,12 +568,27 @@ public class PDFTemplateStructure
     {
         this.acroFormFields = acroFormFields;
     }
-    
-   /**
-    * Gets AP of the created template
-    * @return the templates Appearance Stream
-    * @throws IOException
-    */
+
+    /**
+     * Returns the visual signature COSDocument as a stream and closes the template field
+     * PDDocument.
+     *
+     * @return the visual signature COSDocument as a stream
+     * @throws IOException
+     * @deprecated This will be removed in 2.1 because the method name is misleading and confusing,
+     * and the work done rather belongs into the calling class:
+     * <pre>
+     * {@code
+     * COSDocument visualSignature = structure.getVisualSignature();
+     *  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+     *  COSWriter writer = new COSWriter(baos);
+     *  writer.write(visualSignature);
+     *  writer.close();
+     *  structure.getTemplate().close();
+     *  ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+     * } </pre>
+     */
+    @Deprecated
     public ByteArrayInputStream getTemplateAppearanceStream() throws IOException
     {
         COSDocument visualSignature = getVisualSignature();

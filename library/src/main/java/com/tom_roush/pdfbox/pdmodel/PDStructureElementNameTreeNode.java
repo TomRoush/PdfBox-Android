@@ -17,12 +17,11 @@
 
 package com.tom_roush.pdfbox.pdmodel;
 
+import java.io.IOException;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.pdmodel.common.PDNameTreeNode;
 import com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement;
-
-import java.io.IOException;
 
 /**
  * todo: JavaDoc
@@ -44,19 +43,19 @@ public class PDStructureElementNameTreeNode extends PDNameTreeNode<PDStructureEl
      *
      * @param dic The COS dictionary.
      */
-    public PDStructureElementNameTreeNode(COSDictionary dic)
+    public PDStructureElementNameTreeNode( COSDictionary dic )
     {
         super(dic);
     }
 
     @Override
-    protected PDStructureElement convertCOSToPD(COSBase base) throws IOException
+    protected PDStructureElement convertCOSToPD( COSBase base ) throws IOException
     {
-        return new PDStructureElement((COSDictionary) base);
+        return new PDStructureElement((COSDictionary)base);
     }
 
     @Override
-    protected PDNameTreeNode createChildNode(COSDictionary dic)
+    protected PDNameTreeNode<PDStructureElement> createChildNode( COSDictionary dic )
     {
         return new PDStructureElementNameTreeNode(dic);
     }

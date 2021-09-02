@@ -22,7 +22,7 @@ import java.io.InputStream;
 
 /**
  * TrueType font file parser.
- * 
+ *
  * @author Ben Litchfield
  */
 public class TTFParser
@@ -40,7 +40,7 @@ public class TTFParser
 
     /**
      * Constructor.
-     *  
+     *
      * @param isEmbedded true if the font is embedded in PDF
      */
     public TTFParser(boolean isEmbedded)
@@ -50,7 +50,7 @@ public class TTFParser
 
     /**
      *  Constructor.
-     *  
+     *
      * @param isEmbedded true if the font is embedded in PDF
      * @param parseOnDemand true if the tables of the font should be parsed on demand
      */
@@ -120,7 +120,7 @@ public class TTFParser
     }
 
     /**
-     * Parse a file and get a TrueType font.
+     * Parse a file and get a true type font.
      *
      * @param raf The TTF file.
      * @return A TrueType font.
@@ -175,6 +175,8 @@ public class TTFParser
             }
         }
 
+        boolean isPostScript = allowCFF() && font.tables.containsKey(CFFTable.TAG);
+
         HeaderTable head = font.getHeader();
         if (head == null)
         {
@@ -200,30 +202,39 @@ public class TTFParser
             throw new IOException("post is mandatory");
         }
 
-        IndexToLocationTable loc = font.getIndexToLocation();
-        if (loc == null)
+        if (!isPostScript)
         {
-            throw new IOException("loca is mandatory");
+            IndexToLocationTable loc = font.getIndexToLocation();
+            if (loc == null)
+            {
+                throw new IOException("loca is mandatory");
+            }
+
+            if (font.getGlyph() == null)
+            {
+                throw new IOException("glyf is mandatory");
+            }
         }
-        // check other mandatory tables
-        if (font.getGlyph() == null)
-        {
-            throw new IOException("glyf is mandatory");
-        }
+
         if (font.getNaming() == null && !isEmbedded)
         {
             throw new IOException("name is mandatory");
         }
+
         if (font.getHorizontalMetrics() == null)
         {
             throw new IOException("hmtx is mandatory");
         }
 
-        // check others mandatory tables
         if (!isEmbedded && font.getCmap() == null)
         {
             throw new IOException("cmap is mandatory");
         }
+    }
+
+    protected boolean allowCFF()
+    {
+        return false;
     }
 
     private TTFTable readTableDirectory(TrueTypeFont font, TTFDataStream raf) throws IOException
@@ -299,8 +310,8 @@ public class TTFParser
         table.setOffset(raf.readUnsignedInt());
         table.setLength(raf.readUnsignedInt());
 
-        // skip tables with zero length
-        if (table.getLength() == 0)
+        // skip tables with zero length (except glyf)
+        if (table.getLength() == 0 && !tag.equals(GlyphTable.TAG))
         {
             return null;
         }

@@ -18,7 +18,7 @@ package com.tom_roush.fontbox.cff;
 
 /**
  * This is specialized CFFEncoding. It's used if the EncodingId of a font is set to 0.
- * 
+ *
  * @author Villu Ruusmann
  */
 public final class CFFStandardEncoding extends CFFEncoding

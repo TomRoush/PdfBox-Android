@@ -66,7 +66,7 @@ public abstract class PDVariableText extends PDTerminalField
      * This is an inheritable attribute.
      *
      * The default appearance contains a set of default graphics and text operators
-     * to define the field's text size and color.
+     * to define the field’s text size and color.
      *
      * @return the DA element of the dictionary object
      */
@@ -96,7 +96,7 @@ public abstract class PDVariableText extends PDTerminalField
     /**
      * Set the default appearance.
      *
-     * This will set the local default appearance for the variable text field only not
+     * This will set the local default appearance for the variable text field only not 
      * affecting a default appearance in the parent hierarchy.
      *
      * Providing null as the value will remove the local default appearance.
@@ -118,7 +118,7 @@ public abstract class PDVariableText extends PDTerminalField
      */
     public String getDefaultStyleString()
     {
-        COSString defaultStyleString = (COSString)getCOSObject().getDictionaryObject(COSName.DS);
+        COSString defaultStyleString = (COSString) getCOSObject().getDictionaryObject(COSName.DS);
         return defaultStyleString.getString();
     }
 
@@ -146,9 +146,9 @@ public abstract class PDVariableText extends PDTerminalField
      *
      * This is an inheritable attribute.
      *
-     * 0 - Left(default)<br/>
-     * 1 - Centered<br />
-     * 2 - Right<br />
+     * 0 - Left(default)<br>
+     * 1 - Centered<br>
+     * 2 - Right<br>
      * Please see the QUADDING_CONSTANTS.
      *
      * @return The justification of the text strings.
@@ -157,9 +157,9 @@ public abstract class PDVariableText extends PDTerminalField
     {
         int retval = 0;
 
-        COSNumber number = (COSNumber)getInheritableAttribute(COSName.Q );
+        COSNumber number = (COSNumber)getInheritableAttribute(COSName.Q);
 
-        if( number != null )
+        if (number != null)
         {
             retval = number.intValue();
         }
@@ -171,7 +171,7 @@ public abstract class PDVariableText extends PDTerminalField
      *
      * @param q The new text justification.
      */
-    public void setQ( int q )
+    public void setQ(int q)
     {
         getCOSObject().setInt(COSName.Q, q);
     }
@@ -193,10 +193,9 @@ public abstract class PDVariableText extends PDTerminalField
      * <p>
      * Setting the rich text value will not generate the appearance
      * for the field.
-     * <br/>
+     * <br>
      * You can set {@link PDAcroForm#setNeedAppearances(Boolean)} to
      * signal a conforming reader to generate the appearance stream.
-     *
      * </p>
      *
      * Providing null as the value will remove the default style string.
@@ -223,7 +222,7 @@ public abstract class PDVariableText extends PDTerminalField
      * @param base the potential text or text stream
      * @return the text stream
      */
-    protected String getStringOrStream(COSBase base)
+    protected final String getStringOrStream(COSBase base)
     {
         if (base == null)
         {
@@ -231,11 +230,11 @@ public abstract class PDVariableText extends PDTerminalField
         }
         else if (base instanceof COSString)
         {
-            return ((COSString) base).getString();
+            return ((COSString)base).getString();
         }
         else if (base instanceof COSStream)
         {
-            return ((COSStream) base).toTextString();
+            return ((COSStream)base).toTextString();
         }
         else
         {

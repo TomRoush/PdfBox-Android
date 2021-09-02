@@ -41,7 +41,7 @@ public class OpenTypeFont extends TrueTypeFont
     @Override
     void setVersion(float versionValue)
     {
-        isPostScript = versionValue != 1.0;
+        isPostScript = Float.floatToIntBits(versionValue) == 0x469EA8A9; // OTTO
         super.setVersion(versionValue);
     }
 
@@ -50,22 +50,17 @@ public class OpenTypeFont extends TrueTypeFont
      *
      * @return The "CFF" table.
      */
-    public synchronized CFFTable getCFF() throws IOException
+    public CFFTable getCFF() throws IOException
     {
         if (!isPostScript)
         {
             throw new UnsupportedOperationException("TTF fonts do not have a CFF table");
         }
-        CFFTable cff = (CFFTable) tables.get(CFFTable.TAG);
-        if (cff != null && !cff.getInitialized())
-        {
-            readTable(cff);
-        }
-        return cff;
+        return (CFFTable) getTable(CFFTable.TAG);
     }
 
     @Override
-    public synchronized GlyphTable getGlyph() throws IOException
+    public GlyphTable getGlyph() throws IOException
     {
         if (isPostScript)
         {
@@ -95,9 +90,9 @@ public class OpenTypeFont extends TrueTypeFont
     public boolean hasLayoutTables()
     {
         return tables.containsKey("BASE") ||
-               tables.containsKey("GDEF") ||
-               tables.containsKey("GPOS") ||
-               tables.containsKey("GSUB") ||
-               tables.containsKey("JSTF");
+            tables.containsKey("GDEF") ||
+            tables.containsKey("GPOS") ||
+            tables.containsKey("GSUB") ||
+            tables.containsKey("JSTF");
     }
 }

@@ -35,7 +35,7 @@ import com.tom_roush.fontbox.ttf.OpenTypeFont;
 import com.tom_roush.fontbox.ttf.TTFParser;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.fontbox.type1.Type1Font;
-import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
 /**
  * Font mapper, locates non-embedded fonts via a pluggable FontProvider.

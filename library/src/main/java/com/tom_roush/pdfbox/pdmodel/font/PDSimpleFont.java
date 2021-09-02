@@ -46,7 +46,6 @@ public abstract class PDSimpleFont extends PDFont
     protected GlyphList glyphList;
     private Boolean isSymbolic;
     private final Set<Integer> noUnicode = new HashSet<Integer>(); // for logging
-    private Map<String, Integer> invertedEncoding; // for writing
 
     /**
      * Constructor for embedding.
@@ -62,8 +61,6 @@ public abstract class PDSimpleFont extends PDFont
     PDSimpleFont(String baseFont)
     {
         super(baseFont);
-
-        this.encoding = WinAnsiEncoding.INSTANCE;
 
         // assign the glyph list based on the font
         if ("ZapfDingbats".equals(baseFont))
@@ -113,7 +110,13 @@ public abstract class PDSimpleFont extends PDFont
                 Encoding builtIn = null;
                 Boolean symbolic = getSymbolicFlag();
                 boolean isFlaggedAsSymbolic = symbolic != null && symbolic;
-                if (!encodingDict.containsKey(COSName.BASE_ENCODING) && isFlaggedAsSymbolic)
+
+                COSName baseEncoding = encodingDict.getCOSName(COSName.BASE_ENCODING);
+
+                boolean hasValidBaseEncoding = baseEncoding != null &&
+                    Encoding.getInstance(baseEncoding) != null;
+
+                if (!hasValidBaseEncoding && isFlaggedAsSymbolic)
                 {
                     builtIn = readEncodingFromFont();
                 }
@@ -142,17 +145,6 @@ public abstract class PDSimpleFont extends PDFont
         {
             // StandardEncoding and Symbol are in the AGL
             glyphList = GlyphList.getAdobeGlyphList();
-        }
-    }
-
-    private void readEncodingFromName(COSName encodingName) throws IOException
-    {
-        this.encoding = Encoding.getInstance(encodingName);
-        if (this.encoding == null)
-        {
-            Log.w("PdfBox-Android", "Unknown encoding: " + encodingName.getName());
-            // fallback
-            this.encoding = readEncodingFromFont();
         }
     }
 

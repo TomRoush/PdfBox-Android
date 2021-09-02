@@ -45,9 +45,9 @@ import com.tom_roush.fontbox.ttf.TrueTypeCollection.TrueTypeFontProcessor;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.fontbox.type1.Type1Font;
 import com.tom_roush.fontbox.util.autodetect.FontFileFinder;
+import com.tom_roush.pdfbox.android.PDFBoxConfig;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.util.Charsets;
-import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
 
 /**
  * A FontProvider which searches for fonts on the local filesystem.
@@ -201,11 +201,11 @@ final class FileSystemFontProvider extends FontProvider
         this.cache = cache;
 
         // XXX: load in background?
-        if (PDFBoxResourceLoader.LOAD_FONTS == PDFBoxResourceLoader.FontLoadLevel.NONE)
+        if (PDFBoxConfig.getFontLoadLevel() == PDFBoxConfig.FontLoadLevel.NONE)
         {
             return;
         }
-        if (PDFBoxResourceLoader.LOAD_FONTS == PDFBoxResourceLoader.FontLoadLevel.MINIMUM)
+        if (PDFBoxConfig.getFontLoadLevel() == PDFBoxConfig.FontLoadLevel.MINIMUM)
         {
             // If MINIMUM, load only Droid fonts
             try

@@ -1058,7 +1058,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         setStroke(strokePaint, ab.width, Paint.Cap.BUTT, Paint.Join.MITER, 10, ab.dashArray, 0);
         canvas.restore();
         COSArray pathsArray = (COSArray)base;
-        for (COSBase baseElement : (Iterable<? extends COSBase>)pathsArray.toList())
+        for (COSBase baseElement : pathsArray.toList())
         {
             if (!(baseElement instanceof COSArray))
             {

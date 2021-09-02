@@ -27,7 +27,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import com.tom_roush.pdfbox.rendering.TestRendering;
-import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
 import org.junit.After;
 import org.junit.Before;

@@ -198,7 +198,7 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
     }
 
     /**
-     * This will get an object from the array. This will NOT dereference
+     * This will get an object from the array.  This will NOT dereference
      * the COS object.
      *
      * @param index The index into the array to get the object.
@@ -311,7 +311,7 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
         {
             set( index, null );
         }
-    }   
+    }
 
     /**
      * Get the value of the array as a string.
@@ -550,9 +550,9 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
     public void setFloatArray( float[] value )
     {
         this.clear();
-        for( int i=0; i<value.length; i++ )
+        for (float aValue : value)
         {
-            add( new COSFloat( value[i] ) );
+            add(new COSFloat(aValue));
         }
     }
 
@@ -561,7 +561,7 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
      *
      *  @return the COSArray as List
      */
-    public List<?> toList()
+    public List<? extends COSBase> toList()
     {
         List<COSBase> retList = new ArrayList<COSBase>(size());
         for (int i = 0; i < size(); i++)

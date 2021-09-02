@@ -45,6 +45,7 @@ import com.tom_roush.pdfbox.pdmodel.fdf.FDFField;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import com.tom_roush.pdfbox.util.Matrix;
 
 /**
@@ -172,7 +173,7 @@ public final class PDAcroForm implements COSObjectable
         // from the XFA content into a static PDF.
         if (xfaIsDynamic())
         {
-            Log.w("PdfBox-Android", "Flatten for a dynamix XFA form is not supported");
+            Log.w("PdfBox-Android","Flatten for a dynamix XFA form is not supported");
             return;
         }
 
@@ -201,7 +202,7 @@ public final class PDAcroForm implements COSObjectable
         // from the XFA content into a static PDF.
         if (xfaIsDynamic())
         {
-            Log.w("PdfBox-Android", "Flatten for a dynamix XFA form is not supported");
+            Log.w("PdfBox-Android","Flatten for a dynamix XFA form is not supported");
             return;
         }
 
@@ -240,13 +241,13 @@ public final class PDAcroForm implements COSObjectable
                         }
                         Integer pageRef = annotationToPageRef.get(widget.getCOSObject());
                         if (pageRef != null) {
-                            page = document.getPage((int) pageRef);
+                            page = document.getPage(pageRef);
                         }
                     }
 
                     if (!isContentStreamWrapped)
                     {
-                        contentStream = new PDPageContentStream(document, page, AppendMode.APPEND, true, true);
+                        contentStream = new PDPageContentStream(document, page, AppendMode.APPEND, true);
                         isContentStreamWrapped = true;
                     }
                     else
@@ -254,11 +255,22 @@ public final class PDAcroForm implements COSObjectable
                         contentStream = new PDPageContentStream(document, page, AppendMode.APPEND, true);
                     }
 
-                    PDFormXObject fieldObject = new PDFormXObject(widget.getNormalAppearanceStream().getCOSObject());
+                    PDAppearanceStream appearanceStream = widget.getNormalAppearanceStream();
 
-                    Matrix translationMatrix = Matrix.getTranslateInstance(widget.getRectangle().getLowerLeftX(), widget.getRectangle().getLowerLeftY());
+                    PDFormXObject fieldObject = new PDFormXObject(appearanceStream.getCOSObject());
+
                     contentStream.saveGraphicsState();
-                    contentStream.transform(translationMatrix);
+
+                    // translate the appearance stream to the widget location if there is 
+                    // not already a transformation in place
+                    boolean needsTransformation = isNeedsTransformation(appearanceStream);
+                    if (needsTransformation)
+                    {
+                        Matrix translationMatrix = Matrix.getTranslateInstance(widget.getRectangle().getLowerLeftX(),
+                            widget.getRectangle().getLowerLeftY());
+                        contentStream.transform(translationMatrix);
+                    }
+
                     contentStream.drawForm(fieldObject);
                     contentStream.restoreGraphicsState();
                     contentStream.close();
@@ -290,7 +302,7 @@ public final class PDAcroForm implements COSObjectable
     }
 
     /**
-     * Refreshes the appearance streams and appearance dictionaries for
+     * Refreshes the appearance streams and appearance dictionaries for 
      * the widget annotations of all fields.
      *
      * @throws IOException
@@ -307,7 +319,7 @@ public final class PDAcroForm implements COSObjectable
     }
 
     /**
-     * Refreshes the appearance streams and appearance dictionaries for
+     * Refreshes the appearance streams and appearance dictionaries for 
      * the widget annotations of the specified fields.
      *
      * @param fields
@@ -331,7 +343,7 @@ public final class PDAcroForm implements COSObjectable
      * A field might have children that are fields (non-terminal field) or does not
      * have children which are fields (terminal fields).
      *
-     * The fields within an AcroForm are organized in a tree structure. The documents root fields
+     * The fields within an AcroForm are organized in a tree structure. The documents root fields 
      * might either be terminal fields, non-terminal fields or a mixture of both. Non-terminal fields
      * mark branches which contents can be retrieved using {@link PDNonTerminalField#getChildren()}.
      *
@@ -564,9 +576,9 @@ public final class PDAcroForm implements COSObjectable
 
     /**
      * This will get the 'quadding' or justification of the text to be displayed.
-     * 0 - Left(default)<br/>
-     * 1 - Centered<br />
-     * 2 - Right<br />
+     * 0 - Left(default)<br>
+     * 1 - Centered<br>
+     * 2 - Right<br>
      * Please see the QUADDING_CONSTANTS.
      *
      * @return The justification of the text strings.
@@ -644,10 +656,28 @@ public final class PDAcroForm implements COSObjectable
                     }
                 }
             } catch (IOException e) {
-                Log.w("PdfBox-Android", "Can't retriev annotations for page " + idx);
+                Log.w("PdfBox-Android","Can't retriev annotations for page " + idx);
             }
             idx++;
         }
         return annotationToPageRef;
+    }
+
+    /**
+     * Check if there is a transformation needed to place the annotations content.
+     *
+     * @param appearanceStream
+     * @return the need for a transformation.
+     */
+    private boolean isNeedsTransformation(PDAppearanceStream appearanceStream)
+    {
+        // Check if there is a XObject defined as this is an indication that there should already be a transformation
+        // in place.
+        // TODO: A more reliable approach might be to parse the content stream
+        if (appearanceStream.getResources() != null && appearanceStream.getResources().getXObjectNames().iterator().hasNext())
+        {
+            return false;
+        }
+        return true;
     }
 }

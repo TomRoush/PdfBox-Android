@@ -26,7 +26,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 /**
  * Blend mode.
  *
- * @author Kühn & Weyh Software, GmbH
+ * @author Kühn &amp; Weyh Software GmbH
  */
 public abstract class BlendMode
 {
@@ -48,7 +48,7 @@ public abstract class BlendMode
             COSArray cosBlendModeArray = (COSArray) cosBlendMode;
             for (int i = 0; i < cosBlendModeArray.size(); i++)
             {
-                result = BLEND_MODES.get((COSName)cosBlendModeArray.get(i));
+                result = BLEND_MODES.get(cosBlendModeArray.get(i));
                 if (result != null)
                 {
                     break;
@@ -98,7 +98,7 @@ public abstract class BlendMode
         public float blendChannel(float srcValue, float dstValue)
         {
             return (dstValue <= 0.5) ? 2 * dstValue * srcValue : 2 * (srcValue + dstValue - srcValue
-                    * dstValue) - 1;
+                * dstValue) - 1;
         }
     };
 
@@ -144,7 +144,7 @@ public abstract class BlendMode
         public float blendChannel(float srcValue, float dstValue)
         {
             return (srcValue <= 0.5) ? 2 * dstValue * srcValue :
-                    2 * (srcValue + dstValue - srcValue * dstValue) - 1;
+                2 * (srcValue + dstValue - srcValue * dstValue) - 1;
         }
     };
 
@@ -160,7 +160,7 @@ public abstract class BlendMode
             else
             {
                 float d = (dstValue <= 0.25) ? ((16 * dstValue - 12) * dstValue + 4) * dstValue
-                        : (float) Math .sqrt(dstValue);
+                    : (float) Math .sqrt(dstValue);
                 return dstValue + (2 * srcValue - 1) * (d - dstValue);
             }
         }

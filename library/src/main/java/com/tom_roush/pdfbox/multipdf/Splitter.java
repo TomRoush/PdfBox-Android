@@ -158,8 +158,8 @@ public class Splitter
 
     /**
      * Check if it is necessary to create a new document.
-     * By default a split occurs at every page. If you wanted to split
-     * based on some complex logic then you could override this method. For example.
+     * By default a split occurs at every page.  If you wanted to split
+     * based on some complex logic then you could override this method.  For example.
      * <code>
      * protected void splitAtPage()
      * {
@@ -167,7 +167,6 @@ public class Splitter
      *     return isPrime(pageNumber);
      * }
      * </code>
-     * 
      * @param pageNumber the page number to be checked as splitting page
      *
      * @return true If a new document should be created.
@@ -189,7 +188,7 @@ public class Splitter
         document.getDocument().setVersion(getSourceDocument().getVersion());
         document.setDocumentInformation(getSourceDocument().getDocumentInformation());
         document.getDocumentCatalog().setViewerPreferences(
-                getSourceDocument().getDocumentCatalog().getViewerPreferences());
+            getSourceDocument().getDocumentCatalog().getViewerPreferences());
         return document;
     }
 
@@ -203,13 +202,9 @@ public class Splitter
     protected void processPage(PDPage page) throws IOException
     {
         createNewDocumentIfNecessary();
-        
+
         PDPage imported = getDestinationDocument().importPage(page);
-        imported.setCropBox(page.getCropBox());
-        imported.setMediaBox(page.getMediaBox());
-        // only the resources of the page will be copied
         imported.setResources(page.getResources());
-        imported.setRotation(page.getRotation());
         // remove page links to avoid copying not needed resources 
         processAnnotations(imported);
     }
@@ -233,18 +228,17 @@ public class Splitter
                 }
                 if (destination instanceof PDPageDestination)
                 {
-                    // TODO preserve links to pages within the splitted result
-                    ((PDPageDestination)destination).setPage(null);
+                    // TODO preserve links to pages within the splitted result  
+                    ((PDPageDestination) destination).setPage(null);
                 }
             }
-            // TODO preserve links to pages within the splitted result
+            // TODO preserve links to pages within the splitted result  
             annotation.setPage(null);
         }
     }
-
     /**
      * The source PDF document.
-     * 
+     *
      * @return the pdf to be splitted
      */
     protected final PDDocument getSourceDocument()
@@ -254,7 +248,7 @@ public class Splitter
 
     /**
      * The source PDF document.
-     * 
+     *
      * @return current destination pdf
      */
     protected final PDDocument getDestinationDocument()

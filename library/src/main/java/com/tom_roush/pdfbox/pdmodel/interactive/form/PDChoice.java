@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -74,11 +73,11 @@ public abstract class PDChoice extends PDVariableText
      *
      * <p>
      * For a choice field the options array can either be an array
-     * of text strings or an array of a two-element arrays.<br/>
+     * of text strings or an array of a two-element arrays.<br>
      * The method always only returns either the text strings or,
-     * in case of two-element arrays, an array of the first element of
+     * in case of two-element arrays, an array of the first element of 
      * the two-element arrays
-     * </p>
+     * </p>   
      * <p>
      * Use {@link #getOptionsExportValues()} and {@link #getOptionsDisplayValues()}
      * to get the entries of two-element arrays.
@@ -97,13 +96,13 @@ public abstract class PDChoice extends PDVariableText
      *
      * <p>
      * The Opt array specifies the list of options in the choice field either
-     * as an array of text strings representing the display value
+     * as an array of text strings representing the display value 
      * or as an array of a two-element array where the
      * first element is the export value and the second the display value.
      * </p>
      * <p>
      * To set both the export and the display value use {@link #setOptions(List, List)}
-     * </p>
+     * </p> 
      *
      * @param displayValues List containing all possible options.
      */
@@ -115,8 +114,7 @@ public abstract class PDChoice extends PDVariableText
             {
                 Collections.sort(displayValues);
             }
-            getCOSObject().setItem(COSName.OPT,
-                COSArrayList.convertStringListToCOSStringCOSArray(displayValues));
+            getCOSObject().setItem(COSName.OPT, COSArrayList.convertStringListToCOSStringCOSArray(displayValues));
         }
         else
         {
@@ -129,7 +127,7 @@ public abstract class PDChoice extends PDVariableText
      *
      * <p>
      * This will set both, the export value and the display value
-     * of the choice field. If either one of the parameters is null or an
+     * of the choice field. If either one of the parameters is null or an 
      * empty list is supplied the options will
      * be removed.
      * </p>
@@ -182,8 +180,8 @@ public abstract class PDChoice extends PDVariableText
      *
      * <p>
      * For options with an array of text strings the display value and export value
-     * are the same.<br/>
-     * For options with an array of two-element arrays the display value is the
+     * are the same.<br>
+     * For options with an array of two-element arrays the display value is the 
      * second entry in the two-element array.
      * </p>
      *
@@ -200,8 +198,8 @@ public abstract class PDChoice extends PDVariableText
      *
      * <p>
      * For options with an array of text strings the display value and export value
-     * are the same.<br/>
-     * For options with an array of two-element arrays the export value is the
+     * are the same.<br>
+     * For options with an array of two-element arrays the export value is the 
      * first entry in the two-element array.
      * </p>
      *
@@ -238,13 +236,11 @@ public abstract class PDChoice extends PDVariableText
      * <p>
      * This method is preferred over {@link #setValue(List)} for choice fields which
      * <ul>
-     * <li>do support multiple selections</li>
-     * <li>have export values with the same value</li>
+     *  <li>do support multiple selections</li>
+     *  <li>have export values with the same value</li>
      * </ul>
-     * </p>
      * <p>
      * Setting the index will set the value too.
-     * </p>
      *
      * @param values List containing the indices of all selected options.
      */
@@ -269,9 +265,9 @@ public abstract class PDChoice extends PDVariableText
      * Determines if Sort is set.
      *
      * <p>
-     * If set, the field's option items shall be sorted alphabetically.
+     * If set, the field’s option items shall be sorted alphabetically.
      * The sorting has to be done when writing the PDF. PDF Readers are supposed to
-     * display the options in the order in which they occur in the Opt array.
+     * display the options in the order in which they occur in the Opt array. 
      * </p>
      *
      * @return true if the options are sorted.
@@ -287,7 +283,7 @@ public abstract class PDChoice extends PDVariableText
      * @see #isSort()
      * @param sort The value for Sort.
      */
-    public void setSort( boolean sort )
+    public void setSort(boolean sort)
     {
         getCOSObject().setFlag(COSName.FF, FLAG_SORT, sort);
     }
@@ -307,7 +303,7 @@ public abstract class PDChoice extends PDVariableText
      *
      * @param multiSelect The value for MultiSelect.
      */
-    public void setMultiSelect( boolean multiSelect )
+    public void setMultiSelect(boolean multiSelect)
     {
         getCOSObject().setFlag(COSName.FF, FLAG_MULTI_SELECT, multiSelect);
     }
@@ -327,7 +323,7 @@ public abstract class PDChoice extends PDVariableText
      *
      * @param doNotSpellCheck The value for DoNotSpellCheck.
      */
-    public void setDoNotSpellCheck( boolean doNotSpellCheck )
+    public void setDoNotSpellCheck(boolean doNotSpellCheck)
     {
         getCOSObject().setFlag(COSName.FF, FLAG_DO_NOT_SPELL_CHECK, doNotSpellCheck);
     }
@@ -347,7 +343,7 @@ public abstract class PDChoice extends PDVariableText
      *
      * @param commitOnSelChange The value for CommitOnSelChange.
      */
-    public void setCommitOnSelChange( boolean commitOnSelChange )
+    public void setCommitOnSelChange(boolean commitOnSelChange)
     {
         getCOSObject().setFlag(COSName.FF, FLAG_COMMIT_ON_SEL_CHANGE, commitOnSelChange);
     }
@@ -367,7 +363,7 @@ public abstract class PDChoice extends PDVariableText
      *
      * @param combo The value for Combo.
      */
-    public void setCombo( boolean combo )
+    public void setCombo(boolean combo)
     {
         getCOSObject().setFlag(COSName.FF, FLAG_COMBO, combo);
     }
@@ -418,8 +414,7 @@ public abstract class PDChoice extends PDVariableText
             {
                 throw new IllegalArgumentException("The values are not contained in the selectable options.");
             }
-            getCOSObject()
-                .setItem(COSName.V, COSArrayList.convertStringListToCOSStringCOSArray(values));
+            getCOSObject().setItem(COSName.V, COSArrayList.convertStringListToCOSStringCOSArray(values));
             updateSelectedOptionsIndex(values);
         }
         else

@@ -66,7 +66,7 @@ public class XrefTrailerResolver
         private XRefType xrefType;
 
         private final Map<COSObjectKey, Long> xrefTable = new HashMap<COSObjectKey, Long>();
-        
+
         /**
          *  Default constructor.
          */
@@ -76,7 +76,7 @@ public class XrefTrailerResolver
         }
     }
 
-    /** 
+    /**
      * The XRefType of a trailer.
      */
     public enum XRefType
@@ -84,23 +84,23 @@ public class XrefTrailerResolver
         /**
          * XRef table type.
          */
-        TABLE, 
+        TABLE,
         /**
          * XRef stream type.
          */
-        STREAM;
+        STREAM
     }
-    
+
     private final Map<Long, XrefTrailerObj> bytePosToXrefMap = new HashMap<Long, XrefTrailerObj>();
     private XrefTrailerObj curXrefTrailerObj   = null;
     private XrefTrailerObj resolvedXrefTrailer = null;
 
     /**
      * Returns the first trailer if at least one exists.
-     * 
+     *
      * @return the first trailer or null
      */
-    public final COSDictionary getFirstTrailer() 
+    public final COSDictionary getFirstTrailer()
     {
         if (bytePosToXrefMap.isEmpty())
         {
@@ -110,15 +110,15 @@ public class XrefTrailerResolver
         SortedSet<Long> sortedOffset = new TreeSet<Long>(offsets);
         return bytePosToXrefMap.get(sortedOffset.first()).trailer;
     }
-    
+
     /**
      * Returns the last trailer if at least one exists.
-     * 
+     *
      * @return the last trailer ir null
      */
-    public final COSDictionary getLastTrailer() 
+    public final COSDictionary getLastTrailer()
     {
-        if (bytePosToXrefMap.isEmpty()) 
+        if (bytePosToXrefMap.isEmpty())
         {
             return null;
         }
@@ -126,7 +126,7 @@ public class XrefTrailerResolver
         SortedSet<Long> sortedOffset = new TreeSet<Long>(offsets);
         return bytePosToXrefMap.get(sortedOffset.last()).trailer;
     }
-    
+
     /**
      * Signals that a new XRef object (table or stream) starts.
      * @param startBytePos the offset to start at
@@ -140,14 +140,14 @@ public class XrefTrailerResolver
 
     /**
      * Returns the XRefTxpe of the resolved trailer.
-     * 
+     *
      * @return the XRefType or null.
      */
     public XRefType getXrefType()
-    { 
-        return ( resolvedXrefTrailer == null ) ? null : resolvedXrefTrailer.xrefType; 
-    } 
-    
+    {
+        return ( resolvedXrefTrailer == null ) ? null : resolvedXrefTrailer.xrefType;
+    }
+
     /**
      * Populate XRef HashMap of current XRef object.
      * Will add an Xreftable entry that maps ObjectKeys to byte offsets in the file.
@@ -159,8 +159,7 @@ public class XrefTrailerResolver
         if ( curXrefTrailerObj == null )
         {
             // should not happen...
-            Log.w("PdfBox-Android", "Cannot add XRef entry for '" + objKey.getNumber() +
-                "' because XRef start was not signalled.");
+            Log.w("PdfBox-Android", "Cannot add XRef entry for '" + objKey.getNumber() + "' because XRef start was not signalled." );
             return;
         }
         curXrefTrailerObj.xrefTable.put( objKey, offset );
@@ -176,7 +175,7 @@ public class XrefTrailerResolver
         if ( curXrefTrailerObj == null )
         {
             // should not happen...
-            Log.w("PdfBox-Android", "Cannot add trailer because XRef start was not signalled.");
+            Log.w("PdfBox-Android", "Cannot add trailer because XRef start was not signalled." );
             return;
         }
         curXrefTrailerObj.trailer = trailer;
@@ -184,11 +183,11 @@ public class XrefTrailerResolver
 
     /**
      * Returns the trailer last set by {@link #setTrailer(COSDictionary)}.
-     * 
+     *
      * @return the current trailer.
-     * 
+     *
      */
-    public COSDictionary getCurrentTrailer() 
+    public COSDictionary getCurrentTrailer()
     {
         return curXrefTrailerObj.trailer;
     }
@@ -203,15 +202,15 @@ public class XrefTrailerResolver
      * in byte position order.
      * Thus for incomplete PDF documents with missing
      * startxref one could call this method with parameter value -1.
-     * 
+     *
      * @param startxrefBytePosValue starting position of the first XRef
-     * 
+     *
      */
     public void setStartxref( long startxrefBytePosValue )
     {
         if ( resolvedXrefTrailer != null )
         {
-            Log.w("PdfBox-Android", "Method must be called only ones with last startxref value.");
+            Log.w("PdfBox-Android", "Method must be called only ones with last startxref value." );
             return;
         }
 
@@ -224,8 +223,7 @@ public class XrefTrailerResolver
         if ( curObj == null )
         {
             // no XRef at given position
-            Log.w("PdfBox-Android", "Did not found XRef object at specified startxref position " +
-                startxrefBytePosValue);
+            Log.w("PdfBox-Android", "Did not found XRef object at specified startxref position " + startxrefBytePosValue );
 
             // use all objects in byte position order (last entries overwrite previous ones)
             xrefSeqBytePos.addAll( bytePosToXrefMap.keySet() );
@@ -249,9 +247,7 @@ public class XrefTrailerResolver
                 curObj = bytePosToXrefMap.get( prevBytePos );
                 if ( curObj == null )
                 {
-                    Log.w("PdfBox-Android",
-                        "Did not found XRef object pointed to by 'Prev' key at position " +
-                            prevBytePos);
+                    Log.w("PdfBox-Android", "Did not found XRef object pointed to by 'Prev' key at position " + prevBytePos );
                     break;
                 }
                 xrefSeqBytePos.add( prevBytePos );
@@ -300,30 +296,30 @@ public class XrefTrailerResolver
     {
         return ( resolvedXrefTrailer == null ) ? null : resolvedXrefTrailer.xrefTable;
     }
-    
+
     /** Returns object numbers which are referenced as contained
      *  in object stream with specified object number.
-     *  
+     *
      *  This will scan resolved xref table for all entries having negated
      *  stream object number as value.
      *
      *  @param objstmObjNr  object number of object stream for which contained object numbers
      *                      should be returned
-     *                       
+     *
      *  @return set of object numbers referenced for given object stream
      *          or <code>null</code> if {@link #setStartxref(long)} was not
      *          called before so that no resolved xref table exists
      */
-    public Set<Long> getContainedObjectNumbers( final int objstmObjNr ) 
+    public Set<Long> getContainedObjectNumbers( final int objstmObjNr )
     {
         if ( resolvedXrefTrailer == null )
         {
             return null;
         }
         final Set<Long> refObjNrs = new HashSet<Long>();
-        final long cmpVal = -objstmObjNr;
-        
-        for ( Entry<COSObjectKey,Long> xrefEntry : resolvedXrefTrailer.xrefTable.entrySet() ) 
+        final long cmpVal = - objstmObjNr;
+
+        for ( Entry<COSObjectKey,Long> xrefEntry : resolvedXrefTrailer.xrefTable.entrySet() )
         {
             if ( xrefEntry.getValue() == cmpVal )
             {

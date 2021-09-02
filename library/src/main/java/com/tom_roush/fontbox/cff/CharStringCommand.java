@@ -23,7 +23,7 @@ import java.util.Map;
 
 /**
  * This class represents a CharStringCommand.
- * 
+ *
  * @author Villu Ruusmann
  */
 public class CharStringCommand
@@ -33,7 +33,7 @@ public class CharStringCommand
 
     /**
      * Constructor with one value.
-     * 
+     *
      * @param b0 value
      */
     public CharStringCommand(int b0)
@@ -43,7 +43,7 @@ public class CharStringCommand
 
     /**
      * Constructor with two values.
-     * 
+     *
      * @param b0 value1
      * @param b1 value2
      */
@@ -54,7 +54,7 @@ public class CharStringCommand
 
     /**
      * Constructor with an array as values.
-     * 
+     *
      * @param values array of values
      */
     public CharStringCommand(int[] values)
@@ -127,7 +127,7 @@ public class CharStringCommand
 
         /**
          * Constructor with one value.
-         * 
+         *
          * @param b0 value
          */
         public Key(int b0)
@@ -137,7 +137,7 @@ public class CharStringCommand
 
         /**
          * Constructor with two values.
-         * 
+         *
          * @param b0 value1
          * @param b1 value2
          */
@@ -148,7 +148,7 @@ public class CharStringCommand
 
         /**
          * Constructor with an array as values.
-         * 
+         *
          * @param values array of values
          */
         public Key(int[] values)
@@ -158,7 +158,7 @@ public class CharStringCommand
 
         /**
          * Array the with the values.
-         * 
+         *
          * @return array with the values
          */
         public int[] getValue()

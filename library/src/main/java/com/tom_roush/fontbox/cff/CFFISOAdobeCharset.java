@@ -19,7 +19,7 @@ package com.tom_roush.fontbox.cff;
 
 /**
  * This is specialized CFFCharset. It's used if the CharsetId of a font is set to 0.
- * 
+ *
  * @author Villu Ruusmann
  */
 public final class CFFISOAdobeCharset extends CFFCharset
@@ -283,8 +283,7 @@ public final class CFFISOAdobeCharset extends CFFCharset
         int gid = 0;
         for (Object[] charsetEntry : CFF_ISO_ADOBE_CHARSET_TABLE)
         {
-            INSTANCE.addSID(gid++, (Integer)charsetEntry[CHAR_CODE],
-                charsetEntry[CHAR_NAME].toString());
+            INSTANCE.addSID(gid++, (Integer) charsetEntry[CHAR_CODE], charsetEntry[CHAR_NAME].toString());
         }
     }
 }

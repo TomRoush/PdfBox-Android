@@ -23,7 +23,7 @@ import com.tom_roush.fontbox.util.Charsets;
 
 /**
  * This class contains some functionality to read a byte buffer.
- * 
+ *
  * @author Villu Ruusmann
  */
 public class DataInput
@@ -68,7 +68,7 @@ public class DataInput
         bufferPosition = position;
     }
 
-    /** 
+    /**
      * Returns the buffer as an ISO-8859-1 string.
      * @return the buffer as string
      * @throws IOException if an error occurs during reading
@@ -196,7 +196,7 @@ public class DataInput
             int value = inputBuffer[bufferPosition] & 0xff;
             bufferPosition++;
             return value;
-        } 
+        }
         catch (RuntimeException re)
         {
             return -1;
@@ -215,7 +215,7 @@ public class DataInput
             return -1;
         }
     }
-    
+
     public int length()
     {
         return inputBuffer.length;

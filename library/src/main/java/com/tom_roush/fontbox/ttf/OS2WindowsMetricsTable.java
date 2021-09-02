@@ -20,8 +20,9 @@ import java.io.IOException;
 
 /**
  * A table in a true type font.
- * 
+ *
  * @author Ben Litchfield
+ *
  */
 public class OS2WindowsMetricsTable extends TTFTable
 {
@@ -154,7 +155,7 @@ public class OS2WindowsMetricsTable extends TTFTable
     public static final short FSTYPE_RESTRICTED = 0x0001;
 
     /**
-     * Preview & Print embedding: the font may be embedded, and temporarily loaded on the
+     * Preview and Print embedding: the font may be embedded, and temporarily loaded on the
      * remote system. No edits can be applied to the document.
      */
     public static final short FSTYPE_PREVIEW_AND_PRINT = 0x0004;
@@ -510,11 +511,11 @@ public class OS2WindowsMetricsTable extends TTFTable
     }
 
     /**
-     * @param typoLineGapValue The typoLineGap to set.
+     * @param typeLineGapValue The typoLineGap to set.
      */
-    public void setTypoLineGap(int typoLineGapValue)
+    public void setTypoLineGap(int typeLineGapValue)
     {
-        this.typoLineGap = typoLineGapValue;
+        this.typoLineGap = typeLineGapValue;
     }
 
     /**
@@ -778,7 +779,7 @@ public class OS2WindowsMetricsTable extends TTFTable
 
     /**
      * This will read the required data from the stream.
-     * 
+     *
      * @param ttf The font that is being read.
      * @param data The stream to read the data from.
      * @throws IOException If there is an error reading the data.

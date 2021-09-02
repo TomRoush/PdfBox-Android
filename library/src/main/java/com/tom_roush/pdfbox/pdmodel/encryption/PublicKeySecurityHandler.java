@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.encryption;
 
 import java.io.ByteArrayOutputStream;
@@ -28,7 +29,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
@@ -61,7 +61,7 @@ import org.bouncycastle.asn1.cms.RecipientIdentifier;
 import org.bouncycastle.asn1.cms.RecipientInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.TBSCertificate;
+import org.bouncycastle.asn1.x509.TBSCertificateStructure;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
@@ -69,7 +69,6 @@ import org.bouncycastle.cms.KeyTransRecipientId;
 import org.bouncycastle.cms.RecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  * This class implements the public key security handler described in the PDF specification.
@@ -174,8 +173,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
                     {
                         foundRecipient = true;
                         PrivateKey privateKey = (PrivateKey) material.getPrivateKey();
-                        envelopedData = ri.getContent(new JceKeyTransEnvelopedRecipient(privateKey).setProvider(
-                            BouncyCastleProvider.PROVIDER_NAME));
+                        envelopedData = ri.getContent(new JceKeyTransEnvelopedRecipient(privateKey).setProvider("BC"));
                         break;
                     }
                     j++;
@@ -289,9 +287,6 @@ public final class PublicKeySecurityHandler extends SecurityHandler
         }
         try
         {
-            Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-            Security.addProvider(new BouncyCastleProvider());
-
             PDEncryption dictionary = doc.getEncryption();
             if (dictionary == null)
             {
@@ -417,13 +412,14 @@ public final class PublicKeySecurityHandler extends SecurityHandler
         try
         {
             apg = AlgorithmParameterGenerator.getInstance(algorithm);
-            keygen = KeyGenerator.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
-            cipher = Cipher.getInstance(algorithm, BouncyCastleProvider.PROVIDER_NAME);
+            keygen = KeyGenerator.getInstance(algorithm);
+            cipher = Cipher.getInstance(algorithm);
         }
         catch (NoSuchAlgorithmException e)
         {
-            // should never happen, if this happens throw IOException instead
-            throw new RuntimeException("Could not find a suitable javax.crypto provider", e);
+            // happens when using the command line app .jar file
+            throw new IOException("Could not find a suitable javax.crypto provider for algorithm " +
+                algorithm + "; possible reason: using an unsigned .jar file", e);
         }
         catch (NoSuchPaddingException e)
         {
@@ -460,7 +456,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
         BadPaddingException, IllegalBlockSizeException
     {
         ASN1InputStream input = new ASN1InputStream(x509certificate.getTBSCertificate());
-        TBSCertificate certificate = TBSCertificate.getInstance(input.readObject());
+        TBSCertificateStructure certificate = TBSCertificateStructure.getInstance(input.readObject());
         input.close();
 
         AlgorithmIdentifier algorithmId = certificate.getSubjectPublicKeyInfo().getAlgorithm();
