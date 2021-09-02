@@ -53,41 +53,40 @@ public final class LosslessFactory
      * @throws IOException if something goes wrong
      */
     public static PDImageXObject createFromImage(PDDocument document, Bitmap image)
-            throws IOException
+        throws IOException
     {
         int bpc;
         PDDeviceColorSpace deviceColorSpace;
 
         int height = image.getHeight();
         int width = image.getWidth();
+        int[] rgbLineBuffer = new int[width];
         byte[] imageData;
 
         if (image.getConfig() == Bitmap.Config.ALPHA_8)
-//        if ((image.getType() == BufferedImage.TYPE_BYTE_GRAY && image.getColorModel().getPixelSize() <= 8)
-//                || (image.getType() == BufferedImage.TYPE_BYTE_BINARY && image.getColorModel().getPixelSize() == 1))
+//        if ((image.getType() == Bitmap.TYPE_BYTE_GRAY && image.getColorModel().getPixelSize() <= 8)
+//            || (image.getType() == Bitmap.TYPE_BYTE_BINARY && image.getColorModel().getPixelSize() == 1))
         {
             // grayscale images need one color per sample
 //            bpc = image.getColorModel().getPixelSize();
             bpc = 8;
             deviceColorSpace = PDDeviceGray.INSTANCE;
 
-            ByteArrayOutputStream bos = new ByteArrayOutputStream(
-                (width * bpc / 8) + (width * bpc % 8 != 0 ? 1 : 0) * height);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream((width*bpc/8)+(width*bpc%8 != 0 ? 1:0)*height);
             MemoryCacheImageOutputStream mcios = new MemoryCacheImageOutputStream(bos);
 
-            int[] imagePixels = new int[width * height];
-            image.getPixels(imagePixels, 0, width, 0, 0, width, height);
             for (int y = 0; y < height; ++y)
             {
-                for (int pixelIdx = width * y; pixelIdx < (y + 1) * width; ++pixelIdx)
+                image.getPixels(rgbLineBuffer, 0, width, 0, y, width, 1);
+                for (int pixel : rgbLineBuffer)
                 {
-                    mcios.writeBits(imagePixels[pixelIdx] & 0xFF, bpc);
+                    mcios.writeBits(pixel & 0xFF, bpc);
                 }
 
                 int bitOffset = mcios.getBitOffset();
                 if (bitOffset != 0)
                 {
-                    mcios.writeBits(0, 8 - bitOffset);
+                    mcios.writeBits(0, 8-bitOffset);
                 }
             }
             mcios.flush();
@@ -100,21 +99,23 @@ public final class LosslessFactory
             // RGB
             bpc = 8;
             deviceColorSpace = PDDeviceRGB.INSTANCE;
-            imageData = new byte[width * height * 3];
+            imageData = new byte[width*height*3];
             int byteIdx = 0;
 
-            int[] imagePixels = new int[width * height];
-            image.getPixels(imagePixels, 0, width, 0, 0, width, height);
-            for (int pixel : imagePixels)
+            for (int y = 0; y < height; ++y)
             {
-                imageData[byteIdx++] = (byte)((pixel >> 16) & 0xFF);
-                imageData[byteIdx++] = (byte)((pixel >> 8) & 0xFF);
-                imageData[byteIdx++] = (byte)(pixel & 0xFF);
+                image.getPixels(rgbLineBuffer, 0, width, 0, y, width, 1);
+                for (int pixel : rgbLineBuffer)
+                {
+                    imageData[byteIdx++] = (byte)((pixel >> 16) & 0xFF);
+                    imageData[byteIdx++] = (byte)((pixel >> 8) & 0xFF);
+                    imageData[byteIdx++] = (byte)(pixel & 0xFF);
+                }
             }
         }
 
         PDImageXObject pdImage = prepareImageXObject(document, imageData,
-                image.getWidth(), image.getHeight(), bpc, deviceColorSpace);
+            image.getWidth(), image.getHeight(), bpc, deviceColorSpace);
 
         // alpha -> soft mask
         PDImage xAlpha = createAlphaFromARGBImage(document, image); // TODO: PdfBox-Android - simplify with extract alpha?
@@ -138,17 +139,17 @@ public final class LosslessFactory
      * @throws IOException if something goes wrong
      */
     private static PDImageXObject createAlphaFromARGBImage(PDDocument document, Bitmap image)
-            throws IOException
+        throws IOException
     {
         // this implementation makes the assumption that the raster values can be used 1:1 for
-        // the stream.
+        // the stream. 
         // Sadly the type of the databuffer is usually TYPE_INT and not TYPE_BYTE so we can't just
         // save it directly
         if (!image.hasAlpha())
         {
             return null;
         }
-        
+
         // extract the alpha information
 //        WritableRaster alphaRaster = image.getAlphaRaster();
 //        if (alphaRaster == null)
@@ -158,19 +159,18 @@ public final class LosslessFactory
 //        }
 
 //        int[] pixels = alphaRaster.getPixels(0, 0,
-//                alphaRaster.getSampleModel().getWidth(),
-//                alphaRaster.getSampleModel().getHeight(),
-//                (int[]) null);
+//            alphaRaster.getWidth(),
+//            alphaRaster.getHeight(),
+//            (int[]) null);
         int[] pixels = new int[image.getHeight() * image.getWidth()];
         image.getPixels(pixels, 0, image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
-        
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int bpc;
 //        if (image.getTransparency() == Transparency.BITMASK)
 //        {
 //            bpc = 1;
 //            MemoryCacheImageOutputStream mcios = new MemoryCacheImageOutputStream(bos);
-//            int width = alphaRaster.getSampleModel().getWidth();
+//            int width = alphaRaster.getWidth();
 //            int p = 0;
 //            for (int pixel : pixels)
 //            {
@@ -196,15 +196,15 @@ public final class LosslessFactory
             }
 //        }
 
-        PDImageXObject pdImage = prepareImageXObject(document, bos.toByteArray(), 
-                image.getWidth(), image.getHeight(), bpc, PDDeviceGray.INSTANCE);
+        PDImageXObject pdImage = prepareImageXObject(document, bos.toByteArray(),
+            image.getWidth(), image.getHeight(), bpc, PDDeviceGray.INSTANCE);
 
         return pdImage;
     }
 
     // create alpha image the hard way: get the alpha through getRGB()
 //    private static PDImageXObject createAlphaFromARGBImage2(PDDocument document, Bitmap bi)
-//            throws IOException
+//        throws IOException
 //    {
 //        ByteArrayOutputStream bos = new ByteArrayOutputStream();
 //        int bpc;
@@ -240,14 +240,14 @@ public final class LosslessFactory
 //            }
 //        }
 //
-//        PDImageXObject pdImage = prepareImageXObject(document, bos.toByteArray(), 
-//                bi.getWidth(), bi.getHeight(), bpc, PDDeviceGray.INSTANCE);
+//        PDImageXObject pdImage = prepareImageXObject(document, bos.toByteArray(),
+//            bi.getWidth(), bi.getHeight(), bpc, PDDeviceGray.INSTANCE);
 //
 //        return pdImage;
-//    }            
+//    }
 
     /**
-     * Create a PDImageXObject while making a decision whether not to
+     * Create a PDImageXObject while making a decision whether not to 
      * compress, use Flate filter only, or Flate and LZW filters.
      *
      * @param document The document.
@@ -259,18 +259,19 @@ public final class LosslessFactory
      * @return the newly created PDImageXObject with the data compressed.
      * @throws IOException
      */
-    private static PDImageXObject prepareImageXObject(PDDocument document, byte[] byteArray,
-        int width, int height, int bitsPerComponent, PDColorSpace initColorSpace) throws IOException
+    private static PDImageXObject prepareImageXObject(PDDocument document,
+        byte [] byteArray, int width, int height, int bitsPerComponent,
+        PDColorSpace initColorSpace) throws IOException
     {
-        // Pre-size the output stream to half of the input
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(byteArray.length / 2);
+        //pre-size the output stream to half of the input
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(byteArray.length/2);
 
         Filter filter = FilterFactory.INSTANCE.getFilter(COSName.FLATE_DECODE);
         filter.encode(new ByteArrayInputStream(byteArray), baos, new COSDictionary(), 0);
 
         ByteArrayInputStream encodedByteStream = new ByteArrayInputStream(baos.toByteArray());
         return new PDImageXObject(document, encodedByteStream, COSName.FLATE_DECODE,
-                width, height, bitsPerComponent, initColorSpace);
+            width, height, bitsPerComponent, initColorSpace);
     }
 
 }

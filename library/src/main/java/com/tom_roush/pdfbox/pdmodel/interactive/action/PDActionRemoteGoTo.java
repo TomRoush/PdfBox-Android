@@ -21,6 +21,7 @@ import java.io.IOException;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
 
 /**
@@ -60,10 +61,12 @@ public class PDActionRemoteGoTo extends PDAction
      * It must be GoToR for a remote go-to action.
      *
      * @return The S entry of the specific remote go-to action dictionary.
+     * @deprecated use {@link #getSubType() }.
      */
+    @Deprecated
     public String getS()
     {
-        return action.getNameAsString(COSName.S);
+        return action.getNameAsString( COSName.S );
     }
 
     /**
@@ -71,10 +74,12 @@ public class PDActionRemoteGoTo extends PDAction
      * It must be GoToR for a remote go-to action.
      *
      * @param s The remote go-to action.
+     * @deprecated use {@link #setSubType(java.lang.String) }.
      */
+    @Deprecated
     public void setS( String s )
     {
-        action.setName(COSName.S, s);
+        action.setName( COSName.S, s );
     }
 
     /**
@@ -86,7 +91,7 @@ public class PDActionRemoteGoTo extends PDAction
      */
     public PDFileSpecification getFile() throws IOException
     {
-        return PDFileSpecification.createFS(action.getDictionaryObject(COSName.F));
+        return PDFileSpecification.createFS( action.getDictionaryObject( COSName.F ) );
     }
 
     /**
@@ -96,7 +101,7 @@ public class PDActionRemoteGoTo extends PDAction
      */
     public void setFile( PDFileSpecification fs )
     {
-        action.setItem(COSName.F, fs);
+        action.setItem( COSName.F, fs );
     }
 
     /**
@@ -112,7 +117,7 @@ public class PDActionRemoteGoTo extends PDAction
     // Array or String.
     public COSBase getD()
     {
-        return action.getDictionaryObject(COSName.D);
+        return action.getDictionaryObject( COSName.D );
     }
 
     /**
@@ -128,7 +133,7 @@ public class PDActionRemoteGoTo extends PDAction
     // In case the value is an array.
     public void setD( COSBase d )
     {
-        action.setItem(COSName.D, d);
+        action.setItem( COSName.D, d );
     }
 
     /**

@@ -17,7 +17,6 @@
 package com.tom_roush.pdfbox.pdmodel;
 
 import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.pdmodel.common.PDNameTreeNode;
@@ -54,14 +53,13 @@ public class PDJavascriptNameTreeNode extends PDNameTreeNode<PDActionJavaScript>
     {
         if (!(base instanceof COSDictionary))
         {
-            throw new IOException(
-                "Error creating Javascript object, expected a COSDictionary and not " + base);
+            throw new IOException( "Error creating Javascript object, expected a COSDictionary and not " + base);
         }
         return (PDActionJavaScript)PDActionFactory.createAction((COSDictionary) base);
     }
 
     @Override
-    protected PDNameTreeNode createChildNode( COSDictionary dic )
+    protected PDNameTreeNode<PDActionJavaScript> createChildNode( COSDictionary dic )
     {
         return new PDJavascriptNameTreeNode(dic);
     }

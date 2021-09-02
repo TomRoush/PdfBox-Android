@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -41,7 +40,7 @@ public class PDFCloneUtility
 {
 
     private final PDDocument destination;
-    private final Map<Object, COSBase> clonedVersion = new HashMap<Object,COSBase>();
+    private final Map<Object,COSBase> clonedVersion = new HashMap<Object,COSBase>();
 
     /**
      * Creates a new instance for the given target document.
@@ -94,7 +93,7 @@ public class PDFCloneUtility
             retval = cloneForNewDocument( ((COSObjectable)base).getCOSObject() );
             clonedVersion.put( base, retval );
         }
-        else if( base instanceof COSObject)
+        else if( base instanceof COSObject )
         {
             COSObject object = (COSObject)base;
             retval = cloneForNewDocument( object.getObject() );
@@ -111,7 +110,7 @@ public class PDFCloneUtility
             retval = newArray;
             clonedVersion.put( base, retval );
         }
-        else if( base instanceof COSStream)
+        else if( base instanceof COSStream )
         {
             COSStream originalStream = (COSStream)base;
             COSStream stream = destination.getDocument().createCOSStream();
@@ -127,7 +126,7 @@ public class PDFCloneUtility
             }
             retval = stream;
         }
-        else if( base instanceof COSDictionary)
+        else if( base instanceof COSDictionary )
         {
             COSDictionary dic = (COSDictionary)base;
             retval = new COSDictionary();
@@ -150,7 +149,7 @@ public class PDFCloneUtility
 
     /**
      * Merges two objects of the same type by deep-cloning its members.
-     * <br/>
+     * <br>
      * Base and target must be instances of the same class.
      * @param base the base object to be cloned
      * @param target the merge target

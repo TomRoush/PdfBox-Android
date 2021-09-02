@@ -17,9 +17,13 @@
 
 package com.tom_roush.fontbox.util.autodetect;
 
+import android.util.Log;
+
 import java.io.File;
 import java.net.URI;
 import java.util.List;
+
+import com.tom_roush.pdfbox.android.PDFBoxConfig;
 
 /**
  * Helps to autodetect/locate available operating system fonts. This class is based on a class provided by Apache FOP.
@@ -27,7 +31,6 @@ import java.util.List;
  */
 public class FontFileFinder
 {
-
     private FontDirFinder fontDirFinder = null;
 
     /**
@@ -39,10 +42,13 @@ public class FontFileFinder
 
     private FontDirFinder determineDirFinder()
     {
-    	// Should only return with an Android Font Directory
-    	if(System.getProperty("java.vendor").equals("The Android Project")) {
-    		return new AndroidFontDirFinder();
-    	} else {
+        // Should only return with an Android Font Directory
+        if (System.getProperty("java.vendor").equals("The Android Project"))
+        {
+            return new AndroidFontDirFinder();
+        }
+        else
+        {
             // Should never happen, but it's here just in case
             final String osName = System.getProperty("os.name");
             if (osName.startsWith("Windows"))
@@ -65,7 +71,7 @@ public class FontFileFinder
 
     /**
      * Automagically finds a list of font files on local system.
-     * 
+     *
      * @return List&lt;URI&gt; of font files
      */
     public List<URI> find()
@@ -85,7 +91,7 @@ public class FontFileFinder
 
     /**
      * Searches a given directory for font files.
-     * 
+     *
      * @param dir directory to search
      * @return list&lt;URI&gt; of font files
      */
@@ -99,10 +105,10 @@ public class FontFileFinder
         }
         return results;
     }
-    
+
     /**
      * walk down the driectory tree and search for font files.
-     * 
+     *
      * @param directory the directory to start at
      * @param results names of all found font files
      */
@@ -114,10 +120,8 @@ public class FontFileFinder
             File[] filelist = directory.listFiles();
             if (filelist != null)
             {
-                int numOfFiles = filelist.length;
-                for (int i=0;i<numOfFiles;i++)
+                for (File file : filelist)
                 {
-                    File file = filelist[i];
                     if (file.isDirectory())
                     {
                         // skip hidden directories
@@ -129,8 +133,16 @@ public class FontFileFinder
                     }
                     else
                     {
+                        if (PDFBoxConfig.isDebugEnabled())
+                        {
+                            Log.d("PdfBox-Android", "checkFontfile check " + file);
+                        }
                         if (checkFontfile(file))
                         {
+                            if (PDFBoxConfig.isDebugEnabled())
+                            {
+                                Log.d("PdfBox-Android", "checkFontfile found " + file);
+                            }
                             results.add(file.toURI());
                         }
                     }
@@ -138,16 +150,18 @@ public class FontFileFinder
             }
         }
     }
-    
+
     /**
      * Check if the given name belongs to a font file.
-     * 
+     *
      * @param file the given file
      * @return true if the given filename has a typical font file ending
      */
     private boolean checkFontfile(File file)
     {
         String name = file.getName().toLowerCase();
-        return name.endsWith(".ttf") || name.endsWith(".otf") || name.endsWith(".pfb") || name.endsWith(".ttc");
+        return (name.endsWith(".ttf") || name.endsWith(".otf") || name.endsWith(".pfb") || name.endsWith(".ttc"))
+            // PDFBOX-3377 exclude weird files in AIX
+            && !name.startsWith("fonts.");
     }
 }

@@ -232,7 +232,7 @@ public class PDFMergerUtility
      * file.
      *
      * @param memUsageSetting defines how memory is used for buffering PDF streams;
-     *                        in case of <code>null</code> unrestricted main memory is used
+     *                        in case of <code>null</code> unrestricted main memory is used 
      *
      * @throws IOException If there is an error saving the document.
      */
@@ -555,8 +555,16 @@ public class PDFMergerUtility
             newPage.setCropBox(page.getCropBox());
             newPage.setMediaBox(page.getMediaBox());
             newPage.setRotation(page.getRotation());
-            // this is smart enough to just create references for resources that are used on multiple pages
-            newPage.setResources(new PDResources((COSDictionary) cloner.cloneForNewDocument(page.getResources())));
+            PDResources resources = page.getResources();
+            if (resources != null)
+            {
+                // this is smart enough to just create references for resources that are used on multiple pages
+                newPage.setResources(new PDResources((COSDictionary) cloner.cloneForNewDocument(resources)));
+            }
+            else
+            {
+                newPage.setResources(new PDResources());
+            }
             if (mergeStructTree)
             {
                 updateStructParentEntries(newPage, destParentTreeNextKey);
@@ -658,7 +666,7 @@ public class PDFMergerUtility
         if (srcFields != null)
         {
             // if a form is merged multiple times using PDFBox the newly generated
-            // fields starting with dummyFieldName may already exist. We need to determine the last unique
+            // fields starting with dummyFieldName may already exist. We need to determine the last unique 
             // number used and increment that.
             final String prefix = "dummyFieldName";
             final int prefixLength = prefix.length();

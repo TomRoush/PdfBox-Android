@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import android.graphics.Path;
@@ -115,14 +116,13 @@ public class PDType1CFont extends PDSimpleFont
         }
         else
         {
-            FontMapping<FontBoxFont> mapping = FontMappers.instance().getFontBoxFont(getBaseFont(),
-                fd);
+            FontMapping<FontBoxFont> mapping = FontMappers.instance()
+                .getFontBoxFont(getBaseFont(), fd);
             genericFont = mapping.getFont();
 
             if (mapping.isFallback())
             {
-                Log.w("PdfBox-Android",
-                    "Using fallback font " + genericFont.getName() + " for " + getBaseFont());
+                Log.w("PdfBox-Android", "Using fallback font " + genericFont.getName() + " for " + getBaseFont());
             }
             isEmbedded = false;
         }
@@ -193,11 +193,11 @@ public class PDType1CFont extends PDSimpleFont
 
     private BoundingBox generateBoundingBox() throws IOException
     {
-        if (getFontDescriptor() != null)
-        {
+        if (getFontDescriptor() != null) {
             PDRectangle bbox = getFontDescriptor().getFontBoundingBox();
-            if (bbox.getLowerLeftX() != 0 || bbox.getLowerLeftY() != 0 ||
-                bbox.getUpperRightX() != 0 || bbox.getUpperRightY() != 0)
+            if (bbox != null
+                && (bbox.getLowerLeftX() != 0 || bbox.getLowerLeftY() != 0
+                || bbox.getUpperRightX() != 0 || bbox.getUpperRightY() != 0))
             {
                 return new BoundingBox(bbox.getLowerLeftX(), bbox.getLowerLeftY(),
                     bbox.getUpperRightX(), bbox.getUpperRightY());
@@ -283,9 +283,9 @@ public class PDType1CFont extends PDSimpleFont
         String name = codeToName(code);
         float width = genericFont.getWidth(name);
 
-        PointF p = new PointF(width, 0f);
+        PointF p = new PointF(width, 0);
         fontMatrixTransform.transform(p, p);
-        return p.x;
+        return (float)p.x;
     }
 
     @Override
@@ -301,7 +301,7 @@ public class PDType1CFont extends PDSimpleFont
         float height = 0;
         if (!glyphHeights.containsKey(name))
         {
-            height = cffFont.getType1CharString(name).getBounds().height(); // todo: cffFont could be null
+            height = (float)cffFont.getType1CharString(name).getBounds().height(); // todo: cffFont could be null
             glyphHeights.put(name, height);
         }
         return height;
@@ -313,9 +313,9 @@ public class PDType1CFont extends PDSimpleFont
         String name = getGlyphList().codePointToName(unicode);
         if (!encoding.contains(name))
         {
-            throw new IllegalArgumentException(String
-                .format("U+%04X ('%s') is not available in this font's encoding: %s", unicode, name,
-                    encoding.getEncodingName()));
+            throw new IllegalArgumentException(
+                String.format("U+%04X ('%s') is not available in this font's encoding: %s",
+                    unicode, name, encoding.getEncodingName()));
         }
 
         String nameInFont = getNameInFont(name);

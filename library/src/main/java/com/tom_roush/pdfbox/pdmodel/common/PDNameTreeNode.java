@@ -40,7 +40,7 @@ import com.tom_roush.pdfbox.cos.COSString;
 public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObjectable
 {
     private final COSDictionary node;
-    private PDNameTreeNode parent;
+    private PDNameTreeNode<T> parent;
 
     /**
      * Constructor.
@@ -55,7 +55,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
      *
      * @param dict The dictionary that holds the name information.
      */
-    protected PDNameTreeNode(COSDictionary dict)
+    protected PDNameTreeNode( COSDictionary dict )
     {
         node = dict;
     }
@@ -73,28 +73,28 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
 
     /**
      * Returns the parent node.
-     * 
+     *
      * @return parent node
      */
-    public PDNameTreeNode getParent()
+    public PDNameTreeNode<T> getParent()
     {
         return parent;
     }
 
     /**
      * Sets the parent to the given node.
-     * 
+     *
      * @param parentNode the node to be set as parent
      */
-    public void setParent(PDNameTreeNode parentNode)
+    public void setParent(PDNameTreeNode<T> parentNode)
     {
         parent = parentNode;
         calculateLimits();
     }
-    
+
     /**
      * Determines if this is a root node or not.
-     * 
+     *
      * @return true if this is a root node
      */
     public boolean isRootNode()
@@ -129,11 +129,11 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
      *
      * @param kids The children of this named tree.
      */
-    public void setKids(List<? extends PDNameTreeNode<T>> kids)
+    public void setKids( List<? extends PDNameTreeNode<T>> kids )
     {
         if (kids != null && kids.size() > 0)
         {
-            for (PDNameTreeNode kidsNode : kids)
+            for (PDNameTreeNode<T> kidsNode : kids)
             {
                 kidsNode.setParent(this);
             }
@@ -144,7 +144,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
                 node.setItem(COSName.NAMES, null);
             }
         }
-        else 
+        else
         {
             // remove kids
             node.setItem(COSName.KIDS, null);
@@ -165,8 +165,8 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
             List<PDNameTreeNode<T>> kids = getKids();
             if (kids != null && kids.size() > 0)
             {
-                PDNameTreeNode firstKid = kids.get(0);
-                PDNameTreeNode lastKid = kids.get(kids.size() - 1);
+                PDNameTreeNode<T> firstKid = kids.get(0);
+                PDNameTreeNode<T> lastKid = kids.get(kids.size() - 1);
                 String lowerLimit = firstKid.getLowerLimit();
                 setLowerLimit(lowerLimit);
                 String upperLimit = lastKid.getUpperLimit();
@@ -174,7 +174,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
             }
             else
             {
-                try 
+                try
                 {
                     Map<String, T> names = getNames();
                     if (names != null && names.size() > 0)
@@ -207,7 +207,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
      * @return The value of the name in the tree.
      * @throws IOException If an there is a problem creating the destinations.
      */
-    public T getValue(String name) throws IOException
+    public T getValue( String name ) throws IOException
     {
         T retval = null;
         Map<String, T> names = getNames();
@@ -232,8 +232,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
             }
             else
             {
-                Log.w("PdfBox-Android",
-                    "NameTreeNode does not have \"names\" nor \"kids\" objects.");
+                Log.w("PdfBox-Android", "NameTreeNode does not have \"names\" nor \"kids\" objects.");
             }
         }
         return retval;
@@ -276,7 +275,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
      * @return The converted PD Model object.
      * @throws IOException If there is an error during creation.
      */
-    protected abstract T convertCOSToPD(COSBase base) throws IOException;
+    protected abstract T convertCOSToPD( COSBase base ) throws IOException;
 
     /**
      * Create a child node object.
@@ -284,7 +283,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
      * @param dic The dictionary for the child node object to refer to.
      * @return The new child node object.
      */
-    protected abstract PDNameTreeNode<T> createChildNode(COSDictionary dic);
+    protected abstract PDNameTreeNode<T> createChildNode( COSDictionary dic );
 
     /**
      * Set the names of for this node.  The keys should be java.lang.String and the
@@ -305,7 +304,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
             COSArray array = new COSArray();
             List<String> keys = new ArrayList<String>(names.keySet());
             Collections.sort(keys);
-            for (String key : keys) 
+            for (String key : keys)
             {
                 array.add(new COSString(key));
                 array.add(names.get(key));

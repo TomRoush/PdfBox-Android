@@ -44,23 +44,40 @@ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDSignatureField;
 
 /**
- * Implementation of PDFTemplateBuilder.
- * @see PDFTemplateBuilder
+ * Implementation of {@link PDFTemplateBuilder}. This builds the signature PDF but doesn't keep the
+ * elements, these are kept in its PDF template structure.
+ *
  * @author Vakhtang Koroghlishvili
  */
 public class PDVisibleSigBuilder implements PDFTemplateBuilder
 {
     private final PDFTemplateStructure pdfStructure;
 
+    /**
+     * Constructor, creates PDF template structure.
+     */
+    public PDVisibleSigBuilder()
+    {
+        pdfStructure = new PDFTemplateStructure();
+        Log.i("PdfBox-Android", "PDF Structure has been created");
+    }
+
     @Override
     public void createPage(PDVisibleSignDesigner properties)
     {
-        PDPage page = new PDPage(
-            new PDRectangle(properties.getPageWidth(), properties.getPageHeight()));
+        PDPage page = new PDPage(new PDRectangle(properties.getPageWidth(),
+            properties.getPageHeight()));
         pdfStructure.setPage(page);
         Log.i("PdfBox-Android", "PDF page has been created");
     }
 
+    /**
+     * Creates a PDDocument and adds the page parameter to it and keeps this as a template in the
+     * PDF template Structure.
+     *
+     * @param page
+     * @throws IOException
+     */
     @Override
     public void createTemplate(PDPage page) throws IOException
     {
@@ -69,19 +86,13 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
         pdfStructure.setTemplate(template);
     }
 
-    public PDVisibleSigBuilder()
-    {
-        pdfStructure = new PDFTemplateStructure();
-        Log.i("PdfBox-Android", "PDF Strucure has been created");
-    }
-
     @Override
     public void createAcroForm(PDDocument template)
     {
         PDAcroForm theAcroForm = new PDAcroForm(template);
         template.getDocumentCatalog().setAcroForm(theAcroForm);
         pdfStructure.setAcroForm(theAcroForm);
-        Log.i("PdfBox-Android", "AcroForm page has been created");
+        Log.i("PdfBox-Android", "AcroForm has been created");
     }
 
     @Override
@@ -99,24 +110,22 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
     }
 
     @Override
-    public void createSignature(PDSignatureField pdSignatureField, PDPage page,
-                                String signatureName) throws IOException
+    public void createSignature(PDSignatureField pdSignatureField, PDPage page, String signerName)
+        throws IOException
     {
         PDSignature pdSignature = new PDSignature();
         PDAnnotationWidget widget = pdSignatureField.getWidgets().get(0);
         pdSignatureField.setValue(pdSignature);
         widget.setPage(page);
         page.getAnnotations().add(widget);
-        pdSignature.setName(signatureName);
-        pdSignature.setByteRange(new int[] { 0, 0, 0, 0 });
-        pdSignature.setContents(new byte[4096]);
+        pdSignature.setName(signerName);
         pdfStructure.setPdSignature(pdSignature);
         Log.i("PdfBox-Android", "PDSignature has been created");
     }
 
     @Override
     public void createAcroFormDictionary(PDAcroForm acroForm, PDSignatureField signatureField)
-            throws IOException
+        throws IOException
     {
         @SuppressWarnings("unchecked")
         List<PDField> acroFormFields = acroForm.getFields();
@@ -133,14 +142,14 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
 
     @Override
     public void createSignatureRectangle(PDSignatureField signatureField,
-                                         PDVisibleSignDesigner properties) throws IOException
+        PDVisibleSignDesigner properties) throws IOException
     {
 
         PDRectangle rect = new PDRectangle();
         rect.setUpperRightX(properties.getxAxis() + properties.getWidth());
         rect.setUpperRightY(properties.getTemplateHeight() - properties.getyAxis());
         rect.setLowerLeftY(properties.getTemplateHeight() - properties.getyAxis() -
-                           properties.getHeight());
+            properties.getHeight());
         rect.setLowerLeftX(properties.getxAxis());
         signatureField.getWidgets().get(0).setRectangle(rect);
         pdfStructure.setSignatureRectangle(rect);
@@ -150,8 +159,8 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
     @Override
     public void createAffineTransform(byte[] params)
     {
-        AffineTransform transform = new AffineTransform(params[0], params[1], params[2], params[3],
-            params[4], params[5]);
+        AffineTransform transform = new AffineTransform(params[0], params[1], params[2],
+            params[3], params[4],  params[5]);
         pdfStructure.setAffineTransform(transform);
         Log.i("PdfBox-Android", "Matrix has been added");
     }
@@ -208,7 +217,7 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
 
     @Override
     public void createHolderForm(PDResources holderFormResources, PDStream holderFormStream,
-                                 PDRectangle formrect)
+        PDRectangle formrect)
     {
         PDFormXObject holderForm = new PDFormXObject(holderFormStream);
         holderForm.setResources(holderFormResources);
@@ -221,7 +230,7 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
 
     @Override
     public void createAppearanceDictionary(PDFormXObject holderForml,
-                                           PDSignatureField signatureField) throws IOException
+        PDSignatureField signatureField) throws IOException
     {
         PDAppearanceDictionary appearance = new PDAppearanceDictionary();
         appearance.getCOSObject().setDirect(true);
@@ -238,10 +247,10 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
     @Override
     public void createInnerFormStream(PDDocument template)
     {
-        PDStream innterFormStream = new PDStream(template);
-        pdfStructure.setInnterFormStream(innterFormStream);
-        Log.i("PdfBox-Android",
-            "Stream of another form (inner form - it will be inside holder form) has been created");
+        PDStream innerFormStream = new PDStream(template);
+        pdfStructure.setInnterFormStream(innerFormStream);
+        Log.i("PdfBox-Android", "Stream of another form (inner form - it will be inside holder form) " +
+            "has been created");
     }
 
     @Override
@@ -249,26 +258,25 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
     {
         PDResources innerFormResources = new PDResources();
         pdfStructure.setInnerFormResources(innerFormResources);
-        Log.i("PdfBox-Android",
-            "Resources of another form (inner form - it will be inside holder form) has been created");
+        Log.i("PdfBox-Android", "Resources of another form (inner form - it will be inside holder form)" +
+            "have been created");
     }
 
     @Override
     public void createInnerForm(PDResources innerFormResources, PDStream innerFormStream,
-                                PDRectangle formrect)
+        PDRectangle formrect)
     {
         PDFormXObject innerForm = new PDFormXObject(innerFormStream);
         innerForm.setResources(innerFormResources);
         innerForm.setBBox(formrect);
         innerForm.setFormType(1);
         pdfStructure.setInnerForm(innerForm);
-        Log.i("PdfBox-Android",
-            "Another form (inner form - it will be inside holder form) has been created");
+        Log.i("PdfBox-Android", "Another form (inner form - it will be inside holder form) has been created");
     }
 
     @Override
     public void insertInnerFormToHolderResources(PDFormXObject innerForm,
-                                                PDResources holderFormResources)
+        PDResources holderFormResources)
     {
         COSName innerFormName = holderFormResources.add(innerForm, "FRM");
         pdfStructure.setInnerFormName(innerFormName);
@@ -288,13 +296,13 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
     {
         PDResources imageFormResources = new PDResources();
         pdfStructure.setImageFormResources(imageFormResources);
-        Log.i("PdfBox-Android", "Created image form Resources");
+        Log.i("PdfBox-Android", "Created image form resources");
     }
 
     @Override
     public void createImageForm(PDResources imageFormResources, PDResources innerFormResource,
-                                PDStream imageFormStream, PDRectangle formrect, AffineTransform at,
-                                PDImageXObject img) throws IOException
+        PDStream imageFormStream, PDRectangle formrect, AffineTransform at,
+        PDImageXObject img) throws IOException
     {
         PDFormXObject imageForm = new PDFormXObject(imageFormStream);
         imageForm.setBBox(formrect);
@@ -314,8 +322,8 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
 
     @Override
     public void injectProcSetArray(PDFormXObject innerForm, PDPage page,
-                                   PDResources innerFormResources,  PDResources imageFormResources,
-                                   PDResources holderFormResources, COSArray procSet)
+        PDResources innerFormResources,  PDResources imageFormResources,
+        PDResources holderFormResources, COSArray procSet)
     {
         innerForm.getResources().getCOSObject().setItem(COSName.PROC_SET, procSet);
         page.getCOSObject().setItem(COSName.PROC_SET, procSet);
@@ -326,25 +334,22 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
     }
 
     @Override
-    public void injectAppearanceStreams(PDStream holderFormStream, PDStream innterFormStream,
-                                        PDStream imageFormStream, COSName imageObjectName,
-                                        COSName imageName, COSName innerFormName,
-                                        PDVisibleSignDesigner properties) throws IOException
+    public void injectAppearanceStreams(PDStream holderFormStream, PDStream innerFormStream,
+        PDStream imageFormStream, COSName imageObjectName,
+        COSName imageName, COSName innerFormName,
+        PDVisibleSignDesigner properties) throws IOException
     {
         // 100 means that document width is 100% via the rectangle. if rectangle
         // is 500px, images 100% is 500px.
-        // String imgFormComment = "q "+imageWidthSize+ " 0 0 50 0 0 cm /" +
+        // String imgFormContent = "q "+imageWidthSize+ " 0 0 50 0 0 cm /" +
         // imageName + " Do Q\n" + builder.toString();
-        String imgFormComment = "q " + 100 + " 0 0 50 0 0 cm /" + imageName.getName() + " Do Q\n";
-        String holderFormComment = "q 1 0 0 1 0 0 cm /" + innerFormName.getName() + " Do Q \n";
-        String innerFormComment = "q 1 0 0 1 0 0 cm /" + imageObjectName.getName() + " Do Q\n";
+        String imgFormContent    = "q " + 100 + " 0 0 50 0 0 cm /" + imageName.getName() + " Do Q\n";
+        String holderFormContent = "q 1 0 0 1 0 0 cm /" + innerFormName.getName() + " Do Q\n";
+        String innerFormContent  = "q 1 0 0 1 0 0 cm /" + imageObjectName.getName() + " Do Q\n";
 
-        appendRawCommands(pdfStructure.getHolderFormStream().createOutputStream(),
-                holderFormComment);
-        appendRawCommands(pdfStructure.getInnerFormStream().createOutputStream(),
-                innerFormComment);
-        appendRawCommands(pdfStructure.getImageFormStream().createOutputStream(),
-                imgFormComment);
+        appendRawCommands(pdfStructure.getHolderFormStream().createOutputStream(), holderFormContent);
+        appendRawCommands(pdfStructure.getInnerFormStream().createOutputStream(), innerFormContent);
+        appendRawCommands(pdfStructure.getImageFormStream().createOutputStream(), imgFormContent);
         Log.i("PdfBox-Android", "Injected appearance stream to pdf");
     }
 
@@ -363,7 +368,7 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
 
     @Override
     public void createWidgetDictionary(PDSignatureField signatureField,
-                                       PDResources holderFormResources) throws IOException
+        PDResources holderFormResources) throws IOException
     {
         COSDictionary widgetDict = signatureField.getWidgets().get(0).getCOSObject();
         widgetDict.setNeedToBeUpdated(true);

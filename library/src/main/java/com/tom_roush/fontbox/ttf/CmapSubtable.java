@@ -20,7 +20,6 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -83,35 +82,35 @@ public class CmapSubtable
 
         switch (subtableFormat)
         {
-            case 0:
-                processSubtype0(data);
-                break;
-            case 2:
-                processSubtype2(data, numGlyphs);
-                break;
-            case 4:
-                processSubtype4(data, numGlyphs);
-                break;
-            case 6:
-                processSubtype6(data, numGlyphs);
-                break;
-            case 8:
-                processSubtype8(data, numGlyphs);
-                break;
-            case 10:
-                processSubtype10(data, numGlyphs);
-                break;
-            case 12:
-                processSubtype12(data, numGlyphs);
-                break;
-            case 13:
-                processSubtype13(data, numGlyphs);
-                break;
-            case 14:
-                processSubtype14(data, numGlyphs);
-                break;
-            default:
-                throw new IOException("Unknown cmap format:" + subtableFormat);
+        case 0:
+            processSubtype0(data);
+            break;
+        case 2:
+            processSubtype2(data, numGlyphs);
+            break;
+        case 4:
+            processSubtype4(data, numGlyphs);
+            break;
+        case 6:
+            processSubtype6(data, numGlyphs);
+            break;
+        case 8:
+            processSubtype8(data, numGlyphs);
+            break;
+        case 10:
+            processSubtype10(data, numGlyphs);
+            break;
+        case 12:
+            processSubtype12(data, numGlyphs);
+            break;
+        case 13:
+            processSubtype13(data, numGlyphs);
+            break;
+        case 14:
+            processSubtype14(data, numGlyphs);
+            break;
+        default:
+            throw new IOException("Unknown cmap format:" + subtableFormat);
         }
     }
 
@@ -237,7 +236,8 @@ public class CmapSubtable
                 throw new IOException("Invalid characters codes");
             }
 
-            if (endCode > 0 && endCode < firstCode || endCode > 0x0010FFFF ||
+            if (endCode > 0 && endCode < firstCode ||
+                endCode > 0x0010FFFF ||
                 endCode >= 0x0000D800 && endCode <= 0x0000DFFF)
             {
                 throw new IOException("Invalid characters codes");
@@ -348,18 +348,14 @@ public class CmapSubtable
         Map<Integer, Integer> tmpGlyphToChar = new HashMap<Integer, Integer>(numGlyphs);
         characterCodeToGlyphId = new HashMap<Integer, Integer>(numGlyphs);
         int[] glyphIdArray = data.readUnsignedShortArray(entryCount);
+        int maxGlyphId = 0;
         for (int i = 0; i < entryCount; i++)
         {
+            maxGlyphId = Math.max(maxGlyphId, glyphIdArray[i]);
             tmpGlyphToChar.put(glyphIdArray[i], firstCode + i);
-            characterCodeToGlyphId.put((firstCode + i), glyphIdArray[i]);
+            characterCodeToGlyphId.put(firstCode + i, glyphIdArray[i]);
         }
-        glyphIdToCharacterCode = newGlyphIdToCharacterCode(
-            Collections.max(tmpGlyphToChar.keySet()) + 1);
-        for (Entry<Integer, Integer> entry : tmpGlyphToChar.entrySet())
-        {
-            // link the glyphId with the right character code
-            glyphIdToCharacterCode[entry.getKey()] = entry.getValue();
-        }
+        buildGlyphIdToCharacterCodeLookup(tmpGlyphToChar, maxGlyphId);
     }
 
     /**
@@ -384,6 +380,7 @@ public class CmapSubtable
 
         Map<Integer, Integer> tmpGlyphToChar = new HashMap<Integer, Integer>(numGlyphs);
         characterCodeToGlyphId = new HashMap<Integer, Integer>(numGlyphs);
+        int maxGlyphId = 0;
 
         long currentPosition = data.getCurrentPosition();
 
@@ -399,7 +396,8 @@ public class CmapSubtable
                 {
                     if (rangeOffset == 0)
                     {
-                        int glyphid = (j + delta) % 65536;
+                        int glyphid = (j + delta) & 0xFFFF;
+                        maxGlyphId = Math.max(glyphid, maxGlyphId);
                         tmpGlyphToChar.put(glyphid, j);
                         characterCodeToGlyphId.put(j, glyphid);
                     }
@@ -412,10 +410,10 @@ public class CmapSubtable
                         int glyphIndex = data.readUnsignedShort();
                         if (glyphIndex != 0)
                         {
-                            glyphIndex += delta;
-                            glyphIndex %= 65536;
+                            glyphIndex = (glyphIndex + delta) & 0xFFFF;
                             if (!tmpGlyphToChar.containsKey(glyphIndex))
                             {
+                                maxGlyphId = Math.max(glyphIndex, maxGlyphId);
                                 tmpGlyphToChar.put(glyphIndex, j);
                                 characterCodeToGlyphId.put(j, glyphIndex);
                             }
@@ -434,7 +432,12 @@ public class CmapSubtable
             Log.w("PdfBox-Android", "cmap format 4 subtable is empty");
             return;
         }
-        glyphIdToCharacterCode = newGlyphIdToCharacterCode(Collections.max(tmpGlyphToChar.keySet()) + 1);
+        buildGlyphIdToCharacterCodeLookup(tmpGlyphToChar, maxGlyphId);
+    }
+
+    private void buildGlyphIdToCharacterCodeLookup(Map<Integer, Integer> tmpGlyphToChar, int maxGlyphId)
+    {
+        glyphIdToCharacterCode = newGlyphIdToCharacterCode(maxGlyphId + 1);
         for (Entry<Integer, Integer> entry : tmpGlyphToChar.entrySet())
         {
             // link the glyphId with the right character code
@@ -497,11 +500,10 @@ public class CmapSubtable
                 {
                     p = (p + idDelta) % 65536;
                 }
+
                 if (p >= numGlyphs)
                 {
-                    Log.w("PdfBox-Android",
-                        "glyphId " + p + " for charcode " + charCode + " ignored, numGlyphs is " +
-                            numGlyphs);
+                    Log.w("PdfBox-Android", "glyphId " + p + " for charcode " + charCode + " ignored, numGlyphs is " + numGlyphs);
                     continue;
                 }
 

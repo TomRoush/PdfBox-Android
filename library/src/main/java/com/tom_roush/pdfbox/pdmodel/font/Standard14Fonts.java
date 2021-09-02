@@ -27,7 +27,7 @@ import java.util.Set;
 
 import com.tom_roush.fontbox.afm.AFMParser;
 import com.tom_roush.fontbox.afm.FontMetrics;
-import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
 /**
  * The "Standard 14" PDF fonts, also known as the "base 14" fonts.

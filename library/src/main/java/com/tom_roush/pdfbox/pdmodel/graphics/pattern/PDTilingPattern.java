@@ -30,6 +30,7 @@ import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 /**
  * A tiling pattern dictionary.
+ *
  */
 public class PDTilingPattern extends PDAbstractPattern implements PDContentStream
 {
@@ -88,7 +89,7 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
      */
     public int getPaintType()
     {
-        return getCOSObject().getInt(COSName.PAINT_TYPE, 0);
+        return getCOSObject().getInt( COSName.PAINT_TYPE, 0 );
     }
 
     /**
@@ -106,7 +107,7 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
      */
     public int getTilingType()
     {
-        return getCOSObject().getInt(COSName.TILING_TYPE, 0);
+        return getCOSObject().getInt( COSName.TILING_TYPE, 0 );
     }
 
     /**
@@ -125,8 +126,8 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
     public float getXStep()
     {
         // ignores invalid values, see PDFBOX-1094-065514-XStep32767.pdf
-        float xStep = getCOSObject().getFloat(COSName.X_STEP, 0);
-        return xStep == Short.MAX_VALUE ? 0 : xStep;
+        float xStep = getCOSObject().getFloat( COSName.X_STEP, 0 );
+        return xStep >= Short.MAX_VALUE ? 0 : xStep;
     }
 
     /**
@@ -145,13 +146,13 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
     public float getYStep()
     {
         // ignores invalid values, see PDFBOX-1094-065514-XStep32767.pdf
-        float yStep = getCOSObject().getFloat(COSName.Y_STEP, 0);
-        return yStep == Short.MAX_VALUE ? 0 : yStep;
+        float yStep = getCOSObject().getFloat( COSName.Y_STEP, 0 );
+        return yStep >= Short.MAX_VALUE ? 0 : yStep;
     }
 
     public PDStream getContentStream()
     {
-        return new PDStream((COSStream) getCOSObject());
+        return new PDStream((COSStream)getCOSObject());
     }
 
     @Override
@@ -160,7 +161,7 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
         COSDictionary dict = getCOSObject();
         if (dict instanceof COSStream)
         {
-            return ((COSStream)getCOSObject()).createInputStream();
+            return ((COSStream) getCOSObject()).createInputStream();
         }
         return null;
     }
@@ -202,7 +203,7 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
     public PDRectangle getBBox()
     {
         PDRectangle retval = null;
-        COSArray array = (COSArray) getCOSObject().getDictionaryObject(COSName.BBOX);
+        COSArray array = (COSArray)getCOSObject().getDictionaryObject( COSName.BBOX );
         if( array != null )
         {
             retval = new PDRectangle( array );
@@ -218,11 +219,11 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
     {
         if( bbox == null )
         {
-            getCOSObject().removeItem(COSName.BBOX);
+            getCOSObject().removeItem( COSName.BBOX );
         }
         else
         {
-            getCOSObject().setItem(COSName.BBOX, bbox.getCOSArray());
+            getCOSObject().setItem( COSName.BBOX, bbox.getCOSArray() );
         }
     }
 }

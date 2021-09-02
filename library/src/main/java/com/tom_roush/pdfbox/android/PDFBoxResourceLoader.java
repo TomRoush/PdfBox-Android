@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tom_roush.pdfbox.util;
+package com.tom_roush.pdfbox.android;
 
 import android.content.Context;
 import android.content.res.AssetManager;
@@ -25,32 +25,6 @@ import java.io.InputStream;
 
 public class PDFBoxResourceLoader
 {
-
-    /**
-     * Enum to represent what fonts PDFBox should attempt to load
-     */
-    public enum FontLoadLevel
-    {
-        /**
-         * Load and process all available fonts
-         */
-        FULL,
-
-        /**
-         * Load and process only the minimum fonts required to maintain functionality
-         */
-        MINIMUM,
-
-        /**
-         * Do not load any fonts (May cause crashes)
-         */
-        NONE
-    }
-
-    /**
-     * Option to disable searching the file system for fonts (Speeds up startup if fonts not needed)
-     */
-    public static FontLoadLevel LOAD_FONTS = FontLoadLevel.MINIMUM;
 
     /**
      * The AssetManager used to load the resources

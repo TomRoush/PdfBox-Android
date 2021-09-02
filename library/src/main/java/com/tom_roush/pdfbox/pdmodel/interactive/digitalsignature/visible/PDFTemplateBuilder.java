@@ -43,16 +43,18 @@ public interface PDFTemplateBuilder
      * In order to create Affine Transform, using parameters.
      * @param params
      */
-    void createAffineTransform(byte [] params);
+    void createAffineTransform(byte[] params);
 
     /**
      * Creates specified size page.
+     *
      * @param properties
      */
     void createPage(PDVisibleSignDesigner properties);
 
     /**
      * Creates template using page.
+     *
      * @param page
      * @throws IOException
      */
@@ -60,38 +62,46 @@ public interface PDFTemplateBuilder
 
     /**
      * Creates Acro forms in the template.
+     *
      * @param template
      */
     void createAcroForm(PDDocument template);
 
     /**
      * Creates signature fields.
+     *
      * @param acroForm
      * @throws IOException
      */
     void createSignatureField(PDAcroForm acroForm) throws IOException;
 
     /**
-     * Creates PDSignatureField.
+     * Creates the signature with the given name and assign it to the signature field parameter and
+     * assign the page parameter to the widget.
+     *
      * @param pdSignatureField
      * @param page
-     * @param signatureName
+     * @param signerName the name of the person or authority signing the document. According to the
+     * PDF specification, this value should be used only when it is not possible to extract the name
+     * from the signature.
      * @throws IOException
      */
-    void createSignature(PDSignatureField pdSignatureField, PDPage page,
-        String signatureName) throws IOException;
+    void createSignature(PDSignatureField pdSignatureField, PDPage page, String signerName)
+        throws IOException;
 
     /**
      * Create AcroForm Dictionary.
+     *
      * @param acroForm
      * @param signatureField
      * @throws IOException
      */
-    void createAcroFormDictionary(PDAcroForm acroForm,
-        PDSignatureField signatureField) throws IOException;
+    void createAcroFormDictionary(PDAcroForm acroForm, PDSignatureField signatureField)
+        throws IOException;
 
     /**
-     * Creates SingatureRectangle.
+     * Creates SignatureRectangle.
+     *
      * @param signatureField
      * @param properties
      * @throws IOException
@@ -200,9 +210,8 @@ public interface PDFTemplateBuilder
      * @throws IOException
      */
     void createImageForm(PDResources imageFormResources, PDResources innerFormResource,
-        PDStream imageFormStream, PDRectangle formrect,
-        AffineTransform affineTransform, PDImageXObject img)
-        throws IOException;
+        PDStream imageFormStream, PDRectangle formrect, AffineTransform affineTransform,
+        PDImageXObject img) throws IOException;
 
     /**
      * Inject procSetArray
@@ -222,7 +231,7 @@ public interface PDFTemplateBuilder
      * injects appearance streams
      *
      * @param holderFormStream
-     * @param innterFormStream
+     * @param innerFormStream
      * @param imageFormStream
      * @param imageObjectName
      * @param imageName
@@ -230,10 +239,9 @@ public interface PDFTemplateBuilder
      * @param properties
      * @throws IOException
      */
-    void injectAppearanceStreams(PDStream holderFormStream, PDStream innterFormStream,
-        PDStream imageFormStream, COSName imageObjectName,
-        COSName imageName, COSName innerFormName,
-        PDVisibleSignDesigner properties) throws IOException;
+    void injectAppearanceStreams(PDStream holderFormStream, PDStream innerFormStream,
+        PDStream imageFormStream, COSName imageObjectName, COSName imageName,
+        COSName innerFormName, PDVisibleSignDesigner properties) throws IOException;
 
     /**
      * just to create visible signature

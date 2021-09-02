@@ -35,7 +35,7 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
 import com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyProtectionPolicy;
 import com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyRecipient;
-import com.tom_roush.pdfbox.util.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
 import org.junit.After;
 import org.junit.Assert;

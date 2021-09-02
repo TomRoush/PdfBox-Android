@@ -51,15 +51,15 @@ public class SetLineDashPattern extends OperatorProcessor
         {
             return;
         }
-        COSArray dashArray = (COSArray)base0;
-        int dashPhase = ((COSNumber)base1).intValue();
+        COSArray dashArray = (COSArray) base0;
+        int dashPhase = ((COSNumber) base1).intValue();
 
         boolean allZero = true;
         for (COSBase base : dashArray)
         {
             if (base instanceof COSNumber)
             {
-                COSNumber num = (COSNumber)base;
+                COSNumber num = (COSNumber) base;
                 if (num.floatValue() != 0)
                 {
                     allZero = false;
@@ -68,14 +68,14 @@ public class SetLineDashPattern extends OperatorProcessor
             }
             else
             {
-                Log.e("PdfBox-Android", "dash array has non number element " + base + ", ignored");
+                Log.w("PdfBox-Android", "dash array has non number element " + base + ", ignored");
                 dashArray = new COSArray();
                 break;
             }
         }
         if (dashArray.size() > 0 && allZero)
         {
-            Log.e("PdfBox-Android", "dash lengths all zero, ignored");
+            Log.w("PdfBox-Android", "dash lengths all zero, ignored");
             dashArray = new COSArray();
         }
         context.setLineDashPattern(dashArray, dashPhase);

@@ -39,10 +39,10 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
  */
 final class SampledImageReader
 {
-	private SampledImageReader()
-	{
-	}
-	
+    private SampledImageReader()
+    {
+    }
+
     /**
      * Returns an ARGB image filled with the given paint and using the given image as a mask.
      * @param paint the paint to fill the visible portions of the image with
@@ -60,7 +60,11 @@ final class SampledImageReader
             Bitmap.Config.ARGB_8888);
         Canvas g = new Canvas(masked);
 
+        // draw the mask
+        //g.drawImage(mask, 0, 0, null);
+
         // fill with paint using src-in
+        //g.setComposite(AlphaComposite.SrcIn);
         g.drawRect(0, 0, mask.getWidth(), mask.getHeight(), paint);
 
         // set the alpha
@@ -79,10 +83,11 @@ final class SampledImageReader
             }
         }
         masked.setPixels(raster, 0, width, 0, 0, width, height);
+
         return masked;
     }
 
-	/**
+    /**
      * Returns the content of the given image as an AWT buffered image with an RGB color space.
      * If a color key mask is provided then an ARGB image is returned instead.
      * This method never returns null.
@@ -106,6 +111,11 @@ final class SampledImageReader
         final int bitsPerComponent = pdImage.getBitsPerComponent();
         final float[] decode = getDecodeArray(pdImage);
 
+        if (width <= 0 || height <= 0)
+        {
+            throw new IOException("image weight and height must be positive");
+        }
+
         //
         // An AWT raster must use 8/16/32 bits per component. Images with < 8bpc
         // will be unpacked into a byte-backed raster. Images with 16bpc will be reduced
@@ -118,7 +128,7 @@ final class SampledImageReader
         final float[] defaultDecode = pdImage.getColorSpace().getDefaultDecode(8);
         if (pdImage.getSuffix() != null && pdImage.getSuffix().equals("jpg"))
         {
-        	return BitmapFactory.decodeStream(pdImage.createInputStream());
+            return BitmapFactory.decodeStream(pdImage.createInputStream());
         }
         else if (bitsPerComponent == 8 && Arrays.equals(decode, defaultDecode) && colorKey == null)
         {
@@ -130,13 +140,14 @@ final class SampledImageReader
         }
         else
         {
-        	Log.e("PdfBox-Android", "Trying to create other-bit image not supported");
+            Log.e("PdfBox-Android", "Trying to create other-bit image not supported");
 //            return fromAny(pdImage, raster, colorKey);
             return from8bit(pdImage);
         }
     }
 
-    private static Bitmap from1Bit(PDImage pdImage) throws IOException
+    private static Bitmap from1Bit(PDImage pdImage)
+        throws IOException
     {
         final PDColorSpace colorSpace = pdImage.getColorSpace();
         final int width = pdImage.getWidth();
@@ -204,12 +215,15 @@ final class SampledImageReader
                 }
             }
 
-
             buffer.rewind();
             raster.copyPixelsFromBuffer(buffer);
+
             // use the color space to convert the image to RGB
-            return colorSpace.toRGBImage(raster);
-        } finally
+            Bitmap rgbImage = colorSpace.toRGBImage(raster);
+
+            return rgbImage;
+        }
+        finally
         {
             if (iis != null)
             {
@@ -220,7 +234,7 @@ final class SampledImageReader
 
     // faster, 8-bit non-decoded, non-colormasked image conversion
     private static Bitmap from8bit(PDImage pdImage)
-            throws IOException
+        throws IOException
     {
         InputStream input = pdImage.createInputStream();
         try
@@ -229,11 +243,9 @@ final class SampledImageReader
             final int width = pdImage.getWidth();
             final int height = pdImage.getHeight();
             final int numComponents = pdImage.getColorSpace().getNumberOfComponents();
-
-            Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            int[] rasterPixels = new int[width * height];
-            raster.getPixels(rasterPixels, 0, width, 0, 0, width, height);
-            for (int pixelIdx = 0; pixelIdx < width * height; pixelIdx++)
+            int max = width * height;
+            int[] rasterPixels = new int[max];
+            for (int pixelIdx = 0; pixelIdx < max; pixelIdx++)
             {
                 if (numComponents == 1)
                 {
@@ -246,6 +258,7 @@ final class SampledImageReader
                         input.read());
                 }
             }
+            Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             raster.setPixels(rasterPixels, 0, width, 0 ,0, width, height);
 
 //            // use the color space to convert the image to RGB
@@ -258,10 +271,10 @@ final class SampledImageReader
             IOUtils.closeQuietly(input);
         }
     }
-    
+
     // slower, general-purpose image conversion from any image format
 //    private static BufferedImage fromAny(PDImage pdImage, WritableRaster raster, COSArray colorKey)
-//            throws IOException
+//        throws IOException
 //    {
 //        final PDColorSpace colorSpace = pdImage.getColorSpace();
 //        final int numComponents = colorSpace.getNumberOfComponents();
@@ -311,7 +324,7 @@ final class SampledImageReader
 //                        if (colorKeyRanges != null)
 //                        {
 //                            isMasked &= value >= colorKeyRanges[c * 2] &&
-//                                        value <= colorKeyRanges[c * 2 + 1];
+//                                value <= colorKeyRanges[c * 2 + 1];
 //                        }
 //
 //                        // decode array
@@ -332,7 +345,7 @@ final class SampledImageReader
 //                        {
 //                            // interpolate to TYPE_BYTE
 //                            int outputByte = Math.round(((output - Math.min(dMin, dMax)) /
-//                                    Math.abs(dMax - dMin)) * 255f);
+//                                Math.abs(dMax - dMin)) * 255f);
 //
 //                            srcColorValues[c] = (byte)outputByte;
 //                        }
@@ -371,11 +384,11 @@ final class SampledImageReader
 //                iis.close();
 //            }
 //        }
-//    }TODO: PdfBox-Android
+//    } TODO: PdfBox-Android
 
     // color key mask: RGB + Binary -> ARGB
 //    private static BufferedImage applyColorKeyMask(BufferedImage image, BufferedImage mask)
-//            throws IOException
+//        throws IOException
 //    {
 //        int width = image.getWidth();
 //        int height = image.getHeight();
@@ -407,7 +420,7 @@ final class SampledImageReader
 //        }
 //
 //        return masked;
-//    }TODO: PdfBox-Android
+//    } TODO: PdfBox-Android
 
     // gets decode array from dictionary or returns default
     private static float[] getDecodeArray(PDImage pdImage) throws IOException
@@ -421,23 +434,23 @@ final class SampledImageReader
             if (cosDecode.size() != numberOfComponents * 2)
             {
                 if (pdImage.isStencil() && cosDecode.size() >= 2
-                        && cosDecode.get(0) instanceof COSNumber
-                        && cosDecode.get(1) instanceof COSNumber)
+                    && cosDecode.get(0) instanceof COSNumber
+                    && cosDecode.get(1) instanceof COSNumber)
                 {
                     float decode0 = ((COSNumber) cosDecode.get(0)).floatValue();
                     float decode1 = ((COSNumber) cosDecode.get(1)).floatValue();
                     if (decode0 >= 0 && decode0 <= 1 && decode1 >= 0 && decode1 <= 1)
                     {
-                    	Log.w("PdfBox-Android", "decode array " + cosDecode
-                                + " not compatible with color space, using the first two entries");
+                        Log.w("PdfBox-Android", "decode array " + cosDecode
+                            + " not compatible with color space, using the first two entries");
                         return new float[]
-                        {
-                            decode0, decode1
-                        };
+                            {
+                                decode0, decode1
+                            };
                     }
                 }
                 Log.e("PdfBox-Android", "decode array " + cosDecode
-                        + " not compatible with color space, using default");
+                    + " not compatible with color space, using default");
             }
             else
             {

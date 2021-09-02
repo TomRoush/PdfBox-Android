@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +93,7 @@ public class COSParser extends BaseParser
 
     /**
      * The range within the %%EOF marker will be searched.
-     * Useful if there are additional characters after %%EOF within the PDF.
+     * Useful if there are additional characters after %%EOF within the PDF. 
      */
     public static final String SYSPROP_EOFLOOKUPRANGE =
         "com.tom_roush.pdfbox.pdfparser.nonSequentialPDFParser.eofLookupRange";
@@ -144,13 +143,13 @@ public class COSParser extends BaseParser
 
     /**
      * Collects all Xref/trailer objects and resolves them into single
-     * object using startxref reference.
+     * object using startxref reference. 
      */
     protected XrefTrailerResolver xrefTrailerResolver = new XrefTrailerResolver();
 
 
     /**
-     * The prefix for the temp file being used.
+     * The prefix for the temp file being used. 
      */
     public static final String TMP_FILE_PREFIX = "tmpPDF";
 
@@ -206,8 +205,10 @@ public class COSParser extends BaseParser
         document.setStartXref(startXrefOffset);
         long prev = startXrefOffset;
         // ---- parse whole chain of xref tables/object streams using PREV reference
-        while (prev > 0)
+        long lastPrev = -1;
+        while (prev > 0 && prev != lastPrev)
         {
+            lastPrev = prev;
             // seek to xref table
             source.seek(prev);
 
@@ -238,7 +239,7 @@ public class COSParser extends BaseParser
                         + source.getPosition());
                 }
                 COSDictionary trailer = xrefTrailerResolver.getCurrentTrailer();
-                // check for a XRef stream, it may contain some object ids of compressed objects
+                // check for a XRef stream, it may contain some object ids of compressed objects 
                 if(trailer.containsKey(COSName.XREF_STM))
                 {
                     int streamOffset = trailer.getInt(COSName.XREF_STM);
@@ -296,6 +297,11 @@ public class COSParser extends BaseParser
                 }
             }
         }
+        if (prev == lastPrev)
+        {
+            //TODO better idea needed? PDFBOX-3446
+            throw new IOException("/Prev loop at offset " + prev);
+        }
         // ---- build valid xrefs out of the xref chain
         xrefTrailerResolver.setStartxref(startXrefOffset);
         COSDictionary trailer = xrefTrailerResolver.getTrailer();
@@ -322,7 +328,7 @@ public class COSParser extends BaseParser
 
         COSDictionary dict = parseCOSDictionary();
         COSStream xrefStream = parseCOSStream(dict);
-        parseXrefStream(xrefStream, (int) objByteOffset, isStandalone);
+        parseXrefStream(xrefStream, objByteOffset, isStandalone);
         xrefStream.close();
 
         return dict.getLong(COSName.PREV);
@@ -542,10 +548,9 @@ public class COSParser extends BaseParser
                 }
                 else if (baseObj instanceof COSArray)
                 {
-                    final Iterator<COSBase> arrIter = ((COSArray) baseObj).iterator();
-                    while (arrIter.hasNext())
+                    for (COSBase cosBase : ((COSArray) baseObj))
                     {
-                        addNewToList(toBeParsedList, arrIter.next(), addedObjects);
+                        addNewToList(toBeParsedList, cosBase, addedObjects);
                     }
                 }
                 else if (baseObj instanceof COSObject)
@@ -635,7 +640,7 @@ public class COSParser extends BaseParser
     }
 
     /**
-     * This will parse the next object from the stream and add it to the local state.
+     * This will parse the next object from the stream and add it to the local state. 
      *
      * @param obj object to be parsed (we only take object number and generation number for lookup start offset)
      * @param requireExistingNotCompressedObj if <code>true</code> object to be parsed must not be contained within
@@ -652,7 +657,7 @@ public class COSParser extends BaseParser
     }
 
     /**
-     * This will parse the next object from the stream and add it to the local state.
+     * This will parse the next object from the stream and add it to the local state. 
      * It's reduced to parsing an indirect object.
      *
      * @param objNr object number of object to be parsed
@@ -743,7 +748,7 @@ public class COSParser extends BaseParser
         {
             throw new IOException("XREF for " + objKey.getNumber() + ":"
                 + objKey.getGeneration() + " points to wrong object: " + readObjNr
-                + ":" + readObjGen);
+                + ":" + readObjGen + " at offset " + offsetOrObjstmObNr);
         }
 
         skipSpaces();
@@ -849,7 +854,7 @@ public class COSParser extends BaseParser
     }
 
     /**
-     * Returns length value referred to or defined in given object.
+     * Returns length value referred to or defined in given object. 
      */
     private COSNumber getLength(final COSBase lengthBaseObj, final COSName streamType) throws IOException
     {
@@ -1035,7 +1040,7 @@ public class COSParser extends BaseParser
             {
                 // reduce compare operations by first test last character we would have to
                 // match if current one matches; if it is not a character from keywords
-                // we can move behind the test character; this shortcut is inspired by the
+                // we can move behind the test character; this shortcut is inspired by the 
                 // Boyer-Moore string search algorithm and can reduce parsing time by approx. 20%
                 quickTestIdx = bIdx + quickTestOffset;
                 if (charMatchCount == 0 && quickTestIdx < maxQuicktestIdx)
@@ -1072,10 +1077,10 @@ public class COSParser extends BaseParser
                     }
                     else
                     {
-                        // no match; incrementing match start by 1 would be dumb since we already know
-                        // matched chars depending on current char read we may already have beginning
-                        // of a new match: 'e': first char matched; 'n': if we are at match position
-                        // idx 7 we already read 'e' thus 2 chars matched for each other char we have
+                        // no match; incrementing match start by 1 would be dumb since we already know 
+                        // matched chars depending on current char read we may already have beginning 
+                        // of a new match: 'e': first char matched; 'n': if we are at match position 
+                        // idx 7 we already read 'e' thus 2 chars matched for each other char we have 
                         // to start matching first keyword char beginning with next read position
                         charMatchCount = ( ch == E ) ? 1 : ( ( ch == N ) && ( charMatchCount == 7 ) ) ? 2 : 0;
                         // search again for 'endstream'
@@ -1199,10 +1204,10 @@ public class COSParser extends BaseParser
         {
             return startXRefOffset;
         }
-        // seek to offset-1
+        // seek to offset-1 
         source.seek(startXRefOffset-1);
         int nextValue = source.read();
-        // the first character has to be whitespace(s), and then a digit
+        // the first character has to be a whitespace, and then a digit
         if (isWhitespace(nextValue))
         {
             skipSpaces();
@@ -1672,7 +1677,7 @@ public class COSParser extends BaseParser
             xrefTrailerResolver.setStartxref(0);
             trailer = xrefTrailerResolver.getTrailer();
             getDocument().setTrailer(trailer);
-            // search for the different parts of the trailer dictionary
+            // search for the different parts of the trailer dictionary 
             for(Entry<COSObjectKey, Long> entry : bfSearchCOSObjectKeyOffsets.entrySet())
             {
                 Long offset = entry.getValue();
@@ -2000,7 +2005,7 @@ public class COSParser extends BaseParser
                 {
                     try
                     {
-                        int currOffset = Integer.parseInt(splitString[0]);
+                        long currOffset = Long.parseLong(splitString[0]);
                         int currGenID = Integer.parseInt(splitString[1]);
                         COSObjectKey objKey = new COSObjectKey(currObjID, currGenID);
                         xrefTrailerResolver.setXRef(objKey, currOffset);

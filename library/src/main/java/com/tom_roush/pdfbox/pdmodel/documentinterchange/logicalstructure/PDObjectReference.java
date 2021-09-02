@@ -21,6 +21,7 @@ import java.io.IOException;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
@@ -43,7 +44,7 @@ public class PDObjectReference implements COSObjectable
 
     /**
      * Returns the underlying dictionary.
-     * 
+     *
      * @return the dictionary
      */
     @Override
@@ -76,7 +77,7 @@ public class PDObjectReference implements COSObjectable
      * Gets a higher-level object for the referenced object.
      * Currently this method may return a {@link PDAnnotation},
      * a {@link PDXObject} or <code>null</code>.
-     * 
+     *
      * @return a higher-level object for the referenced object
      */
     public COSObjectable getReferencedObject()
@@ -88,10 +89,13 @@ public class PDObjectReference implements COSObjectable
         }
         try
         {
-            PDXObject xobject = PDXObject.createXObject(obj, null); // <-- TODO: valid?
-            if (xobject != null)
+            if (obj instanceof COSStream)
             {
-                return xobject;
+                PDXObject xobject = PDXObject.createXObject(obj, null); // <-- TODO: valid?
+                if (xobject != null)
+                {
+                    return xobject;
+                }
             }
             COSDictionary objDictionary  = (COSDictionary)obj;
             PDAnnotation annotation = PDAnnotation.createAnnotation(obj);
@@ -101,8 +105,8 @@ public class PDObjectReference implements COSObjectable
              * TODO shall we return the annotation object instead of null?
              * what else can be the target of the object reference?
              */
-            if (!(annotation instanceof PDAnnotationUnknown) 
-                    || COSName.ANNOT.equals(objDictionary.getDictionaryObject(COSName.TYPE))) 
+            if (!(annotation instanceof PDAnnotationUnknown)
+                || COSName.ANNOT.equals(objDictionary.getDictionaryObject(COSName.TYPE)))
             {
                 return annotation;
             }
@@ -116,7 +120,7 @@ public class PDObjectReference implements COSObjectable
 
     /**
      * Sets the referenced annotation.
-     * 
+     *
      * @param annotation the referenced annotation
      */
     public void setReferencedObject(PDAnnotation annotation)
@@ -126,7 +130,7 @@ public class PDObjectReference implements COSObjectable
 
     /**
      * Sets the referenced XObject.
-     * 
+     *
      * @param xobject the referenced XObject
      */
     public void setReferencedObject(PDXObject xobject)

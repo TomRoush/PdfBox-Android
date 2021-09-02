@@ -28,7 +28,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDGamma;
 
 /**
  * A standard attribute object.
- * 
+ *
  * @author Johannes Koch
  */
 public abstract class PDStandardAttributeObject extends PDAttributeObject
@@ -43,7 +43,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Creates a new standard attribute object with a given dictionary.
-     * 
+     *
      * @param dictionary the dictionary
      */
     public PDStandardAttributeObject(COSDictionary dictionary)
@@ -54,7 +54,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Is the attribute with the given name specified in this attribute object?
-     * 
+     *
      * @param name the attribute name
      * @return <code>true</code> if the attribute is specified,
      * <code>false</code> otherwise
@@ -67,7 +67,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Gets a string attribute value.
-     * 
+     *
      * @param name the attribute name
      * @return the string attribute value
      */
@@ -78,7 +78,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Sets a string attribute value.
-     * 
+     *
      * @param name the attribute name
      * @param value the string attribute value
      */
@@ -92,7 +92,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Gets an array of strings.
-     * 
+     *
      * @param name the attribute name
      * @return the array of strings
      */
@@ -114,7 +114,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Sets an array of strings.
-     * 
+     *
      * @param name the attribute name
      * @param values the array of strings
      */
@@ -133,7 +133,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Gets a name value.
-     * 
+     *
      * @param name the attribute name
      * @return the name value
      */
@@ -144,7 +144,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Gets a name value.
-     * 
+     *
      * @param name the attribute name
      * @param defaultValue the default value
      * @return the name value
@@ -156,7 +156,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Gets a name value or array of name values.
-     * 
+     *
      * @param name the attribute name
      * @param defaultValue the default value
      * @return a String or array of Strings
@@ -187,7 +187,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Sets a name value.
-     * 
+     *
      * @param name the attribute name
      * @param value the name value
      */
@@ -201,7 +201,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Sets an array of name values.
-     * 
+     *
      * @param name the attribute name
      * @param values the array of name values
      */
@@ -220,7 +220,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Gets a number or a name value.
-     * 
+     *
      * @param name the attribute name
      * @param defaultValue the default name
      * @return a Float or a String
@@ -241,7 +241,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Gets an integer.
-     * 
+     *
      * @param name the attribute name
      * @param defaultValue the default value
      * @return the integer
@@ -253,7 +253,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Sets an integer.
-     * 
+     *
      * @param name the attribute name
      * @param value the integer
      */
@@ -267,7 +267,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Gets a number value.
-     * 
+     *
      * @param name the attribute name
      * @param defaultValue the default value
      * @return the number value
@@ -279,7 +279,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Gets a number value.
-     * 
+     *
      * @param name the attribute name
      * @return the number value
      */
@@ -295,7 +295,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Gets a number or an array of numbers.
-     * 
+     *
      * @param name the attribute name
      * @param defaultValue the default value
      * @return a Float or an array of floats
@@ -330,7 +330,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Sets a float number.
-     * 
+     *
      * @param name the attribute name
      * @param value the float number
      */
@@ -344,7 +344,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Sets an integer number.
-     * 
+     *
      * @param name the attribute name
      * @param value the integer number
      */
@@ -358,16 +358,16 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Sets an array of float numbers.
-     * 
+     *
      * @param name the attribute name
      * @param values the float numbers
      */
     protected void setArrayOfNumber(String name, float[] values)
     {
         COSArray array = new COSArray();
-        for (int i = 0; i < values.length; i++)
+        for (float value : values)
         {
-            array.add(new COSFloat(values[i]));
+            array.add(new COSFloat(value));
         }
         COSBase oldBase = this.getCOSObject().getDictionaryObject(name);
         this.getCOSObject().setItem(name, array);
@@ -377,7 +377,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Gets a colour.
-     * 
+     *
      * @param name the attribute name
      * @return the colour
      */
@@ -393,7 +393,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Gets a single colour or four colours.
-     * 
+     *
      * @param name the attribute name
      * @return the single ({@link PDGamma}) or a ({@link PDFourColours})
      */
@@ -419,7 +419,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Sets a colour.
-     * 
+     *
      * @param name the attribute name
      * @param value the colour
      */
@@ -433,7 +433,7 @@ public abstract class PDStandardAttributeObject extends PDAttributeObject
 
     /**
      * Sets four colours.
-     * 
+     *
      * @param name the attribute name
      * @param value the four colours
      */

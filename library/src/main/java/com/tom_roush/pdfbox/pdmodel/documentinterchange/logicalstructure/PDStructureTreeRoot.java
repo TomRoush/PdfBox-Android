@@ -33,17 +33,19 @@ import com.tom_roush.pdfbox.pdmodel.common.PDNumberTreeNode;
 
 /**
  * A root of a structure tree.
- * 
+ *
  * @author Ben Litchfield
  * @author Johannes Koch
+ *
  */
 public class PDStructureTreeRoot extends PDStructureNode
 {
+
     private static final String TYPE = "StructTreeRoot";
 
     /**
      * Default Constructor.
-     * 
+     *
      */
     public PDStructureTreeRoot()
     {
@@ -52,7 +54,7 @@ public class PDStructureTreeRoot extends PDStructureNode
 
     /**
      * Constructor for an existing structure element.
-     * 
+     *
      * @param dic The existing dictionary.
      */
     public PDStructureTreeRoot(COSDictionary dic)
@@ -62,7 +64,7 @@ public class PDStructureTreeRoot extends PDStructureNode
 
     /**
      * Returns the K array entry.
-     * 
+     *
      * @return the K array entry
      */
     public COSArray getKArray()
@@ -89,7 +91,7 @@ public class PDStructureTreeRoot extends PDStructureNode
 
     /**
      * Returns the K entry.
-     * 
+     *
      * @return the K entry
      */
     public COSBase getK()
@@ -99,7 +101,7 @@ public class PDStructureTreeRoot extends PDStructureNode
 
     /**
      * Sets the K entry.
-     * 
+     *
      * @param k the K value
      */
     public void setK(COSBase k)
@@ -109,10 +111,10 @@ public class PDStructureTreeRoot extends PDStructureNode
 
     /**
      * Returns the ID tree.
-     * 
+     *
      * @return the ID tree
      */
-    public PDNameTreeNode getIDTree()
+    public PDNameTreeNode<PDStructureElement> getIDTree()
     {
         COSDictionary idTreeDic = (COSDictionary) this.getCOSObject().getDictionaryObject(COSName.ID_TREE);
         if (idTreeDic != null)
@@ -124,17 +126,17 @@ public class PDStructureTreeRoot extends PDStructureNode
 
     /**
      * Sets the ID tree.
-     * 
+     *
      * @param idTree the ID tree
      */
-    public void setIDTree(PDNameTreeNode idTree)
+    public void setIDTree(PDNameTreeNode<PDStructureElement> idTree)
     {
         this.getCOSObject().setItem(COSName.ID_TREE, idTree);
     }
 
     /**
      * Returns the parent tree.
-     * 
+     *
      * @return the parent tree
      */
     public PDNumberTreeNode getParentTree()
@@ -149,7 +151,7 @@ public class PDStructureTreeRoot extends PDStructureNode
 
     /**
      * Sets the parent tree.
-     * 
+     *
      * @param parentTree the parent tree
      */
     public void setParentTree(PDNumberTreeNode parentTree)
@@ -159,7 +161,7 @@ public class PDStructureTreeRoot extends PDStructureNode
 
     /**
      * Returns the next key in the parent tree.
-     * 
+     *
      * @return the next key in the parent tree
      */
     public int getParentTreeNextKey()
@@ -169,7 +171,7 @@ public class PDStructureTreeRoot extends PDStructureNode
 
     /**
      * Sets the next key in the parent tree.
-     * 
+     *
      * @param parentTreeNextkey the next key in the parent tree.
      */
     public void setParentTreeNextKey(int parentTreeNextkey)
@@ -179,7 +181,7 @@ public class PDStructureTreeRoot extends PDStructureNode
 
     /**
      * Returns the role map.
-     * 
+     *
      * @return the role map
      */
     public Map<String, Object> getRoleMap()
@@ -201,7 +203,7 @@ public class PDStructureTreeRoot extends PDStructureNode
 
     /**
      * Sets the role map.
-     * 
+     *
      * @param roleMap the role map
      */
     public void setRoleMap(Map<String, String> roleMap)

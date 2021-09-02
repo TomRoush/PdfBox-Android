@@ -33,6 +33,7 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
@@ -44,6 +45,7 @@ import com.tom_roush.pdfbox.util.Matrix;
 /**
  * This class allows to import pages as Form XObjects into a PDF file and use them to create
  * layers (optional content groups).
+ *
  */
 public class LayerUtility
 {
@@ -172,21 +174,22 @@ public class LayerUtility
             mediaBox.getLowerLeftY() - viewBox.getLowerLeftY());
         switch (rotation)
         {
-            case 90:
-                at.scale(viewBox.getWidth() / viewBox.getHeight(), viewBox.getHeight() / viewBox.getWidth());
-                at.translate(0, viewBox.getWidth());
-                at.rotate(-Math.PI / 2.0);
-                break;
-            case 180:
-                at.translate(viewBox.getWidth(), viewBox.getHeight());
-                at.rotate(-Math.PI);
-                break;
-            case 270:
-                at.scale(viewBox.getWidth() / viewBox.getHeight(), viewBox.getHeight() / viewBox.getWidth());
-                at.translate(viewBox.getHeight(), 0);
-                at.rotate(-Math.PI * 1.5);
-            default:
-                //no additional transformations necessary
+        case 90:
+            at.scale(viewBox.getWidth() / viewBox.getHeight(), viewBox.getHeight() / viewBox.getWidth());
+            at.translate(0, viewBox.getWidth());
+            at.rotate(-Math.PI / 2.0);
+            break;
+        case 180:
+            at.translate(viewBox.getWidth(), viewBox.getHeight());
+            at.rotate(-Math.PI);
+            break;
+        case 270:
+            at.scale(viewBox.getWidth() / viewBox.getHeight(), viewBox.getHeight() / viewBox.getWidth());
+            at.translate(viewBox.getHeight(), 0);
+            at.rotate(-Math.PI * 1.5);
+            break;
+        default:
+            //no additional transformations necessary
         }
         //Compensate for Crop Boxes not starting at 0,0
         at.translate(-viewBox.getLowerLeftX(), -viewBox.getLowerLeftY());
@@ -237,7 +240,7 @@ public class LayerUtility
         ocprops.addGroup(layer);
 
         PDPageContentStream contentStream = new PDPageContentStream(
-            targetDoc, targetPage, PDPageContentStream.AppendMode.APPEND, !DEBUG);
+            targetDoc, targetPage, AppendMode.APPEND, !DEBUG);
         contentStream.beginMarkedContent(COSName.OC, layer);
         contentStream.saveGraphicsState();
         contentStream.transform(new Matrix(transform));

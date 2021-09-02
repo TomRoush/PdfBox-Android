@@ -61,20 +61,18 @@ public class Type2CharStringParser
      * @param bytes the given mapping as byte array
      * @param globalSubrIndex array containing all global subroutines
      * @param localSubrIndex array containing all local subroutines
-     * 
+     *
      * @return the Type2 sequence
      * @throws IOException if an error occurs during reading
      */
-    public List<Object> parse(byte[] bytes, byte[][] globalSubrIndex, byte[][] localSubrIndex)
-        throws IOException
+    public List<Object> parse(byte[] bytes, byte[][] globalSubrIndex, byte[][] localSubrIndex) throws IOException
     {
         return parse(bytes, globalSubrIndex, localSubrIndex, true);
     }
 
-    private List<Object> parse(byte[] bytes, byte[][] globalSubrIndex, byte[][] localSubrIndex,
-        boolean init) throws IOException
+    private List<Object> parse(byte[] bytes, byte[][] globalSubrIndex, byte[][] localSubrIndex, boolean init) throws IOException
     {
-        if (init) 
+        if (init)
         {
             hstemCount = 0;
             vstemCount = 0;
@@ -82,28 +80,27 @@ public class Type2CharStringParser
         }
         DataInput input = new DataInput(bytes);
         boolean localSubroutineIndexProvided = localSubrIndex != null && localSubrIndex.length > 0;
-        boolean globalSubroutineIndexProvided =
-            globalSubrIndex != null && globalSubrIndex.length > 0;
+        boolean globalSubroutineIndexProvided = globalSubrIndex != null && globalSubrIndex.length > 0;
 
         while (input.hasRemaining())
         {
             int b0 = input.readUnsignedByte();
-            if (b0 == 10 && localSubroutineIndexProvided) 
+            if (b0 == 10 && localSubroutineIndexProvided)
             { // process subr command
-                Integer operand = (Integer)sequence.remove(sequence.size() - 1);
+                Integer operand=(Integer)sequence.remove(sequence.size()-1);
                 //get subrbias
                 int bias = 0;
                 int nSubrs = localSubrIndex.length;
-                
+
                 if (nSubrs < 1240)
                 {
                     bias = 107;
                 }
-                else if (nSubrs < 33900) 
+                else if (nSubrs < 33900)
                 {
                     bias = 1131;
                 }
-                else 
+                else
                 {
                     bias = 32768;
                 }
@@ -119,52 +116,52 @@ public class Type2CharStringParser
                     }
                 }
 
-            } 
-            else if (b0 == 29 && globalSubroutineIndexProvided) 
+            }
+            else if (b0 == 29 && globalSubroutineIndexProvided)
             { // process globalsubr command
                 Integer operand=(Integer)sequence.remove(sequence.size()-1);
                 //get subrbias
-                int bias = 0;
+                int bias;
                 int nSubrs = globalSubrIndex.length;
-                
+
                 if (nSubrs < 1240)
                 {
                     bias = 107;
                 }
-                else if (nSubrs < 33900) 
+                else if (nSubrs < 33900)
                 {
                     bias = 1131;
                 }
-                else 
+                else
                 {
                     bias = 32768;
                 }
-                
+
                 int subrNumber = bias+operand;
                 if (subrNumber < globalSubrIndex.length)
                 {
                     byte[] subrBytes = globalSubrIndex[subrNumber];
                     parse(subrBytes, globalSubrIndex, localSubrIndex, false);
                     Object lastItem=sequence.get(sequence.size()-1);
-                    if (lastItem instanceof CharStringCommand && ((CharStringCommand)lastItem).getKey().getValue()[0]==11) 
+                    if (lastItem instanceof CharStringCommand && ((CharStringCommand)lastItem).getKey().getValue()[0]==11)
                     {
                         sequence.remove(sequence.size()-1); // remove "return" command
                     }
                 }
 
-            } 
+            }
             else if (b0 >= 0 && b0 <= 27)
             {
                 sequence.add(readCommand(b0, input));
-            } 
+            }
             else if (b0 == 28)
             {
                 sequence.add(readNumber(b0, input));
-            } 
+            }
             else if (b0 >= 29 && b0 <= 31)
             {
                 sequence.add(readCommand(b0, input));
-            } 
+            }
             else if (b0 >= 32 && b0 <= 255)
             {
                 sequence.add(readNumber(b0, input));
@@ -183,7 +180,7 @@ public class Type2CharStringParser
         if (b0 == 1 || b0 == 18)
         {
             hstemCount += peekNumbers().size() / 2;
-        } 
+        }
         else if (b0 == 3 || b0 == 19 || b0 == 20 || b0 == 23)
         {
             vstemCount += peekNumbers().size() / 2;
@@ -194,7 +191,7 @@ public class Type2CharStringParser
             int b1 = input.readUnsignedByte();
 
             return new CharStringCommand(b0, b1);
-        } 
+        }
         else if (b0 == 19 || b0 == 20)
         {
             int[] value = new int[1 + getMaskLength()];
@@ -216,24 +213,24 @@ public class Type2CharStringParser
 
         if (b0 == 28)
         {
-            return (int)input.readShort();
-        } 
+            return (int) input.readShort();
+        }
         else if (b0 >= 32 && b0 <= 246)
         {
             return b0 - 139;
-        } 
+        }
         else if (b0 >= 247 && b0 <= 250)
         {
             int b1 = input.readUnsignedByte();
 
             return (b0 - 247) * 256 + b1 + 108;
-        } 
+        }
         else if (b0 >= 251 && b0 <= 254)
         {
             int b1 = input.readUnsignedByte();
 
             return -(b0 - 251) * 256 - b1 - 108;
-        } 
+        }
         else if (b0 == 255)
         {
             short value = input.readShort();
@@ -241,8 +238,8 @@ public class Type2CharStringParser
             // the decimal point and aren't needed in this context
             input.readUnsignedByte();
             input.readUnsignedByte();
-            return (int)value;
-        } 
+            return (int) value;
+        }
         else
         {
             throw new IllegalArgumentException();
@@ -252,7 +249,7 @@ public class Type2CharStringParser
     private int getMaskLength()
     {
         int hintCount = hstemCount + vstemCount;
-        int length = (int)(hintCount / 8);
+        int length = hintCount / 8;
         if (hintCount % 8 > 0)
         {
             length++;
@@ -267,12 +264,11 @@ public class Type2CharStringParser
         {
             Object object = sequence.get(i);
 
-            if (object instanceof Number)
+            if (!(object instanceof Number))
             {
-                numbers.add(0, (Number) object);
-                continue;
+                return numbers;
             }
-            return numbers;
+            numbers.add(0, (Number) object);
         }
         return numbers;
     }

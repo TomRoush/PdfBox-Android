@@ -32,14 +32,14 @@ import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
  */
 public final class FieldUtils
 {
-    
+
     /**
      * An implementation of a basic key value pair.
-     * 
+     *
      * This implementation is used to help sorting the content of
      * field option entries with an array of two-element arrays as
      * used by choice fields.
-     * 
+     *
      */
     static class KeyValue
     {
@@ -51,7 +51,7 @@ public final class FieldUtils
             this.key = theKey;
             this.value = theValue;
         }
-        
+
         public String getKey()
         {
             return this.key;
@@ -61,19 +61,20 @@ public final class FieldUtils
         {
             return this.value;
         }
-        
+
         @Override
         public String toString()
         {
             return "(" + this.key + ", " + this.value + ")";
         }
     }
-    
+
     /**
      * Comparator to sort KeyValue by key.
      */
     static class KeyValueKeyComparator implements Serializable, Comparator<KeyValue>
     {
+
         private static final long serialVersionUID = 6715364290007167694L;
 
         @Override
@@ -88,6 +89,7 @@ public final class FieldUtils
      */
     static class KeyValueValueComparator implements Serializable, Comparator<KeyValue>
     {
+
         private static final long serialVersionUID = -3984095679894798265L;
 
         @Override
@@ -103,10 +105,10 @@ public final class FieldUtils
     private FieldUtils()
     {
     }
-    
+
     /**
      * Return two related lists as a single list with key value pairs.
-     * 
+     *
      * @param key the key elements
      * @param value the value elements
      * @return a sorted list of KeyValue elements.
@@ -119,11 +121,11 @@ public final class FieldUtils
             list.add(new FieldUtils.KeyValue(key.get(i),value.get(i)));
         }
         return list;
-    }    
-    
+    }
+
     /**
      * Sort two related lists simultaneously by the elements in the key parameter.
-     * 
+     *
      * @param pairs a list of KeyValue elements
      */
     static void sortByValue(List<KeyValue> pairs)
@@ -133,14 +135,14 @@ public final class FieldUtils
 
     /**
      * Sort two related lists simultaneously by the elements in the value parameter.
-     * 
+     *
      * @param pairs a list of KeyValue elements
      */
     static void sortByKey(List<KeyValue> pairs)
     {
         Collections.sort(pairs, new FieldUtils.KeyValueKeyComparator());
     }
-    
+
     /**
      * Return either one of a list which can have two-element arrays entries.
      * <p>
@@ -162,20 +164,19 @@ public final class FieldUtils
     {
         if (pairIdx < 0 || pairIdx > 1)
         {
-            throw new IllegalArgumentException(
-                "Only 0 and 1 are allowed as an index into two-element arrays");
+            throw new IllegalArgumentException("Only 0 and 1 are allowed as an index into two-element arrays");
         }
 
         if (items instanceof COSString)
         {
             List<String> array = new ArrayList<String>();
-            array.add(((COSString)items).getString());
+            array.add(((COSString) items).getString());
             return array;
         }
         else if (items instanceof COSArray)
         {
-            // test if there is a single text or a two-element array
-            COSBase entry = ((COSArray)items).get(0);
+            // test if there is a single text or a two-element array 
+            COSBase entry = ((COSArray) items).get(0);
             if (entry instanceof COSString)
             {
                 return COSArrayList.convertCOSStringCOSArrayToList((COSArray)items);
@@ -185,9 +186,9 @@ public final class FieldUtils
                 return getItemsFromPair(items, pairIdx);
             }
         }
-        return Collections.<String>emptyList();
+        return Collections.emptyList();
     }
-    
+
     /**
      * Return either one of a list of two-element arrays entries.
      *
@@ -198,11 +199,11 @@ public final class FieldUtils
     private static List<String> getItemsFromPair(COSBase items, int pairIdx)
     {
         List<String> exportValues = new ArrayList<String>();
-        int numItems = ((COSArray)items).size();
-        for (int i = 0; i < numItems; i++)
+        int numItems = ((COSArray) items).size();
+        for (int i=0;i<numItems;i++)
         {
-            COSArray pair = (COSArray)((COSArray)items).get(i);
-            COSString displayValue = (COSString)pair.get(pairIdx);
+            COSArray pair = (COSArray) ((COSArray) items).get(i);
+            COSString displayValue = (COSString) pair.get(pairIdx);
             exportValues.add(displayValue.getString());
         }
         return exportValues;
