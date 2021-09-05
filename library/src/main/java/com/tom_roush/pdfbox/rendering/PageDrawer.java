@@ -665,7 +665,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
      */
     private boolean isRectangular(Path path)
     {
-        RectF rect = null;
+        RectF rect = new RectF();
         return path.isRect(rect);
     }
 
