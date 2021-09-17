@@ -61,6 +61,7 @@ public class PDGraphicsState implements Cloneable
 
     // DEVICE-DEPENDENT parameters
     private boolean overprint = false;
+    private boolean nonStrokingOverprint = false;
     private double overprintMode = 0;
     //black generation
     //undercolor removal
@@ -205,9 +206,9 @@ public class PDGraphicsState implements Cloneable
     }
 
     /**
-     * Get the value of the stroke alpha constants property.
+     * Get the value of the stroke alpha constant property.
      *
-     * @return The value of the stroke alpha constants parameter.
+     * @return The value of the stroke alpha constant parameter.
      */
     public double getAlphaConstant()
     {
@@ -215,9 +216,9 @@ public class PDGraphicsState implements Cloneable
     }
 
     /**
-     * set the value of the stroke alpha constants property.
+     * set the value of the stroke alpha constant property.
      *
-     * @param value The value of the stroke alpha constants parameter.
+     * @param value The value of the stroke alpha constant parameter.
      */
     public void setAlphaConstant(double value)
     {
@@ -225,21 +226,45 @@ public class PDGraphicsState implements Cloneable
     }
 
     /**
-     * Get the value of the non-stroke alpha constants property.
+     * Get the value of the non-stroke alpha constant property.
      *
-     * @return The value of the non-stroke alpha constants parameter.
+     * @return The value of the non-stroke alpha constant parameter.
+     * @deprecated use {@link #getNonStrokeAlphaConstant() }
      */
+    @Deprecated
     public double getNonStrokeAlphaConstants()
     {
         return nonStrokingAlphaConstant;
     }
 
     /**
-     * set the value of the non-stroke alpha constants property.
+     * set the value of the non-stroke alpha constant property.
      *
-     * @param value The value of the non-stroke alpha constants parameter.
+     * @param value The value of the non-stroke alpha constant parameter.
+     * @deprecated use {@link #setNonStrokeAlphaConstant(double) }
      */
+    @Deprecated
     public void setNonStrokeAlphaConstants(double value)
+    {
+        nonStrokingAlphaConstant = value;
+    }
+
+    /**
+     * Get the value of the non-stroke alpha constant property.
+     *
+     * @return The value of the non-stroke alpha constant parameter.
+     */
+    public double getNonStrokeAlphaConstant()
+    {
+        return nonStrokingAlphaConstant;
+    }
+
+    /**
+     * set the value of the non-stroke alpha constant property.
+     *
+     * @param value The value of the non-stroke alpha constant parameter.
+     */
+    public void setNonStrokeAlphaConstant(double value)
     {
         nonStrokingAlphaConstant = value;
     }
@@ -269,7 +294,7 @@ public class PDGraphicsState implements Cloneable
      *
      * @return softMask
      */
-    public PDSoftMask getSoftMask() 
+    public PDSoftMask getSoftMask()
     {
         return softMask;
     }
@@ -306,8 +331,6 @@ public class PDGraphicsState implements Cloneable
     }
 
     /**
-
-    /**
      * get the value of the overprint property.
      *
      * @return The value of the overprint parameter.
@@ -325,6 +348,26 @@ public class PDGraphicsState implements Cloneable
     public void setOverprint(boolean value)
     {
         overprint = value;
+    }
+
+    /**
+     * get the value of the non stroking overprint property.
+     *
+     * @return The value of the non stroking overprint parameter.
+     */
+    public boolean isNonStrokingOverprint()
+    {
+        return nonStrokingOverprint;
+    }
+
+    /**
+     * set the value of the non stroking overprint property.
+     *
+     * @param value The value of the non stroking overprint parameter.
+     */
+    public void setNonStrokingOverprint(boolean value)
+    {
+        nonStrokingOverprint = value;
     }
 
     /**
@@ -578,7 +621,7 @@ public class PDGraphicsState implements Cloneable
         {
             // deep copy (can't use clone() as it performs only a shallow copy)
             Region cloned = new Region(area);
-//        	cloned.add(clippingPath);
+//            cloned.add(clippingPath);
             clippingPath = cloned;
 
             isClippingPathDirty = true;
@@ -600,13 +643,13 @@ public class PDGraphicsState implements Cloneable
 
 //    public Composite getStrokingJavaComposite()
 //    {
-//        return BlendComposite.getInstance(blendMode, (float) alphaConstants);
-//    }TODO: PdfBox-Android
+//        return BlendComposite.getInstance(blendMode, (float) alphaConstant);
+//    } TODO: PdfBox-Android
 
 //    public Composite getNonStrokingJavaComposite()
 //    {
-//        return BlendComposite.getInstance(blendMode, (float) nonStrokingAlphaConstants);
-//    }TODO: PdfBox-Android
+//        return BlendComposite.getInstance(blendMode, (float) nonStrokingAlphaConstant);
+//    } TODO: PdfBox-Android
 
     /**
      * This will get the transfer function.

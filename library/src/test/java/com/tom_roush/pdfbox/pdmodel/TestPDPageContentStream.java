@@ -17,10 +17,12 @@
 package com.tom_roush.pdfbox.pdmodel;
 
 import java.io.IOException;
+import java.util.List;
 
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.pdfparser.PDFStreamParser;
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 
 import junit.framework.TestCase;
 
@@ -36,8 +38,7 @@ public class TestPDPageContentStream extends TestCase
         PDPage page = new PDPage();
         doc.addPage(page);
 
-        PDPageContentStream contentStream = new PDPageContentStream(doc, page,
-            PDPageContentStream.AppendMode.OVERWRITE, true);
+        PDPageContentStream contentStream = new PDPageContentStream(doc, page, AppendMode.OVERWRITE, true);
         // pass a non-stroking color in CMYK color space
         contentStream.setNonStrokingColor(0.1f, 0.2f, 0.3f, 0.4f);
         contentStream.close();
@@ -62,8 +63,7 @@ public class TestPDPageContentStream extends TestCase
         page = new PDPage();
         doc.addPage(page);
 
-        contentStream = new PDPageContentStream(doc, page, PDPageContentStream.AppendMode.OVERWRITE,
-            false);
+        contentStream = new PDPageContentStream(doc, page, AppendMode.OVERWRITE, false);
         // pass a non-stroking color in CMYK color space
         contentStream.setStrokingColor(0.5f, 0.6f, 0.7f, 0.8f);
         contentStream.close();
@@ -83,5 +83,19 @@ public class TestPDPageContentStream extends TestCase
         assertEquals(0.7f, ((COSFloat)pageTokens.get(2)).floatValue());
         assertEquals(0.8f, ((COSFloat)pageTokens.get(3)).floatValue());
         assertEquals("K", ((Operator)pageTokens.get(4)).getName());
+    }
+
+    /**
+     * PDFBOX-3510: missing content stream should not fail.
+     *
+     * @throws IOException
+     */
+    public void testMissingContentStream() throws IOException
+    {
+        PDPage page = new PDPage();
+        PDFStreamParser parser = new PDFStreamParser(page);
+        parser.parse();
+        List<Object> tokens = parser.getTokens();
+        assertEquals(0, tokens.size());
     }
 }

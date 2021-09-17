@@ -38,6 +38,7 @@ import com.tom_roush.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFCatalog;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFDictionary;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFDocument;
@@ -163,6 +164,9 @@ public final class PDAcroForm implements COSObjectable
      * <p>Flattening a form field will take the current appearance and make that part
      * of the pages content stream. All form fields and annotations associated are removed.</p>
      *
+     * <p>Invisible and hidden fields will be skipped and will not become part of the
+     * page content stream</p>
+     *
      * <p>The appearances for the form fields widgets will <strong>not</strong> be generated<p>
      *
      * @throws IOException
@@ -173,7 +177,7 @@ public final class PDAcroForm implements COSObjectable
         // from the XFA content into a static PDF.
         if (xfaIsDynamic())
         {
-            Log.w("PdfBox-Android","Flatten for a dynamix XFA form is not supported");
+            Log.w("PdfBox-Android", "Flatten for a dynamix XFA form is not supported");
             return;
         }
 
@@ -192,6 +196,9 @@ public final class PDAcroForm implements COSObjectable
      * <p>Flattening a form field will take the current appearance and make that part
      * of the pages content stream. All form fields and annotations associated are removed.</p>
      *
+     * <p>Invisible and hidden fields will be skipped and will not become part of the
+     * page content stream</p>
+     *
      * @param fields
      * @param refreshAppearances if set to true the appearances for the form field widgets will be updated
      * @throws IOException
@@ -202,7 +209,7 @@ public final class PDAcroForm implements COSObjectable
         // from the XFA content into a static PDF.
         if (xfaIsDynamic())
         {
-            Log.w("PdfBox-Android","Flatten for a dynamix XFA form is not supported");
+            Log.w("PdfBox-Android", "Flatten for a dynamix XFA form is not supported");
             return;
         }
 
@@ -230,7 +237,7 @@ public final class PDAcroForm implements COSObjectable
         {
             for (PDAnnotationWidget widget : field.getWidgets())
             {
-                if (widget.getNormalAppearanceStream() != null)
+                if (!widget.isInvisible() && !widget.isHidden() && widget.getNormalAppearanceStream() != null)
                 {
                     PDPage page = widget.getPage();
 
@@ -263,12 +270,40 @@ public final class PDAcroForm implements COSObjectable
 
                     // translate the appearance stream to the widget location if there is 
                     // not already a transformation in place
-                    boolean needsTransformation = isNeedsTransformation(appearanceStream);
-                    if (needsTransformation)
+                    boolean needsTranslation = resolveNeedsTranslation(appearanceStream);
+
+                    // scale the appearance stream - mainly needed for images
+                    // in buttons and signatures
+                    boolean needsScaling = resolveNeedsScaling(appearanceStream);
+
+                    Matrix transformationMatrix = new Matrix();
+                    boolean transformed = false;
+
+                    if (needsTranslation)
                     {
-                        Matrix translationMatrix = Matrix.getTranslateInstance(widget.getRectangle().getLowerLeftX(),
+                        transformationMatrix.translate(widget.getRectangle().getLowerLeftX(),
                             widget.getRectangle().getLowerLeftY());
-                        contentStream.transform(translationMatrix);
+                        transformed = true;
+                    }
+
+                    if (needsScaling)
+                    {
+                        PDRectangle bbox = appearanceStream.getBBox();
+                        PDRectangle fieldRect = widget.getRectangle();
+
+                        if (bbox.getWidth() - fieldRect.getWidth() != 0 && bbox.getHeight() - fieldRect.getHeight() != 0)
+                        {
+                            float xScale = fieldRect.getWidth() / bbox.getWidth();
+                            float yScale = fieldRect.getHeight() / bbox.getHeight();
+                            Matrix scalingMatrix = Matrix.getScaleInstance(xScale, yScale);
+                            transformationMatrix.concatenate(scalingMatrix);
+                            transformed = true;
+                        }
+                    }
+
+                    if (transformed)
+                    {
+                        contentStream.transform(transformationMatrix);
                     }
 
                     contentStream.drawForm(fieldObject);
@@ -451,7 +486,7 @@ public final class PDAcroForm implements COSObjectable
         // get the field from the field tree
         for (PDField field : getFieldTree())
         {
-            if (field.getFullyQualifiedName().compareTo(fullyQualifiedName) == 0)
+            if (field.getFullyQualifiedName().equals(fullyQualifiedName))
             {
                 return field;
             }
@@ -656,7 +691,7 @@ public final class PDAcroForm implements COSObjectable
                     }
                 }
             } catch (IOException e) {
-                Log.w("PdfBox-Android","Can't retriev annotations for page " + idx);
+                Log.w("PdfBox-Android", "Can't retriev annotations for page " + idx);
             }
             idx++;
         }
@@ -664,20 +699,62 @@ public final class PDAcroForm implements COSObjectable
     }
 
     /**
-     * Check if there is a transformation needed to place the annotations content.
+     * Check if there is a translation needed to place the annotations content.
      *
      * @param appearanceStream
-     * @return the need for a transformation.
+     * @return the need for a translation transformation.
      */
-    private boolean isNeedsTransformation(PDAppearanceStream appearanceStream)
+    private boolean resolveNeedsTranslation(PDAppearanceStream appearanceStream)
     {
-        // Check if there is a XObject defined as this is an indication that there should already be a transformation
-        // in place.
-        // TODO: A more reliable approach might be to parse the content stream
-        if (appearanceStream.getResources() != null && appearanceStream.getResources().getXObjectNames().iterator().hasNext())
+        boolean needsTranslation = false;
+
+        PDResources resources = appearanceStream.getResources();
+        if (resources != null && resources.getXObjectNames().iterator().hasNext())
         {
-            return false;
+
+            Iterator<COSName> xObjectNames = resources.getXObjectNames().iterator();
+
+            while (xObjectNames.hasNext())
+            {
+                try
+                {
+                    // if the BBox of the PDFormXObject does not start at 0,0
+                    // there is no need do translate as this is done by the BBox definition.
+                    PDFormXObject xObject = (PDFormXObject) resources.getXObject(xObjectNames.next());
+                    PDRectangle bbox = xObject.getBBox();
+                    float llX = bbox.getLowerLeftX();
+                    float llY = bbox.getLowerLeftY();
+                    if (llX == 0 && llY == 0)
+                    {
+                        needsTranslation = true;
+                    }
+                }
+                catch (IOException e)
+                {
+                    // we can safely ignore the exception here
+                    // as this might only cause a misplacement
+                }
+            }
+            return needsTranslation;
         }
+
         return true;
+    }
+
+    /**
+     * Check if there needs to be a scaling transformation applied.
+     *
+     * @param appearanceStream
+     * @return the need for a scaling transformation.
+     */
+    private boolean resolveNeedsScaling(PDAppearanceStream appearanceStream)
+    {
+        // Check if there is a transformation within the XObjects content
+        PDResources resources = appearanceStream.getResources();
+        if (resources != null && resources.getXObjectNames().iterator().hasNext())
+        {
+            return true;
+        }
+        return false;
     }
 }

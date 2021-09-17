@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -48,7 +49,6 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
     private final PDType0Font parent;
     private final COSDictionary dict;
     private final COSDictionary cidFont;
-    private final Map<Integer, Integer> gidToUni;
 
     /**
      * Creates a new TrueType font embedder for the given TTF as a PDCIDFontType2.
@@ -78,19 +78,11 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
         descendantFonts.add(cidFont);
         dict.setItem(COSName.DESCENDANT_FONTS, descendantFonts);
 
-        // build GID -> Unicode map
-        gidToUni = new HashMap<Integer, Integer>(ttf.getMaximumProfile().getNumGlyphs());
-        for (int gid = 1, max = ttf.getMaximumProfile().getNumGlyphs(); gid <= max; gid++)
+        if (!embedSubset)
         {
-            // skip composite glyph components that have no code point
-            Integer codePoint = cmap.getCharacterCode(gid);
-            if (codePoint != null)
-            {
-                gidToUni.put(gid, codePoint); // CID = GID
-            }
+            // build GID -> Unicode map
+            buildToUnicodeCMap(null);
         }
-        // ToUnicode CMap
-        buildToUnicodeCMap(null);
     }
 
     /**
@@ -108,14 +100,14 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
             int oldGID = entry.getValue();
             cidToGid.put(oldGID, newGID);
         }
-
+        // build unicode mapping before subsetting as the subsetted font won't have a cmap
+        buildToUnicodeCMap(gidToCid);
         // rebuild the relevant part of the font
         buildFontFile2(ttfSubset);
         addNameTag(tag);
         buildWidths(cidToGid);
         buildCIDToGIDMap(cidToGid);
         buildCIDSet(cidToGid);
-        buildToUnicodeCMap(gidToCid);
     }
 
     private void buildToUnicodeCMap(Map<Integer, Integer> newGIDToOldCID) throws IOException
@@ -143,9 +135,11 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
             }
 
             // skip composite glyph components that have no code point
-            Integer codePoint = gidToUni.get(cid); // old GID -> Unicode
-            if (codePoint != null)
+            List<Integer> codes = cmap.getCharCodes(cid); // old GID -> Unicode
+            if (codes != null)
             {
+                // use the first entry even for ambiguous mappings
+                int codePoint = codes.get(0);
                 if (codePoint > 0xFFFF)
                 {
                     hasSurrogates = true;
@@ -272,7 +266,7 @@ final class PDCIDFontType2Embedder extends TrueTypeEmbedder
         COSArray widths = new COSArray();
         COSArray ws = new COSArray();
         int prev = Integer.MIN_VALUE;
-        // Use a sorted list to get an optimal width array
+        // Use a sorted list to get an optimal width array  
         Set<Integer> keys = new TreeSet<Integer>(cidToGid.keySet());
         for (int cid : keys)
         {

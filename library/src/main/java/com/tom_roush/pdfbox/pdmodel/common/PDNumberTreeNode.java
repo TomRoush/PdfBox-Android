@@ -36,7 +36,7 @@ import com.tom_roush.pdfbox.cos.COSName;
  * This class represents a PDF Number tree. See the PDF Reference 1.7 section
  * 7.9.7 for more details.
  *
- * @author Ben Litchfield
+ * @author Ben Litchfield,
  * @author Igor Podolskiy
  */
 public class PDNumberTreeNode implements COSObjectable
@@ -158,8 +158,7 @@ public class PDNumberTreeNode implements COSObjectable
             }
             else
             {
-                Log.w("PdfBox-Android",
-                    "NumberTreeNode does not have \"nums\" nor \"kids\" objects.");
+                Log.w("PdfBox-Android", "NumberTreeNode does not have \"nums\" nor \"kids\" objects.");
             }
         }
         return retval;
@@ -200,6 +199,7 @@ public class PDNumberTreeNode implements COSObjectable
      *
      * @param base The COS object to convert.
      * @return The converted PD Model object.
+     * @throws IOException If there is an error during creation.
      */
     protected COSObjectable convertCOSToPD( COSBase base ) throws IOException
     {
@@ -249,7 +249,7 @@ public class PDNumberTreeNode implements COSObjectable
             for (Integer key : keys)
             {
                 array.add( COSInteger.get( key ) );
-                COSObjectable obj = numbers.get(key);
+                COSObjectable obj = numbers.get( key );
                 array.add( obj );
             }
             Integer lower = null;

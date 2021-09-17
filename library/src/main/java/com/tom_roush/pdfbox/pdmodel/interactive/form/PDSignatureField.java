@@ -16,9 +16,12 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -234,7 +237,7 @@ public class PDSignatureField extends PDTerminalField
             }
 
             // TODO: implement appearance generation for signatures
-            throw new UnsupportedOperationException("not implemented");
+            Log.w("PdfBox-Android", "Appearance generation for signature fields not yet implemented - you need to generate/update that manually");
         }
     }
 }

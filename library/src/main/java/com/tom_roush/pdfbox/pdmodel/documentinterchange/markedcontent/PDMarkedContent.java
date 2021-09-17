@@ -27,7 +27,7 @@ import com.tom_roush.pdfbox.text.TextPosition;
 
 /**
  * A marked content.
- * 
+ *
  * @author Johannes Koch
  */
 public class PDMarkedContent
@@ -35,7 +35,7 @@ public class PDMarkedContent
 
     /**
      * Creates a marked-content sequence.
-     * 
+     *
      * @param tag the tag
      * @param properties the properties
      * @return the marked-content sequence
@@ -57,7 +57,7 @@ public class PDMarkedContent
 
     /**
      * Creates a new marked content object.
-     * 
+     *
      * @param tag the tag
      * @param properties the properties
      */
@@ -71,7 +71,7 @@ public class PDMarkedContent
 
     /**
      * Gets the tag.
-     * 
+     *
      * @return the tag
      */
     public String getTag()
@@ -81,7 +81,7 @@ public class PDMarkedContent
 
     /**
      * Gets the properties.
-     * 
+     *
      * @return the properties
      */
     public COSDictionary getProperties()
@@ -102,7 +102,7 @@ public class PDMarkedContent
 
     /**
      * Gets the language (Lang).
-     * 
+     *
      * @return the language
      */
     public String getLanguage()
@@ -113,7 +113,7 @@ public class PDMarkedContent
 
     /**
      * Gets the actual text (ActualText).
-     * 
+     *
      * @return the actual text
      */
     public String getActualText()
@@ -124,7 +124,7 @@ public class PDMarkedContent
 
     /**
      * Gets the alternate description (Alt).
-     * 
+     *
      * @return the alternate description
      */
     public String getAlternateDescription()
@@ -135,7 +135,7 @@ public class PDMarkedContent
 
     /**
      * Gets the expanded form (E).
-     * 
+     *
      * @return the expanded form
      */
     public String getExpandedForm()
@@ -151,7 +151,7 @@ public class PDMarkedContent
      *   <li>{@link PDMarkedContent}, or</li>
      *   <li>{@link PDXObject}.</li>
      * </ul>
-     * 
+     *
      * @return the contents of the marked content sequence
      */
     public List<Object> getContents()
@@ -161,7 +161,7 @@ public class PDMarkedContent
 
     /**
      * Adds a text position to the contents.
-     * 
+     *
      * @param text the text position
      */
     public void addText(TextPosition text)
@@ -171,7 +171,7 @@ public class PDMarkedContent
 
     /**
      * Adds a marked content to the contents.
-     * 
+     *
      * @param markedContent the marked content
      */
     public void addMarkedContent(PDMarkedContent markedContent)
@@ -181,7 +181,7 @@ public class PDMarkedContent
 
     /**
      * Adds an XObject to the contents.
-     * 
+     *
      * @param xobject the XObject
      */
     public void addXObject(PDXObject xobject)
@@ -193,10 +193,9 @@ public class PDMarkedContent
     @Override
     public String toString()
     {
-        StringBuilder sb = new StringBuilder("tag=").append(this.tag)
-            .append(", properties=").append(this.properties);
-        sb.append(", contents=").append(this.contents);
-        return sb.toString();
+        return "tag=" + this.tag +
+            ", properties=" + this.properties +
+            ", contents=" + this.contents;
     }
 
 }

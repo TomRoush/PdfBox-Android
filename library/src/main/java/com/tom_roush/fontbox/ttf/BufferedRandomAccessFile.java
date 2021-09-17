@@ -165,7 +165,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile
                 leftover += bytesRead;
             }
         }
-        return leftover;
+        return leftover > 0 ? leftover : -1;
     }
 
     /**
@@ -183,7 +183,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile
     @Override
     public void seek(long pos) throws IOException
     {
-        int n = (int)(realpos - pos);
+        int n = (int) (realpos - pos);
         if (n >= 0 && n <= bufend)
         {
             bufpos = bufend - n;

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
@@ -100,11 +101,11 @@ public final class PDType3CharProc implements COSObjectable, PDContentStream
         {
             if (token instanceof COSObject)
             {
-                arguments.add(((COSObject)token).getObject());
+                arguments.add(((COSObject) token).getObject());
             }
             else if (token instanceof Operator)
             {
-                if (((Operator)token).getName().equals("d1") && arguments.size() == 6)
+                if (((Operator) token).getName().equals("d1") && arguments.size() == 6)
                 {
                     for (int i = 0; i < 6; ++i)
                     {
@@ -113,11 +114,11 @@ public final class PDType3CharProc implements COSObjectable, PDContentStream
                             return null;
                         }
                     }
-                    return new PDRectangle(((COSNumber)arguments.get(2)).floatValue(),
-                        ((COSNumber)arguments.get(3)).floatValue(), ((COSNumber)arguments.get(4))
-                        .floatValue() - ((COSNumber)arguments.get(2)).floatValue(),
-                        ((COSNumber)arguments.get(5)).floatValue() - ((COSNumber)arguments.get(3))
-                            .floatValue());
+                    return new PDRectangle(
+                        ((COSNumber) arguments.get(2)).floatValue(),
+                        ((COSNumber) arguments.get(3)).floatValue(),
+                        ((COSNumber) arguments.get(4)).floatValue() - ((COSNumber) arguments.get(2)).floatValue(),
+                        ((COSNumber) arguments.get(5)).floatValue() - ((COSNumber) arguments.get(3)).floatValue());
                 }
                 else
                 {
@@ -126,7 +127,7 @@ public final class PDType3CharProc implements COSObjectable, PDContentStream
             }
             else
             {
-                arguments.add((COSBase)token);
+                arguments.add((COSBase) token);
             }
             token = parser.parseNextToken();
         }
@@ -140,10 +141,11 @@ public final class PDType3CharProc implements COSObjectable, PDContentStream
     }
 
     /**
-     * todo.
+     * Get the width from a type3 charproc stream.
      *
-     * @return
-     * @throws IOException
+     * @return the glyph width.
+     * @throws IOException if the stream could not be read, or did not have d0 or d1 as first
+     * operator, or if their first argument was not a number.
      */
     public float getWidth() throws IOException
     {
@@ -154,38 +156,31 @@ public final class PDType3CharProc implements COSObjectable, PDContentStream
         {
             if (token instanceof COSObject)
             {
-                arguments.add(((COSObject)token).getObject());
+                arguments.add(((COSObject) token).getObject());
             }
             else if (token instanceof Operator)
             {
-                return parseWidth((Operator)token, arguments);
+                return parseWidth((Operator) token, arguments);
             }
             else
             {
-                arguments.add((COSBase)token);
+                arguments.add((COSBase) token);
             }
             token = parser.parseNextToken();
         }
         throw new IOException("Unexpected end of stream");
     }
 
-    private float parseWidth(Operator operator, List arguments) throws IOException
+    private float parseWidth(Operator operator, List<COSBase> arguments) throws IOException
     {
         if (operator.getName().equals("d0") || operator.getName().equals("d1"))
         {
-            Object obj = arguments.get(0);
-            if (obj instanceof Number)
+            COSBase obj = arguments.get(0);
+            if (obj instanceof COSNumber)
             {
-                return ((Number)obj).floatValue();
+                return ((COSNumber) obj).floatValue();
             }
-            else if (obj instanceof COSNumber)
-            {
-                return ((COSNumber)obj).floatValue();
-            }
-            else
-            {
-                throw new IOException("Unexpected argument type: " + obj.getClass().getName());
-            }
+            throw new IOException("Unexpected argument type: " + obj.getClass().getName());
         }
         else
         {

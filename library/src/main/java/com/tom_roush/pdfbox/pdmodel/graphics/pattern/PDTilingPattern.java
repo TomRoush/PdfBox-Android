@@ -18,9 +18,9 @@ package com.tom_roush.pdfbox.pdmodel.graphics.pattern;
 
 import java.io.IOException;
 import java.io.InputStream;
-
 import com.tom_roush.pdfbox.contentstream.PDContentStream;
 import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
@@ -43,7 +43,7 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
     /** tiling type 1 = constant spacing.*/
     public static final int TILING_CONSTANT_SPACING = 1;
 
-    /**  tiling type 2 = no distortion. */
+    /** tiling type 2 = no distortion. */
     public static final int TILING_NO_DISTORTION = 2;
 
     /** tiling type 3 = constant spacing and faster tiling. */
@@ -54,17 +54,21 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
      */
     public PDTilingPattern()
     {
-        super();
+        super(new COSStream());
+        getCOSObject().setName(COSName.TYPE, COSName.PATTERN.getName());
         getCOSObject().setInt(COSName.PATTERN_TYPE, PDAbstractPattern.TYPE_TILING_PATTERN);
+
+        // Resources required per PDF specification; when missing, pattern is not displayed in Adobe Reader
+        setResources(new PDResources());
     }
 
     /**
      * Creates a new tiling pattern from the given COS dictionary.
-     * @param resourceDictionary The COSDictionary for this pattern resource.
+     * @param dictionary The COSDictionary for this pattern.
      */
-    public PDTilingPattern(COSDictionary resourceDictionary)
+    public PDTilingPattern(COSDictionary dictionary)
     {
-        super(resourceDictionary);
+        super(dictionary);
     }
 
     @Override
@@ -175,10 +179,10 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
     public PDResources getResources()
     {
         PDResources retval = null;
-        COSDictionary resources = (COSDictionary) getCOSObject().getDictionaryObject(COSName.RESOURCES);
-        if( resources != null )
+        COSBase base = getCOSObject().getDictionaryObject(COSName.RESOURCES);
+        if (base instanceof COSDictionary)
         {
-            retval = new PDResources( resources );
+            retval = new PDResources((COSDictionary) base);
         }
         return retval;
     }
@@ -187,7 +191,7 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
      * This will set the resources for this pattern.
      * @param resources The new resources for this pattern.
      */
-    public void setResources( PDResources resources )
+    public final void setResources( PDResources resources )
     {
         getCOSObject().setItem(COSName.RESOURCES, resources);
     }
@@ -203,10 +207,10 @@ public class PDTilingPattern extends PDAbstractPattern implements PDContentStrea
     public PDRectangle getBBox()
     {
         PDRectangle retval = null;
-        COSArray array = (COSArray)getCOSObject().getDictionaryObject( COSName.BBOX );
-        if( array != null )
+        COSBase base = getCOSObject().getDictionaryObject(COSName.BBOX);
+        if (base instanceof COSArray)
         {
-            retval = new PDRectangle( array );
+            retval = new PDRectangle((COSArray) base);
         }
         return retval;
     }
