@@ -29,7 +29,7 @@ public abstract class NativeFontDirFinder implements FontDirFinder
 
     /**
      * Generic method used by Mac and Unix font finders.
-     * 
+     *
      * @return list of natively existing font directories {@inheritDoc}
      */
     @Override
@@ -42,9 +42,16 @@ public abstract class NativeFontDirFinder implements FontDirFinder
             for (String searchableDirectorie : searchableDirectories)
             {
                 File fontDir = new File(searchableDirectorie);
-                if (fontDir.exists() && fontDir.canRead())
+                try
                 {
-                    fontDirList.add(fontDir);
+                    if (fontDir.exists() && fontDir.canRead())
+                    {
+                        fontDirList.add(fontDir);
+                    }
+                }
+                catch (SecurityException e)
+                {
+                    // should continue if this fails
                 }
             }
         }
@@ -53,7 +60,7 @@ public abstract class NativeFontDirFinder implements FontDirFinder
 
     /**
      * Returns an array of directories to search for fonts in.
-     * 
+     *
      * @return an array of directories
      */
     protected abstract String[] getSearchableDirectories();

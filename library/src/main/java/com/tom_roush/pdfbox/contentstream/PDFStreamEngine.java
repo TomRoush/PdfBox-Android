@@ -50,6 +50,7 @@ import com.tom_roush.pdfbox.pdmodel.font.PDFontFactory;
 import com.tom_roush.pdfbox.pdmodel.font.PDType3CharProc;
 import com.tom_roush.pdfbox.pdmodel.font.PDType3Font;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDLineDashPattern;
+import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
@@ -70,8 +71,7 @@ import com.tom_roush.pdfbox.util.Vector;
  */
 public abstract class PDFStreamEngine
 {
-    private final Map<String, OperatorProcessor> operators = new HashMap<String, OperatorProcessor>(
-        80);
+    private final Map<String, OperatorProcessor> operators = new HashMap<String, OperatorProcessor>(80);
 
     private Matrix textMatrix;
     private Matrix textLineMatrix;
@@ -179,18 +179,20 @@ public abstract class PDFStreamEngine
 
     /**
      * Processes a soft mask transparency group stream.
+     * @param group
+     * @throws IOException
      */
     protected void processSoftMask(PDTransparencyGroup group) throws IOException
     {
-        // clear the current soft mask (this mask) to avoid recursion
         saveGraphicsState();
-        getGraphicsState().setSoftMask(null);
         processTransparencyGroup(group);
         restoreGraphicsState();
     }
 
     /**
      * Processes a transparency group stream.
+     * @param group
+     * @throws IOException
      */
     protected void processTransparencyGroup(PDTransparencyGroup group) throws IOException
     {
@@ -205,6 +207,14 @@ public abstract class PDFStreamEngine
 
         // transform the CTM using the stream's matrix
         getGraphicsState().getCurrentTransformationMatrix().concatenate(group.getMatrix());
+
+        // Before execution of the transparency group XObject’s content stream, 
+        // the current blend mode in the graphics state shall be initialized to Normal, 
+        // the current stroking and nonstroking alpha constants to 1.0, and the current soft mask to None.
+        getGraphicsState().setBlendMode(BlendMode.NORMAL);
+        getGraphicsState().setAlphaConstant(1);
+//        getGraphicsState().setNonStrokeAlphaConstant(1); // TODO: PdfBox-Android
+        getGraphicsState().setSoftMask(null);
 
         // clip to bounding box
         clipToRect(group.getBBox());
@@ -278,7 +288,7 @@ public abstract class PDFStreamEngine
         // zero-sized rectangles are not valid
         if (rect != null && rect.getWidth() > 0 && rect.getHeight() > 0 && bbox != null)
         {
-            // transformed appearance box fixme: may be an arbitrary shape
+            // transformed appearance box  fixme: may be an arbitrary shape
             RectF transformedBox = new RectF();
             bbox.transform(matrix).computeBounds(transformedBox, true);
 
@@ -293,7 +303,7 @@ public abstract class PDFStreamEngine
             // Matrix shall be concatenated with A to form a matrix AA that maps from the appearance's
             // coordinate system to the annotation's rectangle in default user space
             //
-            // HOWEVER only the opposite order works for rotated pages with
+            // HOWEVER only the opposite order works for rotated pages with 
             // filled fields / annotations that have a matrix in the appearance stream, see PDFBOX-3083
             Matrix aa = Matrix.concatenate(a, matrix);
 
@@ -303,13 +313,15 @@ public abstract class PDFStreamEngine
             // clip to bounding box
             clipToRect(bbox);
 
+            // needed for patterns in appearance streams, e.g. PDFBOX-2182
+            initialMatrix = aa.clone();
+
             processStreamOperators(appearance);
         }
 
         restoreGraphicsStack(savedStack);
         popResources(parent);
     }
-
 
     /**
      * Process the given tiling pattern.
@@ -336,7 +348,8 @@ public abstract class PDFStreamEngine
      * @throws IOException if there is an error reading or parsing the tiling pattern content stream.
      */
     protected final void processTilingPattern(PDTilingPattern tilingPattern, PDColor color,
-        PDColorSpace colorSpace, Matrix patternMatrix) throws IOException
+        PDColorSpace colorSpace, Matrix patternMatrix)
+        throws IOException
     {
         PDResources parent = pushResources(tilingPattern);
 
@@ -859,7 +872,7 @@ public abstract class PDFStreamEngine
         else if (operator.getName().equals("Do"))
         {
             // todo: this too forgiving, but PDFBox has always worked this way for DrawObject
-            // some careful refactoring is needed
+            //       some careful refactoring is needed
             Log.w("PdfBox-Android", e.getMessage());
         }
         else
@@ -996,12 +1009,13 @@ public abstract class PDFStreamEngine
     public PointF transformedPoint(float x, float y)
     {
         float[] position = { x, y };
-        getGraphicsState().getCurrentTransformationMatrix().createAffineTransform().transform(position, 0, position, 0, 1);
+        getGraphicsState().getCurrentTransformationMatrix().createAffineTransform()
+            .transform(position, 0, position, 0, 1);
         return new PointF(position[0], position[1]);
     }
 
     /**
-     * Transforms a width using the CTM
+     * Transforms a width using the CTM.
      */
     protected float transformWidth(float width)
     {

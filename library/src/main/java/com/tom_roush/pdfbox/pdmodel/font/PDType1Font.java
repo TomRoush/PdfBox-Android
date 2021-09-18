@@ -43,6 +43,7 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.StandardEncoding;
+import com.tom_roush.pdfbox.pdmodel.font.encoding.SymbolEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Type1Encoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.ZapfDingbatsEncoding;
@@ -124,6 +125,10 @@ public class PDType1Font extends PDSimpleFont
         if ("ZapfDingbats".equals(baseFont))
         {
             encoding = ZapfDingbatsEncoding.INSTANCE;
+        }
+        else if ("Symbol".equals(baseFont))
+        {
+            encoding = SymbolEncoding.INSTANCE;
         }
         else
         {

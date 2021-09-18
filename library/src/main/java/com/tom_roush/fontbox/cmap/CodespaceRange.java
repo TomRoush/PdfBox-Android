@@ -16,6 +16,7 @@
  */
 package com.tom_roush.fontbox.cmap;
 
+
 /**
  * This represents a single entry in the codespace range.
  *
@@ -25,7 +26,6 @@ public class CodespaceRange
 {
     private byte[] start;
     private byte[] end;
-
     private int startInt;
     private int endInt;
     private int codeLength = 0;
@@ -107,7 +107,6 @@ public class CodespaceRange
         }
         return code;
     }
-
     /**
      * Returns true if the given code bytes match this codespace range.
      */
@@ -117,11 +116,12 @@ public class CodespaceRange
         if (codeLen == codeLength)
         {
             int value = toInt(code, codeLen);
-            if (value >= startInt && value <= endInt)
+            if (value >= startInt && value <=endInt)
             {
                 return true;
             }
         }
         return false;
     }
+
 }

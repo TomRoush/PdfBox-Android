@@ -17,6 +17,7 @@
 
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 
@@ -25,6 +26,7 @@ import com.tom_roush.pdfbox.cos.COSName;
  */
 final class PDFieldFactory
 {
+
     private static final String FIELD_TYPE_TEXT = "Tx";
     private static final String FIELD_TYPE_BUTTON = "Btn";
     private static final String FIELD_TYPE_CHOICE = "Ch";
@@ -39,7 +41,7 @@ final class PDFieldFactory
      *
      * @param form the form that the field is part of
      * @param field the dictionary representing a field element
-     * @param parent the parent node of the node to be created
+     * @param parent the parent node of the node to be created 
      * @return the corresponding PDField instance
      */
     static PDField createField(PDAcroForm form, COSDictionary field, PDNonTerminalField parent)
@@ -112,11 +114,10 @@ final class PDFieldFactory
         String retval = dic.getNameAsString(COSName.FT);
         if (retval == null)
         {
-            COSDictionary parent = (COSDictionary) dic.getDictionaryObject(COSName.PARENT,
-                COSName.P);
-            if (parent != null)
+            COSBase base = dic.getDictionaryObject(COSName.PARENT, COSName.P);
+            if (base instanceof COSDictionary)
             {
-                retval = findFieldType(parent);
+                retval = findFieldType((COSDictionary) base);
             }
         }
         return retval;

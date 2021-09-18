@@ -497,7 +497,7 @@ public abstract class BaseParser
                 case '6':
                 case '7':
                 {
-                    StringBuffer octal = new StringBuffer();
+                    StringBuilder octal = new StringBuilder();
                     octal.append( next );
                     c = seqSource.read();
                     char digit = (char)c;
@@ -644,7 +644,7 @@ public abstract class BaseParser
         while( ((i = seqSource.peek()) > 0) && ((char)i != ']') )
         {
             pbo = parseDirObject();
-            if( pbo instanceof COSObject)
+            if( pbo instanceof COSObject )
             {
                 // We have to check if the expected values are there or not PDFBOX-385
                 if (po.get(po.size()-1) instanceof COSInteger)
@@ -1118,7 +1118,7 @@ public abstract class BaseParser
             }
             buffer.append( (char)c );
         }
-        // CR+LF is also a valid EOL
+        // CR+LF is also a valid EOL 
         if (isCR(c) && isLF(seqSource.peek()))
         {
             seqSource.read();

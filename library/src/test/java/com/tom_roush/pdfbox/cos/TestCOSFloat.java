@@ -179,7 +179,7 @@ public class TestCOSFloat extends TestCOSNumber
         void runTest(float num)
         {
             COSFloat testFloat = new COSFloat(num);
-            // compare the string representation instead of the numeric values
+            // compare the string representation instead of the numeric values 
             // as the cast from float to double adds some more fraction digits
             assertEquals(Float.toString(num), Double.toString(testFloat.doubleValue()));
         }
@@ -302,7 +302,7 @@ public class TestCOSFloat extends TestCOSNumber
 
     private String floatToString(float value)
     {
-        // use a BigDecimal as intermediate state to avoid
+        // use a BigDecimal as intermediate state to avoid 
         // a floating point string representation of the float value
         return removeTrailingNull(new BigDecimal(String.valueOf(value)).toPlainString());
     }

@@ -21,9 +21,14 @@ import android.graphics.Bitmap;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Arrays;
 
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.RandomAccessBuffer;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
@@ -204,6 +209,76 @@ public class CCITTFactoryTest extends TestCase
         document = PDDocument.load(new File(testResultsDir, "singletifffromchessbi.pdf"));
         assertEquals(1, document.getNumberOfPages());
 
+        document.close();
+    }
+
+    /**
+     * Tests that CCITTFactory#createFromFile(PDDocument document, File file) doesn't lock the
+     * source file
+     */
+    public void testCreateFromFileLock() throws IOException
+    {
+        // copy the source file to a temp directory, as we will be deleting it
+        String tiffG3Path = "pdfbox/com/tom_roush/pdfbox/pdmodel/graphics/image/ccittg3.tif";
+        InputStream sourceTiff = testContext.getAssets().open(tiffG3Path);
+        File copiedTiffFile = new File(testResultsDir, "ccittg3.tif");
+        copyFile(sourceTiff, copiedTiffFile);
+        PDDocument document = new PDDocument();
+        CCITTFactory.createFromFile(document, copiedTiffFile);
+        assertTrue(copiedTiffFile.delete());
+    }
+
+    /**
+     * Tests that CCITTFactory#createFromFile(PDDocument document, File file, int number) doesn't
+     * lock the source file
+     */
+    public void testCreateFromFileNumberLock() throws IOException
+    {
+        // copy the source file to a temp directory, as we will be deleting it
+        String tiffG3Path = "pdfbox/com/tom_roush/pdfbox/pdmodel/graphics/image/ccittg3.tif";
+        InputStream sourceTiff = testContext.getAssets().open(tiffG3Path);
+        File copiedTiffFile = new File(testResultsDir, "ccittg3n.tif");
+        copyFile(sourceTiff, copiedTiffFile);
+        PDDocument document = new PDDocument();
+        CCITTFactory.createFromFile(document, copiedTiffFile, 0);
+        assertTrue(copiedTiffFile.delete());
+    }
+
+    private void copyFile(InputStream source, File dest) throws IOException
+    {
+        InputStream is = null;
+        OutputStream os = null;
+        try
+        {
+            is = source;
+            os = new FileOutputStream(dest);
+            IOUtils.copy(is, os);
+        }
+        finally
+        {
+            is.close();
+            os.close();
+        }
+    }
+
+    /**
+     * Tests that byte/short tag values are read correctly (ignoring possible garbage in remaining
+     * bytes).
+     */
+    public void testByteShortPaddedWithGarbage() throws IOException
+    {
+        PDDocument document = new PDDocument();
+        String basePath = "pdfbox/com/tom_roush/pdfbox/pdmodel/graphics/image/ccittg3-garbage-padded-fields";
+        for (String ext : Arrays.asList(".tif", "-bigendian.tif"))
+        {
+            String tiffPath = basePath + ext;
+            InputStream sourceTiff = testContext.getAssets().open(tiffPath);
+            File copiedTiffFile = new File(testContext.getCacheDir(), "ccittg3-ccittg3-garbage-padded-fields" + ext);
+            copyFile(sourceTiff, copiedTiffFile);
+
+            PDImageXObject ximage3 = CCITTFactory.createFromFile(document, copiedTiffFile);
+            validate(ximage3, 1, 344, 287, "tiff", PDDeviceGray.INSTANCE.getName());
+        }
         document.close();
     }
 }

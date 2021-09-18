@@ -25,7 +25,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * A User attribute object.
- * 
+ *
  * @author Johannes Koch
  */
 public class PDUserAttributeObject extends PDAttributeObject
@@ -46,7 +46,7 @@ public class PDUserAttributeObject extends PDAttributeObject
     }
 
     /**
-     * 
+     *
      * @param dictionary the dictionary
      */
     public PDUserAttributeObject(COSDictionary dictionary)
@@ -57,12 +57,13 @@ public class PDUserAttributeObject extends PDAttributeObject
 
     /**
      * Returns the user properties.
-     * 
+     *
      * @return the user properties
      */
     public List<PDUserProperty> getOwnerUserProperties()
     {
-        COSArray p = (COSArray) this.getCOSObject().getDictionaryObject(COSName.P);
+        COSArray p = (COSArray) this.getCOSObject()
+            .getDictionaryObject(COSName.P);
         List<PDUserProperty> properties = new ArrayList<PDUserProperty>(p.size());
         for (int i = 0; i < p.size(); i++)
         {
@@ -74,7 +75,7 @@ public class PDUserAttributeObject extends PDAttributeObject
 
     /**
      * Sets the user properties.
-     * 
+     *
      * @param userProperties the user properties
      */
     public void setUserProperties(List<PDUserProperty> userProperties)
@@ -89,20 +90,19 @@ public class PDUserAttributeObject extends PDAttributeObject
 
     /**
      * Adds a user property.
-     * 
+     *
      * @param userProperty the user property
      */
     public void addUserProperty(PDUserProperty userProperty)
     {
-        COSArray p = (COSArray) this.getCOSObject()
-            .getDictionaryObject(COSName.P);
+        COSArray p = (COSArray) this.getCOSObject().getDictionaryObject(COSName.P);
         p.add(userProperty);
         this.notifyChanged();
     }
 
     /**
      * Removes a user property.
-     * 
+     *
      * @param userProperty the user property
      */
     public void removeUserProperty(PDUserProperty userProperty)
@@ -117,19 +117,19 @@ public class PDUserAttributeObject extends PDAttributeObject
     }
 
     /**
-     * @param userProperty  
+     * @param userProperty
      */
     public void userPropertyChanged(PDUserProperty userProperty)
     {
-        
+
     }
 
     @Override
     public String toString()
     {
-        return new StringBuilder().append(super.toString())
-            .append(", userProperties=")
-            .append(this.getOwnerUserProperties()).toString();
+        return super.toString() +
+            ", userProperties=" +
+            this.getOwnerUserProperties();
     }
 
 }

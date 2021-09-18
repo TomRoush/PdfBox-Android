@@ -57,7 +57,11 @@ public final class PDImageXObject extends PDXObject implements PDImage
 {
     private SoftReference<Bitmap> cachedImage;
     private PDColorSpace colorSpace;
-    private final PDResources resources; // current resource dictionary (has color spaces)
+
+    /**
+     * current resource dictionary (has color spaces)
+     */
+    private final PDResources resources;
 
     /**
      * Creates a thumbnail Image XObject from the given COSBase and name.
@@ -73,7 +77,10 @@ public final class PDImageXObject extends PDXObject implements PDImage
     }
 
     /**
-     * Creates an Image XObject in the given document.
+     * Creates an Image XObject in the given document. This constructor is for internal PDFBox use
+     * and is not for PDF generation. Users who want to create images should look at {@link #createFromFileByExtension(File, PDDocument)
+     * }.
+     *
      * @param document the current document
      * @throws java.io.IOException if there is an error creating the XObject.
      */
@@ -83,7 +90,10 @@ public final class PDImageXObject extends PDXObject implements PDImage
     }
 
     /**
-     * Creates an Image XObject in the given document using the given filtered stream.
+     * Creates an Image XObject in the given document using the given filtered stream. This
+     * constructor is for internal PDFBox use and is not for PDF generation. Users who want to
+     * create images should look at {@link #createFromFileByExtension(File, PDDocument) }.
+     *
      * @param document the current document
      * @param encodedStream an encoded stream of image data
      * @param cosFilter the filter or a COSArray of filters
@@ -93,8 +103,9 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * @param initColorSpace the color space
      * @throws IOException if there is an error creating the XObject.
      */
-    public PDImageXObject(PDDocument document, InputStream encodedStream, COSBase cosFilter,
-        int width, int height, int bitsPerComponent, PDColorSpace initColorSpace) throws IOException
+    public PDImageXObject(PDDocument document, InputStream encodedStream,
+        COSBase cosFilter, int width, int height, int bitsPerComponent,
+        PDColorSpace initColorSpace) throws IOException
     {
         super(createRawStream(document, encodedStream), COSName.IMAGE);
         getCOSObject().setItem(COSName.FILTER, cosFilter);
@@ -130,7 +141,10 @@ public final class PDImageXObject extends PDXObject implements PDImage
     }
 
     /**
-     * Creates an Image XObject with the given stream as its contents and current color spaces.
+     * Creates an Image XObject with the given stream as its contents and current color spaces. This
+     * constructor is for internal PDFBox use and is not for PDF generation. Users who want to
+     * create images should look at {@link #createFromFileByExtension(File, PDDocument) }.
+     *
      * @param stream the XObject stream to read
      * @param resources the current resources
      * @throws java.io.IOException if there is an error creating the XObject.
@@ -161,7 +175,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * a convenience method that calls {@link JPEGFactory#createFromStream},
      * {@link CCITTFactory#createFromFile} or {@link ImageIO#read} combined with
      * {@link LosslessFactory#createFromImage}. (The later can also be used to create a
-     * PDImageXObject from a BufferedImage).
+     * PDImageXObject from a Bitmap).
      *
      * @param file the image file.
      * @param doc the document that shall use this PDImageXObject.
@@ -195,7 +209,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
             Bitmap bim = BitmapFactory.decodeFile(file.getPath());
             return LosslessFactory.createFromImage(doc, bim);
         }
-        throw new IOException("Image type not supported: " + name);
+        throw new IllegalArgumentException("Image type not supported: " + name);
     }
 
     /**
@@ -204,7 +218,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * is a convenience method that calls {@link JPEGFactory#createFromStream},
      * {@link CCITTFactory#createFromFile} or {@link ImageIO#read} combined with
      * {@link LosslessFactory#createFromImage}. (The later can also be used to create a
-     * PDImageXObject from a BufferedImage).
+     * PDImageXObject from a Bitmap).
      *
      * @param file the image file.
      * @param doc the document that shall use this PDImageXObject.
@@ -262,7 +276,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
     {
         super(repair(stream, input), COSName.IMAGE);
         this.resources = resources;
-//        this.colorSpace = input.getDecodeResult().getJPXColorSpace();TODO: PdfBox-Android
+//        this.colorSpace = input.getDecodeResult().getJPXColorSpace(); TODO: PdfBox-Android
     }
 
     // repairs parameters using decode result
@@ -380,7 +394,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
     // explicit mask: RGB + Binary -> ARGB
     // soft mask: RGB + Gray -> ARGB
     private Bitmap applyMask(Bitmap image, Bitmap mask, boolean isSoft)
-            throws IOException
+        throws IOException
     {
         if (mask == null)
         {
@@ -445,7 +459,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
     /**
      * Returns the Mask Image XObject associated with this image, or null if there is none.
      * @return Mask Image XObject
-     * @#throws java.io.IOException
+     * @throws java.io.IOException
      */
     public PDImageXObject getMask() throws IOException
     {
@@ -457,7 +471,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         }
         else
         {
-            COSStream cosStream = (COSStream)getCOSObject().getDictionaryObject(COSName.MASK);
+            COSStream cosStream = (COSStream) getCOSObject().getDictionaryObject(COSName.MASK);
             if (cosStream != null)
             {
                 // always DeviceGray
@@ -488,7 +502,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
      */
     public PDImageXObject getSoftMask() throws IOException
     {
-        COSStream cosStream = (COSStream)getCOSObject().getDictionaryObject(COSName.SMASK);
+        COSStream cosStream = (COSStream) getCOSObject().getDictionaryObject(COSName.SMASK);
         if (cosStream != null)
         {
             // always DeviceGray
@@ -655,14 +669,14 @@ public final class PDImageXObject extends PDXObject implements PDImage
             return "tiff";
         }
         else if (filters.contains(COSName.FLATE_DECODE)
-                || filters.contains(COSName.LZW_DECODE)
-                || filters.contains(COSName.RUN_LENGTH_DECODE))
+            || filters.contains(COSName.LZW_DECODE)
+            || filters.contains(COSName.RUN_LENGTH_DECODE))
         {
             return "png";
         }
         else
         {
-        	Log.w("PdfBox-Android", "getSuffix() returns null, filters: " + filters);
+            Log.w("PdfBox-Android", "getSuffix() returns null, filters: " + filters);
             // TODO more...
             return null;
         }

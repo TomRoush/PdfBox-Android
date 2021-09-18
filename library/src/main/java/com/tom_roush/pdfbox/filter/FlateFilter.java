@@ -43,7 +43,7 @@ final class FlateFilter extends Filter
 
     @Override
     public DecodeResult decode(InputStream encoded, OutputStream decoded,
-                                         COSDictionary parameters, int index) throws IOException
+        COSDictionary parameters, int index) throws IOException
     {
         int predictor = -1;
 
@@ -72,11 +72,11 @@ final class FlateFilter extends Filter
             {
                 decompress(encoded, decoded);
             }
-        } 
+        }
         catch (DataFormatException e)
         {
             // if the stream is corrupt a DataFormatException may occur
-        	Log.e("PdfBox-Android", "FlateFilter: stop reading corrupt stream due to a DataFormatException");
+            Log.e("PdfBox-Android", "FlateFilter: stop reading corrupt stream due to a DataFormatException");
 
             // re-throw the exception
             throw new IOException(e);
@@ -86,19 +86,18 @@ final class FlateFilter extends Filter
 
     // Use Inflater instead of InflateInputStream to avoid an EOFException due to a probably
     // missing Z_STREAM_END, see PDFBOX-1232 for details
-    private void decompress(InputStream in, OutputStream out)
-        throws IOException, DataFormatException
+    private void decompress(InputStream in, OutputStream out) throws IOException, DataFormatException
     {
         byte[] buf = new byte[2048];
         // skip zlib header
-        in.read(buf, 0, 2);
+        in.read(buf,0,2);
         int read = in.read(buf);
         if (read > 0)
         {
             // use nowrap mode to bypass zlib-header and checksum to avoid a DataFormatException
             Inflater inflater = new Inflater(true);
             inflater.setInput(buf,0,read);
-            byte[] res = new byte[2048];
+            byte[] res = new byte[1024];
             boolean dataWritten = false;
             while (true)
             {
@@ -107,13 +106,12 @@ final class FlateFilter extends Filter
                 {
                     resRead = inflater.inflate(res);
                 }
-                catch (DataFormatException exception)
+                catch(DataFormatException exception)
                 {
                     if (dataWritten)
                     {
                         // some data could be read -> don't throw an exception
-                        Log.w("PdfBox-Android",
-                            "FlateFilter: premature end of stream due to a DataFormatException");
+                        Log.w("PdfBox-Android", "FlateFilter: premature end of stream due to a DataFormatException");
                         break;
                     }
                     else
@@ -122,27 +120,27 @@ final class FlateFilter extends Filter
                         throw exception;
                     }
                 }
-                if (resRead != 0) 
+                if (resRead != 0)
                 {
-                    out.write(res, 0, resRead);
+                    out.write(res,0,resRead);
                     dataWritten = true;
-                    continue; 
-                } 
-                if (inflater.finished() || inflater.needsDictionary() || in.available() == 0) 
+                    continue;
+                }
+                if (inflater.finished() || inflater.needsDictionary() || in.available() == 0)
                 {
                     break;
-                } 
-                read = in.read(buf); 
+                }
+                read = in.read(buf);
                 inflater.setInput(buf,0,read);
             }
             inflater.end();
         }
         out.flush();
     }
-    
+
     @Override
     protected void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
-            throws IOException
+        throws IOException
     {
         DeflaterOutputStream out = new DeflaterOutputStream(encoded);
         int amountRead;

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.encryption;
 
 import android.util.Log;
@@ -68,9 +69,7 @@ public abstract class SecurityHandler
     // see 7.6.2, page 58, PDF 32000-1:2008
     private static final byte[] AES_SALT = { (byte) 0x73, (byte) 0x41, (byte) 0x6c, (byte) 0x54 };
 
-    /**
-     * The length in bits of the secret key used to encrypt the document.
-     */
+    /** The length in bits of the secret key used to encrypt the document. */
     protected int keyLength = DEFAULT_KEY_LENGTH;
 
     /** The encryption key that will used to encrypt / decrypt.*/
@@ -118,10 +117,11 @@ public abstract class SecurityHandler
      * @param documentIDArray  document id which is returned via {@link com.tom_roush.pdfbox.cos.COSDocument#getDocumentID()}
      * @param decryptionMaterial Information used to decrypt the document.
      *
+     * @throws InvalidPasswordException If the password is incorrect.
      * @throws IOException If there is an error accessing data.
      */
     public abstract void prepareForDecryption(PDEncryption encryption, COSArray documentIDArray,
-        DecryptionMaterial decryptionMaterial) throws IOException;
+        DecryptionMaterial decryptionMaterial) throws InvalidPasswordException, IOException;
 
     /**
      * Encrypt or decrypt a set of data.
@@ -218,17 +218,17 @@ public abstract class SecurityHandler
      *
      * @throws IOException If there is an error reading the data.
      */
-    protected void encryptDataRC4(byte[] finalKey, byte[] input, OutputStream output)
-        throws IOException
+    protected void encryptDataRC4(byte[] finalKey, byte[] input, OutputStream output) throws IOException
     {
         rc4.setKey(finalKey);
         rc4.write(input, output);
     }
 
+
     /**
      * Encrypt or decrypt data with AES with key length other than 256 bits.
      *
-     * @param finalKey The final key obtained with via {@link #calcFinalKey()}.
+     * @param finalKey The final key obtained with via {@link #calcFinalKey(long, long)}.
      * @param data The data to encrypt.
      * @param output The output to write the encrypted data to.
      * @param decrypt true to decrypt the data, false to encrypt it.
@@ -265,7 +265,11 @@ public abstract class SecurityHandler
             int n;
             while ((n = data.read(buffer)) != -1)
             {
-                output.write(decryptCipher.update(buffer, 0, n));
+                byte[] dst = decryptCipher.update(buffer, 0, n);
+                if (dst != null)
+                {
+                    output.write(dst);
+                }
             }
             output.write(decryptCipher.doFinal());
         }
@@ -343,8 +347,7 @@ public abstract class SecurityHandler
         }
     }
 
-    private boolean prepareAESInitializationVector(boolean decrypt, byte[] iv, InputStream data,
-        OutputStream output) throws IOException
+    private boolean prepareAESInitializationVector(boolean decrypt, byte[] iv, InputStream data, OutputStream output) throws IOException
     {
         if (decrypt)
         {
@@ -356,8 +359,9 @@ public abstract class SecurityHandler
             }
             if (ivSize != iv.length)
             {
-                throw new IOException("AES initialization vector not fully read: only " + ivSize +
-                    " bytes read instead of " + iv.length);
+                throw new IOException(
+                    "AES initialization vector not fully read: only "
+                        + ivSize + " bytes read instead of " + iv.length);
             }
         }
         else
@@ -435,8 +439,7 @@ public abstract class SecurityHandler
             if (Arrays.equals(buf, "<?xpacket ".getBytes(Charsets.ISO_8859_1)))
             {
                 Log.w("PdfBox-Android", "Metadata is not encrypted, but was expected to be");
-                Log.w("PdfBox-Android",
-                    "Read PDF specification about EncryptMetadata (default value: true)");
+                Log.w("PdfBox-Android", "Read PDF specification about EncryptMetadata (default value: true)");
                 return;
             }
         }
@@ -507,8 +510,7 @@ public abstract class SecurityHandler
             }
             COSBase value = entry.getValue();
             // within a dictionary only the following kind of COS objects have to be decrypted
-            if (value instanceof COSString || value instanceof COSArray ||
-                value instanceof COSDictionary)
+            if (value instanceof COSString || value instanceof COSArray || value instanceof COSDictionary)
             {
                 decrypt(value, objNum, genNum);
             }
@@ -535,9 +537,8 @@ public abstract class SecurityHandler
         }
         catch (IOException ex)
         {
-            Log.e("PdfBox-Android",
-                "Failed to decrypt COSString of length " + string.getBytes().length +
-                    " in object " + objNum + ": " + ex.getMessage());
+            Log.e("PdfBox-Android", "Failed to decrypt COSString of length " + string.getBytes().length +
+                " in object " + objNum + ": " + ex.getMessage());
         }
     }
 
@@ -639,7 +640,7 @@ public abstract class SecurityHandler
     /**
      * Returns whether a protection policy has been set.
      *
-     * @return true if a protection policy has been set
+     * @return true if a protection policy has been set.
      */
     public abstract boolean hasProtectionPolicy();
 }

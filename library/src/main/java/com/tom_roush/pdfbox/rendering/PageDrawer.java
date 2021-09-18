@@ -513,20 +513,17 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
 //    private Paint applySoftMaskToPaint(Paint parentPaint, PDSoftMask softMask) throws IOException
 //    {
-//        if (softMask != null)
-//        {
-//            //TODO PDFBOX-2934
-//            if (COSName.ALPHA.equals(softMask.getSubType()))
-//            {
-//                Log.i("PdfBox-Android", "alpha smask not implemented yet, is ignored");
-//                return parentPaint;
-//            }
-//            return new SoftMaskPaint(parentPaint, createSoftMaskRaster(softMask));
-//        }
-//        else
+//        if (softMask == null || softMask.getGroup() == null)
 //        {
 //            return parentPaint;
 //        }
+//        //TODO PDFBOX-2934
+//        if (COSName.ALPHA.equals(softMask.getSubType()))
+//        {
+//            Log.i("PdfBox-Android", "alpha smask not implemented yet, is ignored");
+//            return parentPaint;
+//        }
+//        return new SoftMaskPaint(parentPaint, createSoftMaskRaster(softMask));
 //    } TODO: PdfBox-Android
 
     // returns the stroking AWT Paint
@@ -748,8 +745,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
         if (!pdImage.getInterpolate())
         {
-            boolean isScaledUp = pdImage.getWidth() < Math.round(at.getScaleX()) ||
-                pdImage.getHeight() < Math.round(at.getScaleY());
+            Matrix m = new Matrix(xform);
+            m.concatenate(ctm);
+            boolean isScaledUp = pdImage.getWidth() < Math.round(Math.abs(m.getScalingFactorX())) ||
+                pdImage.getHeight() < Math.round(Math.abs(m.getScalingFactorY()));
 
             // if the image is scaled down, we use smooth interpolation, eg PDFBOX-2364
             // only when scaled up do we use nearest neighbour, eg PDFBOX-2302 / mori-cvpr01.pdf
@@ -1197,6 +1196,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            g.translate(-clipRect.getX(), -clipRect.getY());
 
 //            graphics = g;
+            setRenderingHints();
             try
             {
                 if (isSoftMask)

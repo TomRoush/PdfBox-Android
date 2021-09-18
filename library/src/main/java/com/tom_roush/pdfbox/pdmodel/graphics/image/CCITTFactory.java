@@ -163,7 +163,15 @@ public final class CCITTFactory
     public static PDImageXObject createFromFile(PDDocument document, File file)
         throws IOException
     {
-        return createFromRandomAccessImpl(document, new RandomAccessFile(file, "r"), 0);
+        RandomAccessFile raf = new RandomAccessFile(file, "r");
+        try
+        {
+            return createFromRandomAccessImpl(document, raf, 0);
+        }
+        finally
+        {
+            raf.close();
+        }
     }
 
     /**
@@ -183,7 +191,15 @@ public final class CCITTFactory
     public static PDImageXObject createFromFile(PDDocument document, File file, int number)
         throws IOException
     {
-        return createFromRandomAccessImpl(document, new RandomAccessFile(file, "r"), number);
+        RandomAccessFile raf = new RandomAccessFile(file, "r");
+        try
+        {
+            return createFromRandomAccessImpl(document, raf, number);
+        }
+        finally
+        {
+            raf.close();
+        }
     }
 
     /**
@@ -292,139 +308,130 @@ public final class CCITTFactory
                 int tag = readshort(endianess, reader);
                 int type = readshort(endianess, reader);
                 int count = readlong(endianess, reader);
-                int val = readlong(endianess, reader); // See note
-
-                // Note, we treated that value as a long. The value always occupies 4 bytes
-                // But it might only use the first byte or two. Depending on endianess we might
-                // need to correct.
-                // Note we ignore all other types, they are of little interest for PDFs/CCITT Fax
-                if (endianess == 'M')
+                int val;
+                // Note that when the type is shorter than 4 bytes, the rest can be garbage
+                // and must be ignored. E.g. short (2 bytes) from "01 00 38 32" (little endian)
+                // is 1, not 842530817 (seen in a real-life TIFF image).
+                switch (type)
                 {
-                    switch (type)
+                    case 1: // byte value
+                        val = reader.read();
+                        reader.read();
+                        reader.read();
+                        reader.read();
+                        break;
+                    case 3: // short value
+                        val = readshort(endianess, reader);
+                        reader.read();
+                        reader.read();
+                        break;
+                    default: // long and other types
+                        val = readlong(endianess, reader);
+                        break;
+                }
+                switch (tag)
+                {
+                    case 256:
                     {
-                    case 1:
-                    {
-                        val = val >> 24;
-                        break; // byte value
+                        params.setInt(COSName.COLUMNS, val);
+                        break;
                     }
-                    case 3:
+                    case 257:
                     {
-                        val = val >> 16;
-                        break; // short value
+                        params.setInt(COSName.ROWS, val);
+                        break;
                     }
-                    case 4:
+                    case 259:
                     {
-                        break; // long value
+                        if (val == 4)
+                        {
+                            k = -1;
+                        }
+                        if (val == 3)
+                        {
+                            k = 0;
+                        }
+                        break; // T6/T4 Compression
+                    }
+                    case 262:
+                    {
+                        if (val == 1)
+                        {
+                            params.setBoolean(COSName.BLACK_IS_1, true);
+                        }
+                        break;
+                    }
+                    case 266:
+                    {
+                        if (val != 1)
+                        {
+                            throw new IOException("FillOrder " + val + " is not supported");
+                        }
+                        break;
+                    }
+                    case 273:
+                    {
+                        if (count == 1)
+                        {
+                            dataoffset = val;
+                        }
+                        break;
+                    }
+                    case 274:
+                    {
+                        // http://www.awaresystems.be/imaging/tiff/tifftags/orientation.html
+                        if (val != 1)
+                        {
+                            throw new IOException("Orientation " + val + " is not supported");
+                        }
+                        break;
+                    }
+                    case 279:
+                    {
+                        if (count == 1)
+                        {
+                            datalength = val;
+                        }
+                        break;
+                    }
+                    case 292:
+                    {
+                        if ((val & 1) != 0)
+                        {
+                            // T4 2D - arbitary positive K value
+                            k = 50;
+                        }
+                        // http://www.awaresystems.be/imaging/tiff/tifftags/t4options.html
+                        if ((val & 4) != 0)
+                        {
+                            throw new IOException("CCITT Group 3 'uncompressed mode' is not supported");
+                        }
+                        if ((val & 2) != 0)
+                        {
+                            throw new IOException("CCITT Group 3 'fill bits before EOL' is not supported");
+                        }
+                        break;
+                    }
+                    case 324:
+                    {
+                        if (count == 1)
+                        {
+                            dataoffset = val;
+                        }
+                        break;
+                    }
+                    case 325:
+                    {
+                        if (count == 1)
+                        {
+                            datalength = val;
+                        }
+                        break;
                     }
                     default:
                     {
                         // do nothing
                     }
-                    }
-                }
-                switch (tag)
-                {
-                case 256:
-                {
-                    params.setInt(COSName.COLUMNS, val);
-                    break;
-                }
-                case 257:
-                {
-                    params.setInt(COSName.ROWS, val);
-                    break;
-                }
-                case 259:
-                {
-                    if (val == 4)
-                    {
-                        k = -1;
-                    }
-                    if (val == 3)
-                    {
-                        k = 0;
-                    }
-                    break; // T6/T4 Compression
-                }
-                case 262:
-                {
-                    if (val == 1)
-                    {
-                        params.setBoolean(COSName.BLACK_IS_1, true);
-                    }
-                    break;
-                }
-                case 266:
-                {
-                    if (val != 1)
-                    {
-                        throw new IOException("FillOrder " + val + " is not supported");
-                    }
-                    break;
-                }
-                case 273:
-                {
-                    if (count == 1)
-                    {
-                        dataoffset = val;
-                    }
-                    break;
-                }
-                case 274:
-                {
-                    // http://www.awaresystems.be/imaging/tiff/tifftags/orientation.html
-                    if (val != 1)
-                    {
-                        throw new IOException("Orientation " + val + " is not supported");
-                    }
-                    break;
-                }
-                case 279:
-                {
-                    if (count == 1)
-                    {
-                        datalength = val;
-                    }
-                    break;
-                }
-                case 292:
-                {
-                    if ((val & 1) != 0)
-                    {
-                        // T4 2D - arbitary positive K value
-                        k = 50;
-                    }
-                    // http://www.awaresystems.be/imaging/tiff/tifftags/t4options.html
-                    if ((val & 4) != 0)
-                    {
-                        throw new IOException("CCITT Group 3 'uncompressed mode' is not supported");
-                    }
-                    if ((val & 2) != 0)
-                    {
-                        throw new IOException("CCITT Group 3 'fill bits before EOL' is not supported");
-                    }
-                    break;
-                }
-                case 324:
-                {
-                    if (count == 1)
-                    {
-                        dataoffset = val;
-                    }
-                    break;
-                }
-                case 325:
-                {
-                    if (count == 1)
-                    {
-                        datalength = val;
-                    }
-                    break;
-                }
-                default:
-                {
-                    // do nothing
-                }
                 }
             }
 

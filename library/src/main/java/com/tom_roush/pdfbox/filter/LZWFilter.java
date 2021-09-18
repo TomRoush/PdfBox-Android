@@ -50,7 +50,7 @@ public class LZWFilter extends Filter
      * The LZW end of data code.
      */
     public static final long EOD = 257;
-    
+
     //BEWARE: codeTable must be local to each method, because there is only
     // one instance of each filter
 
@@ -59,7 +59,7 @@ public class LZWFilter extends Filter
      */
     @Override
     public DecodeResult decode(InputStream encoded, OutputStream decoded,
-            COSDictionary parameters, int index) throws IOException
+        COSDictionary parameters, int index) throws IOException
     {
         int predictor = -1;
         int earlyChange = 1;
@@ -138,7 +138,7 @@ public class LZWFilter extends Filter
                         decoded.write(newData);
                         codeTable.add(newData);
                     }
-                    
+
                     chunk = calculateChunk(codeTable.size(), earlyChange);
                     prevCommand = nextCommand;
                 }
@@ -151,19 +151,19 @@ public class LZWFilter extends Filter
         decoded.flush();
     }
 
-    private void checkIndexBounds(List codeTable, long index, MemoryCacheImageInputStream in)
+    private void checkIndexBounds(List<byte[]> codeTable, long index, MemoryCacheImageInputStream in)
         throws IOException
     {
         if (index < 0)
         {
-            throw new IOException(
-                "negative array index: " + index + " near offset " + in.getStreamPosition());
+            throw new IOException("negative array index: " + index + " near offset "
+                + in.getStreamPosition());
         }
         if (index >= codeTable.size())
         {
-            throw new IOException(
-                "array index overflow: " + index + " >= " + codeTable.size() + " near offset " +
-                    in.getStreamPosition());
+            throw new IOException("array index overflow: " + index +
+                " >= " + codeTable.size() + " near offset "
+                + in.getStreamPosition());
         }
     }
 
@@ -172,7 +172,7 @@ public class LZWFilter extends Filter
      */
     @Override
     protected void encode(InputStream rawData, OutputStream encoded, COSDictionary parameters)
-            throws IOException
+        throws IOException
     {
         List<byte[]> codeTable = createCodeTable();
         int chunk = 9;
@@ -289,7 +289,7 @@ public class LZWFilter extends Filter
         List<byte[]> codeTable = new ArrayList<byte[]>(4096);
         for (int i = 0; i < 256; ++i)
         {
-            codeTable.add(new byte[] { (byte)(i & 0xFF) });
+            codeTable.add(new byte[] { (byte) (i & 0xFF) });
         }
         codeTable.add(null); // 256 EOD
         codeTable.add(null); // 257 CLEAR_TABLE

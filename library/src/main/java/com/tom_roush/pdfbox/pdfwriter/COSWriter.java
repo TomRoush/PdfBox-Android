@@ -216,6 +216,7 @@ public class COSWriter implements ICOSVisitor, Closeable
     private OutputStream incrementalOutput;
     private SignatureInterface signatureInterface;
     private byte[] incrementPart;
+    private COSArray byteRangeArray;
 
     /**
      * COSWriter constructor comment.
@@ -281,7 +282,7 @@ public class COSWriter implements ICOSVisitor, Closeable
         }
         catch (IOException e)
         {
-            Log.e("PdfBox-Android", e.getMessage(), e);
+            Log.e("PdfBox-Android", e.getMessage(),e);
         }
     }
 
@@ -505,15 +506,6 @@ public class COSWriter implements ICOSVisitor, Closeable
     public void doWriteObject( COSBase obj ) throws IOException
     {
         writtenObjects.add( obj );
-        if(obj instanceof COSDictionary)
-        {
-            COSBase itemType = ((COSDictionary) obj).getItem(COSName.TYPE);
-            if (COSName.SIG.equals(itemType) || COSName.DOC_TIME_STAMP.equals(itemType))
-            {
-                reachedSignature = true;
-            }
-        }
-
         // find the physical reference
         currentObjectKey = getObjectKey( obj );
         // add a x ref entry
@@ -700,6 +692,13 @@ public class COSWriter implements ICOSVisitor, Closeable
         long afterLength = getStandardOutput().getPos() - (inLength + signatureLength) - (signatureOffset - inLength);
 
         String byteRange = "0 " + beforeLength + " " + afterOffset + " " + afterLength + "]";
+
+        // Assign the values to the actual COSArray, so that the user can access it before closing
+        byteRangeArray.set(0, COSInteger.ZERO);
+        byteRangeArray.set(1, COSInteger.get(beforeLength));
+        byteRangeArray.set(2, COSInteger.get(afterOffset));
+        byteRangeArray.set(3, COSInteger.get(afterLength));
+
         if (byteRangeLength - byteRange.length() < 0)
         {
             throw new IOException("Can't write new ByteRange, not enough space");
@@ -741,7 +740,7 @@ public class COSWriter implements ICOSVisitor, Closeable
      * signatures externally. {@link #write(PDDocument)} method should have been called prior.
      * The created signature should be set using {@link #writeExternalSignature(byte[])}.
      * <p>
-     * When {@link SignatureInterface} instance is used, COSWriter obtains and writes the signature itsef.
+     * When {@link SignatureInterface} instance is used, COSWriter obtains and writes the signature itself.
      * </p>
      *
      * @return data stream to be signed
@@ -976,6 +975,14 @@ public class COSWriter implements ICOSVisitor, Closeable
     @Override
     public Object visitFromDictionary(COSDictionary obj) throws IOException
     {
+        if (!reachedSignature)
+        {
+            COSBase itemType = obj.getItem(COSName.TYPE);
+            if (COSName.SIG.equals(itemType) || COSName.DOC_TIME_STAMP.equals(itemType))
+            {
+                reachedSignature = true;
+            }
+        }
         getStandardOutput().write(DICT_OPEN);
         getStandardOutput().writeEOL();
         for (Map.Entry<COSName, COSBase> entry : obj.entrySet())
@@ -1041,6 +1048,7 @@ public class COSWriter implements ICOSVisitor, Closeable
                     }
                     else if(reachedSignature && COSName.BYTERANGE.equals(entry.getKey()))
                     {
+                        byteRangeArray = (COSArray) entry.getValue();
                         byteRangeOffset = getStandardOutput().getPos() + 1;
                         value.accept(this);
                         byteRangeLength = getStandardOutput().getPos() - 1 - byteRangeOffset;

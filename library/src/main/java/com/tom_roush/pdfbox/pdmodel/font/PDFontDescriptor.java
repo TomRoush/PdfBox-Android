@@ -262,7 +262,7 @@ public final class PDFontDescriptor implements COSObjectable
         }
         else
         {
-            flags = flags & (0xFFFFFFFF ^ bit);
+            flags = flags & (~bit);
         }
         setFlags( flags );
     }
@@ -289,7 +289,7 @@ public final class PDFontDescriptor implements COSObjectable
         COSBase base = dic.getDictionaryObject(COSName.FONT_NAME);
         if (base instanceof COSName)
         {
-            retval = ((COSName)base).getName();
+            retval = ((COSName) base).getName();
         }
         return retval;
     }
@@ -748,9 +748,9 @@ public final class PDFontDescriptor implements COSObjectable
     {
         PDStream retval = null;
         COSBase obj = dic.getDictionaryObject(COSName.FONT_FILE);
-        if(obj instanceof COSStream)
+        if (obj instanceof COSStream)
         {
-            retval = new PDStream( (COSStream)obj );
+            retval = new PDStream((COSStream) obj);
         }
         return retval;
     }
@@ -774,9 +774,9 @@ public final class PDFontDescriptor implements COSObjectable
     {
         PDStream retval = null;
         COSBase obj = dic.getDictionaryObject(COSName.FONT_FILE2);
-        if(obj instanceof COSStream)
+        if (obj instanceof COSStream)
         {
-            retval = new PDStream((COSStream)obj);
+            retval = new PDStream((COSStream) obj);
         }
         return retval;
     }
@@ -800,9 +800,9 @@ public final class PDFontDescriptor implements COSObjectable
     {
         PDStream retval = null;
         COSBase obj = dic.getDictionaryObject(COSName.FONT_FILE3);
-        if(obj instanceof COSStream)
+        if (obj instanceof COSStream)
         {
-            retval = new PDStream((COSStream)obj);
+            retval = new PDStream((COSStream) obj);
         }
         return retval;
     }
@@ -827,11 +827,11 @@ public final class PDFontDescriptor implements COSObjectable
         COSObjectable cidSet = dic.getDictionaryObject(COSName.CID_SET);
         if (cidSet instanceof COSStream)
         {
-            return new PDStream((COSStream)cidSet);
+            return new PDStream((COSStream) cidSet);
         }
         return null;
     }
-    
+
     /**
      * Set a stream containing a CIDSet.
      *
@@ -839,7 +839,7 @@ public final class PDFontDescriptor implements COSObjectable
      */
     public void setCIDSet( PDStream stream )
     {
-        dic.setItem(COSName.CID_SET, stream);
+        dic.setItem( COSName.CID_SET, stream );
     }
 
     /**
@@ -849,10 +849,10 @@ public final class PDFontDescriptor implements COSObjectable
      */
     public PDPanose getPanose()
     {
-        COSDictionary style = (COSDictionary) dic.getDictionaryObject(COSName.STYLE);
+        COSDictionary style = (COSDictionary)dic.getDictionaryObject(COSName.STYLE);
         if (style != null)
         {
-            COSString panose = (COSString) style.getDictionaryObject(COSName.PANOSE);
+            COSString panose = (COSString)style.getDictionaryObject(COSName.PANOSE);
             byte[] bytes = panose.getBytes();
             return new PDPanose(bytes);
         }

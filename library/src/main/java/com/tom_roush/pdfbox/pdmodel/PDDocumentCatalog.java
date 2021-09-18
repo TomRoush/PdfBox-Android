@@ -100,7 +100,7 @@ public class PDDocumentCatalog implements COSObjectable
      */
     public PDAcroForm getAcroForm()
     {
-        if(cachedAcroForm == null)
+        if (cachedAcroForm == null)
         {
             COSDictionary dict = (COSDictionary)root.getDictionaryObject(COSName.ACRO_FORM);
             cachedAcroForm = dict == null ? null : new PDAcroForm(document, dict);
@@ -124,8 +124,8 @@ public class PDDocumentCatalog implements COSObjectable
      */
     public PDPageTree getPages()
     {
-        // TODO cache me?
-        return new PDPageTree((COSDictionary) root.getDictionaryObject(COSName.PAGES), document);
+        // todo: cache me?
+        return new PDPageTree((COSDictionary)root.getDictionaryObject(COSName.PAGES), document);
     }
 
     /**
@@ -176,13 +176,13 @@ public class PDDocumentCatalog implements COSObjectable
     public List<PDThread> getThreads()
     {
         COSArray array = (COSArray)root.getDictionaryObject(COSName.THREADS);
-        if(array == null)
+        if (array == null)
         {
             array = new COSArray();
             root.setItem(COSName.THREADS, array);
         }
         List<PDThread> pdObjects = new ArrayList<PDThread>();
-        for(int i = 0; i < array.size(); i++)
+        for (int i = 0; i < array.size(); i++)
         {
             pdObjects.add(new PDThread((COSDictionary)array.getObject(i)));
         }
@@ -194,9 +194,9 @@ public class PDDocumentCatalog implements COSObjectable
      *
      * @param threads The list of threads, or null to clear it.
      */
-    public void setThreads(List threads)
+    public void setThreads(List<PDThread> threads)
     {
-        root.setItem( COSName.THREADS, COSArrayList.converterToCOSArray(threads));
+        root.setItem(COSName.THREADS, COSArrayList.converterToCOSArray(threads));
     }
 
     /**
@@ -208,7 +208,7 @@ public class PDDocumentCatalog implements COSObjectable
     public PDMetadata getMetadata()
     {
         COSBase metaObj = root.getDictionaryObject(COSName.METADATA);
-        if(metaObj instanceof COSStream)
+        if (metaObj instanceof COSStream)
         {
             return new PDMetadata((COSStream) metaObj);
         }
@@ -244,16 +244,15 @@ public class PDDocumentCatalog implements COSObjectable
     public PDDestinationOrAction getOpenAction() throws IOException
     {
         COSBase openAction = root.getDictionaryObject(COSName.OPEN_ACTION);
-
-        if(openAction == null)
+        if (openAction == null)
         {
             return null;
         }
-        else if(openAction instanceof COSDictionary)
+        else if (openAction instanceof COSDictionary)
         {
             return PDActionFactory.createAction((COSDictionary)openAction);
         }
-        else if(openAction instanceof COSArray)
+        else if (openAction instanceof COSArray)
         {
             return PDDestination.create(openAction);
         }
@@ -311,9 +310,7 @@ public class PDDocumentCatalog implements COSObjectable
 
     /**
      * Find the page destination from a named destination.
-     *
      * @param namedDest the named destination.
-     *
      * @return a PDPageDestination object or null if not found.
      * @throws IOException if there is an error creating the PDPageDestination object.
      */
@@ -337,7 +334,7 @@ public class PDDocumentCatalog implements COSObjectable
             if (nameDestDict != null)
             {
                 String name = namedDest.getNamedDestination();
-                pageDestination = (PDPageDestination)nameDestDict.getDestination(name);
+                pageDestination = (PDPageDestination) nameDestDict.getDestination(name);
             }
         }
         return pageDestination;
@@ -380,7 +377,7 @@ public class PDDocumentCatalog implements COSObjectable
      *
      * @return The list of PDOutputIntent
      */
-    public List<PDOutputIntent> getOutputIntents ()
+    public List<PDOutputIntent> getOutputIntents()
     {
         List<PDOutputIntent> retval = new ArrayList<PDOutputIntent>();
         COSArray array = (COSArray)root.getDictionaryObject(COSName.OUTPUT_INTENTS);
@@ -400,8 +397,8 @@ public class PDDocumentCatalog implements COSObjectable
     }
 
     /**
-     * Add an OutputIntent to the list. If there is not OutputIntent, the list is created and the
-     * first element added.
+     * Add an OutputIntent to the list.  If there is not OutputIntent, the list is created and the
+     * first  element added.
      *
      * @param outputIntent the OutputIntent to add.
      */

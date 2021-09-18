@@ -182,7 +182,6 @@ public class StandardEncoding extends Encoding
         {0172, "z"},
         {0060, "zero"}
     };
-
     /**
      * Singleton instance of this class.
      */
@@ -195,8 +194,7 @@ public class StandardEncoding extends Encoding
     {
         for (Object[] encodingEntry : STANDARD_ENCODING_TABLE)
         {
-            addCharacterEncoding((Integer)encodingEntry[CHAR_CODE],
-                encodingEntry[CHAR_NAME].toString());
+            addCharacterEncoding((Integer) encodingEntry[CHAR_CODE], encodingEntry[CHAR_NAME].toString());
         }
     }
 }

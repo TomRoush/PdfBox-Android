@@ -98,6 +98,14 @@ public class PDExtendedGraphicsState implements COSObjectable
             {
                 gs.setOverprintMode( getOverprintMode().doubleValue() );
             }
+            else if( key.equals( COSName.OP ) )
+            {
+                gs.setOverprint( getStrokingOverprintControl());
+            }
+            else if( key.equals( COSName.OP_NS ) )
+            {
+                gs.setNonStrokingOverprint(getNonStrokingOverprintControl());
+            }
             else if( key.equals( COSName.FONT ) )
             {
                 PDFontSetting setting = getFontSetting();
@@ -125,7 +133,7 @@ public class PDExtendedGraphicsState implements COSObjectable
             }
             else if( key.equals( COSName.CA_NS ) )
             {
-                gs.setNonStrokeAlphaConstants(getNonStrokingAlphaConstant() );
+                gs.setNonStrokeAlphaConstant(getNonStrokingAlphaConstant() );
             }
             else if( key.equals( COSName.AIS ) )
             {
@@ -198,7 +206,8 @@ public class PDExtendedGraphicsState implements COSObjectable
      */
     public Paint.Cap getLineCapStyle()
     {
-        switch(dict.getInt( COSName.LC ))  {
+        switch(dict.getInt( COSName.LC ))
+        {
             case 0:
                 return Paint.Cap.BUTT;
             case 1:
@@ -227,7 +236,8 @@ public class PDExtendedGraphicsState implements COSObjectable
      */
     public Paint.Join getLineJoinStyle()
     {
-        switch(dict.getInt( COSName.LJ ))  {
+        switch(dict.getInt( COSName.LJ ))
+        {
             case 0:
                 return Paint.Join.MITER;
             case 1:

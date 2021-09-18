@@ -150,8 +150,8 @@ final class FontMapperImpl implements FontMapper
      */
     public synchronized void setProvider(FontProvider fontProvider)
     {
-        this.fontProvider = fontProvider;
         fontInfoByName = createFontInfoByName(fontProvider.getFontInfo());
+        this.fontProvider = fontProvider;
     }
 
     /**
@@ -459,6 +459,12 @@ final class FontMapperImpl implements FontMapper
             return info.getFont();
         }
 
+        // try appending "-Regular", works for Wingdings on windows
+        info = getFont(format, postScriptName + "-Regular");
+        if (info != null)
+        {
+            return info.getFont();
+        }
         // no matches
         return null;
     }
@@ -681,7 +687,7 @@ final class FontMapperImpl implements FontMapper
     /**
      * A potential match for a font substitution.
      */
-    private class FontMatch implements Comparable<FontMatch>
+    private static class FontMatch implements Comparable<FontMatch>
     {
         double score;
         final FontInfo info;

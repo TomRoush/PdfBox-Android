@@ -38,7 +38,7 @@ public class COSFloat extends COSNumber
      */
     public COSFloat( float aFloat )
     {
-        // use a BigDecimal as intermediate state to avoid
+        // use a BigDecimal as intermediate state to avoid 
         // a floating point string representation of the float value
         value = new BigDecimal(String.valueOf(aFloat));
         valueAsString = removeNullDigits(value.toPlainString());
@@ -61,10 +61,11 @@ public class COSFloat extends COSNumber
         }
         catch( NumberFormatException e )
         {
-            if (aFloat.matches("^0\\.0+\\-\\d+"))
+            if (aFloat.matches("^0\\.0*\\-\\d+"))
             {
                 // PDFBOX-2990 has 0.00000-33917698
                 // PDFBOX-3369 has 0.00-35095424
+                // PDFBOX-3500 has 0.-262
                 try
                 {
                     valueAsString = "-" + valueAsString.replaceFirst("\\-", "");
