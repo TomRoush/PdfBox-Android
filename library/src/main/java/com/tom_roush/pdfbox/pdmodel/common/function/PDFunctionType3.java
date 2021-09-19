@@ -97,7 +97,7 @@ public class PDFunctionType3 extends PDFunction
             partitionValues[0] = domain.getMin();
             partitionValues[partitionValuesSize-1] = domain.getMax();
             System.arraycopy(boundsValues, 0, partitionValues, 1, boundsSize);
-            // find the partition
+            // find the partition 
             for (int i=0; i < partitionValuesSize-1; i++)
             {
                 if ( x >= partitionValues[i] &&
@@ -124,7 +124,7 @@ public class PDFunctionType3 extends PDFunction
     /**
      * Returns all functions values as COSArray.
      *
-     * @return the functions array.
+     * @return the functions array. 
      */
     public COSArray getFunctions()
     {
@@ -138,7 +138,7 @@ public class PDFunctionType3 extends PDFunction
     /**
      * Returns all bounds values as COSArray.
      *
-     * @return the bounds array.
+     * @return the bounds array. 
      */
     public COSArray getBounds()
     {
@@ -152,7 +152,7 @@ public class PDFunctionType3 extends PDFunction
     /**
      * Returns all encode values as COSArray.
      *
-     * @return the encode array.
+     * @return the encode array. 
      */
     public COSArray getEncode()
     {
@@ -166,7 +166,7 @@ public class PDFunctionType3 extends PDFunction
     /**
      * Get the encode for the input parameter.
      *
-     * @param paramNum The function parameter number.
+     * @param n The function parameter number.
      *
      * @return The encode parameter range or null if none is set.
      */

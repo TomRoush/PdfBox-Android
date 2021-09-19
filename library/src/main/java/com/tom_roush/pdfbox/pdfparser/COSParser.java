@@ -247,6 +247,7 @@ public class COSParser extends BaseParser
                     fixedOffset = checkXRefStreamOffset(streamOffset, false);
                     if (fixedOffset > -1 && fixedOffset != streamOffset)
                     {
+                        Log.w("PdfBox-Android", "/XRefStm offset " + streamOffset + " is incorrect, corrected to " + fixedOffset);
                         streamOffset = (int)fixedOffset;
                         trailer.setInt(COSName.XREF_STM, streamOffset);
                     }
@@ -254,7 +255,21 @@ public class COSParser extends BaseParser
                     {
                         source.seek(streamOffset);
                         skipSpaces();
-                        parseXrefObjStream(prev, false);
+                        try
+                        {
+                            parseXrefObjStream(prev, false);
+                        }
+                        catch (IOException ex)
+                        {
+                            if (isLenient)
+                            {
+                                Log.e("PdfBox-Android", "Failed to parse /XRefStm at offset " + streamOffset, ex);
+                            }
+                            else
+                            {
+                                throw ex;
+                            }
+                        }
                     }
                     else
                     {
@@ -1930,7 +1945,14 @@ public class COSParser extends BaseParser
         }
         if (headerVersion < 0)
         {
-            throw new IOException( "Error getting header version: " + header);
+            if (isLenient)
+            {
+                headerVersion = 1.7f;
+            }
+            else
+            {
+                throw new IOException("Error getting header version: " + header);
+            }
         }
         document.setVersion(headerVersion);
         // rewind

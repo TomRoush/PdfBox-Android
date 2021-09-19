@@ -52,7 +52,7 @@ public class PDMarkedContentReference implements COSObjectable
 
     /**
      * Constructor for an existing marked content reference.
-     * 
+     *
      * @param dictionary the page dictionary
      */
     public PDMarkedContentReference(COSDictionary dictionary)
@@ -62,7 +62,7 @@ public class PDMarkedContentReference implements COSObjectable
 
     /**
      * Gets the page.
-     * 
+     *
      * @return the page
      */
     public PDPage getPage()
@@ -77,7 +77,7 @@ public class PDMarkedContentReference implements COSObjectable
 
     /**
      * Sets the page.
-     * 
+     *
      * @param page the page
      */
     public void setPage(PDPage page)
@@ -87,7 +87,7 @@ public class PDMarkedContentReference implements COSObjectable
 
     /**
      * Gets the marked content identifier.
-     * 
+     *
      * @return the marked content identifier
      */
     public int getMCID()
@@ -97,7 +97,7 @@ public class PDMarkedContentReference implements COSObjectable
 
     /**
      * Sets the marked content identifier.
-     * 
+     *
      * @param mcid the marked content identifier
      */
     public void setMCID(int mcid)
@@ -109,6 +109,7 @@ public class PDMarkedContentReference implements COSObjectable
     @Override
     public String toString()
     {
-        return new StringBuilder().append("mcid=").append(this.getMCID()).toString();
+        return "mcid=" + this.getMCID();
     }
+
 }

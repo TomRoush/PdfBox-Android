@@ -72,7 +72,7 @@ public class ContentStreamWriter
     }
 
     /**
-     * Writes a single operator token.
+     *  Writes a single operator token.
      *
      * @param op The operator to write to the stream.
      * @throws IOException If there is an error writing to the stream.
@@ -103,7 +103,7 @@ public class ContentStreamWriter
      * @param tokens The tokens to write to the stream.
      * @throws IOException If there is an error writing to the stream.
      */
-    public void writeTokens(List tokens) throws IOException
+    public void writeTokens( List<?> tokens ) throws IOException
     {
         for (Object token : tokens)
         {
@@ -116,27 +116,27 @@ public class ContentStreamWriter
         if( o instanceof COSString )
         {
             COSWriter.writeString((COSString)o, output);
-            output.write(SPACE);
+            output.write( SPACE );
         }
         else if( o instanceof COSFloat )
         {
             ((COSFloat)o).writePDF( output );
-            output.write(SPACE);
+            output.write( SPACE );
         }
         else if( o instanceof COSInteger )
         {
             ((COSInteger)o).writePDF( output );
-            output.write(SPACE);
+            output.write( SPACE );
         }
         else if( o instanceof COSBoolean )
         {
             ((COSBoolean)o).writePDF( output );
-            output.write(SPACE);
+            output.write( SPACE );
         }
         else if( o instanceof COSName )
         {
             ((COSName)o).writePDF( output );
-            output.write(SPACE);
+            output.write( SPACE );
         }
         else if( o instanceof COSArray )
         {
@@ -185,9 +185,9 @@ public class ContentStreamWriter
                 output.write( "ID".getBytes(Charsets.ISO_8859_1) );
                 output.write( EOL );
                 output.write( op.getImageData() );
-                output.write(EOL);
-                output.write("EI".getBytes(Charsets.ISO_8859_1));
-                output.write(EOL);
+                output.write( EOL );
+                output.write( "EI".getBytes(Charsets.ISO_8859_1) );
+                output.write( EOL );
             }
             else
             {

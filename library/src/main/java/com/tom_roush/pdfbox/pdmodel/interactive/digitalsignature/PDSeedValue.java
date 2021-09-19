@@ -112,7 +112,7 @@ public class PDSeedValue implements COSObjectable
 
     /**
      * set true if the filter shall be required.
-     * 
+     *
      * @param flag if true, the specified Filter shall be used when signing.
      */
     public void setFilterRequired(boolean flag)
@@ -131,7 +131,7 @@ public class PDSeedValue implements COSObjectable
 
     /**
      * set true if the subfilter shall be required.
-     * 
+     *
      * @param flag if true, the first supported SubFilter in the array shall be used when signing.
      */
     public void setSubFilterRequired(boolean flag)
@@ -140,9 +140,9 @@ public class PDSeedValue implements COSObjectable
     }
 
     /**
-    *
-    * @return true if the DigestMethod is required
-    */
+     *
+     * @return true if the DigestMethod is required
+     */
     public boolean isDigestMethodRequired()
     {
         return getCOSObject().getFlag( COSName.FF, FLAG_DIGEST_METHOD);
@@ -150,7 +150,7 @@ public class PDSeedValue implements COSObjectable
 
     /**
      * set true if the DigestMethod shall be required.
-     * 
+     *
      * @param flag if true, one digest from the array shall be used.
      */
     public void setDigestMethodRequired(boolean flag)
@@ -159,9 +159,9 @@ public class PDSeedValue implements COSObjectable
     }
 
     /**
-    *
-    * @return true if the V entry is required
-    */
+     *
+     * @return true if the V entry is required
+     */
     public boolean isVRequired()
     {
         return getCOSObject().getFlag( COSName.FF, FLAG_V);
@@ -169,7 +169,7 @@ public class PDSeedValue implements COSObjectable
 
     /**
      * set true if the V entry shall be required.
-     * 
+     *
      * @param flag if true, the V entry shall be used.
      */
     public void setVRequired(boolean flag)
@@ -178,9 +178,9 @@ public class PDSeedValue implements COSObjectable
     }
 
     /**
-    *
-    * @return true if the Reason is required
-    */
+     *
+     * @return true if the Reason is required
+     */
     public boolean isReasonRequired()
     {
         return getCOSObject().getFlag( COSName.FF, FLAG_REASON);
@@ -188,7 +188,7 @@ public class PDSeedValue implements COSObjectable
 
     /**
      * set true if the Reason shall be required.
-     * 
+     *
      * @param flag if true, the Reason entry shall be used.
      */
     public void setReasonRequired(boolean flag)
@@ -197,9 +197,9 @@ public class PDSeedValue implements COSObjectable
     }
 
     /**
-    *
-    * @return true if the LegalAttestation is required
-    */
+     *
+     * @return true if the LegalAttestation is required
+     */
     public boolean isLegalAttestationRequired()
     {
         return getCOSObject().getFlag( COSName.FF, FLAG_LEGAL_ATTESTATION);
@@ -207,7 +207,7 @@ public class PDSeedValue implements COSObjectable
 
     /**
      * set true if the LegalAttestation shall be required.
-     * 
+     *
      * @param flag if true, the LegalAttestation entry shall be used.
      */
     public void setLegalAttestationRequired(boolean flag)
@@ -216,9 +216,9 @@ public class PDSeedValue implements COSObjectable
     }
 
     /**
-    *
-    * @return true if the AddRevInfo is required
-    */
+     *
+     * @return true if the AddRevInfo is required
+     */
     public boolean isAddRevInfoRequired()
     {
         return getCOSObject().getFlag( COSName.FF, FLAG_ADD_REV_INFO);
@@ -226,7 +226,7 @@ public class PDSeedValue implements COSObjectable
 
     /**
      * set true if the AddRevInfo shall be required.
-     * 
+     *
      * @param flag if true, the AddRevInfo shall be used.
      */
     public void setAddRevInfoRequired(boolean flag)
@@ -284,7 +284,7 @@ public class PDSeedValue implements COSObjectable
                     actuals.add(element);
                 }
             }
-            retval = new COSArrayList(actuals, fields);
+            retval = new COSArrayList<String>(actuals, fields);
         }
         return retval;
     }
@@ -324,7 +324,7 @@ public class PDSeedValue implements COSObjectable
                     actuals.add(element);
                 }
             }
-            retval = new COSArrayList(actuals, fields);
+            retval = new COSArrayList<String>(actuals, fields);
         }
         return retval;
     }
@@ -346,11 +346,11 @@ public class PDSeedValue implements COSObjectable
         // integrity check
         for ( COSName cosName : digestMethod )
         {
-            if (!(cosName.equals(COSName.DIGEST_SHA1) 
-                    || cosName.equals(COSName.DIGEST_SHA256)
-                    || cosName.equals(COSName.DIGEST_SHA384)
-                    || cosName.equals(COSName.DIGEST_SHA512)
-                    || cosName.equals(COSName.DIGEST_RIPEMD160)))
+            if (!(cosName.equals(COSName.DIGEST_SHA1)
+                || cosName.equals(COSName.DIGEST_SHA256)
+                || cosName.equals(COSName.DIGEST_SHA384)
+                || cosName.equals(COSName.DIGEST_SHA512)
+                || cosName.equals(COSName.DIGEST_RIPEMD160)))
             {
                 throw new IllegalArgumentException("Specified digest " + cosName.getName() + " isn't allowed.");
             }
@@ -413,7 +413,7 @@ public class PDSeedValue implements COSObjectable
                     actuals.add(element);
                 }
             }
-            retval = new COSArrayList(actuals, fields);
+            retval = new COSArrayList<String>(actuals, fields);
         }
         return retval;
     }
@@ -530,7 +530,7 @@ public class PDSeedValue implements COSObjectable
                     actuals.add(element);
                 }
             }
-            retval = new COSArrayList(actuals, fields);
+            retval = new COSArrayList<String>(actuals, fields);
         }
         return retval;
     }

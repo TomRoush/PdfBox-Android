@@ -156,12 +156,13 @@ public final class StandardSecurityHandler extends SecurityHandler
      * @param documentIDArray  document id
      * @param decryptionMaterial Information used to decrypt the document.
      *
+     * @throws InvalidPasswordException If the password is incorrect.
      * @throws IOException If there is an error accessing data.
      */
     @Override
     public void prepareForDecryption(PDEncryption encryption, COSArray documentIDArray,
         DecryptionMaterial decryptionMaterial)
-        throws IOException
+        throws InvalidPasswordException, IOException
     {
         if(!(decryptionMaterial instanceof StandardDecryptionMaterial))
         {
@@ -257,7 +258,7 @@ public final class StandardSecurityHandler extends SecurityHandler
 
         if (encryption.getVersion() == 4 || encryption.getVersion() == 5)
         {
-            // detect whether AES encryption is used. This assumes that the encryption algo is
+            // detect whether AES encryption is used. This assumes that the encryption algo is 
             // stored in the PDCryptFilterDictionary
             // However, crypt filters are used only when V is 4 or 5.
             PDCryptFilterDictionary stdCryptFilterDictionary = encryption.getStdCryptFilterDictionary();
@@ -294,7 +295,7 @@ public final class StandardSecurityHandler extends SecurityHandler
     {
         try
         {
-            // "Decrypt the 16-byte Perms string using AES-256 in ECB mode with an
+            // "Decrypt the 16-byte Perms string using AES-256 in ECB mode with an 
             // initialization vector of zero and the file encryption key as the key."
             Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
             cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(encryptionKey, "AES"));
@@ -306,7 +307,7 @@ public final class StandardSecurityHandler extends SecurityHandler
                 Log.w("PdfBox-Android", "Verification of permissions failed (constant)");
             }
 
-            // "Bytes 0-3 of the decrypted Perms entry, treated as a little-endian integer,
+            // "Bytes 0-3 of the decrypted Perms entry, treated as a little-endian integer, 
             // are the user permissions. They should match the value in the P key."
             int permsP = perms[0] & 0xFF | (perms[1] & 0xFF) << 8 | (perms[2] & 0xFF) << 16 |
                 (perms[3] & 0xFF) << 24;

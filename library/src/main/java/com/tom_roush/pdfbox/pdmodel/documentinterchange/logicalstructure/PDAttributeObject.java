@@ -30,13 +30,14 @@ import com.tom_roush.pdfbox.pdmodel.documentinterchange.taggedpdf.PDTableAttribu
  * An attribute object.
  *
  * @author Johannes Koch
+ *
  */
 public abstract class PDAttributeObject extends PDDictionaryWrapper
 {
 
     /**
      * Creates an attribute object.
-     * 
+     *
      * @param dictionary the dictionary
      * @return the attribute object
      */
@@ -80,7 +81,7 @@ public abstract class PDAttributeObject extends PDDictionaryWrapper
 
     /**
      * Gets the structure element.
-     * 
+     *
      * @return the structure element
      */
     private PDStructureElement getStructureElement()
@@ -90,7 +91,7 @@ public abstract class PDAttributeObject extends PDDictionaryWrapper
 
     /**
      * Sets the structure element.
-     * 
+     *
      * @param structureElement the structure element
      */
     protected void setStructureElement(PDStructureElement structureElement)
@@ -108,7 +109,7 @@ public abstract class PDAttributeObject extends PDDictionaryWrapper
 
     /**
      * Creates a new attribute object with a given dictionary.
-     * 
+     *
      * @param dictionary the dictionary
      */
     public PDAttributeObject(COSDictionary dictionary)
@@ -119,7 +120,7 @@ public abstract class PDAttributeObject extends PDDictionaryWrapper
 
     /**
      * Returns the owner of the attributes.
-     * 
+     *
      * @return the owner of the attributes
      */
     public String getOwner()
@@ -129,7 +130,7 @@ public abstract class PDAttributeObject extends PDDictionaryWrapper
 
     /**
      * Sets the owner of the attributes.
-     * 
+     *
      * @param owner the owner of the attributes
      */
     protected void setOwner(String owner)
@@ -139,7 +140,7 @@ public abstract class PDAttributeObject extends PDDictionaryWrapper
 
     /**
      * Detects whether there are no properties in the attribute object.
-     * 
+     *
      * @return <code>true</code> if the attribute object is empty,
      *  <code>false</code> otherwise
      */
@@ -152,7 +153,7 @@ public abstract class PDAttributeObject extends PDDictionaryWrapper
 
     /**
      * Notifies the attribute object change listeners if the attribute is changed.
-     * 
+     *
      * @param oldBase old value
      * @param newBase new value
      */
@@ -166,7 +167,7 @@ public abstract class PDAttributeObject extends PDDictionaryWrapper
 
     /**
      * Is the value changed?
-     * 
+     *
      * @param oldValue old value
      * @param newValue new value
      * @return <code>true</code> if the value is changed, <code>false</code>
@@ -196,12 +197,12 @@ public abstract class PDAttributeObject extends PDDictionaryWrapper
     @Override
     public String toString()
     {
-        return new StringBuilder("O=").append(this.getOwner()).toString();
+        return "O=" + this.getOwner();
     }
 
     /**
      * Creates a String representation of an Object array.
-     * 
+     *
      * @param array the Object array
      * @return the String representation
      */
@@ -221,7 +222,7 @@ public abstract class PDAttributeObject extends PDDictionaryWrapper
 
     /**
      * Creates a String representation of a float array.
-     * 
+     *
      * @param array the float array
      * @return the String representation
      */

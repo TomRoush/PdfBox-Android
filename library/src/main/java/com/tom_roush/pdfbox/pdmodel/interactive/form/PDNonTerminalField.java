@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -134,10 +133,14 @@ public class PDNonTerminalField extends PDField
         COSArray kids = (COSArray)getCOSObject().getDictionaryObject(COSName.KIDS);
         for (int i = 0; i < kids.size(); i++)
         {
-            PDField field = PDField.fromDictionary(getAcroForm(), (COSDictionary)kids.getObject(i), this);
-            if (field != null)
+            COSDictionary cosDict = (COSDictionary)kids.getObject(i);
+            if (cosDict != null)
             {
-                children.add(field);
+                PDField field = PDField.fromDictionary(getAcroForm(), cosDict, this);
+                if (field != null)
+                {
+                    children.add(field);
+                }
             }
         }
         return children;
