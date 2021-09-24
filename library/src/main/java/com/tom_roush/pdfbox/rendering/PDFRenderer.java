@@ -217,7 +217,7 @@ public class PDFRenderer
                     break;
             }
             canvas.translate(translateX, translateY);
-            canvas.rotate((float) Math.toRadians(rotationAngle));
+            canvas.rotate(rotationAngle);
         }
     }
 
