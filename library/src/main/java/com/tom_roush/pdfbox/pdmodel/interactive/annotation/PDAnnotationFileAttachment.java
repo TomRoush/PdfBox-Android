@@ -56,19 +56,17 @@ public class PDAnnotationFileAttachment extends PDAnnotationMarkup
      */
     public PDAnnotationFileAttachment()
     {
-        super();
         getCOSObject().setItem(COSName.SUBTYPE, COSName.getPDFName(SUB_TYPE));
     }
 
     /**
-     * Creates a Link annotation from a COSDictionary, expected to be
-     * a correct object definition.
+     * Creates a Link annotation from a COSDictionary, expected to be a correct object definition.
      *
      * @param field the PDF objet to represent as a field.
      */
     public PDAnnotationFileAttachment(COSDictionary field)
     {
-        super( field );
+        super(field);
     }
 
     /**
@@ -88,14 +86,13 @@ public class PDAnnotationFileAttachment extends PDAnnotationMarkup
      *
      * @param file The file that is attached.
      */
-    public void setFile( PDFileSpecification file )
+    public void setFile(PDFileSpecification file)
     {
         getCOSObject().setItem("FS", file);
     }
 
     /**
-     * This is the name used to draw the type of attachment.
-     * See the ATTACHMENT_NAME_XXX constants.
+     * This is the name used to draw the type of attachment. See the ATTACHMENT_NAME_XXX constants.
      *
      * @return The name that describes the visual cue for the attachment.
      */
@@ -105,12 +102,11 @@ public class PDAnnotationFileAttachment extends PDAnnotationMarkup
     }
 
     /**
-     * Set the name used to draw the attachement icon.
-     * See the ATTACHMENT_NAME_XXX constants.
+     * Set the name used to draw the attachement icon. See the ATTACHMENT_NAME_XXX constants.
      *
      * @param name The name of the visual icon to draw.
      */
-    public void setAttachementName( String name )
+    public void setAttachementName(String name)
     {
         getCOSObject().setName("Name", name);
     }

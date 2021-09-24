@@ -78,9 +78,9 @@ public abstract class PDPageDestination extends PDDestination
     }
 
     /**
-     * Set the page for this destination.
+     * Set the page for a local destination. For an external destination, call {@link #setPageNumber(int) setPageNumber(int pageNumber)}.
      *
-     * @param page The page for the destination.
+     * @param page The page for a local destination.
      */
     public void setPage( PDPage page )
     {
@@ -140,7 +140,7 @@ public abstract class PDPageDestination extends PDDestination
                 }
                 // now parent is the pages node
                 PDPageTree pages = new PDPageTree((COSDictionary) parent);
-                return pages.indexOf(new PDPage((COSDictionary)page)) + 1;
+                return pages.indexOf(new PDPage((COSDictionary) page)) + 1;
             }
         }
         return retval;
@@ -180,9 +180,10 @@ public abstract class PDPageDestination extends PDDestination
     }
 
     /**
-     * Set the page number for this destination.
+     * Set the page number for a remote destination. For an internal destination, call 
+     * {@link #setPage(PDPage) setPage(PDPage page)}.
      *
-     * @param pageNumber The page for the destination.
+     * @param pageNumber The page for a remote destination.
      */
     public void setPageNumber( int pageNumber )
     {
@@ -199,4 +200,5 @@ public abstract class PDPageDestination extends PDDestination
     {
         return array;
     }
+
 }

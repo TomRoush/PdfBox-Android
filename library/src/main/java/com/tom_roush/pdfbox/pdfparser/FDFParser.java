@@ -34,9 +34,9 @@ public class FDFParser extends COSParser
 {
     /**
      * Constructs parser for given file using memory buffer.
-     * 
+     *
      * @param filename the filename of the pdf to be parsed
-     * 
+     *
      * @throws IOException If something went wrong.
      */
     public FDFParser(String filename) throws IOException
@@ -47,9 +47,9 @@ public class FDFParser extends COSParser
     /**
      * Constructs parser for given file using given buffer for temporary
      * storage.
-     * 
+     *
      * @param file the pdf to be parsed
-     * 
+     *
      * @throws IOException If something went wrong.
      */
     public FDFParser(File file) throws IOException
@@ -61,7 +61,7 @@ public class FDFParser extends COSParser
 
     /**
      * Constructor.
-     * 
+     *
      * @param input input stream representing the pdf.
      * @throws IOException If something went wrong.
      */
@@ -83,8 +83,8 @@ public class FDFParser extends COSParser
             }
             catch (NumberFormatException nfe)
             {
-            	Log.w("PdfBox-Android", "System property " + SYSPROP_EOFLOOKUPRANGE
-            			+ " does not contain an integer value, but: '" + eofLookupRangeStr + "'");
+                Log.w("PdfBox-Android", "System property " + SYSPROP_EOFLOOKUPRANGE
+                    + " does not contain an integer value, but: '" + eofLookupRangeStr + "'");
             }
         }
         document = new COSDocument();
@@ -94,7 +94,7 @@ public class FDFParser extends COSParser
      * The initial parse will first parse only the trailer, the xrefstart and all xref tables to have a pointer (offset)
      * to all the pdf's objects. It can handle linearized pdfs, which will have an xref at the end pointing to an xref
      * at the beginning of the file. Last the root object is parsed.
-     * 
+     *
      * @throws IOException If something went wrong.
      */
     private void initialParse() throws IOException
@@ -102,17 +102,36 @@ public class FDFParser extends COSParser
         COSDictionary trailer = null;
         // parse startxref
         long startXRefOffset = getStartxrefOffset();
+        boolean rebuildTrailer = false;
         if (startXRefOffset > 0)
         {
-            trailer = parseXref(startXRefOffset);
+            try
+            {
+                trailer = parseXref(startXRefOffset);
+            }
+            catch (IOException exception)
+            {
+                if (isLenient())
+                {
+                    rebuildTrailer = true;
+                }
+                else
+                {
+                    throw exception;
+                }
+            }
         }
-        else
+        else if (isLenient())
+        {
+            rebuildTrailer = true;
+        }
+        if (rebuildTrailer)
         {
             trailer = rebuildTrailer();
         }
-    
+
         COSBase rootObject = parseTrailerValuesDynamically(trailer);
-    
+
         // resolve all objects
         // A FDF doesn't have a catalog, all FDF fields are within the root object
         if (rootObject instanceof COSDictionary)
@@ -130,10 +149,10 @@ public class FDFParser extends COSParser
      */
     public void parse() throws IOException
     {
-         // set to false if all is processed
-         boolean exceptionOccurred = true; 
-         try
-         {
+        // set to false if all is processed
+        boolean exceptionOccurred = true;
+        try
+        {
             if (!parseFDFHeader())
             {
                 throw new IOException( "Error: Header doesn't contain versioninfo" );

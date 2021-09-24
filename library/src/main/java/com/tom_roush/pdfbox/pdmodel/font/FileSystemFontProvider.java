@@ -122,10 +122,10 @@ final class FileSystemFontProvider extends FontProvider
                 FontBoxFont font;
                 switch (format)
                 {
-                case PFB: font = parent.getType1Font(postScriptName, file); break;
-                case TTF: font = parent.getTrueTypeFont(postScriptName, file); break;
-                case OTF: font = parent.getOTFFont(postScriptName, file); break;
-                default: throw new RuntimeException("can't happen");
+                    case PFB: font = parent.getType1Font(postScriptName, file); break;
+                    case TTF: font = parent.getTrueTypeFont(postScriptName, file); break;
+                    case OTF: font = parent.getOTFFont(postScriptName, file); break;
+                    default: throw new RuntimeException("can't happen");
                 }
                 parent.cache.addFont(this, font);
                 return font;
@@ -653,10 +653,7 @@ final class FileSystemFontProvider extends FontProvider
         }
         finally
         {
-            if (ttf != null)
-            {
-                ttf.close();
-            }
+            ttf.close();
         }
     }
 

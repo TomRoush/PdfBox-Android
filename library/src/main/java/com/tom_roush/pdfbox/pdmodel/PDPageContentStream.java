@@ -781,7 +781,9 @@ public final class PDPageContentStream implements Closeable
      * @param transform the transformation matrix
      * @throws IOException If there is an error writing to the stream.
      * @throws IllegalStateException If the method was called within a text block.
-     * @deprecated Use {@link #drawImage} or {@link #drawForm} instead.
+     * @deprecated Use {@link #drawImage(PDImageXObject, Matrix) drawImage(PDImageXObject, Matrix)}
+     * or {@link #drawForm(PDFormXObject) drawForm(PDFormXObject)} with
+     * {@link #transform(Matrix) transform(Matrix)} instead.
      */
     @Deprecated
     public void drawXObject(PDXObject xobject, AffineTransform transform) throws IOException
@@ -2023,6 +2025,22 @@ public final class PDPageContentStream implements Closeable
         write("] ");
         writeOperand(phase);
         writeOperator("d");
+    }
+
+    /**
+     * Set the miter limit.
+     *
+     * @param miterLimit the new miter limit.
+     * @throws IOException If the content stream could not be written.
+     */
+    public void setMiterLimit(float miterLimit) throws IOException
+    {
+        if (inTextMode)
+        {
+            throw new IllegalStateException("Error: setMiterLimit is not allowed within a text block.");
+        }
+        writeOperand(miterLimit);
+        writeOperator("M");
     }
 
     /**

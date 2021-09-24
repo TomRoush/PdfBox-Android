@@ -18,6 +18,8 @@ package com.tom_roush.pdfbox.util;
 
 import android.graphics.PointF;
 
+import java.util.Arrays;
+
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSFloat;
@@ -695,5 +697,29 @@ public final class Matrix implements Cloneable
             single[6] + "," +
             single[7] + "]";
         return sb;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Arrays.hashCode(single);
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj == null)
+        {
+            return false;
+        }
+        if (getClass() != obj.getClass())
+        {
+            return false;
+        }
+        return Arrays.equals(this.single, ((Matrix) obj).single);
     }
 }

@@ -35,8 +35,8 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 public interface PDImage extends COSObjectable
 {
     /**
-     * Returns the content of this image as a Bitmap with ARGB_888.
-     * The size of the returned image is the larger of the size of the image itself or its mask.
+     * Returns the content of this image as a Bitmap with ARGB_8888.
+     * The size of the returned image is the larger of the size of the image itself or its mask. 
      * @return content of this image as a buffered image.
      * @throws IOException
      */
@@ -54,7 +54,6 @@ public interface PDImage extends COSObjectable
     /**
      * Returns an InputStream containing the image data, irrespective of whether this is an
      * inline image or an image XObject.
-     *
      * @return Decoded stream
      * @throws IOException if the data could not be read.
      */
@@ -63,7 +62,7 @@ public interface PDImage extends COSObjectable
     /**
      * Returns an InputStream containing the image data, irrespective of whether this is an
      * inline image or an image XObject. The given filters will not be decoded.
-     *
+     * @param stopFilters A list of filters to stop decoding at.
      * @return Decoded stream
      * @throws IOException if the data could not be read.
      */

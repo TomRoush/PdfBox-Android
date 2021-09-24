@@ -22,7 +22,6 @@ package com.tom_roush.pdfbox.util;
  */
 public class NumberFormatUtil
 {
-
     /**
      * Maximum number of fraction digits supported by the format methods
      */
@@ -51,6 +50,10 @@ public class NumberFormatUtil
         {
             POWER_OF_TENS_INT[exp] = POWER_OF_TENS_INT[exp - 1] * 10;
         }
+    }
+
+    private NumberFormatUtil()
+    {
     }
 
     /**

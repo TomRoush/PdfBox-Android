@@ -130,16 +130,16 @@ public abstract class PDFunction implements COSObjectable
         int functionType = functionDictionary.getInt(COSName.FUNCTION_TYPE);
         switch (functionType)
         {
-        case 0:
-            return new PDFunctionType0(functionDictionary);
-        case 2:
-            return new PDFunctionType2(functionDictionary);
-        case 3:
-            return new PDFunctionType3(functionDictionary);
-        case 4:
-            return new PDFunctionType4(functionDictionary);
-        default:
-            throw new IOException("Error: Unknown function type " + functionType);
+            case 0:
+                return new PDFunctionType0(functionDictionary);
+            case 2:
+                return new PDFunctionType2(functionDictionary);
+            case 3:
+                return new PDFunctionType3(functionDictionary);
+            case 4:
+                return new PDFunctionType4(functionDictionary);
+            default:
+                throw new IOException("Error: Unknown function type " + functionType);
         }
     }
 

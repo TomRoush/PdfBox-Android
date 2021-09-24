@@ -621,8 +621,11 @@ public abstract class PDAnnotation implements COSObjectable
     }
 
     /**
-     * This will retrieve the border array. If none is available, it will return the default, which
-     * is [0 0 1].
+     * This will retrieve the border array. If none is available then it will return the default,
+     * which is [0 0 1]. The array consists of at least three numbers defining the horizontal corner
+     * radius, vertical corner radius, and border width. The array may have a fourth element, an
+     * optional dash array defining a pattern of dashes and gaps that shall be used in drawing the
+     * border. If the array has less than three elements, it will be filled with 0.
      *
      * @return the border array.
      */
@@ -630,16 +633,28 @@ public abstract class PDAnnotation implements COSObjectable
     {
         COSBase base = getCOSObject().getDictionaryObject(COSName.BORDER);
         COSArray border;
-        if (!(base instanceof COSArray))
+        if (base instanceof COSArray)
+        {
+            border = (COSArray) base;
+            if (border.size() < 3)
+            {
+                // create a copy to avoid altering the PDF
+                COSArray newBorder = new COSArray();
+                newBorder.addAll(border);
+                border = newBorder;
+                // Adobe Reader behaves as if missing elements are 0.
+                while (border.size() < 3)
+                {
+                    border.add(COSInteger.ZERO);
+                }
+            }
+        }
+        else
         {
             border = new COSArray();
             border.add(COSInteger.ZERO);
             border.add(COSInteger.ZERO);
             border.add(COSInteger.ONE);
-        }
-        else
-        {
-            border = (COSArray) base;
         }
         return border;
     }
@@ -692,17 +707,17 @@ public abstract class PDAnnotation implements COSObjectable
             PDColorSpace colorSpace = null;
             switch (((COSArray) c).size())
             {
-            case 1:
-                colorSpace = PDDeviceGray.INSTANCE;
-                break;
-            case 3:
-                colorSpace = PDDeviceRGB.INSTANCE;
-                break;
-            case 4:
-//                colorSpace = PDDeviceCMYK.INSTANCE; TODO: PdfBox-Android
-                break;
-            default:
-                break;
+                case 1:
+                    colorSpace = PDDeviceGray.INSTANCE;
+                    break;
+                case 3:
+                    colorSpace = PDDeviceRGB.INSTANCE;
+                    break;
+                case 4:
+//                    colorSpace = PDDeviceCMYK.INSTANCE; PdfBox-Android
+                    break;
+                default:
+                    break;
             }
             return new PDColor((COSArray) c, colorSpace);
         }

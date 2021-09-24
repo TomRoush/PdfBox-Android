@@ -22,8 +22,7 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 
 /**
- * This is the class that represents a popup annotation.
- * Introduced in PDF 1.3 specification
+ * This is the class that represents a popup annotation. Introduced in PDF 1.3 specification
  *
  * @author Paul King
  */
@@ -40,36 +39,31 @@ public class PDAnnotationPopup extends PDAnnotation
      */
     public PDAnnotationPopup()
     {
-        super();
         getCOSObject().setItem(COSName.SUBTYPE, COSName.getPDFName(SUB_TYPE));
     }
 
     /**
-     * Creates a popup annotation from a COSDictionary, expected to be a correct
-     * object definition.
+     * Creates a popup annotation from a COSDictionary, expected to be a correct object definition.
      *
-     * @param field
-     *            the PDF objet to represent as a field.
+     * @param field the PDF objet to represent as a field.
      */
-    public PDAnnotationPopup( COSDictionary field )
+    public PDAnnotationPopup(COSDictionary field)
     {
-        super( field );
+        super(field);
     }
 
     /**
      * This will set inital state of the annotation, open or closed.
      *
-     * @param open
-     *            Boolean value, true = open false = closed.
+     * @param open Boolean value, true = open false = closed.
      */
-    public void setOpen( boolean open )
+    public void setOpen(boolean open)
     {
         getCOSObject().setBoolean("Open", open);
     }
 
     /**
-     * This will retrieve the initial state of the annotation, open Or closed
-     * (default closed).
+     * This will retrieve the initial state of the annotation, open Or closed (default closed).
      *
      * @return The initial state, true = open false = closed.
      */
@@ -83,7 +77,7 @@ public class PDAnnotationPopup extends PDAnnotation
      *
      * @param annot the markup annotation.
      */
-    public void setParent( PDAnnotationMarkup annot )
+    public void setParent(PDAnnotationMarkup annot)
     {
         getCOSObject().setItem(COSName.PARENT, annot.getCOSObject());
     }
@@ -98,8 +92,8 @@ public class PDAnnotationPopup extends PDAnnotation
         PDAnnotationMarkup am = null;
         try
         {
-            am = (PDAnnotationMarkup) PDAnnotation.createAnnotation(
-                getCOSObject().getDictionaryObject(COSName.PARENT, COSName.P));
+            am = (PDAnnotationMarkup) PDAnnotation.createAnnotation(getCOSObject()
+                .getDictionaryObject(COSName.PARENT, COSName.P));
         }
         catch (IOException ioe)
         {

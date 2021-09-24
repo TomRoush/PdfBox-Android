@@ -518,6 +518,7 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
      *
      * @param code character code
      * @return GID (glyph index)
+     * @throws java.io.IOException
      */
     public int codeToGID(int code) throws IOException
     {
@@ -527,7 +528,7 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
         if (!isSymbolic()) // non-symbolic
         {
             String name = encoding.getName(code);
-            if (name.equals(".notdef"))
+            if (".notdef".equals(name))
             {
                 return 0;
             }

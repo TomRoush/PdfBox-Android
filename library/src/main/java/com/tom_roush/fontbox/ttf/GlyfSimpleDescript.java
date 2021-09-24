@@ -26,6 +26,7 @@ import java.io.IOException;
  */
 public class GlyfSimpleDescript extends GlyfDescript
 {
+
     private int[] endPtsOfContours;
     private byte[] flags;
     private short[] xCoordinates;
@@ -34,14 +35,13 @@ public class GlyfSimpleDescript extends GlyfDescript
 
     /**
      * Constructor.
-     * 
+     *
      * @param numberOfContours number of contours
      * @param bais the stream to be read
      * @param x0 the initial X-position
      * @throws IOException is thrown if something went wrong
      */
-    public GlyfSimpleDescript(short numberOfContours, TTFDataStream bais, short x0)
-        throws IOException
+    public GlyfSimpleDescript(short numberOfContours, TTFDataStream bais, short x0) throws IOException
     {
         super(numberOfContours, bais);
 

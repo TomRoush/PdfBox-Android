@@ -34,7 +34,7 @@ class MemoryTTFDataStream extends TTFDataStream
     private int currentPosition = 0;
 
     /**
-     * Constructor from a stream.
+     * Constructor from a stream. 
      * @param is The stream to read from. It will be closed by this method.
      * @throws IOException If an error occurs while reading from the stream.
      */
@@ -53,10 +53,7 @@ class MemoryTTFDataStream extends TTFDataStream
         }
         finally
         {
-            if( is != null )
-            {
-                is.close();
-            }
+            is.close();
         }
     }
 

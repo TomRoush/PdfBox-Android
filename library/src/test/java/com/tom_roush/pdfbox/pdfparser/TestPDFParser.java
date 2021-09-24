@@ -22,9 +22,9 @@
 package com.tom_roush.pdfbox.pdfparser;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 import com.tom_roush.pdfbox.cos.COSDocument;
 import com.tom_roush.pdfbox.io.MemoryUsageSetting;
@@ -32,7 +32,6 @@ import com.tom_roush.pdfbox.io.RandomAccessBufferedFileInputStream;
 import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.io.ScratchFile;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,8 +40,9 @@ import static org.junit.Assert.assertNotNull;
 
 public class TestPDFParser
 {
-    private static final String PATH_OF_PDF = "/pdfbox/input/yaddatest.pdf";
-    private static File tmpDirectory = new File(System.getProperty("java.io.tmpdir"));
+
+    private static final String PATH_OF_PDF = "src/test/resources/pdfbox/input/yaddatest.pdf";
+    private static final File tmpDirectory = new File(System.getProperty("java.io.tmpdir"));
 
     private int numberOfTmpFiles = 0;
 
@@ -71,7 +71,7 @@ public class TestPDFParser
             public boolean accept(File dir, String name)
             {
                 return name.startsWith(COSParser.TMP_FILE_PREFIX)
-                        && name.endsWith("pdf");
+                    && name.endsWith("pdf");
             }
         });
 
@@ -86,60 +86,35 @@ public class TestPDFParser
     @Test
     public void testPDFParserFile() throws IOException
     {
-        try
-        {
-            executeParserTest(new RandomAccessBufferedFileInputStream(
-                    new File(getClass().getResource(PATH_OF_PDF).toURI())),
-                MemoryUsageSetting.setupMainMemoryOnly());
-        }
-        catch (URISyntaxException e)
-        {
-            e.printStackTrace();
-        }
+        executeParserTest(new RandomAccessBufferedFileInputStream(new File(PATH_OF_PDF)), MemoryUsageSetting.setupMainMemoryOnly());
     }
 
     @Test
     public void testPDFParserInputStream() throws IOException
     {
-        executeParserTest(
-            new RandomAccessBufferedFileInputStream(getClass().getResourceAsStream(PATH_OF_PDF)),
-            MemoryUsageSetting.setupMainMemoryOnly());
+        executeParserTest(new RandomAccessBufferedFileInputStream(new FileInputStream(PATH_OF_PDF)), MemoryUsageSetting.setupMainMemoryOnly());
     }
 
     @Test
     public void testPDFParserFileScratchFile() throws IOException
     {
-        try
-        {
-            executeParserTest(new RandomAccessBufferedFileInputStream(
-                    new File(getClass().getResource(PATH_OF_PDF).toURI())),
-                MemoryUsageSetting.setupTempFileOnly());
-        }
-        catch (URISyntaxException e)
-        {
-            e.printStackTrace();
-        }
+        executeParserTest(new RandomAccessBufferedFileInputStream(new File(PATH_OF_PDF)), MemoryUsageSetting.setupTempFileOnly());
     }
 
     @Test
     public void testPDFParserInputStreamScratchFile() throws IOException
     {
-        executeParserTest(
-            new RandomAccessBufferedFileInputStream(getClass().getResourceAsStream(PATH_OF_PDF)),
-            MemoryUsageSetting.setupTempFileOnly());
+        executeParserTest(new RandomAccessBufferedFileInputStream(new FileInputStream(PATH_OF_PDF)), MemoryUsageSetting.setupTempFileOnly());
     }
 
     @Test
     public void testPDFParserMissingCatalog() throws IOException
     {
         // PDFBOX-3060
-        PDDocument.load(TestPDFParser.class
-            .getResourceAsStream("/pdfbox/com/tom_roush/pdfbox/pdfparser/MissingCatalog.pdf"))
-            .close();
+        PDDocument.load(TestPDFParser.class.getResourceAsStream("/pdfbox/com/tom_roush/pdfbox/pdfparser/MissingCatalog.pdf")).close();
     }
 
-    private void executeParserTest(RandomAccessRead source, MemoryUsageSetting memUsageSetting)
-        throws IOException
+    private void executeParserTest(RandomAccessRead source, MemoryUsageSetting memUsageSetting) throws IOException
     {
         ScratchFile scratchFile = new ScratchFile(memUsageSetting);
         PDFParser pdfParser = new PDFParser(source, scratchFile);
@@ -151,4 +126,5 @@ public class TestPDFParser
         // number tmp file must be the same
         assertEquals(numberOfTmpFiles, getNumberOfTempFile());
     }
+
 }

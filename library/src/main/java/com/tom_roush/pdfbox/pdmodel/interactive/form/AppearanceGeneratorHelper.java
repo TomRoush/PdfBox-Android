@@ -30,6 +30,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdfparser.PDFStreamParser;
 import com.tom_roush.pdfbox.pdfwriter.ContentStreamWriter;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
@@ -151,6 +152,8 @@ class AppearanceGeneratorHelper
                     appearanceStream.setMatrix(calculateMatrix(bbox, rotation));
                     appearanceStream.setFormType(1);
 
+                    appearanceStream.setResources(new PDResources());
+
                     appearanceDict.setNormalAppearance(appearanceStream);
                     // TODO support appearances other than "normal"
                 }
@@ -226,7 +229,7 @@ class AppearanceGeneratorHelper
                 lineWidth = borderStyle.getWidth();
             }
 
-            if (lineWidth > 0)
+            if (lineWidth > 0 && borderColour != null)
             {
                 if (lineWidth != 1)
                 {
@@ -432,27 +435,25 @@ class AppearanceGeneratorHelper
         {
             return new AffineTransform();
         }
-        else
+        float tx = 0, ty = 0;
+        switch (rotation)
         {
-            float tx=0, ty=0;
-
-            if (rotation == 90)
-            {
+            case 90:
                 tx = bbox.getUpperRightY();
-            }
-            else if (rotation == 180)
-            {
+                break;
+            case 180:
                 tx = bbox.getUpperRightY();
                 ty = bbox.getUpperRightX();
-            }
-            else if (rotation == 270)
-            {
+                break;
+            case 270:
                 ty = bbox.getUpperRightX();
-            }
-
-            Matrix matrix = Matrix.getRotateInstance(Math.toRadians(rotation), tx, ty);
-            return matrix.createAffineTransform();
+                break;
+            default:
+                break;
         }
+        Matrix matrix = Matrix.getRotateInstance(Math.toRadians(rotation), tx, ty);
+        return matrix.createAffineTransform();
+
     }
 
 

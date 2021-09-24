@@ -107,7 +107,7 @@ public class PDFTemplateCreator
         pdfBuilder.createAcroFormDictionary(acroForm, pdSignatureField);
 
         // create AffineTransform
-        pdfBuilder.createAffineTransform(properties.getAffineTransformParams());
+        pdfBuilder.createAffineTransform(properties.getTransform());
         AffineTransform transform = pdfStructure.getAffineTransform();
 
         // rectangle, formatter, image. /AcroForm/DR/XObject contains that form

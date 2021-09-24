@@ -37,6 +37,7 @@ import com.tom_roush.pdfbox.pdfparser.PDFObjectStreamParser;
  */
 public class COSDocument extends COSBase implements Closeable
 {
+
     private float version = 1.4f;
 
     /**
@@ -53,7 +54,7 @@ public class COSDocument extends COSBase implements Closeable
         new HashMap<COSObjectKey, Long>();
 
     /**
-     * List containing all streams which are created when creating a new pdf.
+     * List containing all streams which are created when creating a new pdf. 
      */
     private final List<COSStream> streams = new ArrayList<COSStream>();
 
@@ -65,7 +66,7 @@ public class COSDocument extends COSBase implements Closeable
     private boolean warnMissingClose = true;
 
     /**
-     * Signal that document is already decrypted.
+     * Signal that document is already decrypted. 
      */
     private boolean isDecrypted = false;
 
@@ -90,6 +91,7 @@ public class COSDocument extends COSBase implements Closeable
      * PDF streams.
      *
      * @param scratchFile memory handler for buffering of PDF streams
+     *
      */
     public COSDocument(ScratchFile scratchFile)
     {
@@ -136,7 +138,7 @@ public class COSDocument extends COSBase implements Closeable
      * @return This will return an object with the specified type.
      * @throws IOException If there is an error getting the object
      */
-    public COSObject getObjectByType( COSName type ) throws IOException
+    public COSObject getObjectByType(COSName type) throws IOException
     {
         for( COSObject object : objectPool.values() )
         {
@@ -285,7 +287,7 @@ public class COSDocument extends COSBase implements Closeable
     /**
      * Indicates if a encrypted pdf is already decrypted after parsing.
      *
-     * @return true indicates that the pdf is decrypted.
+     *  @return true indicates that the pdf is decrypted.
      */
     public boolean isDecrypted()
     {
@@ -435,15 +437,10 @@ public class COSDocument extends COSBase implements Closeable
                     }
                 }
             }
-
-            if (streams != null)
+            for (COSStream stream : streams)
             {
-                for (COSStream stream : streams)
-                {
-                    stream.close();
-                }
+                stream.close();
             }
-
             if (scratchFile != null)
             {
                 scratchFile.close();
@@ -509,8 +506,8 @@ public class COSDocument extends COSBase implements Closeable
                 COSObjectKey key = new COSObjectKey(next);
                 if (objectPool.get(key) == null || objectPool.get(key).getObject() == null
                     // xrefTable stores negated objNr of objStream for objects in objStreams
-                    || (xrefTable.containsKey(key) &&
-                    xrefTable.get(key) == -objStream.getObjectNumber()))
+                    || (xrefTable.containsKey(key)
+                    && xrefTable.get(key) == -objStream.getObjectNumber()))
                 {
                     COSObject obj = getObjectFromPool(key);
                     obj.setObject(next.getObject());
@@ -580,7 +577,7 @@ public class COSDocument extends COSBase implements Closeable
     }
 
     /**
-     * This method set the startxref value of the document. This will only
+     * This method set the startxref value of the document. This will only 
      * be needed for incremental updates.
      *
      * @param startXrefValue the value for startXref

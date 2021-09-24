@@ -31,7 +31,7 @@ import java.util.Arrays;
  * @author Ben Litchfield
  * @author Michael Niedermair
  */
-public class PfbParser 
+public class PfbParser
 {
     /**
      * the pdf header length.
@@ -59,8 +59,8 @@ public class PfbParser
      * The record types in the pfb-file.
      */
     private static final int[] PFB_RECORDS = {ASCII_MARKER, BINARY_MARKER,
-            ASCII_MARKER};
-    
+        ASCII_MARKER};
+
     /**
      * buffersize.
      */
@@ -77,16 +77,16 @@ public class PfbParser
     private int[] lengths;
 
     // sample (pfb-file)
-    // 00000000 80 01 8b 15  00 00 25 21  50 53 2d 41  64 6f 62 65  
+    // 00000000 80 01 8b 15  00 00 25 21  50 53 2d 41  64 6f 62 65
     //          ......%!PS-Adobe
-    
-    
+
+
     /**
      * Create a new object.
      * @param filename  the file name
      * @throws IOException if an IO-error occurs.
      */
-    public PfbParser(final String filename) throws IOException 
+    public PfbParser(final String filename) throws IOException
     {
         this( new BufferedInputStream(new FileInputStream(filename),BUFFER_SIZE) );
     }
@@ -96,7 +96,7 @@ public class PfbParser
      * @param in   The input.
      * @throws IOException if an IO-error occurs.
      */
-    public PfbParser(final InputStream in) throws IOException 
+    public PfbParser(final InputStream in) throws IOException
     {
         byte[] pfb = readPfbInput(in);
         parsePfb(pfb);
@@ -104,7 +104,7 @@ public class PfbParser
 
     /**
      * Create a new object.
-     * @param bytes The input.
+     * @param bytes   The input.
      * @throws IOException if an IO-error occurs.
      */
     public PfbParser(final byte[] bytes) throws IOException
@@ -117,21 +117,21 @@ public class PfbParser
      * @param pfb   The pfb-Array
      * @throws IOException in an IO-error occurs.
      */
-    private void parsePfb(final byte[] pfb) throws IOException 
+    private void parsePfb(final byte[] pfb) throws IOException
     {
 
         ByteArrayInputStream in = new ByteArrayInputStream(pfb);
         pfbdata = new byte[pfb.length - PFB_HEADER_LENGTH];
         lengths = new int[PFB_RECORDS.length];
         int pointer = 0;
-        for (int records = 0; records < PFB_RECORDS.length; records++) 
+        for (int records = 0; records < PFB_RECORDS.length; records++)
         {
-            if (in.read() != START_MARKER) 
+            if (in.read() != START_MARKER)
             {
                 throw new IOException("Start marker missing");
             }
 
-            if (in.read() != PFB_RECORDS[records]) 
+            if (in.read() != PFB_RECORDS[records])
             {
                 throw new IOException("Incorrect record type");
             }
@@ -146,7 +146,7 @@ public class PfbParser
                 throw new EOFException("attempted to read past EOF");
             }
             int got = in.read(pfbdata, pointer, size);
-            if (got < 0) 
+            if (got < 0)
             {
                 throw new EOFException();
             }
@@ -160,13 +160,13 @@ public class PfbParser
      * @return Returns the pdf-array.
      * @throws IOException if an IO-error occurs.
      */
-    private byte[] readPfbInput(final InputStream in) throws IOException 
+    private byte[] readPfbInput(final InputStream in) throws IOException
     {
         // copy into an array
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         byte[] tmpbuf = new byte[BUFFER_SIZE];
         int amountRead = -1;
-        while ((amountRead = in.read(tmpbuf)) != -1) 
+        while ((amountRead = in.read(tmpbuf)) != -1)
         {
             out.write(tmpbuf, 0, amountRead);
         }
@@ -177,7 +177,7 @@ public class PfbParser
      * Returns the lengths.
      * @return Returns the lengths.
      */
-    public int[] getLengths() 
+    public int[] getLengths()
     {
         return lengths;
     }
@@ -186,7 +186,7 @@ public class PfbParser
      * Returns the pfbdata.
      * @return Returns the pfbdata.
      */
-    public byte[] getPfbdata() 
+    public byte[] getPfbdata()
     {
         return pfbdata;
     }
@@ -195,7 +195,7 @@ public class PfbParser
      * Returns the pfb data as stream.
      * @return Returns the pfb data as stream.
      */
-    public InputStream getInputStream() 
+    public InputStream getInputStream()
     {
         return new ByteArrayInputStream(pfbdata);
     }
@@ -204,7 +204,7 @@ public class PfbParser
      * Returns the size of the pfb-data.
      * @return Returns the size of the pfb-data.
      */
-    public int size() 
+    public int size()
     {
         return pfbdata.length;
     }

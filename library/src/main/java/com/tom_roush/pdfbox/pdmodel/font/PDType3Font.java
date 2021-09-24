@@ -118,7 +118,7 @@ public class PDType3Font extends PDSimpleFont
     {
         int firstChar = dict.getInt(COSName.FIRST_CHAR, -1);
         int lastChar = dict.getInt(COSName.LAST_CHAR, -1);
-        if (getWidths().size() > 0 && code >= firstChar && code <= lastChar)
+        if (!getWidths().isEmpty() && code >= firstChar && code <= lastChar)
         {
             Float w = getWidths().get(code - firstChar);
             return w == null ? 0 : w;
@@ -163,11 +163,11 @@ public class PDType3Font extends PDSimpleFont
             // the following values are all more or less accurate at least all are average
             // values. Maybe we'll find another way to get those value for every single glyph
             // in the future if needed
-            PDRectangle fontBBox = desc.getFontBoundingBox();
+            PDRectangle bbox = desc.getFontBoundingBox();
             float retval = 0;
-            if (fontBBox != null)
+            if (bbox != null)
             {
-                retval = fontBBox.getHeight() / 2;
+                retval = bbox.getHeight() / 2;
             }
             if (retval == 0)
             {
@@ -236,10 +236,10 @@ public class PDType3Font extends PDSimpleFont
     {
         if (resources == null)
         {
-            COSDictionary resources = (COSDictionary) dict.getDictionaryObject(COSName.RESOURCES);
-            if (resources != null)
+            COSDictionary resourcesDict = (COSDictionary) dict.getDictionaryObject(COSName.RESOURCES);
+            if (resourcesDict != null)
             {
-                this.resources = new PDResources(resources);
+                this.resources = new PDResources(resourcesDict);
             }
         }
         return resources;
@@ -331,7 +331,7 @@ public class PDType3Font extends PDSimpleFont
     public PDType3CharProc getCharProc(int code)
     {
         String name = getEncoding().getName(code);
-        if (!name.equals(".notdef"))
+        if (!".notdef".equals(name))
         {
             COSStream stream;
             stream = (COSStream)getCharProcs().getDictionaryObject(COSName.getPDFName(name));

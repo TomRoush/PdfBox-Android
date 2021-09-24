@@ -28,6 +28,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.function.PDFunction;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDTransparencyGroup;
+import com.tom_roush.pdfbox.util.Matrix;
 
 /**
  * Soft mask.
@@ -71,6 +72,11 @@ public final class PDSoftMask implements COSObjectable
     private PDTransparencyGroup group = null;
     private COSArray backdropColor = null;
     private PDFunction transferFunction = null;
+
+    /**
+     * To allow a soft mask to know the CTM at the time of activation of the ExtGState.
+     */
+    private Matrix ctm;
 
     /**
      * Creates a new soft mask.
@@ -150,5 +156,25 @@ public final class PDSoftMask implements COSObjectable
             }
         }
         return transferFunction;
+    }
+
+    /**
+     * Set the CTM that is valid at the time the ExtGState was activated.
+     *
+     * @param ctm
+     */
+    void setInitialTransformationMatrix(Matrix ctm)
+    {
+        this.ctm = ctm;
+    }
+
+    /**
+     * Returns the CTM at the time the ExtGState was activated.
+     *
+     * @return
+     */
+    public Matrix getInitialTransformationMatrix()
+    {
+        return ctm;
     }
 }

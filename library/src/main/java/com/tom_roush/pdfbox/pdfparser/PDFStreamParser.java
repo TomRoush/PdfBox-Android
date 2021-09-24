@@ -144,208 +144,215 @@ public class PDFStreamParser extends BaseParser
         char c = (char)nextByte;
         switch (c)
         {
-        case '<':
-        {
-            // pull off first left bracket
-            int leftBracket = seqSource.read();
+            case '<':
+            {
+                // pull off first left bracket
+                int leftBracket = seqSource.read();
 
-            // check for second left bracket
-            c = (char) seqSource.peek();
+                // check for second left bracket
+                c = (char) seqSource.peek();
 
-            // put back first bracket
-            seqSource.unread(leftBracket);
+                // put back first bracket
+                seqSource.unread(leftBracket);
 
-            if (c == '<')
-            {
-                retval = parseCOSDictionary();
-            }
-            else
-            {
-                retval = parseCOSString();
-            }
-            break;
-        }
-        case '[':
-        {
-            // array
-            retval = parseCOSArray();
-            break;
-        }
-        case '(':
-            // string
-            retval = parseCOSString();
-            break;
-        case '/':
-            // name
-            retval = parseCOSName();
-            break;
-        case 'n':
-        {
-            // null
-            String nullString = readString();
-            if( nullString.equals( "null") )
-            {
-                retval = COSNull.NULL;
-            }
-            else
-            {
-                retval = Operator.getOperator(nullString);
-            }
-            break;
-        }
-        case 't':
-        case 'f':
-        {
-            String next = readString();
-            if( next.equals( "true" ) )
-            {
-                retval = COSBoolean.TRUE;
+                if (c == '<')
+                {
+                    retval = parseCOSDictionary();
+                }
+                else
+                {
+                    retval = parseCOSString();
+                }
                 break;
             }
-            else if( next.equals( "false" ) )
+            case '[':
             {
-                retval = COSBoolean.FALSE;
+                // array
+                retval = parseCOSArray();
+                break;
             }
-            else
+            case '(':
+                // string
+                retval = parseCOSString();
+                break;
+            case '/':
+                // name
+                retval = parseCOSName();
+                break;
+            case 'n':
             {
-                retval = Operator.getOperator(next);
+                // null
+                String nullString = readString();
+                if( nullString.equals( "null") )
+                {
+                    retval = COSNull.NULL;
+                }
+                else
+                {
+                    retval = Operator.getOperator(nullString);
+                }
+                break;
             }
-            break;
-        }
-        case 'R':
-        {
-            String line = readString();
-            if( line.equals( "R" ) )
+            case 't':
+            case 'f':
             {
-                retval = new COSObject( null );
+                String next = readString();
+                if( next.equals( "true" ) )
+                {
+                    retval = COSBoolean.TRUE;
+                    break;
+                }
+                else if( next.equals( "false" ) )
+                {
+                    retval = COSBoolean.FALSE;
+                }
+                else
+                {
+                    retval = Operator.getOperator(next);
+                }
+                break;
             }
-            else
+            case 'R':
             {
-                retval = Operator.getOperator(line);
+                String line = readString();
+                if( line.equals( "R" ) )
+                {
+                    retval = new COSObject( null );
+                }
+                else
+                {
+                    retval = Operator.getOperator(line);
+                }
+                break;
             }
-            break;
-        }
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-        case '-':
-        case '+':
-        case '.':
-        {
-            /* We will be filling buf with the rest of the number.  Only
-             * allow 1 "." and "-" and "+" at start of number. */
-            StringBuilder buf = new StringBuilder();
-            buf.append( c );
-            seqSource.read();
-
-            // Ignore double negative (this is consistent with Adobe Reader)
-            if (c == '-' && seqSource.peek() == c)
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+            case '-':
+            case '+':
+            case '.':
             {
-                seqSource.read();
-            }
-
-            boolean dotNotRead = c != '.';
-            while( Character.isDigit(c = (char) seqSource.peek()) || dotNotRead && c == '.')
-            {
+                /* We will be filling buf with the rest of the number.  Only
+                 * allow 1 "." and "-" and "+" at start of number. */
+                StringBuilder buf = new StringBuilder();
                 buf.append( c );
                 seqSource.read();
 
-                if (dotNotRead && c == '.')
+                // Ignore double negative (this is consistent with Adobe Reader)
+                if (c == '-' && seqSource.peek() == c)
                 {
-                    dotNotRead = false;
+                    seqSource.read();
                 }
-            }
-            retval = COSNumber.get( buf.toString() );
-            break;
-        }
-        case 'B':
-        {
-            String next = readString();
-            retval = Operator.getOperator(next);
-            if( next.equals( "BI" ) )
-            {
-                Operator beginImageOP = (Operator)retval;
-                COSDictionary imageParams = new COSDictionary();
-                beginImageOP.setImageParameters( imageParams );
-                Object nextToken = null;
-                while( (nextToken = parseNextToken()) instanceof COSName )
-                {
-                    Object value = parseNextToken();
-                    imageParams.setItem( (COSName)nextToken, (COSBase)value );
-                }
-                //final token will be the image data, maybe??
-                Operator imageData = (Operator)nextToken;
-                beginImageOP.setImageData( imageData.getImageData() );
-            }
-            break;
-        }
-        case 'I':
-        {
-            //Special case for ID operator
-            String id = "" + (char) seqSource.read() + (char) seqSource.read();
-            if( !id.equals( "ID" ) )
-            {
-                throw new IOException( "Error: Expected operator 'ID' actual='" + id + "'" );
-            }
-            ByteArrayOutputStream imageData = new ByteArrayOutputStream();
-            if( isWhitespace() )
-            {
-                //pull off the whitespace character
-                seqSource.read();
-            }
-            int lastByte = seqSource.read();
-            int currentByte = seqSource.read();
-            // PDF spec is kinda unclear about this. Should a whitespace
-            // always appear before EI? Not sure, so that we just read
-            // until EI<whitespace>.
-            // Be aware not all kind of whitespaces are allowed here. see PDFBOX-1561
-            while( !(lastByte == 'E' &&
-                currentByte == 'I' &&
-                hasNextSpaceOrReturn() &&
-                hasNoFollowingBinData(seqSource)) &&
-                !seqSource.isEOF() )
-            {
-                imageData.write( lastByte );
-                lastByte = currentByte;
-                currentByte = seqSource.read();
-            }
-            // the EI operator isn't unread, as it won't be processed anyway
-            retval = Operator.getOperator("ID");
-            // save the image data to the operator, so that it can be accessed later
-            ((Operator)retval).setImageData( imageData.toByteArray() );
-            break;
-        }
-        case ']':
-        {
-            // some ']' around without its previous '['
-            // this means a PDF is somewhat corrupt but we will continue to parse.
-            seqSource.read();
 
-            // must be a better solution than null...
-            retval = COSNull.NULL;
-            break;
-        }
-        default:
-        {
-            //we must be an operator
-            String operator = readOperator();
-            if( operator.trim().length() == 0 )
-            {
-                //we have a corrupt stream, stop reading here
-                retval = null;
+                boolean dotNotRead = c != '.';
+                while( Character.isDigit(c = (char) seqSource.peek()) || dotNotRead && c == '.')
+                {
+                    buf.append( c );
+                    seqSource.read();
+
+                    if (dotNotRead && c == '.')
+                    {
+                        dotNotRead = false;
+                    }
+                }
+                retval = COSNumber.get( buf.toString() );
+                break;
             }
-            else
+            case 'B':
             {
-                retval = Operator.getOperator(operator);
+                String next = readString();
+                retval = Operator.getOperator(next);
+                if( next.equals( "BI" ) )
+                {
+                    Operator beginImageOP = (Operator)retval;
+                    COSDictionary imageParams = new COSDictionary();
+                    beginImageOP.setImageParameters( imageParams );
+                    Object nextToken = null;
+                    while( (nextToken = parseNextToken()) instanceof COSName )
+                    {
+                        Object value = parseNextToken();
+                        imageParams.setItem( (COSName)nextToken, (COSBase)value );
+                    }
+                    //final token will be the image data, maybe??
+                    if (nextToken instanceof Operator)
+                    {
+                        Operator imageData = (Operator) nextToken;
+                        if (imageData.getImageData() == null || imageData.getImageData().length == 0)
+                        {
+                            Log.w("PdfBox-Android", "empty inline image at stream offset " + seqSource.getPosition());
+                        }
+                        beginImageOP.setImageData(imageData.getImageData());
+                    }
+                }
+                break;
             }
-        }
+            case 'I':
+            {
+                //Special case for ID operator
+                String id = "" + (char) seqSource.read() + (char) seqSource.read();
+                if( !id.equals( "ID" ) )
+                {
+                    throw new IOException( "Error: Expected operator 'ID' actual='" + id + "'" );
+                }
+                ByteArrayOutputStream imageData = new ByteArrayOutputStream();
+                if( isWhitespace() )
+                {
+                    //pull off the whitespace character
+                    seqSource.read();
+                }
+                int lastByte = seqSource.read();
+                int currentByte = seqSource.read();
+                // PDF spec is kinda unclear about this. Should a whitespace
+                // always appear before EI? Not sure, so that we just read
+                // until EI<whitespace>.
+                // Be aware not all kind of whitespaces are allowed here. see PDFBOX-1561
+                while( !(lastByte == 'E' &&
+                    currentByte == 'I' &&
+                    hasNextSpaceOrReturn() &&
+                    hasNoFollowingBinData(seqSource)) &&
+                    !seqSource.isEOF() )
+                {
+                    imageData.write( lastByte );
+                    lastByte = currentByte;
+                    currentByte = seqSource.read();
+                }
+                // the EI operator isn't unread, as it won't be processed anyway
+                retval = Operator.getOperator("ID");
+                // save the image data to the operator, so that it can be accessed later
+                ((Operator)retval).setImageData( imageData.toByteArray() );
+                break;
+            }
+            case ']':
+            {
+                // some ']' around without its previous '['
+                // this means a PDF is somewhat corrupt but we will continue to parse.
+                seqSource.read();
+
+                // must be a better solution than null...
+                retval = COSNull.NULL;
+                break;
+            }
+            default:
+            {
+                //we must be an operator
+                String operator = readOperator();
+                if( operator.trim().length() == 0 )
+                {
+                    //we have a corrupt stream, stop reading here
+                    retval = null;
+                }
+                else
+                {
+                    retval = Operator.getOperator(operator);
+                }
+            }
         }
         return retval;
     }

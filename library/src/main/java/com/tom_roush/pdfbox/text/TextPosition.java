@@ -19,6 +19,7 @@ package com.tom_roush.pdfbox.text;
 import android.util.Log;
 
 import java.text.Normalizer;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,48 +34,6 @@ import com.tom_roush.pdfbox.util.Matrix;
 public final class TextPosition
 {
     private static final Map<Integer, String> DIACRITICS = createDiacritics();
-
-    // Adds non-decomposing diacritics to the hash with their related combining character.
-    // These are values that the unicode spec claims are equivalent but are not mapped in the form
-    // NFKC normalization method. Determined by going through the Combining Diacritical Marks
-    // section of the Unicode spec and identifying which characters are not  mapped to by the
-    // normalization.
-    private static Map<Integer, String> createDiacritics()
-    {
-        Map<Integer, String> map = new HashMap<Integer, String>(31);
-        map.put(0x0060, "\u0300");
-        map.put(0x02CB, "\u0300");
-        map.put(0x0027, "\u0301");
-        map.put(0x02B9, "\u0301");
-        map.put(0x02CA, "\u0301");
-        map.put(0x005e, "\u0302");
-        map.put(0x02C6, "\u0302");
-        map.put(0x007E, "\u0303");
-        map.put(0x02C9, "\u0304");
-        map.put(0x00B0, "\u030A");
-        map.put(0x02BA, "\u030B");
-        map.put(0x02C7, "\u030C");
-        map.put(0x02C8, "\u030D");
-        map.put(0x0022, "\u030E");
-        map.put(0x02BB, "\u0312");
-        map.put(0x02BC, "\u0313");
-        map.put(0x0486, "\u0313");
-        map.put(0x055A, "\u0313");
-        map.put(0x02BD, "\u0314");
-        map.put(0x0485, "\u0314");
-        map.put(0x0559, "\u0314");
-        map.put(0x02D4, "\u031D");
-        map.put(0x02D5, "\u031E");
-        map.put(0x02D6, "\u031F");
-        map.put(0x02D7, "\u0320");
-        map.put(0x02B2, "\u0321");
-        map.put(0x02CC, "\u0329");
-        map.put(0x02B7, "\u032B");
-        map.put(0x02CD, "\u0331");
-        map.put(0x005F, "\u0332");
-        map.put(0x204E, "\u0359");
-        return map;
-    }
 
     // text matrix for the start of the text object, coordinates are in display units
     // and have not been adjusted
@@ -107,8 +66,8 @@ public final class TextPosition
      * Constructor.
      *
      * @param pageRotation rotation of the page that the text is located in
-     * @param pageWidth rotation of the page that the text is located in
-     * @param pageHeight rotation of the page that the text is located in
+     * @param pageWidth width of the page that the text is located in
+     * @param pageHeight height of the page that the text is located in
      * @param textMatrix text rendering matrix for start of text (in display units)
      * @param endX x coordinate of the end position
      * @param endY y coordinate of the end position
@@ -155,6 +114,48 @@ public final class TextPosition
         {
             y = this.pageWidth - getYLowerLeftRot(rotationAngle);
         }
+    }
+
+    // Adds non-decomposing diacritics to the hash with their related combining character.
+    // These are values that the unicode spec claims are equivalent but are not mapped in the form
+    // NFKC normalization method. Determined by going through the Combining Diacritical Marks
+    // section of the Unicode spec and identifying which characters are not  mapped to by the
+    // normalization.
+    private static Map<Integer, String> createDiacritics()
+    {
+        Map<Integer, String> map = new HashMap<Integer, String>(31);
+        map.put(0x0060, "\u0300");
+        map.put(0x02CB, "\u0300");
+        map.put(0x0027, "\u0301");
+        map.put(0x02B9, "\u0301");
+        map.put(0x02CA, "\u0301");
+        map.put(0x005e, "\u0302");
+        map.put(0x02C6, "\u0302");
+        map.put(0x007E, "\u0303");
+        map.put(0x02C9, "\u0304");
+        map.put(0x00B0, "\u030A");
+        map.put(0x02BA, "\u030B");
+        map.put(0x02C7, "\u030C");
+        map.put(0x02C8, "\u030D");
+        map.put(0x0022, "\u030E");
+        map.put(0x02BB, "\u0312");
+        map.put(0x02BC, "\u0313");
+        map.put(0x0486, "\u0313");
+        map.put(0x055A, "\u0313");
+        map.put(0x02BD, "\u0314");
+        map.put(0x0485, "\u0314");
+        map.put(0x0559, "\u0314");
+        map.put(0x02D4, "\u031D");
+        map.put(0x02D5, "\u031E");
+        map.put(0x02D6, "\u031F");
+        map.put(0x02D7, "\u0320");
+        map.put(0x02B2, "\u0321");
+        map.put(0x02CC, "\u0329");
+        map.put(0x02B7, "\u032B");
+        map.put(0x02CD, "\u0331");
+        map.put(0x005F, "\u0332");
+        map.put(0x204E, "\u0359");
+        return map;
     }
 
     /**
@@ -703,5 +704,165 @@ public final class TextPosition
     public String toString()
     {
         return getUnicode();
+    }
+
+    /**
+     * This will get the x coordinate of the end position. This is the unadjusted value passed into
+     * the constructor.
+     *
+     * @return The unadjusted x coordinate of the end position
+     */
+    public float getEndX()
+    {
+        return endX;
+    }
+
+    /**
+     * This will get the y coordinate of the end position. This is the unadjusted value passed into
+     * the constructor.
+     *
+     * @return The unadjusted y coordinate of the end position
+     */
+    public float getEndY()
+    {
+        return endY;
+    }
+
+    /**
+     * This will get the rotation of the page that the text is located in. This is the unadjusted
+     * value passed into the constructor.
+     *
+     * @return The unadjusted rotation of the page that the text is located in
+     */
+    public int getRotation()
+    {
+        return rotation;
+    }
+
+    /**
+     * This will get the height of the page that the text is located in. This is the unadjusted
+     * value passed into the constructor.
+     *
+     * @return The unadjusted height of the page that the text is located in
+     */
+    public float getPageHeight()
+    {
+        return pageHeight;
+    }
+
+    /**
+     * This will get the width of the page that the text is located in. This is the unadjusted value
+     * passed into the constructor.
+     *
+     * @return The unadjusted width of the page that the text is located in
+     */
+    public float getPageWidth()
+    {
+        return pageWidth;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (!(o instanceof TextPosition))
+        {
+            return false;
+        }
+
+        TextPosition that = (TextPosition) o;
+
+        if (Float.compare(that.endX, endX) != 0)
+        {
+            return false;
+        }
+        if (Float.compare(that.endY, endY) != 0)
+        {
+            return false;
+        }
+        if (Float.compare(that.maxHeight, maxHeight) != 0)
+        {
+            return false;
+        }
+        if (rotation != that.rotation)
+        {
+            return false;
+        }
+        if (Float.compare(that.x, x) != 0)
+        {
+            return false;
+        }
+        if (Float.compare(that.y, y) != 0)
+        {
+            return false;
+        }
+        if (Float.compare(that.pageHeight, pageHeight) != 0)
+        {
+            return false;
+        }
+        if (Float.compare(that.pageWidth, pageWidth) != 0)
+        {
+            return false;
+        }
+        if (Float.compare(that.widthOfSpace, widthOfSpace) != 0)
+        {
+            return false;
+        }
+        if (Float.compare(that.fontSize, fontSize) != 0)
+        {
+            return false;
+        }
+        if (fontSizePt != that.fontSizePt)
+        {
+            return false;
+        }
+        if (Float.compare(that.direction, direction) != 0)
+        {
+            return false;
+        }
+        if (textMatrix != null ? !textMatrix.equals(that.textMatrix) : that.textMatrix != null)
+        {
+            return false;
+        }
+        if (!Arrays.equals(charCodes, that.charCodes))
+        {
+            return false;
+        }
+        if (font != null ? !font.equals(that.font) : that.font != null)
+        {
+            return false;
+        }
+        if (!Arrays.equals(widths, that.widths))
+        {
+            return false;
+        }
+        return unicode != null ? unicode.equals(that.unicode) : that.unicode == null;
+
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = textMatrix != null ? textMatrix.hashCode() : 0;
+        result = 31 * result + Float.floatToIntBits(endX);
+        result = 31 * result + Float.floatToIntBits(endY);
+        result = 31 * result + Float.floatToIntBits(maxHeight);
+        result = 31 * result + rotation;
+        result = 31 * result + Float.floatToIntBits(x);
+        result = 31 * result + Float.floatToIntBits(y);
+        result = 31 * result + Float.floatToIntBits(pageHeight);
+        result = 31 * result + Float.floatToIntBits(pageWidth);
+        result = 31 * result + Float.floatToIntBits(widthOfSpace);
+        result = 31 * result + Arrays.hashCode(charCodes);
+        result = 31 * result + (font != null ? font.hashCode() : 0);
+        result = 31 * result + Float.floatToIntBits(fontSize);
+        result = 31 * result + fontSizePt;
+        result = 31 * result + Arrays.hashCode(widths);
+        result = 31 * result + (unicode != null ? unicode.hashCode() : 0);
+        result = 31 * result + Float.floatToIntBits(direction);
+        return result;
     }
 }

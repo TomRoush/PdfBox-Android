@@ -185,6 +185,8 @@ public abstract class PDFStreamEngine
     protected void processSoftMask(PDTransparencyGroup group) throws IOException
     {
         saveGraphicsState();
+        Matrix softMaskCTM = getGraphicsState().getSoftMask().getInitialTransformationMatrix();
+        getGraphicsState().setCurrentTransformationMatrix(softMaskCTM);
         processTransparencyGroup(group);
         restoreGraphicsState();
     }
@@ -205,6 +207,11 @@ public abstract class PDFStreamEngine
         PDResources parent = pushResources(group);
         Stack<PDGraphicsState> savedStack = saveGraphicsStack();
 
+        Matrix parentMatrix = initialMatrix;
+
+        // the stream's initial matrix includes the parent CTM, e.g. this allows a scaled form
+        initialMatrix = getGraphicsState().getCurrentTransformationMatrix().clone();
+
         // transform the CTM using the stream's matrix
         getGraphicsState().getCurrentTransformationMatrix().concatenate(group.getMatrix());
 
@@ -213,13 +220,15 @@ public abstract class PDFStreamEngine
         // the current stroking and nonstroking alpha constants to 1.0, and the current soft mask to None.
         getGraphicsState().setBlendMode(BlendMode.NORMAL);
         getGraphicsState().setAlphaConstant(1);
-//        getGraphicsState().setNonStrokeAlphaConstant(1); // TODO: PdfBox-Android
+        getGraphicsState().setNonStrokeAlphaConstant(1);
         getGraphicsState().setSoftMask(null);
 
         // clip to bounding box
         clipToRect(group.getBBox());
 
         processStreamOperators(group);
+
+        initialMatrix = parentMatrix;
 
         restoreGraphicsStack(savedStack);
         popResources(parent);
@@ -295,10 +304,10 @@ public abstract class PDFStreamEngine
             // compute a matrix which scales and translates the transformed appearance box to align
             // with the edges of the annotation's rectangle
             Matrix a = Matrix.getTranslateInstance(rect.getLowerLeftX(), rect.getLowerLeftY());
-            a.concatenate(Matrix.getScaleInstance(rect.getWidth() / transformedBox.width(),
-                rect.getHeight() / transformedBox.height()));
-            a.concatenate(Matrix.getTranslateInstance(-transformedBox.left,
-                -transformedBox.top));
+            a.concatenate(Matrix.getScaleInstance((float)(rect.getWidth() / transformedBox.width()),
+                (float)(rect.getHeight() / transformedBox.height())));
+            a.concatenate(Matrix.getTranslateInstance((float) -transformedBox.left,
+                (float) -transformedBox.top));
 
             // Matrix shall be concatenated with A to form a matrix AA that maps from the appearance's
             // coordinate system to the annotation's rectangle in default user space
@@ -362,8 +371,8 @@ public abstract class PDFStreamEngine
         // save a clean state (new clipping path, line path, etc.)
         RectF bbox = new RectF();
         tilingPattern.getBBox().transform(patternMatrix).computeBounds(bbox, true);
-        PDRectangle rect = new PDRectangle(bbox.left, bbox.top,
-            bbox.width(), bbox.height());
+        PDRectangle rect = new PDRectangle((float)bbox.left, (float)bbox.top,
+            (float)bbox.width(), (float)bbox.height());
         graphicsStack.push(new PDGraphicsState(rect));
 
         // non-colored patterns have to be given a color

@@ -20,7 +20,7 @@ import java.io.IOException;
 
 /**
  * The "cmap" table of a true type font.
- * 
+ *
  * @author Ben Litchfield
  */
 public class CmapTable extends TTFTable
@@ -63,7 +63,7 @@ public class CmapTable extends TTFTable
 
     /**
      * This will read the required data from the stream.
-     * 
+     *
      * @param ttf The font that is being read.
      * @param data The stream to read the data from.
      * @throws IOException If there is an error reading the data.
