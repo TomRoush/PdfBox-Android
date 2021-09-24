@@ -699,9 +699,11 @@ public class COSWriter implements ICOSVisitor, Closeable
         byteRangeArray.set(2, COSInteger.get(afterOffset));
         byteRangeArray.set(3, COSInteger.get(afterLength));
 
-        if (byteRangeLength - byteRange.length() < 0)
+        if (byteRange.length() > byteRangeLength)
         {
-            throw new IOException("Can't write new ByteRange, not enough space");
+            throw new IOException("Can't write new byteRange '" + byteRange +
+                "' not enough space: byteRange.length(): " + byteRange.length() +
+                ", byteRangeLength: " + byteRangeLength);
         }
 
         // copy the new incremental data into a buffer (e.g. signature dict, trailer)
@@ -999,13 +1001,14 @@ public class COSWriter implements ICOSVisitor, Closeable
                     if (!incrementalUpdate)
                     {
                         // write all XObjects as direct objects, this will save some size
+                        // PDFBOX-3684: but avoid dictionary that references itself
                         COSBase item = dict.getItem(COSName.XOBJECT);
-                        if (item != null)
+                        if (item != null && !COSName.XOBJECT.equals(entry.getKey()))
                         {
                             item.setDirect(true);
                         }
                         item = dict.getItem(COSName.RESOURCES);
-                        if (item != null)
+                        if (item != null && !COSName.RESOURCES.equals(entry.getKey()))
                         {
                             item.setDirect(true);
                         }
@@ -1441,15 +1444,15 @@ public class COSWriter implements ICOSVisitor, Closeable
             {
                 switch (b)
                 {
-                case '(':
-                case ')':
-                case '\\':
-                    output.write('\\');
-                    output.write(b);
-                    break;
-                default:
-                    output.write(b);
-                    break;
+                    case '(':
+                    case ')':
+                    case '\\':
+                        output.write('\\');
+                        output.write(b);
+                        break;
+                    default:
+                        output.write(b);
+                        break;
                 }
             }
             output.write(')');

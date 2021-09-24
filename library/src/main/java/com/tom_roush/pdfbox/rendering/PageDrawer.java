@@ -25,6 +25,7 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.Region;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -86,6 +87,12 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     // the page box to draw (usually the crop box but may be another)
     private PDRectangle pageSize;
 
+    private int pageRotation;
+
+    // whether image of a transparency group must be flipped
+    // needed when in a tiling pattern
+    private boolean flipTG = false;
+
     // clipping winding rule used for the clipping path
     private Path.FillType clipWindingRule = null;
     private Path linePath = new Path();
@@ -138,7 +145,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     }
 
     /**
-     * Sets high-quality rendering hints on the current Graphics2D.
+     * Sets high-quality rendering hints on the current Canvas.
      */
     private void setRenderingHints()
     {
@@ -163,6 +170,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         canvas = c;
         xform = new AffineTransform(canvas.getMatrix());
         this.pageSize = pageSize;
+        pageRotation = getPage().getRotation() % 360;
 
         setRenderingHints();
 
@@ -188,16 +196,16 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //        graphics = null;
     }
 
-    /**
-     * Draws the pattern stream to the requested context.
-     *
-     * @param g The graphics context to draw onto.
-     * @param pattern The tiling pattern to be used.
-     * @param colorSpace color space for this tiling.
-     * @param color color for this tiling.
-     * @param patternMatrix the pattern matrix
-     * @throws IOException If there is an IO error while drawing the page.
-     */
+//    /**
+//     * Draws the pattern stream to the requested context.
+//     *
+//     * @param g The graphics context to draw onto.
+//     * @param pattern The tiling pattern to be used.
+//     * @param colorSpace color space for this tiling.
+//     * @param color color for this tiling.
+//     * @param patternMatrix the pattern matrix
+//     * @throws IOException If there is an IO error while drawing the page.
+//     */
 //    void drawTilingPattern(Graphics2D g, PDTilingPattern pattern, PDColorSpace colorSpace,
 //        PDColor color, Matrix patternMatrix) throws IOException
 //    {
@@ -206,28 +214,43 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //
 //        Path oldLinePath = linePath;
 //        linePath = new GeneralPath();
+//        int oldClipWindingRule = clipWindingRule;
+//        clipWindingRule = -1;
 //
 //        Area oldLastClip = lastClip;
 //        lastClip = null;
 //
+//        boolean oldFlipTG = flipTG;
+//        flipTG = true;
+//
 //        setRenderingHints();
 //        processTilingPattern(pattern, color, colorSpace, patternMatrix);
 //
+//        flipTG = oldFlipTG;
 //        graphics = oldGraphics;
 //        linePath = oldLinePath;
 //        lastClip = oldLastClip;
+//        clipWindingRule = oldClipWindingRule;
 //    } TODO: PdfBox-Android
 
-    /**
-     * Returns an AWT paint for the given PDColor.
-     */
+    private float clampColor(float color)
+    {
+        return color < 0 ? 0 : (color > 1 ? 1 : color);
+    }
+
+//    /**
+//     * Returns an AWT paint for the given PDColor.
+//     *
+//     * @param color The color to get a paint for. This can be an actual color or a pattern.
+//     * @throws IOException
+//     */
 //    protected Paint getPaint(PDColor color) throws IOException
 //    {
 //        PDColorSpace colorSpace = color.getColorSpace();
 //        if (!(colorSpace instanceof PDPattern))
 //        {
 //            float[] rgb = colorSpace.toRGB(color.getComponents());
-//            return new Color(rgb[0], rgb[1], rgb[2]);
+//            return new Color(clampColor(rgb[0]), clampColor(rgb[1]), clampColor(rgb[2]));
 //        }
 //        else
 //        {
@@ -240,12 +263,12 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //                if (tilingPattern.getPaintType() == PDTilingPattern.PAINT_COLORED)
 //                {
 //                    // colored tiling pattern
-//                    return new TilingPaint(this, tilingPattern, xform);
+//                    return tilingPaintFactory.create(tilingPattern, null, null, xform);
 //                }
 //                else
 //                {
 //                    // uncolored tiling pattern
-//                    return new TilingPaint(this, tilingPattern,
+//                    return tilingPaintFactory.create(tilingPattern,
 //                        patternSpace.getUnderlyingColorSpace(), color, xform);
 //                }
 //            }
@@ -323,6 +346,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         {
             state.intersectClippingPath(textClippingArea);
             textClippingArea = null;
+
+            // PDFBOX-3681: lastClip needs to be reset, because after intersection it is still the same 
+            // object, thus setClip() would believe that it is cached.
+            lastClip = null;
         }
     }
 
@@ -381,8 +408,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //                graphics.fill(glyph);
                 paint.setStyle(Paint.Style.FILL);
                 canvas.drawPath(path, paint);
-//                canvas.clipPath(path);
-//                canvas.drawRect(new Rect(0, 0, canvas.getWidth(), canvas.getHeight()), paint);
             }
 
             if (renderingMode.isStroke())
@@ -395,14 +420,12 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //                graphics.draw(glyph);
                 paint.setStyle(Paint.Style.STROKE);
                 canvas.drawPath(path, paint);
-//                canvas.clipPath(path);
-//                canvas.drawRect(new Rect(0, 0, canvas.getWidth(), canvas.getHeight()), paint);
             }
 
             if (renderingMode.isClip())
             {
-//                textClippingArea.add(new Area(glyph));
-            } // FIXME: PdfBox-Android: check this commented out stuff
+//                textClippingArea.add(new Area(glyph)); TODO: PdfBox-Android
+            }
         }
     }
 
@@ -476,54 +499,121 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     {
         // to ensure that the path is created in the right direction, we have to create
         // it by combining single lines instead of creating a simple rectangle
-        linePath.moveTo(p0.x, p0.y);
-        linePath.lineTo(p1.x, p1.y);
-        linePath.lineTo(p2.x, p2.y);
-        linePath.lineTo(p3.x, p3.y);
+        linePath.moveTo((float) p0.x, (float) p0.y);
+        linePath.lineTo((float) p1.x, (float) p1.y);
+        linePath.lineTo((float) p2.x, (float) p2.y);
+        linePath.lineTo((float) p3.x, (float) p3.y);
 
         // close the subpath instead of adding the last line so that a possible set line
         // cap style isn't taken into account at the "beginning" of the rectangle
         linePath.close();
     }
 
-    /**
-     * Generates AWT raster for a soft mask
-     *
-     * @param softMask soft mask
-     * @return AWT raster for soft mask
-     * @throws IOException
-     */
-//    private Raster createSoftMaskRaster(PDSoftMask softMask) throws IOException
-//    {
-//        TransparencyGroup transparencyGroup = new TransparencyGroup(softMask.getGroup(), true);
-//        COSName subtype = softMask.getSubType();
-//        if (COSName.ALPHA.equals(subtype))
-//        {
-//            return transparencyGroup.getAlphaRaster();
-//        }
-//        else if (COSName.LUMINOSITY.equals(subtype))
-//        {
-//            return transparencyGroup.getLuminosityRaster();
-//        }
-//        else
-//        {
-//            throw new IOException("Invalid soft mask subtype.");
-//        }
-//    } TODO: PdfBox-Android
-
+    //TODO: move soft mask apply to getPaint()?
 //    private Paint applySoftMaskToPaint(Paint parentPaint, PDSoftMask softMask) throws IOException
 //    {
 //        if (softMask == null || softMask.getGroup() == null)
 //        {
 //            return parentPaint;
 //        }
-//        //TODO PDFBOX-2934
-//        if (COSName.ALPHA.equals(softMask.getSubType()))
+//        PDColor backdropColor = null;
+//        if (COSName.LUMINOSITY.equals(softMask.getSubType()))
 //        {
-//            Log.i("PdfBox-Android", "alpha smask not implemented yet, is ignored");
+//            COSArray backdropColorArray = softMask.getBackdropColor();
+//            PDColorSpace colorSpace = softMask.getGroup().getGroup().getColorSpace();
+//            if (colorSpace != null && backdropColorArray != null)
+//            {
+//                backdropColor = new PDColor(backdropColorArray, colorSpace);
+//            }
+//        }
+//        TransparencyGroup transparencyGroup = new TransparencyGroup(softMask.getGroup(), true,
+//            softMask.getInitialTransformationMatrix(), backdropColor);
+//        Bitmap image = transparencyGroup.getImage();
+//        if (image == null)
+//        {
+//            // Adobe Reader ignores empty softmasks instead of using bc color
+//            // sample file: PDFJS-6967_reduced_outside_softmask.pdf
 //            return parentPaint;
 //        }
-//        return new SoftMaskPaint(parentPaint, createSoftMaskRaster(softMask));
+//        Bitmap gray = new Bitmap(image.getWidth(), image.getHeight(), Bitmap.TYPE_BYTE_GRAY);
+//        if (COSName.ALPHA.equals(softMask.getSubType()))
+//        {
+//            gray.setData(image.getAlphaRaster());
+//        }
+//        else if (COSName.LUMINOSITY.equals(softMask.getSubType()))
+//        {
+//            Graphics g = gray.getGraphics();
+//            g.drawImage(image, 0, 0, null);
+//            g.dispose();
+//        }
+//        else
+//        {
+//            throw new IOException("Invalid soft mask subtype.");
+//        }
+//        gray = getRotatedImage(gray);
+//        Rectangle2D tpgBounds = transparencyGroup.getBounds();
+//        adjustRectangle(tpgBounds);
+//        return new SoftMask(parentPaint, gray, tpgBounds, backdropColor, softMask.getTransferFunction());
+//    } TODO: PdfBox-Android
+
+    // this adjusts the rectangle to the rotated image to put the soft mask at the correct position
+    //TODO after all transparency problems have been solved:
+    // 1. shouldn't this be done in transparencyGroup.getBounds() ?
+    // 2. change transparencyGroup.getBounds() to getOrigin(), because size isn't used in SoftMask
+    // 3. Is it possible to create the softmask and transparency group in the correct rotation?
+    //    (needs rendering identity testing before committing!)
+//    private void adjustRectangle(Rectangle2D r)
+//    {
+//        Matrix m = new Matrix(xform);
+//        if (pageRotation == 90)
+//        {
+//            r.setRect(pageSize.getHeight() * m.getScalingFactorY() - r.getY() - r.getHeight(),
+//                r.getX(),
+//                r.getWidth(),
+//                r.getHeight());
+//        }
+//        if (pageRotation == 180)
+//        {
+//            r.setRect(pageSize.getWidth() * m.getScalingFactorX() - r.getX() - r.getWidth(),
+//                pageSize.getHeight() * m.getScalingFactorY() - r.getY() - r.getHeight(),
+//                r.getWidth(),
+//                r.getHeight());
+//        }
+//        if (pageRotation == 270)
+//        {
+//            r.setRect(r.getY(),
+//                pageSize.getWidth() * m.getScalingFactorX() - r.getX() - r.getWidth(),
+//                r.getWidth(),
+//                r.getHeight());
+//        }
+//    } TODO: PdfBox-Android
+
+    // return quadrant-rotated image with adjusted size
+//    private Bitmap getRotatedImage(Bitmap gray) throws IOException
+//    {
+//        Bitmap gray2;
+//        AffineTransform at;
+//        switch (pageRotation % 360)
+//        {
+//            case 90:
+//                gray2 = new Bitmap(gray.getHeight(), gray.getWidth(), Bitmap.TYPE_BYTE_GRAY);
+//                at = AffineTransform.getQuadrantRotateInstance(1, gray.getHeight() / 2d, gray.getHeight() / 2d);
+//                break;
+//            case 180:
+//                gray2 = new Bitmap(gray.getWidth(), gray.getHeight(), Bitmap.TYPE_BYTE_GRAY);
+//                at = AffineTransform.getQuadrantRotateInstance(2, gray.getWidth()/ 2d, gray.getHeight() / 2d);
+//                break;
+//            case 270:
+//                gray2 = new Bitmap(gray.getHeight(), gray.getWidth(), Bitmap.TYPE_BYTE_GRAY);
+//                at = AffineTransform.getQuadrantRotateInstance(3, gray.getWidth()/ 2d, gray.getWidth() / 2d);
+//                break;
+//            default:
+//                return gray;
+//        }
+//        Graphics2D g2 = (Graphics2D) gray2.getGraphics();
+//        g2.drawImage(gray, at, null);
+//        g2.dispose();
+//        return gray2;
 //    } TODO: PdfBox-Android
 
     // returns the stroking AWT Paint
@@ -541,7 +631,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     // returns the non-stroking AWT Paint
 //    private Paint getNonStrokingPaint() throws IOException
 //    {
-//        return getPaint(getGraphicsState().getNonStrokingColor());
+//        return applySoftMaskToPaint(
+//            getPaint(getGraphicsState().getNonStrokingColor()),
+//            getGraphicsState().getSoftMask());
 //    } TODO: PdfBox-Android
 
     private int getNonStrokingColor() throws IOException {
@@ -597,7 +689,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 }
             }
         }
-
         paint.setStrokeWidth(lineWidth);
         paint.setStrokeCap(state.getLineCap());
         paint.setStrokeJoin(state.getLineJoin());
@@ -612,11 +703,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     {
 //        graphics.setComposite(getGraphicsState().getStrokingJavaComposite());
         setStroke();
-        setClip();
         paint.setARGB(255, 0, 0, 0); // TODO set the correct color from graphics state. FIXME: 2.0, isn't this done below?
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(getStrokingColor());
         setClip();
+        //TODO bbox of shading pattern should be used here? (see fillPath)
         canvas.drawPath(linePath, paint);
         linePath.reset();
     }
@@ -657,6 +748,29 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
     }
 
+    // checks whether this is a shading pattern and if yes,
+    // get the transformed BBox and intersect with current paint area
+    // need to do it here and not in shading getRaster() because it may have been rotated
+//    private void intersectShadingBBox(PDColor color, Area area) throws IOException
+//    {
+//        if (color.getColorSpace() instanceof PDPattern)
+//        {
+//            PDColorSpace colorSpace = color.getColorSpace();
+//            PDAbstractPattern pat = ((PDPattern) colorSpace).getPattern(color);
+//            if (pat instanceof PDShadingPattern)
+//            {
+//                PDShading shading = ((PDShadingPattern) pat).getShading();
+//                PDRectangle bbox = shading.getBBox();
+//                if (bbox != null)
+//                {
+//                    Matrix m = Matrix.concatenate(getInitialMatrix(), pat.getMatrix());
+//                    Area bboxArea = new Area(bbox.transform(m));
+//                    area.intersect(bboxArea);
+//                }
+//            }
+//        }
+//    } TODO: PdfBox-Android
+
     /**
      * Returns true if the given path is rectangular.
      */
@@ -692,25 +806,22 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public void moveTo(float x, float y)
     {
-        currentPoint.x = x;
-        currentPoint.y = y;
+        currentPoint.set(x, y);
         linePath.moveTo(x, y);
     }
 
     @Override
     public void lineTo(float x, float y)
     {
-        currentPoint.x = x;
-        currentPoint.y = y;
+        currentPoint.set(x, y);
         linePath.lineTo(x, y);
     }
 
     @Override
     public void curveTo(float x1, float y1, float x2, float y2, float x3, float y3)
     {
-        currentPoint.x = x3;
-        currentPoint.y = y3;
-        linePath.cubicTo(x1, y1, x2, y2, x3, y3); // TODO: check if this should be relative
+        currentPoint.set(x3, y3);
+        linePath.cubicTo(x1, y1, x2, y2, x3, y3); // TODO: PdfBox-Android check if this should be relative
     }
 
     @Override
@@ -728,12 +839,12 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public void endPath()
     {
-//        if (clipWindingRule != null) FIXME: 2.0, makes things worse
+//        if (clipWindingRule != null)
 //        {
 //            linePath.setFillType(clipWindingRule);
 //            getGraphicsState().intersectClippingPath(linePath);
 //            clipWindingRule = null;
-//        }
+//        } TODO: PdfBox-Android causes rendering issues
         linePath.reset();
     }
 
@@ -762,11 +873,79 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
         if (pdImage.isStencil())
         {
-            // fill the image with paint
-//            Bitmap image = pdImage.getStencilImage(getNonStrokingPaint());
+//            if (getGraphicsState().getNonStrokingColor().getColorSpace() instanceof PDPattern)
+//            {
+//                // The earlier code for stencils (see "else") doesn't work with patterns because the
+//                // CTM is not taken into consideration.
+//                // this code is based on the fact that it is easily possible to draw the mask and
+//                // the paint at the correct place with the existing code, but not in one step.
+//                // Thus what we do is to draw both in separate images, then combine the two and draw
+//                // the result.
+//                // Note that the device scale is not used. In theory, some patterns can get better
+//                // at higher resolutions but the stencil would become more and more "blocky".
+//                // If anybody wants to do this, have a look at the code in showTransparencyGroup().
+//
+//                // draw the paint
+//                Paint paint = getNonStrokingPaint();
+//                Rectangle2D unitRect = new Rectangle2D.Float(0, 0, 1, 1);
+//                Rectangle2D bounds = at.createTransformedShape(unitRect).getBounds2D();
+//                Bitmap renderedPaint =
+//                    new Bitmap((int) Math.ceil(bounds.getWidth()),
+//                        (int) Math.ceil(bounds.getHeight()),
+//                        Bitmap.TYPE_INT_ARGB);
+//                Graphics2D g = (Graphics2D) renderedPaint.getGraphics();
+//                g.translate(-bounds.getMinX(), -bounds.getMinY());
+//                g.setPaint(paint);
+//                g.fill(bounds);
+//                g.dispose();
+//
+//                // draw the mask
+//                Bitmap mask = pdImage.getImage();
+//                Bitmap renderedMask = new Bitmap((int) Math.ceil(bounds.getWidth()),
+//                    (int) Math.ceil(bounds.getHeight()),
+//                    Bitmap.TYPE_INT_RGB);
+//                g = (Graphics2D) renderedMask.getGraphics();
+//                g.translate(-bounds.getMinX(), -bounds.getMinY());
+//                AffineTransform imageTransform = new AffineTransform(at);
+//                imageTransform.scale(1.0 / mask.getWidth(), -1.0 / mask.getHeight());
+//                imageTransform.translate(0, -mask.getHeight());
+//                g.drawImage(mask, imageTransform, null);
+//                g.dispose();
+//
+//                // apply the mask
+//                final int[] transparent = new int[4];
+//                int[] alphaPixel = null;
+//                WritableRaster raster = renderedPaint.getRaster();
+//                WritableRaster alpha = renderedMask.getRaster();
+//                int h = renderedMask.getRaster().getHeight();
+//                int w = renderedMask.getRaster().getWidth();
+//                for (int y = 0; y < h; y++)
+//                {
+//                    for (int x = 0; x < w; x++)
+//                    {
+//                        alphaPixel = alpha.getPixel(x, y, alphaPixel);
+//                        if (alphaPixel[0] == 255)
+//                        {
+//                            raster.setPixel(x, y, transparent);
+//                        }
+//                    }
+//                }
+//
+//                // draw the image
+//                setClip();
+//                graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
+//                graphics.drawImage(renderedPaint,
+//                    AffineTransform.getTranslateInstance(bounds.getMinX(), bounds.getMinY()),
+//                    null);
+//            }
+//            else
+//            {
+                // fill the image with stenciled paint
+//                Bitmap image = pdImage.getStencilImage(getNonStrokingPaint());
 
-            // draw the image
-//            drawBufferedImage(image, at);
+                // draw the image
+//                drawBitmap(image, at);
+//            } TODO: PdfBox-Android
         }
         else
         {
@@ -847,49 +1026,49 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
 
         // apply the transfer function to each color, but keep alpha
-        float input[] = new float[1];
-        int[] pixels = new int[image.getWidth() * image.getHeight()];
-        image.getPixels(pixels, 0, image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
-        for (int pixelIdx = 0; pixelIdx < image.getWidth() * image.getHeight(); pixelIdx++)
+        float[] input = new float[1];
+        for (int x = 0; x < image.getWidth(); ++x)
         {
-            int rgb = pixels[pixelIdx];
-            int ri = (rgb >> 16) & 0xFF;
-            int gi = (rgb >> 8) & 0xFF;
-            int bi = rgb & 0xFF;
-            int ro, go, bo;
-            if (rMap[ri] != null)
+            for (int y = 0; y < image.getHeight(); ++y)
             {
-                ro = rMap[ri];
+                int rgb = image.getPixel(x, y);
+                int ri = (rgb >> 16) & 0xFF;
+                int gi = (rgb >> 8) & 0xFF;
+                int bi = rgb & 0xFF;
+                int ro, go, bo;
+                if (rMap[ri] != null)
+                {
+                    ro = rMap[ri];
+                }
+                else
+                {
+                    input[0] = (ri & 0xFF) / 255f;
+                    ro = (int) (rf.eval(input)[0] * 255);
+                    rMap[ri] = ro;
+                }
+                if (gMap[gi] != null)
+                {
+                    go = gMap[gi];
+                }
+                else
+                {
+                    input[0] = (gi & 0xFF) / 255f;
+                    go = (int) (gf.eval(input)[0] * 255);
+                    gMap[gi] = go;
+                }
+                if (bMap[bi] != null)
+                {
+                    bo = bMap[bi];
+                }
+                else
+                {
+                    input[0] = (bi & 0xFF) / 255f;
+                    bo = (int) (bf.eval(input)[0] * 255);
+                    bMap[bi] = bo;
+                }
+                bim.setPixel(x, y, (rgb & 0xFF000000) | (ro << 16) | (go << 8) | bo);
             }
-            else
-            {
-                input[0] = (ri & 0xFF) / 255f;
-                ro = (int) (rf.eval(input)[0] * 255);
-                rMap[ri] = ro;
-            }
-            if (gMap[gi] != null)
-            {
-                go = gMap[gi];
-            }
-            else
-            {
-                input[0] = (gi & 0xFF) / 255f;
-                go = (int) (gf.eval(input)[0] * 255);
-                gMap[gi] = go;
-            }
-            if (bMap[bi] != null)
-            {
-                bo = bMap[bi];
-            }
-            else
-            {
-                input[0] = (bi & 0xFF) / 255f;
-                bo = (int) (bf.eval(input)[0] * 255);
-                bMap[bi] = bo;
-            }
-            pixels[pixelIdx] = (rgb & 0xFF000000) | (ro << 16) | (go << 8) | bo;
         }
-        bim.setPixels(pixels, 0, image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
         return bim;
     }
 
@@ -897,14 +1076,33 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public void shadingFill(COSName shadingName) throws IOException
     {
         PDShading shading = getResources().getShading(shadingName);
+        if (shading == null)
+        {
+            Log.e("PdfBox-Android", "shading " + shadingName + " does not exist in resources dictionary");
+            return;
+        }
         Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
 //        Paint paint = shading.toPaint(ctm);
+//        paint = applySoftMaskToPaint(paint, getGraphicsState().getSoftMask());
 
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
 //        graphics.setPaint(paint);
 //        graphics.setClip(null);
 //        lastClip = null;
-//        graphics.fill(getGraphicsState().getCurrentClippingPath());
+
+        // get the transformed BBox and intersect with current clipping path
+        // need to do it here and not in shading getRaster() because it may have been rotated
+        PDRectangle bbox = shading.getBBox();
+//        if (bbox != null)
+//        {
+//            Area bboxArea = new Area(bbox.transform(ctm));
+//            bboxArea.intersect(getGraphicsState().getCurrentClippingPath());
+//            graphics.fill(bboxArea);
+//        }
+//        else
+//        {
+//            graphics.fill(getGraphicsState().getCurrentClippingPath());
+//        }
     }
 
     @Override
@@ -1056,14 +1254,14 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         strokePaint.setColor(getColor(ab.color));
         setStroke(strokePaint, ab.width, Paint.Cap.BUTT, Paint.Join.MITER, 10, ab.dashArray, 0);
         canvas.restore();
-        COSArray pathsArray = (COSArray)base;
+        COSArray pathsArray = (COSArray) base;
         for (COSBase baseElement : pathsArray.toList())
         {
             if (!(baseElement instanceof COSArray))
             {
                 continue;
             }
-            COSArray pathArray = (COSArray)baseElement;
+            COSArray pathArray = (COSArray) baseElement;
             int nPoints = pathArray.size() / 2;
 
             // "When drawn, the points shall be connected by straight lines or curves 
@@ -1075,8 +1273,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 COSBase by = pathArray.getObject(i * 2 + 1);
                 if (bx instanceof COSNumber && by instanceof COSNumber)
                 {
-                    float x = ((COSNumber)bx).floatValue();
-                    float y = ((COSNumber)by).floatValue();
+                    float x = ((COSNumber) bx).floatValue();
+                    float y = ((COSNumber) by).floatValue();
                     if (i == 0)
                     {
                         path.moveTo(x, y);
@@ -1102,7 +1300,14 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public void showTransparencyGroup(PDTransparencyGroup form) throws IOException
     {
-        TransparencyGroup group = new TransparencyGroup(form, false);
+        TransparencyGroup group =
+            new TransparencyGroup(form, false, getGraphicsState().getCurrentTransformationMatrix(), null);
+//        Bitmap image = group.getImage();
+//        if (image == null)
+//        {
+            // image is empty, don't bother
+//            return;
+//        }
 
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
         setClip();
@@ -1111,25 +1316,40 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         // here is draw it directly onto the Graphics2D device at the appropriate position
 //        PDRectangle bbox = group.getBBox();
 //        AffineTransform prev = graphics.getTransform();
-//        float x = bbox.getLowerLeftX();
-//        float y = pageSize.getHeight() - bbox.getLowerLeftY() - bbox.getHeight();
-//        graphics.setTransform(AffineTransform.getTranslateInstance(x * xform.getScaleX(),
-//            y * xform.getScaleY()));
+
+        Matrix m = new Matrix(xform);
+        float xScale = Math.abs(m.getScalingFactorX());
+        float yScale = Math.abs(m.getScalingFactorY());
+
+        // adjust the initial translation (includes the translation used to "help" the rotation)
+//        graphics.setTransform(AffineTransform.getTranslateInstance(xform.getTranslateX(), xform.getTranslateY()));
+
+//        graphics.rotate(Math.toRadians(pageRotation));
+
+        // adjust bbox (x,y) position at the initial scale + cropbox
+//        float x = bbox.getLowerLeftX() - pageSize.getLowerLeftX();
+//        float y = pageSize.getUpperRightY() - bbox.getUpperRightY();
+//        graphics.translate(x * xScale, y * yScale);
+
+        if (flipTG)
+        {
+//            graphics.translate(0, image.getHeight());
+//            graphics.scale(1, -1);
+        }
 
         PDSoftMask softMask = getGraphicsState().getSoftMask();
         if (softMask != null)
         {
-//            Bitmap image = group.getImage();
 //            Paint awtPaint = new TexturePaint(image,
 //                new Rectangle2D.Float(0, 0, image.getWidth(), image.getHeight()));
-//            awtPaint = applySoftMaskToPaint(awtPaint, softMask); // todo: PDFBOX-994 problem here?
+//            awtPaint = applySoftMaskToPaint(awtPaint, softMask);
 //            graphics.setPaint(awtPaint);
-//            graphics.fill(new Rectangle2D.Float(0, 0, bbox.getWidth() * (float)xform.getScaleX(),
-//                bbox.getHeight() * (float)xform.getScaleY()));
+//            graphics.fill(
+//                new Rectangle2D.Float(0, 0, bbox.getWidth() * xScale, bbox.getHeight() * yScale));
         }
         else
         {
-//            graphics.drawImage(group.getImage(), null, null);
+//            graphics.drawImage(image, null, null);
         }
 
 //        graphics.setTransform(prev);
@@ -1142,22 +1362,31 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     {
 //        private final Bitmap image;
 //        private final PDRectangle bbox;
-
+//
 //        private final int minX;
 //        private final int minY;
 //        private final int width;
-//        private final int height; TODO: PdfBox-Android
+//        private final int height;
 
         /**
          * Creates a buffered image for a transparency group result.
+         *
+         * @param form the transparency group of the form or soft mask.
+         * @param isSoftMask true if this is a soft mask.
+         * @param ctm the relevant current transformation matrix. For soft masks, this is the CTM at
+         * the time the soft mask is set (not at the time the soft mask is used for fill/stroke!),
+         * for forms, this is the CTM at the time the form is invoked.
+         * @param backdropColor the color according to the /bc entry to be used for luminosity soft
+         * masks.
+         * @throws IOException
          */
-        private TransparencyGroup(PDTransparencyGroup form, boolean isSoftMask) throws IOException
+        private TransparencyGroup(PDTransparencyGroup form, boolean isSoftMask, Matrix ctm,
+            PDColor backdropColor) throws IOException
         {
 //            Graphics2D g2dOriginal = graphics;
 //            Area lastClipOriginal = lastClip;
 
             // get the CTM x Form Matrix transform
-            Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
             Matrix transform = Matrix.concatenate(ctm, form.getMatrix());
 
             // transform the bbox
@@ -1167,12 +1396,23 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            Area clip = (Area)getGraphicsState().getCurrentClippingPath().clone();
 //            clip.intersect(new Area(transformedBox));
 //            Rectangle2D clipRect = clip.getBounds2D();
+//            if (clipRect.isEmpty())
+//            {
+//                image = null;
+//                bbox = null;
+//                minX = 0;
+//                minY = 0;
+//                width = 0;
+//                height = 0;
+//                return;
+//            }
 //            this.bbox = new PDRectangle((float)clipRect.getX(), (float)clipRect.getY(),
 //                (float)clipRect.getWidth(), (float)clipRect.getHeight());
 
             // apply the underlying Graphics2D device's DPI transform
-//            Shape deviceClip = xform.createTransformedShape(clip);
-//            Rectangle2D bounds = deviceClip.getBounds2D();
+            Matrix m = new Matrix(xform);
+            AffineTransform dpiTransform = AffineTransform.getScaleInstance(Math.abs(m.getScalingFactorX()), Math.abs(m.getScalingFactorY()));
+//            Rectangle2D bounds = dpiTransform.createTransformedShape(clip.getBounds2D()).getBounds2D();
 
 //            minX = (int) Math.floor(bounds.getMinX());
 //            minY = (int) Math.floor(bounds.getMinY());
@@ -1182,15 +1422,49 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            width = maxX - minX;
 //            height = maxY - minY;
 
-//            image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB); // FIXME - color space
+            // FIXME - color space
+            if (isGray(form.getGroup().getColorSpace()))
+            {
+//                image = create2ByteGrayAlphaImage(width, height);
+            }
+            else
+            {
+//                image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            }
 //            Graphics2D g = image.createGraphics();
+            if (isSoftMask && backdropColor != null)
+            {
+                // "If the subtype is Luminosity, the transparency group XObject G shall be 
+                // composited with a fully opaque backdrop whose colour is everywhere defined 
+                // by the soft-mask dictionary's BC entry."
+//                g.setBackground(new Color(backdropColor.toRGB()));
+//                g.clearRect(0, 0, width, height);
+            }
 
             // flip y-axis
-//            g.translate(0, height);
+//            g.translate(0, image.getHeight());
 //            g.scale(1, -1);
 
+            boolean oldFlipTG = flipTG;
+            flipTG = false;
+
             // apply device transform (DPI)
-//            g.transform(xform);
+            // the initial translation is ignored, because we're not writing into the initial graphics device
+//            g.transform(dpiTransform);
+
+            AffineTransform xformOriginal = xform;
+            xform = AffineTransform.getScaleInstance(m.getScalingFactorX(), m.getScalingFactorY());
+            PDRectangle pageSizeOriginal = pageSize;
+//            pageSize = new PDRectangle(minX / Math.abs(m.getScalingFactorX()),
+//                minY / Math.abs(m.getScalingFactorY()),
+//                (float) bounds.getWidth() / Math.abs(m.getScalingFactorX()),
+//                (float) bounds.getHeight() / Math.abs(m.getScalingFactorY()));
+            int pageRotationOriginal = pageRotation;
+            pageRotation = 0;
+            Path.FillType clipWindingRuleOriginal = clipWindingRule;
+            clipWindingRule = null;
+            Path linePathOriginal = linePath;
+            linePath = new Path();
 
             // adjust the origin
 //            g.translate(-clipRect.getX(), -clipRect.getY());
@@ -1210,10 +1484,65 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             }
             finally
             {
+                flipTG = oldFlipTG;
 //                lastClip = lastClipOriginal;
 //                graphics.dispose();
 //                graphics = g2dOriginal;
+                clipWindingRule = clipWindingRuleOriginal;
+                linePath = linePathOriginal;
+                pageSize = pageSizeOriginal;
+                xform = xformOriginal;
+                pageRotation = pageRotationOriginal;
             }
+        }
+
+        // http://stackoverflow.com/a/21181943/535646
+//        private Bitmap create2ByteGrayAlphaImage(int width, int height)
+//        {
+//            /**
+//             * gray + alpha
+//             */
+//            int[] bandOffsets = new int[] {1, 0};
+//            int bands = bandOffsets.length;
+//
+//            /**
+//             * Color Model usesd for raw GRAY + ALPHA
+//             */
+//            final ColorModel CM_GRAY_ALPHA
+//                = new ComponentColorModel(
+//                ColorSpace.getInstance(ColorSpace.CS_GRAY),
+//                true, false, Transparency.TRANSLUCENT, DataBuffer.TYPE_BYTE);
+//
+//            // Init data buffer of type byte
+//            DataBuffer buffer = new DataBufferByte(width * height * bands);
+//
+//            // Wrap the data buffer in a raster
+//            WritableRaster raster =
+//                Raster.createInterleavedRaster(buffer, width, height,
+//                    width * bands, bands, bandOffsets, new Point(0, 0));
+//
+//            // Create a custom Bitmap with the raster and a suitable color model
+//            return new Bitmap(CM_GRAY_ALPHA, raster, false, null);
+//        } TODO: PdfBox-Android
+
+        private boolean isGray(PDColorSpace colorSpace)
+        {
+            if (colorSpace instanceof PDDeviceGray)
+            {
+                return true;
+            }
+//            if (colorSpace instanceof PDICCBased)
+//            {
+//                try
+//                {
+//                    return ((PDICCBased) colorSpace).getAlternateColorSpace() instanceof PDDeviceGray;
+//                }
+//                catch (IOException ex)
+//                {
+//                    return false;
+//                }
+//            } TODO: PdfBox-Android
+            return false;
         }
 
 //        public Bitmap getImage()
@@ -1226,19 +1555,17 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            return bbox;
 //        }
 
-//        public Raster getAlphaRaster()
+//        public Rectangle2D getBounds()
 //        {
-//            return image.getAlphaRaster();
-//        }
-
-//        public Raster getLuminosityRaster()
-//        {
-//            BufferedImage gray = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-//            Graphics g = gray.getGraphics();
-//            g.drawImage(image, 0, 0, null);
-//            g.dispose();
-//
-//            return gray.getRaster();
-//        }
+//            PointF size = new PointF(pageSize.getWidth(), pageSize.getHeight());
+//            // apply the underlying Graphics2D device's DPI transform and y-axis flip
+//            Matrix m = new Matrix(xform);
+//            AffineTransform dpiTransform = AffineTransform.getScaleInstance(Math.abs(m.getScalingFactorX()), Math.abs(m.getScalingFactorY()));
+//            size = dpiTransform.transform(size, size);
+//            // Flip y
+//            return new Rectangle2D.Double(minX - pageSize.getLowerLeftX() * m.getScalingFactorX(),
+//                size.getY() - minY - height + pageSize.getLowerLeftY() * m.getScalingFactorY(),
+//                width, height);
+//        } TODO: PdfBox-Android
     }
 }

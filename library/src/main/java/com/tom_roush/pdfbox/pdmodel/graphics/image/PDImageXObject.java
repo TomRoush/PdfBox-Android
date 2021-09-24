@@ -64,19 +64,6 @@ public final class PDImageXObject extends PDXObject implements PDImage
     private final PDResources resources;
 
     /**
-     * Creates a thumbnail Image XObject from the given COSBase and name.
-     * @param cosStream the COS stream
-     * @return an XObject
-     * @throws IOException if there is an error creating the XObject.
-     */
-    public static PDImageXObject createThumbnail(COSStream cosStream) throws IOException
-    {
-        // thumbnails are special, any non-null subtype is treated as being "Image"
-        PDStream pdStream = new PDStream(cosStream);
-        return new PDImageXObject(pdStream, null);
-    }
-
-    /**
      * Creates an Image XObject in the given document. This constructor is for internal PDFBox use
      * and is not for PDF generation. Users who want to create images should look at {@link #createFromFileByExtension(File, PDDocument)
      * }.
@@ -118,6 +105,41 @@ public final class PDImageXObject extends PDXObject implements PDImage
     }
 
     /**
+     * Creates an Image XObject with the given stream as its contents and current color spaces. This
+     * constructor is for internal PDFBox use and is not for PDF generation. Users who want to
+     * create images should look at {@link #createFromFileByExtension(File, PDDocument) }.
+     *
+     * @param stream the XObject stream to read
+     * @param resources the current resources
+     * @throws java.io.IOException if there is an error creating the XObject.
+     */
+    public PDImageXObject(PDStream stream, PDResources resources) throws IOException
+    {
+        this(stream, resources, stream.createInputStream());
+    }
+
+    // repairs parameters using decode result
+    private PDImageXObject(PDStream stream, PDResources resources, COSInputStream input)
+    {
+        super(repair(stream, input), COSName.IMAGE);
+        this.resources = resources;
+//        this.colorSpace = input.getDecodeResult().getJPXColorSpace(); TODO: PdfBox-Android
+    }
+
+    /**
+     * Creates a thumbnail Image XObject from the given COSBase and name.
+     * @param cosStream the COS stream
+     * @return an XObject
+     * @throws IOException if there is an error creating the XObject.
+     */
+    public static PDImageXObject createThumbnail(COSStream cosStream) throws IOException
+    {
+        // thumbnails are special, any non-null subtype is treated as being "Image"
+        PDStream pdStream = new PDStream(cosStream);
+        return new PDImageXObject(pdStream, null);
+    }
+
+    /**
      * Creates a COS stream from raw (encoded) data.
      */
     private static COSStream createRawStream(PDDocument document, InputStream rawInput)
@@ -141,20 +163,6 @@ public final class PDImageXObject extends PDXObject implements PDImage
     }
 
     /**
-     * Creates an Image XObject with the given stream as its contents and current color spaces. This
-     * constructor is for internal PDFBox use and is not for PDF generation. Users who want to
-     * create images should look at {@link #createFromFileByExtension(File, PDDocument) }.
-     *
-     * @param stream the XObject stream to read
-     * @param resources the current resources
-     * @throws java.io.IOException if there is an error creating the XObject.
-     */
-    public PDImageXObject(PDStream stream, PDResources resources) throws IOException
-    {
-        this(stream, resources, stream.createInputStream());
-    }
-
-    /**
      * Create a PDImageXObject from an image file, see {@link #createFromFileByExtension(File, PDDocument)} for
      * more details.
      *
@@ -173,7 +181,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * Create a PDImageXObject from an image file. The file format is determined by the file name
      * suffix. The following suffixes are supported: jpg, jpeg, tif, tiff, gif, bmp and png. This is
      * a convenience method that calls {@link JPEGFactory#createFromStream},
-     * {@link CCITTFactory#createFromFile} or {@link ImageIO#read} combined with
+     * {@link CCITTFactory#createFromFile} or {@link BitmapFactory#decodeFile} combined with
      * {@link LosslessFactory#createFromImage}. (The later can also be used to create a
      * PDImageXObject from a Bitmap).
      *
@@ -216,7 +224,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * Create a PDImageXObject from an image file. The file format is determined by the file
      * content. The following file types are supported: jpg, jpeg, tif, tiff, gif, bmp and png. This
      * is a convenience method that calls {@link JPEGFactory#createFromStream},
-     * {@link CCITTFactory#createFromFile} or {@link ImageIO#read} combined with
+     * {@link CCITTFactory#createFromFile} or {@link BitmapFactory#decodeFile} combined with
      * {@link LosslessFactory#createFromImage}. (The later can also be used to create a
      * PDImageXObject from a Bitmap).
      *
@@ -269,14 +277,6 @@ public final class PDImageXObject extends PDXObject implements PDImage
             return LosslessFactory.createFromImage(doc, bim);
         }
         throw new IllegalArgumentException("Image type not supported: " + file.getName());
-    }
-
-    // repairs parameters using decode result
-    private PDImageXObject(PDStream stream, PDResources resources, COSInputStream input)
-    {
-        super(repair(stream, input), COSName.IMAGE);
-        this.resources = resources;
-//        this.colorSpace = input.getDecodeResult().getJPXColorSpace(); TODO: PdfBox-Android
     }
 
     // repairs parameters using decode result
@@ -674,10 +674,13 @@ public final class PDImageXObject extends PDXObject implements PDImage
         {
             return "png";
         }
+        else if (filters.contains(COSName.JBIG2_DECODE))
+        {
+            return "jb2";
+        }
         else
         {
             Log.w("PdfBox-Android", "getSuffix() returns null, filters: " + filters);
-            // TODO more...
             return null;
         }
     }

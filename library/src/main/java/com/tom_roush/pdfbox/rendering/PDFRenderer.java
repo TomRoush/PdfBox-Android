@@ -205,16 +205,16 @@ public class PDFRenderer
             float translateY = 0;
             switch (rotationAngle)
             {
-            case 90:
-                translateX = cropBox.getHeight();
-                break;
-            case 270:
-                translateY = cropBox.getWidth();
-                break;
-            case 180:
-                translateX = cropBox.getWidth();
-                translateY = cropBox.getHeight();
-                break;
+                case 90:
+                    translateX = cropBox.getHeight();
+                    break;
+                case 270:
+                    translateY = cropBox.getWidth();
+                    break;
+                case 180:
+                    translateX = cropBox.getWidth();
+                    translateY = cropBox.getHeight();
+                    break;
             }
             canvas.translate(translateX, translateY);
             canvas.rotate((float) Math.toRadians(rotationAngle));

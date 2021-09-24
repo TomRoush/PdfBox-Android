@@ -194,16 +194,16 @@ abstract class TrueTypeEmbedder implements Subsetter
 
         switch (os2.getFamilyClass())
         {
-        case OS2WindowsMetricsTable.FAMILY_CLASS_CLAREDON_SERIFS:
-        case OS2WindowsMetricsTable.FAMILY_CLASS_FREEFORM_SERIFS:
-        case OS2WindowsMetricsTable.FAMILY_CLASS_MODERN_SERIFS:
-        case OS2WindowsMetricsTable.FAMILY_CLASS_OLDSTYLE_SERIFS:
-        case OS2WindowsMetricsTable.FAMILY_CLASS_SLAB_SERIFS:
-            fd.setSerif(true);
-            break;
-        case OS2WindowsMetricsTable.FAMILY_CLASS_SCRIPTS:
-            fd.setScript(true);
-            break;
+            case OS2WindowsMetricsTable.FAMILY_CLASS_CLAREDON_SERIFS:
+            case OS2WindowsMetricsTable.FAMILY_CLASS_FREEFORM_SERIFS:
+            case OS2WindowsMetricsTable.FAMILY_CLASS_MODERN_SERIFS:
+            case OS2WindowsMetricsTable.FAMILY_CLASS_OLDSTYLE_SERIFS:
+            case OS2WindowsMetricsTable.FAMILY_CLASS_SLAB_SERIFS:
+                fd.setSerif(true);
+                break;
+            case OS2WindowsMetricsTable.FAMILY_CLASS_SCRIPTS:
+                fd.setScript(true);
+                break;
         }
 
         fd.setFontWeight(os2.getWeightClass());

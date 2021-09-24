@@ -134,7 +134,7 @@ final class SampledImageReader
         {
             return from8bit(pdImage);
         }
-        else if (bitsPerComponent == 1 && colorKey == null)
+        else if (bitsPerComponent == 1 && colorKey == null && numComponents == 1)
         {
             return from1Bit(pdImage);
         }

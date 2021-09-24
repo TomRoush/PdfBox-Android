@@ -23,9 +23,9 @@ import java.io.IOException;
 /**
  * This class is based on code from Apache Batik a subproject of Apache XMLGraphics.
  * see http://xmlgraphics.apache.org/batik/ for further details.
- * 
+ *
  */
-public abstract class GlyfDescript implements GlyphDescription 
+public abstract class GlyfDescript implements GlyphDescription
 {
 
     // Flags describing a coordinate of a glyph.
@@ -70,12 +70,12 @@ public abstract class GlyfDescript implements GlyphDescription
 
     /**
      * Constructor.
-     * 
+     *
      * @param numberOfContours the number of contours
      * @param bais the stream to be read
      * @throws IOException is thrown if something went wrong
      */
-    protected GlyfDescript(short numberOfContours, TTFDataStream bais) throws IOException 
+    protected GlyfDescript(short numberOfContours, TTFDataStream bais) throws IOException
     {
         contourCount = numberOfContours;
     }
@@ -84,7 +84,7 @@ public abstract class GlyfDescript implements GlyphDescription
      * {@inheritDoc}
      */
     @Override
-    public void resolve() 
+    public void resolve()
     {
     }
 
@@ -92,7 +92,7 @@ public abstract class GlyfDescript implements GlyphDescription
      * {@inheritDoc}
      */
     @Override
-    public int getContourCount() 
+    public int getContourCount()
     {
         return contourCount;
     }
@@ -101,7 +101,7 @@ public abstract class GlyfDescript implements GlyphDescription
      * Returns the hinting instructions.
      * @return an array containing the hinting instructions.
      */
-    public int[] getInstructions() 
+    public int[] getInstructions()
     {
         return instructions;
     }

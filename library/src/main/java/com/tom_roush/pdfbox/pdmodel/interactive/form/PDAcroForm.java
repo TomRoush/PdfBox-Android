@@ -43,6 +43,7 @@ import com.tom_roush.pdfbox.pdmodel.fdf.FDFCatalog;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFDictionary;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFDocument;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFField;
+import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
@@ -226,35 +227,24 @@ public final class PDAcroForm implements COSObjectable
         // the content stream to write to
         PDPageContentStream contentStream;
 
-        // Hold a reference between the annotations and the page they are on.
-        // This will only be used in case a PDAnnotationWidget doesn't contain
-        // a /P entry specifying the page it's on as the /P entry is optional
-        Map<COSDictionary, Integer> annotationToPageRef = null;
-
-        // Iterate over all form fields and their widgets and create a
-        // FormXObject at the page content level from that
-        for (PDField field : fields)
+        // preserve all non widget annotations
+        for (PDPage page : document.getPages())
         {
-            for (PDAnnotationWidget widget : field.getWidgets())
+            isContentStreamWrapped = false;
+
+            List<PDAnnotation> annotations = new ArrayList<PDAnnotation>();
+
+            for (PDAnnotation annotation: page.getAnnotations())
             {
-                if (!widget.isInvisible() && !widget.isHidden() && widget.getNormalAppearanceStream() != null)
+                if (!(annotation instanceof PDAnnotationWidget))
                 {
-                    PDPage page = widget.getPage();
-
-                    // resolve the page from looking at the annotations
-                    if (widget.getPage() == null) {
-                        if (annotationToPageRef == null) {
-                            annotationToPageRef = buildAnnotationToPageRef();
-                        }
-                        Integer pageRef = annotationToPageRef.get(widget.getCOSObject());
-                        if (pageRef != null) {
-                            page = document.getPage(pageRef);
-                        }
-                    }
-
+                    annotations.add(annotation);
+                }
+                else if (!annotation.isInvisible() && !annotation.isHidden() && annotation.getNormalAppearanceStream() != null)
+                {
                     if (!isContentStreamWrapped)
                     {
-                        contentStream = new PDPageContentStream(document, page, AppendMode.APPEND, true);
+                        contentStream = new PDPageContentStream(document, page, AppendMode.APPEND, true, true);
                         isContentStreamWrapped = true;
                     }
                     else
@@ -262,7 +252,7 @@ public final class PDAcroForm implements COSObjectable
                         contentStream = new PDPageContentStream(document, page, AppendMode.APPEND, true);
                     }
 
-                    PDAppearanceStream appearanceStream = widget.getNormalAppearanceStream();
+                    PDAppearanceStream appearanceStream = annotation.getNormalAppearanceStream();
 
                     PDFormXObject fieldObject = new PDFormXObject(appearanceStream.getCOSObject());
 
@@ -281,15 +271,15 @@ public final class PDAcroForm implements COSObjectable
 
                     if (needsTranslation)
                     {
-                        transformationMatrix.translate(widget.getRectangle().getLowerLeftX(),
-                            widget.getRectangle().getLowerLeftY());
+                        transformationMatrix.translate(annotation.getRectangle().getLowerLeftX(),
+                            annotation.getRectangle().getLowerLeftY());
                         transformed = true;
                     }
 
                     if (needsScaling)
                     {
                         PDRectangle bbox = appearanceStream.getBBox();
-                        PDRectangle fieldRect = widget.getRectangle();
+                        PDRectangle fieldRect = annotation.getRectangle();
 
                         if (bbox.getWidth() - fieldRect.getWidth() != 0 && bbox.getHeight() - fieldRect.getHeight() != 0)
                         {
@@ -309,20 +299,6 @@ public final class PDAcroForm implements COSObjectable
                     contentStream.drawForm(fieldObject);
                     contentStream.restoreGraphicsState();
                     contentStream.close();
-                }
-            }
-        }
-
-        // preserve all non widget annotations
-        for (PDPage page : document.getPages())
-        {
-            List<PDAnnotation> annotations = new ArrayList<PDAnnotation>();
-
-            for (PDAnnotation annotation: page.getAnnotations())
-            {
-                if (!(annotation instanceof PDAnnotationWidget))
-                {
-                    annotations.add(annotation);
                 }
             }
             page.setAnnotations(annotations);
@@ -382,8 +358,8 @@ public final class PDAcroForm implements COSObjectable
      * might either be terminal fields, non-terminal fields or a mixture of both. Non-terminal fields
      * mark branches which contents can be retrieved using {@link PDNonTerminalField#getChildren()}.
      *
-     * @return A list of the documents root fields.
-     *
+     * @return A list of the documents root fields, never null. If there are no fields then this
+     * method returns an empty list.
      */
     public List<PDField> getFields()
     {
@@ -720,13 +696,16 @@ public final class PDAcroForm implements COSObjectable
                 {
                     // if the BBox of the PDFormXObject does not start at 0,0
                     // there is no need do translate as this is done by the BBox definition.
-                    PDFormXObject xObject = (PDFormXObject) resources.getXObject(xObjectNames.next());
-                    PDRectangle bbox = xObject.getBBox();
-                    float llX = bbox.getLowerLeftX();
-                    float llY = bbox.getLowerLeftY();
-                    if (llX == 0 && llY == 0)
+                    PDXObject xObject = resources.getXObject(xObjectNames.next());
+                    if (xObject instanceof PDFormXObject)
                     {
-                        needsTranslation = true;
+                        PDRectangle bbox = ((PDFormXObject)xObject).getBBox();
+                        float llX = bbox.getLowerLeftX();
+                        float llY = bbox.getLowerLeftY();
+                        if (llX == 0 && llY == 0)
+                        {
+                            needsTranslation = true;
+                        }
                     }
                 }
                 catch (IOException e)
@@ -751,10 +730,6 @@ public final class PDAcroForm implements COSObjectable
     {
         // Check if there is a transformation within the XObjects content
         PDResources resources = appearanceStream.getResources();
-        if (resources != null && resources.getXObjectNames().iterator().hasNext())
-        {
-            return true;
-        }
-        return false;
+        return resources != null && resources.getXObjectNames().iterator().hasNext();
     }
 }

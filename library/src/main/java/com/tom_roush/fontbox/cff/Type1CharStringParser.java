@@ -98,6 +98,17 @@ public class Type1CharStringParser
                         sequence.remove(sequence.size()-1); // remove "return" command
                     }
                 }
+                else
+                {
+                    Log.w("PdfBox-Android", "CALLSUBR is ignored, operand: " + operand
+                        + ", subrs.size(): " + subrs.size() + " in glyph '"
+                        + glyphName + "' of font " + fontName);
+                    // remove all parameters (there can be more than one)
+                    while (sequence.get(sequence.size() - 1) instanceof Integer)
+                    {
+                        sequence.remove(sequence.size() - 1);
+                    }
+                }
             }
             else if (b0 == TWO_BYTE && input.peekUnsignedByte(0) == CALLOTHERSUBR)
             {
@@ -109,33 +120,32 @@ public class Type1CharStringParser
 
                 // othersubrs 0-3 have their own semantics
                 Stack<Integer> results = new Stack<Integer>();
-                if (othersubrNum == 0)
+                switch (othersubrNum)
                 {
-                    results.push(removeInteger(sequence));
-                    results.push(removeInteger(sequence));
-                    sequence.remove(sequence.size() - 1);
-                    // end flex
-                    sequence.add(0);
-                    sequence.add(new CharStringCommand(TWO_BYTE, CALLOTHERSUBR));
-                }
-                else if (othersubrNum == 1)
-                {
-                    // begin flex
-                    sequence.add(1);
-                    sequence.add(new CharStringCommand(TWO_BYTE, CALLOTHERSUBR));
-                }
-                else if (othersubrNum == 3)
-                {
-                    // allows hint replacement
-                    results.push(removeInteger(sequence));
-                }
-                else
-                {
-                    // all remaining othersubrs use this fallback mechanism
-                    for (int i = 0; i < numArgs; i++)
-                    {
+                    case 0:
                         results.push(removeInteger(sequence));
-                    }
+                        results.push(removeInteger(sequence));
+                        sequence.remove(sequence.size() - 1);
+                        // end flex
+                        sequence.add(0);
+                        sequence.add(new CharStringCommand(TWO_BYTE, CALLOTHERSUBR));
+                        break;
+                    case 1:
+                        // begin flex
+                        sequence.add(1);
+                        sequence.add(new CharStringCommand(TWO_BYTE, CALLOTHERSUBR));
+                        break;
+                    case 3:
+                        // allows hint replacement
+                        results.push(removeInteger(sequence));
+                        break;
+                    default:
+                        // all remaining othersubrs use this fallback mechanism
+                        for (int i = 0; i < numArgs; i++)
+                        {
+                            results.push(removeInteger(sequence));
+                        }
+                        break;
                 }
 
                 // pop must follow immediately

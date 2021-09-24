@@ -159,12 +159,25 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
         Log.i("PdfBox-Android", "Signature rectangle has been created");
     }
 
+    /**
+     * {@inheritDoc }
+     *
+     * @deprecated use {@link #createAffineTransform(com.tom_roush.harmony.awt.geom.AffineTransform) }
+     */
     @Override
+    @Deprecated
     public void createAffineTransform(byte[] params)
     {
         AffineTransform transform = new AffineTransform(params[0], params[1], params[2],
             params[3], params[4],  params[5]);
         pdfStructure.setAffineTransform(transform);
+        Log.i("PdfBox-Android", "Matrix has been added");
+    }
+
+    @Override
+    public void createAffineTransform(AffineTransform affineTransform)
+    {
+        pdfStructure.setAffineTransform(affineTransform);
         Log.i("PdfBox-Android", "Matrix has been added");
     }
 

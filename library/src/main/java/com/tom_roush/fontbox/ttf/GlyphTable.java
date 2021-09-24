@@ -20,7 +20,7 @@ import java.io.IOException;
 
 /**
  * A table in a true type font.
- * 
+ *
  * @author Ben Litchfield
  */
 public class GlyphTable extends TTFTable
@@ -56,7 +56,7 @@ public class GlyphTable extends TTFTable
 
     /**
      * This will read the required data from the stream.
-     * 
+     *
      * @param ttf The font that is being read.
      * @param data The stream to read the data from.
      * @throws IOException If there is an error reading the data.
@@ -73,7 +73,7 @@ public class GlyphTable extends TTFTable
             glyphs = new GlyphData[numGlyphs];
         }
 
-        // we don't actually read the table yet because it can contain tens of thousands of glyphs
+        // we don't actually read the complete table here because it can contain tens of thousands of glyphs
         this.data = data;
         initialized = true;
     }

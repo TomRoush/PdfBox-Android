@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.tom_roush.pdfbox.contentstream.operator.color;
 
 import java.io.IOException;
@@ -27,7 +26,6 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
-import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceColorSpace;
 
 /**
  * sc,scn,SC,SCN: Sets the color to use for stroking or non-stroking operations.
@@ -40,7 +38,7 @@ public abstract class SetColor extends OperatorProcessor
     public void process(Operator operator, List<COSBase> arguments) throws IOException
     {
         PDColorSpace colorSpace = getColorSpace();
-        if (colorSpace instanceof PDDeviceColorSpace &&
+        if (/*!(colorSpace instanceof PDPattern) && TODO: PdfBox-Android */
             arguments.size() < colorSpace.getNumberOfComponents())
         {
             throw new MissingOperandException(operator, arguments);
@@ -52,21 +50,18 @@ public abstract class SetColor extends OperatorProcessor
 
     /**
      * Returns either the stroking or non-stroking color value.
-     *
      * @return The stroking or non-stroking color value.
      */
     protected abstract PDColor getColor();
 
     /**
      * Sets either the stroking or non-stroking color value.
-     *
      * @param color The stroking or non-stroking color value.
      */
     protected abstract void setColor(PDColor color);
 
     /**
      * Returns either the stroking or non-stroking color space.
-     *
      * @return The stroking or non-stroking color space.
      */
     protected abstract PDColorSpace getColorSpace();

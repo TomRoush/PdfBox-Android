@@ -301,7 +301,7 @@ public class PDType1Font extends PDSimpleFont
 
     /**
      * Some Type 1 fonts have an invalid Length1, which causes the binary segment of the font
-     * to be truncated, see PDFBOX-2350.
+     * to be truncated, see PDFBOX-2350, PDFBOX-3677.
      *
      * @param bytes Type 1 stream bytes
      * @param length1 Length1 from the Type 1 stream
@@ -315,22 +315,12 @@ public class PDType1Font extends PDSimpleFont
         {
             offset = bytes.length - 4;
         }
-        while (offset > 0)
+
+        offset = findBinaryOffsetAfterExec(bytes, offset);
+        if (offset == 0 && length1 > 0)
         {
-            if (bytes[offset + 0] == 'e' &&
-                bytes[offset + 1] == 'x' &&
-                bytes[offset + 2] == 'e' &&
-                bytes[offset + 3] == 'c')
-            {
-                offset += 4;
-                // skip additional CR LF space characters
-                while (offset < length1 && (bytes[offset] == '\r' || bytes[offset] == '\n' || bytes[offset] == ' '))
-                {
-                    offset++;
-                }
-                break;
-            }
-            offset--;
+            // 2nd try with brute force
+            offset = findBinaryOffsetAfterExec(bytes, bytes.length - 4);
         }
 
         if (length1 - offset != 0 && offset > 0)
@@ -340,6 +330,31 @@ public class PDType1Font extends PDSimpleFont
         }
 
         return length1;
+    }
+
+    private static int findBinaryOffsetAfterExec(byte[] bytes, int startOffset)
+    {
+        int offset = startOffset;
+        while (offset > 0)
+        {
+            if (bytes[offset + 0] == 'e'
+                && bytes[offset + 1] == 'x'
+                && bytes[offset + 2] == 'e'
+                && bytes[offset + 3] == 'c')
+            {
+                offset += 4;
+                // skip additional CR LF space characters
+                while (offset < bytes.length &&
+                    (bytes[offset] == '\r' || bytes[offset] == '\n' ||
+                        bytes[offset] == ' ' || bytes[offset] == '\t'))
+                {
+                    offset++;
+                }
+                break;
+            }
+            offset--;
+        }
+        return offset;
     }
 
     /**
@@ -399,22 +414,41 @@ public class PDType1Font extends PDSimpleFont
         }
 
         String name = getGlyphList().codePointToName(unicode);
-        if (!encoding.contains(name))
+        if (isStandard14())
         {
-            throw new IllegalArgumentException(
-                String.format("U+%04X ('%s') is not available in this font %s (generic: %s) encoding: %s",
-                    unicode, name, getName(), genericFont.getName(), encoding.getEncodingName()));
+            // genericFont not needed, thus simplified code
+            // this is important on systems with no installed fonts
+            if (!encoding.contains(name))
+            {
+                throw new IllegalArgumentException(
+                    String.format("U+%04X ('%s') is not available in this font %s encoding: %s",
+                        unicode, name, getName(), encoding.getEncodingName()));
+            }
+            if (".notdef".equals(name))
+            {
+                throw new IllegalArgumentException(
+                    String.format("No glyph for U+%04X in font %s", unicode, getName()));
+            }
+        }
+        else
+        {
+            if (!encoding.contains(name))
+            {
+                throw new IllegalArgumentException(
+                    String.format("U+%04X ('%s') is not available in this font %s (generic: %s) encoding: %s",
+                        unicode, name, getName(), genericFont.getName(), encoding.getEncodingName()));
+            }
+
+            String nameInFont = getNameInFont(name);
+
+            if (nameInFont.equals(".notdef") || !genericFont.hasGlyph(nameInFont))
+            {
+                throw new IllegalArgumentException(
+                    String.format("No glyph for U+%04X in font %s (generic: %s)", unicode, getName(), genericFont.getName()));
+            }
         }
 
-        String nameInFont = getNameInFont(name);
         Map<String, Integer> inverted = encoding.getNameToCodeMap();
-
-        if (nameInFont.equals(".notdef") || !genericFont.hasGlyph(nameInFont))
-        {
-            throw new IllegalArgumentException(
-                String.format("No glyph for U+%04X in font %s (generic: %s)", unicode, getName(), genericFont.getName()));
-        }
-
         int code = inverted.get(name);
         bytes = new byte[] { (byte)code };
         codeToBytesMap.put(code, bytes);
@@ -427,7 +461,7 @@ public class PDType1Font extends PDSimpleFont
         String name = codeToName(code);
 
         // width of .notdef is ignored for substitutes, see PDFBOX-1900
-        if (!isEmbedded && name.equals(".notdef"))
+        if (!isEmbedded && ".notdef".equals(name))
         {
             return 250;
         }

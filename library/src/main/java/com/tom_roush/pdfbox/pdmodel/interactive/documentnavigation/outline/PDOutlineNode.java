@@ -18,6 +18,7 @@ package com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline;
 
 import java.util.Iterator;
 
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.PDDictionaryWrapper;
@@ -29,6 +30,7 @@ import com.tom_roush.pdfbox.pdmodel.common.PDDictionaryWrapper;
  */
 public abstract class PDOutlineNode extends PDDictionaryWrapper
 {
+
     /**
      * Default Constructor.
      */
@@ -50,14 +52,15 @@ public abstract class PDOutlineNode extends PDDictionaryWrapper
      */
     PDOutlineNode getParent()
     {
-        COSDictionary item = (COSDictionary) getCOSObject().getDictionaryObject(COSName.PARENT);
-        if (item != null)
+        COSBase base = getCOSObject().getDictionaryObject(COSName.PARENT);
+        if (base instanceof COSDictionary)
         {
-            if (COSName.OUTLINES.equals(item.getCOSName(COSName.TYPE)))
+            COSDictionary parent = (COSDictionary) base;
+            if (COSName.OUTLINES.equals(parent.getCOSName(COSName.TYPE)))
             {
-                return new PDDocumentOutline(item);
+                return new PDDocumentOutline(parent);
             }
-            return new PDOutlineItem(item);
+            return new PDOutlineItem(parent);
         }
         return null;
     }
@@ -172,10 +175,10 @@ public abstract class PDOutlineNode extends PDDictionaryWrapper
 
     PDOutlineItem getOutlineItem(COSName name)
     {
-        COSDictionary item = (COSDictionary) getCOSObject().getDictionaryObject(name);
-        if (item != null)
+        COSBase base = getCOSObject().getDictionaryObject(name);
+        if (base instanceof COSDictionary)
         {
-            return new PDOutlineItem(item);
+            return new PDOutlineItem((COSDictionary) base);
         }
         return null;
     }

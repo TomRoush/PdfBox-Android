@@ -23,6 +23,9 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFField;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
@@ -237,10 +240,37 @@ public abstract class PDField implements COSObjectable
     void importFDF(FDFField fdfField) throws IOException
     {
         COSBase fieldValue = fdfField.getCOSValue();
-        if (fieldValue != null)
+
+        if (fieldValue != null && this instanceof PDTerminalField)
+        {
+            PDTerminalField currentField = (PDTerminalField) this;
+
+            if (fieldValue instanceof COSName)
+            {
+                currentField.setValue(((COSName) fieldValue).getName());;
+            }
+            else if (fieldValue instanceof COSString)
+            {
+                currentField.setValue(((COSString) fieldValue).getString());
+            }
+            else if (fieldValue instanceof COSStream)
+            {
+                currentField.setValue(((COSStream) fieldValue).toTextString());
+            }
+            else if (fieldValue instanceof COSArray && this instanceof PDChoice)
+            {
+                ((PDChoice) this).setValue(COSArrayList.convertCOSStringCOSArrayToList((COSArray) fieldValue));
+            }
+            else if (fieldValue != null)
+            {
+                throw new IOException("Error:Unknown type for field import" + fieldValue);
+            }
+        }
+        else if (fieldValue != null)
         {
             dictionary.setItem(COSName.V, fieldValue);
         }
+
         Integer ff = fdfField.getFieldFlags();
         if (ff != null)
         {

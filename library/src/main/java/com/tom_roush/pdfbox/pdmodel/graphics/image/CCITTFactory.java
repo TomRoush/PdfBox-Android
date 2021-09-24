@@ -23,13 +23,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-
 import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageOutputStream;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.filter.Filter;
 import com.tom_roush.pdfbox.filter.FilterFactory;
 import com.tom_roush.pdfbox.io.RandomAccess;
+import com.tom_roush.pdfbox.io.RandomAccessBuffer;
 import com.tom_roush.pdfbox.io.RandomAccessFile;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
@@ -79,15 +79,64 @@ public final class CCITTFactory
                 // flip bit to avoid having to set /BlackIs1
                 mcios.writeBits(~(image.getPixel(x, y) & 1), 1);
             }
-            while (mcios.getBitOffset() != 0)
+            if (mcios.getBitOffset() != 0)
             {
-                mcios.writeBit(0);
+                mcios.writeBits(0, 8 - mcios.getBitOffset());
             }
         }
         mcios.flush();
         mcios.close();
 
         return prepareImageXObject(document, bos.toByteArray(), width, height, PDDeviceGray.INSTANCE);
+    }
+
+    /**
+     * Creates a new CCITT Fax compressed image XObject from a specific image of a TIFF file stored
+     * in a byte array. Only single-strip CCITT T4 or T6 compressed TIFF files are supported. If
+     * you're not sure what TIFF files you have, use
+     * {@link LosslessFactory#createFromImage(PDDocument, Bitmap) }
+     * or {@link CCITTFactory#createFromImage(PDDocument, Bitmap) }
+     * instead.
+     *
+     * @param document the document to create the image as part of.
+     * @param byteArray the TIFF file in a byte array which contains a suitable CCITT compressed
+     * image
+     * @return a new Image XObject
+     * @throws IOException if there is an error reading the TIFF data.
+     */
+    public static PDImageXObject createFromByteArray(PDDocument document, byte[] byteArray)
+        throws IOException
+    {
+        return createFromByteArray(document, byteArray, 0);
+    }
+
+    /**
+     * Creates a new CCITT Fax compressed image XObject from a specific image of a TIFF file stored
+     * in a byte array. Only single-strip CCITT T4 or T6 compressed TIFF files are supported. If
+     * you're not sure what TIFF files you have, use
+     * {@link LosslessFactory#createFromImage(PDDocument, Bitmap) }
+     * or {@link CCITTFactory#createFromImage(PDDocument, Bitmap) }
+     * instead.
+     *
+     * @param document the document to create the image as part of.
+     * @param byteArray the TIFF file in a byte array which contains a suitable CCITT compressed
+     * image
+     * @param number TIFF image number, starting from 0
+     * @return a new Image XObject
+     * @throws IOException if there is an error reading the TIFF data.
+     */
+    public static PDImageXObject createFromByteArray(PDDocument document, byte[] byteArray, int number)
+        throws IOException
+    {
+        RandomAccess raf = new RandomAccessBuffer(byteArray);
+        try
+        {
+            return createFromRandomAccessImpl(document, raf, number);
+        }
+        finally
+        {
+            raf.close();
+        }
     }
 
     private static PDImageXObject prepareImageXObject(PDDocument document,
@@ -151,7 +200,7 @@ public final class CCITTFactory
      * Creates a new CCITT Fax compressed image XObject from the first image of a TIFF file. Only
      * single-strip CCITT T4 or T6 compressed TIFF files are supported. If you're not sure what TIFF
      * files you have, use
-     * {@link LosslessFactory#createFromImage(com.tom_roush.pdfbox.pdmodel.PDDocument, android.graphics.Bitmap)}
+     * {@link LosslessFactory#createFromImage(com.tom_roush.pdfbox.pdmodel.PDDocument, Bitmap)}
      * or {@link CCITTFactory#createFromImage(PDDocument, Bitmap) }
      * instead.
      *
@@ -163,15 +212,7 @@ public final class CCITTFactory
     public static PDImageXObject createFromFile(PDDocument document, File file)
         throws IOException
     {
-        RandomAccessFile raf = new RandomAccessFile(file, "r");
-        try
-        {
-            return createFromRandomAccessImpl(document, raf, 0);
-        }
-        finally
-        {
-            raf.close();
-        }
+        return createFromFile(document, file, 0);
     }
 
     /**

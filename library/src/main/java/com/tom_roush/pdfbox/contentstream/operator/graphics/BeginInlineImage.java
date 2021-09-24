@@ -19,10 +19,10 @@ package com.tom_roush.pdfbox.contentstream.operator.graphics;
 import java.io.IOException;
 import java.util.List;
 
-import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDInlineImage;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
 
 /**
  * BI Begins an inline image.
@@ -34,7 +34,12 @@ public final class BeginInlineImage extends GraphicsOperatorProcessor
     @Override
     public void process(Operator operator, List<COSBase> operands) throws IOException
     {
-        PDImage image = new PDInlineImage(operator.getImageParameters(), operator.getImageData(),
+        if (operator.getImageData() == null || operator.getImageData().length == 0)
+        {
+            return;
+        }
+        PDImage image = new PDInlineImage(operator.getImageParameters(),
+            operator.getImageData(),
             context.getResources());
         context.drawImage(image);
     }

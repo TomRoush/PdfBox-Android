@@ -83,7 +83,7 @@ public class GlyfCompositeComp
 
     /**
      * Constructor.
-     * 
+     *
      * @param bais the stream to be read
      * @throws IOException is thrown if something went wrong
      */
@@ -145,7 +145,7 @@ public class GlyfCompositeComp
 
     /**
      * Sets the first index.
-     * 
+     *
      * @param idx the first index
      */
     public void setFirstIndex(int idx)
@@ -155,7 +155,7 @@ public class GlyfCompositeComp
 
     /**
      * Returns the first index.
-     * 
+     *
      * @return the first index.
      */
     public int getFirstIndex()
@@ -165,7 +165,7 @@ public class GlyfCompositeComp
 
     /**
      * Sets the index for the first contour.
-     * 
+     *
      * @param idx the index of the first contour
      */
     public void setFirstContour(int idx)
@@ -175,7 +175,7 @@ public class GlyfCompositeComp
 
     /**
      * Returns the index of the first contour.
-     * 
+     *
      * @return the index of the first contour.
      */
     public int getFirstContour()
@@ -185,7 +185,7 @@ public class GlyfCompositeComp
 
     /**
      * Returns argument 1.
-     * 
+     *
      * @return argument 1.
      */
     public short getArgument1()
@@ -195,7 +195,7 @@ public class GlyfCompositeComp
 
     /**
      * Returns argument 2.
-     * 
+     *
      * @return argument 2.
      */
     public short getArgument2()
@@ -205,7 +205,7 @@ public class GlyfCompositeComp
 
     /**
      * Returns the flags of the glyph.
-     * 
+     *
      * @return the flags.
      */
     public short getFlags()
@@ -215,7 +215,7 @@ public class GlyfCompositeComp
 
     /**
      * Returns the index of the first contour.
-     * 
+     *
      * @return index of the first contour.
      */
     public int getGlyphIndex()
@@ -225,7 +225,7 @@ public class GlyfCompositeComp
 
     /**
      * Returns the scale-01 value.
-     * 
+     *
      * @return the scale-01 value.
      */
     public double getScale01()
@@ -235,7 +235,7 @@ public class GlyfCompositeComp
 
     /**
      * Returns the scale-10 value.
-     * 
+     *
      * @return the scale-10 value.
      */
     public double getScale10()
@@ -245,7 +245,7 @@ public class GlyfCompositeComp
 
     /**
      * Returns the x-scaling value.
-     * 
+     *
      * @return the x-scaling value.
      */
     public double getXScale()
@@ -255,7 +255,7 @@ public class GlyfCompositeComp
 
     /**
      * Returns the y-scaling value.
-     * 
+     *
      * @return the y-scaling value.
      */
     public double getYScale()
@@ -265,7 +265,7 @@ public class GlyfCompositeComp
 
     /**
      * Returns the x-translation value.
-     * 
+     *
      * @return the x-translation value.
      */
     public int getXTranslate()
@@ -275,7 +275,7 @@ public class GlyfCompositeComp
 
     /**
      * Returns the y-translation value.
-     * 
+     *
      * @return the y-translation value.
      */
     public int getYTranslate()
@@ -285,7 +285,7 @@ public class GlyfCompositeComp
 
     /**
      * Transforms an x-coordinate of a point for this component.
-     * 
+     *
      * @param x The x-coordinate of the point to transform
      * @param y The y-coordinate of the point to transform
      * @return The transformed x-coordinate
@@ -297,7 +297,7 @@ public class GlyfCompositeComp
 
     /**
      * Transforms a y-coordinate of a point for this component.
-     * 
+     *
      * @param x The x-coordinate of the point to transform
      * @param y The y-coordinate of the point to transform
      * @return The transformed y-coordinate

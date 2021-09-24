@@ -67,6 +67,7 @@ final class CCITTFaxDecoderStream extends FilterInputStream {
     private int[] changesCurrentRow;
     private int changesReferenceRowCount;
     private int changesCurrentRowCount;
+    private int lastChangingElement = 0;
 
     private boolean optionG32D = false;
 
@@ -87,23 +88,23 @@ final class CCITTFaxDecoderStream extends FilterInputStream {
 
         this.fillOrder = fillOrder;
 
-        this.changesReferenceRow = new int[columns+1];
-        this.changesCurrentRow = new int[columns+1];
+        this.changesReferenceRow = new int[columns + 2];
+        this.changesCurrentRow = new int[columns + 2];
 
         switch (type) {
-        case TIFFExtension.COMPRESSION_CCITT_MODIFIED_HUFFMAN_RLE:
-            optionByteAligned = (options & TIFFExtension.GROUP3OPT_BYTEALIGNED) != 0;
-            break;
-        case TIFFExtension.COMPRESSION_CCITT_T4:
-            optionG32D = (options & TIFFExtension.GROUP3OPT_2DENCODING) != 0;
-            optionG3Fill = (options & TIFFExtension.GROUP3OPT_FILLBITS) != 0;
-            optionUncompressed = (options & TIFFExtension.GROUP3OPT_UNCOMPRESSED) != 0;
-            optionByteAligned = (options & TIFFExtension.GROUP3OPT_BYTEALIGNED) != 0;
-            break;
-        case TIFFExtension.COMPRESSION_CCITT_T6:
-            optionUncompressed = (options & TIFFExtension.GROUP4OPT_UNCOMPRESSED) != 0;
-            optionByteAligned = (options & TIFFExtension.GROUP4OPT_BYTEALIGNED) != 0;
-            break;
+            case TIFFExtension.COMPRESSION_CCITT_MODIFIED_HUFFMAN_RLE:
+                optionByteAligned = (options & TIFFExtension.GROUP3OPT_BYTEALIGNED) != 0;
+                break;
+            case TIFFExtension.COMPRESSION_CCITT_T4:
+                optionG32D = (options & TIFFExtension.GROUP3OPT_2DENCODING) != 0;
+                optionG3Fill = (options & TIFFExtension.GROUP3OPT_FILLBITS) != 0;
+                optionUncompressed = (options & TIFFExtension.GROUP3OPT_UNCOMPRESSED) != 0;
+                optionByteAligned = (options & TIFFExtension.GROUP3OPT_BYTEALIGNED) != 0;
+                break;
+            case TIFFExtension.COMPRESSION_CCITT_T6:
+                optionUncompressed = (options & TIFFExtension.GROUP4OPT_UNCOMPRESSED) != 0;
+                optionByteAligned = (options & TIFFExtension.GROUP4OPT_BYTEALIGNED) != 0;
+                break;
         }
 
     }
@@ -180,45 +181,45 @@ final class CCITTFaxDecoderStream extends FilterInputStream {
                 }
                 else if (n.isLeaf) {
                     switch (n.value) {
-                    case VALUE_HMODE:
-                        int runLength;
-                        runLength = decodeRun(white ? whiteRunTree : blackRunTree);
-                        index += runLength;
-                        changesCurrentRow[changesCurrentRowCount++] = index;
+                        case VALUE_HMODE:
+                            int runLength;
+                            runLength = decodeRun(white ? whiteRunTree : blackRunTree);
+                            index += runLength;
+                            changesCurrentRow[changesCurrentRowCount++] = index;
 
-                        runLength = decodeRun(white ? blackRunTree : whiteRunTree);
-                        index += runLength;
-                        changesCurrentRow[changesCurrentRowCount++] = index;
-                        break;
+                            runLength = decodeRun(white ? blackRunTree : whiteRunTree);
+                            index += runLength;
+                            changesCurrentRow[changesCurrentRowCount++] = index;
+                            break;
 
-                    case VALUE_PASSMODE:
-                        int pChangingElement = getNextChangingElement(index, white) + 1;
+                        case VALUE_PASSMODE:
+                            int pChangingElement = getNextChangingElement(index, white) + 1;
 
-                        if (pChangingElement >= changesReferenceRowCount || pChangingElement == -1) {
-                            index = columns;
-                        }
-                        else {
-                            index = changesReferenceRow[pChangingElement];
-                        }
+                            if (pChangingElement >= changesReferenceRowCount) {
+                                index = columns;
+                            }
+                            else {
+                                index = changesReferenceRow[pChangingElement];
+                            }
 
-                        break;
+                            break;
 
-                    default:
-                        // Vertical mode (-3 to 3)
-                        int vChangingElement = getNextChangingElement(index, white);
+                        default:
+                            // Vertical mode (-3 to 3)
+                            int vChangingElement = getNextChangingElement(index, white);
 
-                        if (vChangingElement >= changesReferenceRowCount || vChangingElement == -1) {
-                            index = columns + n.value;
-                        }
-                        else {
-                            index = changesReferenceRow[vChangingElement] + n.value;
-                        }
+                            if (vChangingElement >= changesReferenceRowCount || vChangingElement == -1) {
+                                index = columns + n.value;
+                            }
+                            else {
+                                index = changesReferenceRow[vChangingElement] + n.value;
+                            }
 
-                        changesCurrentRow[changesCurrentRowCount] = index;
-                        changesCurrentRowCount++;
-                        white = !white;
+                            changesCurrentRow[changesCurrentRowCount] = index;
+                            changesCurrentRowCount++;
+                            white = !white;
 
-                        break;
+                            break;
                     }
 
                     continue mode;
@@ -228,10 +229,18 @@ final class CCITTFaxDecoderStream extends FilterInputStream {
     }
 
     private int getNextChangingElement(final int a0, final boolean white) {
-        int start = white ? 0 : 1;
+        int start = (lastChangingElement & 0xFFFFFFFE) + (white ? 0 : 1);
+        if (start > 2) {
+            start -= 2;
+        }
+
+        if (a0 == 0) {
+            return start;
+        }
 
         for (int i = start; i < changesReferenceRowCount; i += 2) {
-            if (a0 < changesReferenceRow[i] || (a0 == 0 && changesReferenceRow[i] == 0)) {
+            if (a0 < changesReferenceRow[i]) {
+                lastChangingElement = i;
                 return i;
             }
         }
@@ -285,20 +294,21 @@ final class CCITTFaxDecoderStream extends FilterInputStream {
 
     private void decodeRow() throws IOException {
         switch (type) {
-        case TIFFExtension.COMPRESSION_CCITT_MODIFIED_HUFFMAN_RLE:
-            decodeRowType2();
-            break;
-        case TIFFExtension.COMPRESSION_CCITT_T4:
-            decodeRowType4();
-            break;
-        case TIFFExtension.COMPRESSION_CCITT_T6:
-            decodeRowType6();
-            break;
+            case TIFFExtension.COMPRESSION_CCITT_MODIFIED_HUFFMAN_RLE:
+                decodeRowType2();
+                break;
+            case TIFFExtension.COMPRESSION_CCITT_T4:
+                decodeRowType4();
+                break;
+            case TIFFExtension.COMPRESSION_CCITT_T6:
+                decodeRowType6();
+                break;
         }
 
         int index = 0;
         boolean white = true;
 
+        lastChangingElement = 0;
         for (int i = 0; i <= changesCurrentRowCount; i++) {
             int nextChange = columns;
 

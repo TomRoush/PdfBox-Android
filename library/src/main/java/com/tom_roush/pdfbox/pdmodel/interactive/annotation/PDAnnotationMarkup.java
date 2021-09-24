@@ -26,9 +26,8 @@ import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.cos.COSString;
 
 /**
- * This class represents the additonal fields of a Markup type Annotation. See
- * section 12.5.6 of ISO32000-1:2008 (starting with page 390) for details on
- * annotation types.
+ * This class represents the additonal fields of a Markup type Annotation. See section 12.5.6 of ISO32000-1:2008
+ * (starting with page 390) for details on annotation types.
  *
  * @author Paul King
  */
@@ -58,10 +57,9 @@ public class PDAnnotationMarkup extends PDAnnotation
      * Constant for an Sound type of annotation.
      */
     public static final String SUB_TYPE_SOUND = "Sound";
-  
+
     /*
-     * The various values of the reply type as defined in the PDF 1.7 reference
-     * Table 170
+     * The various values of the reply type as defined in the PDF 1.7 reference Table 170
      */
 
     /**
@@ -79,23 +77,21 @@ public class PDAnnotationMarkup extends PDAnnotation
      */
     public PDAnnotationMarkup()
     {
-        super();
     }
 
     /**
      * Constructor.
      *
-     * @param dict
-     *            The annotations dictionary.
+     * @param dict The annotations dictionary.
      */
-    public PDAnnotationMarkup( COSDictionary dict )
+    public PDAnnotationMarkup(COSDictionary dict)
     {
-        super( dict );
+        super(dict);
     }
 
     /**
-     * Retrieve the string used as the title of the popup window shown when open
-     * and active (by convention this identifies who added the annotation).
+     * Retrieve the string used as the title of the popup window shown when open and active (by convention this
+     * identifies who added the annotation).
      *
      * @return The title of the popup.
      */
@@ -105,20 +101,18 @@ public class PDAnnotationMarkup extends PDAnnotation
     }
 
     /**
-     * Set the string used as the title of the popup window shown when open and
-     * active (by convention this identifies who added the annotation).
+     * Set the string used as the title of the popup window shown when open and active (by convention this identifies
+     * who added the annotation).
      *
-     * @param t
-     *            The title of the popup.
+     * @param t The title of the popup.
      */
-    public void setTitlePopup( String t )
+    public void setTitlePopup(String t)
     {
         getCOSObject().setString(COSName.T, t);
     }
 
     /**
-     * This will retrieve the popup annotation used for entering/editing the
-     * text for this annotation.
+     * This will retrieve the popup annotation used for entering/editing the text for this annotation.
      *
      * @return the popup annotation.
      */
@@ -127,7 +121,7 @@ public class PDAnnotationMarkup extends PDAnnotation
         COSDictionary popup = (COSDictionary) getCOSObject().getDictionaryObject("Popup");
         if (popup != null)
         {
-            return new PDAnnotationPopup( popup );
+            return new PDAnnotationPopup(popup);
         }
         else
         {
@@ -136,20 +130,17 @@ public class PDAnnotationMarkup extends PDAnnotation
     }
 
     /**
-     * This will set the popup annotation used for entering/editing the text for
-     * this annotation.
+     * This will set the popup annotation used for entering/editing the text for this annotation.
      *
-     * @param popup
-     *            the popup annotation.
+     * @param popup the popup annotation.
      */
-    public void setPopup( PDAnnotationPopup popup )
+    public void setPopup(PDAnnotationPopup popup)
     {
         getCOSObject().setItem("Popup", popup);
     }
 
     /**
-     * This will retrieve the constant opacity value used when rendering the
-     * annotation (excluing any popup).
+     * This will retrieve the constant opacity value used when rendering the annotation (excluing any popup).
      *
      * @return the constant opacity value.
      */
@@ -159,20 +150,17 @@ public class PDAnnotationMarkup extends PDAnnotation
     }
 
     /**
-     * This will set the constant opacity value used when rendering the
-     * annotation (excluing any popup).
+     * This will set the constant opacity value used when rendering the annotation (excluing any popup).
      *
-     * @param ca
-     *            the constant opacity value.
+     * @param ca the constant opacity value.
      */
-    public void setConstantOpacity( float ca )
+    public void setConstantOpacity(float ca)
     {
         getCOSObject().setFloat(COSName.CA, ca);
     }
 
     /**
-     * This will retrieve the rich text stream which is displayed in the popup
-     * window.
+     * This will retrieve the rich text stream which is displayed in the popup window.
      *
      * @return the rich text stream.
      */
@@ -196,10 +184,9 @@ public class PDAnnotationMarkup extends PDAnnotation
     /**
      * This will set the rich text stream which is displayed in the popup window.
      *
-     * @param rc
-     *            the rich text stream.
+     * @param rc the rich text stream.
      */
-    public void setRichContents( String rc )
+    public void setRichContents(String rc)
     {
         getCOSObject().setItem(COSName.RC, new COSString(rc));
     }
@@ -208,8 +195,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      * This will retrieve the date and time the annotation was created.
      *
      * @return the creation date/time.
-     * @throws IOException
-     *             if there is a format problem when converting the date.
+     * @throws IOException if there is a format problem when converting the date.
      */
     public Calendar getCreationDate() throws IOException
     {
@@ -219,17 +205,16 @@ public class PDAnnotationMarkup extends PDAnnotation
     /**
      * This will set the date and time the annotation was created.
      *
-     * @param creationDate
-     *            the date and time the annotation was created.
+     * @param creationDate the date and time the annotation was created.
      */
-    public void setCreationDate( Calendar creationDate )
+    public void setCreationDate(Calendar creationDate)
     {
         getCOSObject().setDate(COSName.CREATION_DATE, creationDate);
     }
 
     /**
-     * This will retrieve the annotation to which this one is "In Reply To" the
-     * actual relationship is specified by the RT entry.
+     * This will retrieve the annotation to which this one is "In Reply To" the actual relationship
+     * is specified by the RT entry.
      *
      * @return the other annotation or null if there is none.
      * @throws IOException if there is an error creating the other annotation.
@@ -245,12 +230,12 @@ public class PDAnnotationMarkup extends PDAnnotation
     }
 
     /**
-     * This will set the annotation to which this one is "In Reply To" the
-     * actual relationship is specified by the RT entry.
+     * This will set the annotation to which this one is "In Reply To" the actual relationship is specified by the RT
+     * entry.
      *
      * @param irt the annotation this one is "In Reply To".
      */
-    public void setInReplyTo( PDAnnotation irt )
+    public void setInReplyTo(PDAnnotation irt)
     {
         getCOSObject().setItem("IRT", irt);
     }
@@ -270,14 +255,14 @@ public class PDAnnotationMarkup extends PDAnnotation
      *
      * @param subj short description of the subject.
      */
-    public void setSubject( String subj )
+    public void setSubject(String subj)
     {
         getCOSObject().setString(COSName.SUBJ, subj);
     }
 
     /**
-     * This will retrieve the Reply Type (relationship) with the annotation in
-     * the IRT entry See the RT_* constants for the available values.
+     * This will retrieve the Reply Type (relationship) with the annotation in the IRT entry See the RT_* constants for
+     * the available values.
      *
      * @return the relationship.
      */
@@ -287,20 +272,19 @@ public class PDAnnotationMarkup extends PDAnnotation
     }
 
     /**
-     * This will set the Reply Type (relationship) with the annotation in the
-     * IRT entry See the RT_* constants for the available values.
+     * This will set the Reply Type (relationship) with the annotation in the IRT entry See the RT_* constants for the
+     * available values.
      *
      * @param rt the reply type.
      */
-    public void setReplyType( String rt )
+    public void setReplyType(String rt)
     {
         getCOSObject().setName("RT", rt);
     }
 
     /**
-     * This will retrieve the intent of the annotation The values and meanings
-     * are specific to the actual annotation See the IT_* constants for the
-     * annotation classes.
+     * This will retrieve the intent of the annotation The values and meanings are specific to the actual annotation See
+     * the IT_* constants for the annotation classes.
      *
      * @return the intent
      */
@@ -310,20 +294,19 @@ public class PDAnnotationMarkup extends PDAnnotation
     }
 
     /**
-     * This will set the intent of the annotation The values and meanings are
-     * specific to the actual annotation See the IT_* constants for the
-     * annotation classes.
+     * This will set the intent of the annotation The values and meanings are specific to the actual annotation See the
+     * IT_* constants for the annotation classes.
      *
      * @param it the intent
      */
-    public void setIntent( String it )
+    public void setIntent(String it)
     {
         getCOSObject().setName(COSName.IT, it);
     }
 
     /**
      * This will return the external data dictionary.
-     * 
+     *
      * @return the external data dictionary
      */
     public PDExternalDataDictionary getExternalData()
@@ -338,7 +321,7 @@ public class PDAnnotationMarkup extends PDAnnotation
 
     /**
      * This will set the external data dictionary.
-     * 
+     *
      * @param externalData the external data dictionary
      */
     public void setExternalData(PDExternalDataDictionary externalData)
@@ -350,6 +333,7 @@ public class PDAnnotationMarkup extends PDAnnotation
      * This will set the border style dictionary, specifying the width and dash pattern used in drawing the line.
      *
      * @param bs the border style dictionary to set.
+     *
      */
     public void setBorderStyle(PDBorderStyleDictionary bs)
     {
@@ -366,7 +350,7 @@ public class PDAnnotationMarkup extends PDAnnotation
         COSBase bs = getCOSObject().getDictionaryObject(COSName.BS);
         if (bs instanceof COSDictionary)
         {
-            return new PDBorderStyleDictionary((COSDictionary)bs);
+            return new PDBorderStyleDictionary((COSDictionary) bs);
         }
         return null;
     }

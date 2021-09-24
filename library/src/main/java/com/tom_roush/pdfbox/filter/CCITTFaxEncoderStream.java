@@ -189,27 +189,27 @@ final class CCITTFaxEncoderStream extends OutputStream {
             else {
                 // VMODE
                 switch (difference) {
-                case 0:
-                    write(1, 1);
-                    break;
-                case 1:
-                    write(3, 3);
-                    break;
-                case 2:
-                    write(3, 6);
-                    break;
-                case 3:
-                    write(3, 7);
-                    break;
-                case -1:
-                    write(2, 3);
-                    break;
-                case -2:
-                    write(2, 6);
-                    break;
-                case -3:
-                    write(2, 7);
-                    break;
+                    case 0:
+                        write(1, 1);
+                        break;
+                    case 1:
+                        write(3, 3);
+                        break;
+                    case 2:
+                        write(3, 6);
+                        break;
+                    case 3:
+                        write(3, 7);
+                        break;
+                    case -1:
+                        write(2, 3);
+                        break;
+                    case -2:
+                        write(2, 6);
+                        break;
+                    case -3:
+                        write(2, 7);
+                        break;
                 }
                 white = !white;
                 index = nextRefs[0] + difference;

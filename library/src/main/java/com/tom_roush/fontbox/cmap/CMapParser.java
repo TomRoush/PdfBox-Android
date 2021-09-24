@@ -662,19 +662,19 @@ public class CMapParser
     {
         switch (aByte)
         {
-        case '(':
-        case ')':
-        case '<':
-        case '>':
-        case '[':
-        case ']':
-        case '{':
-        case '}':
-        case '/':
-        case '%':
-            return true;
-        default:
-            return false;
+            case '(':
+            case ')':
+            case '<':
+            case '>':
+            case '[':
+            case ']':
+            case '{':
+            case '}':
+            case '/':
+            case '%':
+                return true;
+            default:
+                return false;
         }
     }
 

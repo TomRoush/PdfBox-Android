@@ -18,7 +18,7 @@ package com.tom_roush.fontbox.ttf;
 
 /**
  * A table in a true type font.
- * 
+ *
  * @author Ben Litchfield
  */
 public class DigitalSignatureTable extends TTFTable

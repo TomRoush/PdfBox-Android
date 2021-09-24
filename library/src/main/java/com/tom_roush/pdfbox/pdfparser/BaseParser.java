@@ -142,26 +142,29 @@ public abstract class BaseParser
     private COSBase parseCOSDictionaryValue() throws IOException
     {
         long numOffset = seqSource.getPosition();
-        COSBase number = parseDirObject();
+        COSBase value = parseDirObject();
         skipSpaces();
-        if (!isDigit())
+        // proceed if the given object is a number and the following is a number as well
+        if (!(value instanceof COSNumber) || !isDigit())
         {
-            return number;
+            return value;
         }
+        // read the remaining information of the object number
         long genOffset = seqSource.getPosition();
         COSBase generationNumber = parseDirObject();
         skipSpaces();
         readExpectedChar('R');
-        if (!(number instanceof COSInteger))
+        if (!(value instanceof COSInteger))
         {
-            throw new IOException("expected number, actual=" + number + " at offset " + numOffset);
+            throw new IOException("expected number, actual=" + value + " at offset " + numOffset);
         }
         if (!(generationNumber instanceof COSInteger))
         {
-            throw new IOException("expected number, actual=" + number + " at offset " + genOffset);
+            throw new IOException("expected number, actual=" + value + " at offset " + genOffset);
         }
-        COSObjectKey key = new COSObjectKey(((COSInteger) number).longValue(),
+        COSObjectKey key = new COSObjectKey(((COSInteger) value).longValue(),
             ((COSInteger) generationNumber).intValue());
+        // dereference the object
         return getObjectFromPool(key);
     }
 
@@ -447,97 +450,97 @@ public abstract class BaseParser
                 char next = (char) seqSource.read();
                 switch(next)
                 {
-                case 'n':
-                    out.write('\n');
-                    break;
-                case 'r':
-                    out.write('\r');
-                    break;
-                case 't':
-                    out.write('\t');
-                    break;
-                case 'b':
-                    out.write('\b');
-                    break;
-                case 'f':
-                    out.write('\f');
-                    break;
-                case ')':
-                    // PDFBox 276 /Title (c:\)
-                    braces = checkForMissingCloseParen(braces);
-                    if( braces != 0 )
-                    {
+                    case 'n':
+                        out.write('\n');
+                        break;
+                    case 'r':
+                        out.write('\r');
+                        break;
+                    case 't':
+                        out.write('\t');
+                        break;
+                    case 'b':
+                        out.write('\b');
+                        break;
+                    case 'f':
+                        out.write('\f');
+                        break;
+                    case ')':
+                        // PDFBox 276 /Title (c:\)
+                        braces = checkForMissingCloseParen(braces);
+                        if( braces != 0 )
+                        {
+                            out.write(next);
+                        }
+                        else
+                        {
+                            out.write('\\');
+                        }
+                        break;
+                    case '(':
+                    case '\\':
                         out.write(next);
-                    }
-                    else
-                    {
-                        out.write('\\');
-                    }
-                    break;
-                case '(':
-                case '\\':
-                    out.write(next);
-                    break;
-                case ASCII_LF:
-                case ASCII_CR:
-                    //this is a break in the line so ignore it and the newline and continue
-                    c = seqSource.read();
-                    while( isEOL(c) && c != -1)
-                    {
+                        break;
+                    case ASCII_LF:
+                    case ASCII_CR:
+                        //this is a break in the line so ignore it and the newline and continue
                         c = seqSource.read();
-                    }
-                    nextc = c;
-                    break;
-                case '0':
-                case '1':
-                case '2':
-                case '3':
-                case '4':
-                case '5':
-                case '6':
-                case '7':
-                {
-                    StringBuilder octal = new StringBuilder();
-                    octal.append( next );
-                    c = seqSource.read();
-                    char digit = (char)c;
-                    if( digit >= '0' && digit <= '7' )
+                        while( isEOL(c) && c != -1)
+                        {
+                            c = seqSource.read();
+                        }
+                        nextc = c;
+                        break;
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
                     {
-                        octal.append( digit );
+                        StringBuilder octal = new StringBuilder();
+                        octal.append( next );
                         c = seqSource.read();
-                        digit = (char)c;
+                        char digit = (char)c;
                         if( digit >= '0' && digit <= '7' )
                         {
                             octal.append( digit );
+                            c = seqSource.read();
+                            digit = (char)c;
+                            if( digit >= '0' && digit <= '7' )
+                            {
+                                octal.append( digit );
+                            }
+                            else
+                            {
+                                nextc = c;
+                            }
                         }
                         else
                         {
                             nextc = c;
                         }
-                    }
-                    else
-                    {
-                        nextc = c;
-                    }
 
-                    int character = 0;
-                    try
-                    {
-                        character = Integer.parseInt( octal.toString(), 8 );
+                        int character = 0;
+                        try
+                        {
+                            character = Integer.parseInt( octal.toString(), 8 );
+                        }
+                        catch( NumberFormatException e )
+                        {
+                            throw new IOException( "Error: Expected octal character, actual='" + octal + "'", e );
+                        }
+                        out.write(character);
+                        break;
                     }
-                    catch( NumberFormatException e )
+                    default:
                     {
-                        throw new IOException( "Error: Expected octal character, actual='" + octal + "'", e );
+                        // dropping the backslash
+                        // see 7.3.4.2 Literal Strings for further information
+                        out.write(next);
                     }
-                    out.write(character);
-                    break;
-                }
-                default:
-                {
-                    // dropping the backslash
-                    // see 7.3.4.2 Literal Strings for further information
-                    out.write(next);
-                }
                 }
             }
             else

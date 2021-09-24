@@ -143,7 +143,7 @@ class Type1Lexer
                 }
                 else if (c == 0)
                 {
-                	Log.w("PdfBox-Android", "NULL byte in font, skipped");
+                    Log.w("PdfBox-Android", "NULL byte in font, skipped");
                     skip = true;
                 }
                 else
@@ -164,7 +164,7 @@ class Type1Lexer
                         {
                             // the stream is corrupt
                             throw new DamagedFontException("Could not read token at position " +
-                                                           buffer.position());
+                                buffer.position());
                         }
 
                         if (name.equals("RD") || name.equals("-|"))
@@ -268,7 +268,7 @@ class Type1Lexer
         {
             sb.append(c);
             c = getChar();
-            
+
             // optional minus
             if (c == '-')
             {
@@ -296,7 +296,7 @@ class Type1Lexer
                 c = getChar();
             }
         }
-        
+
         buffer.position(buffer.position() - 1);
         if (radix != null)
         {
@@ -373,54 +373,50 @@ class Type1Lexer
             char c = getChar();
 
             // string context
-            if (c == '(')
+            switch (c)
             {
-                openParens++;
-                sb.append('(');
-            }
-            else if (c == ')')
-            {
-                if (openParens == 0)
-                {
-                    // end of string
-                    return new Token(sb.toString(), Token.STRING);
-                }
-                else
-                {
+                case '(':
+                    openParens++;
+                    sb.append('(');
+                    break;
+                case ')':
+                    if (openParens == 0)
+                    {
+                        // end of string
+                        return new Token(sb.toString(), Token.STRING);
+                    }
                     sb.append(')');
                     openParens--;
-                }
-            }
-            else if (c == '\\')
-            {
-                // escapes: \n \r \t \b \f \\ \( \)
-                char c1 = getChar();
-                switch (c1)
-                {
-                    case 'n':
-                    case 'r': sb.append("\n"); break;
-                    case 't': sb.append('\t'); break;
-                    case 'b': sb.append('\b'); break;
-                    case 'f': sb.append('\f'); break;
-                    case '\\': sb.append('\\'); break;
-                    case '(': sb.append('('); break;
-                    case ')': sb.append(')'); break;
-                }
-                // octal \ddd
-                if (Character.isDigit(c1))
-                {
-                    String num = String.valueOf(new char[] { c1, getChar(), getChar() });
-                    Integer code = Integer.parseInt(num, 8);
-                    sb.append((char)(int)code);
-                }
-            }
-            else if (c == '\r' || c == '\n')
-            {
-                sb.append("\n");
-            }
-            else
-            {
-                sb.append(c);
+                    break;
+                case '\\':
+                    // escapes: \n \r \t \b \f \\ \( \)
+                    char c1 = getChar();
+                    switch (c1)
+                    {
+                        case 'n':
+                        case 'r': sb.append("\n"); break;
+                        case 't': sb.append('\t'); break;
+                        case 'b': sb.append('\b'); break;
+                        case 'f': sb.append('\f'); break;
+                        case '\\': sb.append('\\'); break;
+                        case '(': sb.append('('); break;
+                        case ')': sb.append(')'); break;
+                    }
+                    // octal \ddd
+                    if (Character.isDigit(c1))
+                    {
+                        String num = String.valueOf(new char[] { c1, getChar(), getChar() });
+                        Integer code = Integer.parseInt(num, 8);
+                        sb.append((char)(int)code);
+                    }
+                    break;
+                case '\r':
+                case '\n':
+                    sb.append("\n");
+                    break;
+                default:
+                    sb.append(c);
+                    break;
             }
         }
         return null;
