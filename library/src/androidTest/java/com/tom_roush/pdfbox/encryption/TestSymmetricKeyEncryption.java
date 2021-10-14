@@ -23,7 +23,6 @@ import android.util.Log;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -35,6 +34,7 @@ import java.util.Map;
 
 import javax.crypto.Cipher;
 
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
@@ -46,14 +46,10 @@ import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
 import com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
-import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import junit.framework.TestCase;
 
 /**
  * Tests for symmetric key encryption.
@@ -67,7 +63,7 @@ import static org.junit.Assert.fail;
  * @author Tilman Hausherr
  *
  */
-public class TestSymmetricKeyEncryption
+public class TestSymmetricKeyEncryption extends TestCase
 {
     private File testResultsDir;
 
@@ -76,10 +72,13 @@ public class TestSymmetricKeyEncryption
     static final String USERPASSWORD = "1234567890abcdefghijk1234567890abcdefghijk";
     static final String OWNERPASSWORD = "abcdefghijk1234567890abcdefghijk1234567890";
 
-    Context testContext;
+    private Context testContext;
 
-    @Before
-    public void setUp() throws Exception
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void setUp() throws Exception
     {
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
@@ -113,7 +112,6 @@ public class TestSymmetricKeyEncryption
      * extraction. In the 128 and 256 bit encrypted files, AssembleDocument,
      * ExtractForAccessibility and PrintDegraded are also disabled.
      */
-    @Test
     public void testPermissions() throws Exception
     {
         AccessPermission fullAP = new AccessPermission();
@@ -169,9 +167,7 @@ public class TestSymmetricKeyEncryption
     private void checkPerms(byte[] inputFileAsByteArray, String password,
         AccessPermission expectedPermissions) throws IOException
     {
-        PDDocument doc = PDDocument.load(
-            new ByteArrayInputStream(inputFileAsByteArray),
-            password);
+        PDDocument doc = PDDocument.load(inputFileAsByteArray, password);
 
         AccessPermission currentAccessPermission = doc.getCurrentAccessPermission();
 
@@ -200,7 +196,6 @@ public class TestSymmetricKeyEncryption
      *
      * @throws Exception If there is an unexpected error during the test.
      */
-    @Test
     public void testProtection() throws Exception
     {
         byte[] inputFileAsByteArray = getFileResourceAsByteArray("Acroform-PDFBOX-2333.pdf");
@@ -225,7 +220,6 @@ public class TestSymmetricKeyEncryption
      *
      * @throws Exception If there is an unexpected error during the test.
      */
-    @Test
     public void testProtectionInnerAttachment() throws Exception
     {
         String testFileName = "preEnc_20141025_105451.pdf";
@@ -254,7 +248,7 @@ public class TestSymmetricKeyEncryption
         String userpassword, String ownerpassword,
         AccessPermission permission) throws IOException
     {
-        PDDocument document = PDDocument.load(new ByteArrayInputStream(inputFileAsByteArray));
+        PDDocument document = PDDocument.load(inputFileAsByteArray);
         String prefix = "Simple-";
         int numSrcPages = document.getNumberOfPages();
         PDFRenderer pdfRenderer = new PDFRenderer(document);
@@ -372,7 +366,7 @@ public class TestSymmetricKeyEncryption
         File embeddedFilePriorToEncryption,
         String userpassword, String ownerpassword) throws IOException
     {
-        PDDocument document = PDDocument.load(new ByteArrayInputStream(inputFileWithEmbeddedFileAsByteArray));
+        PDDocument document = PDDocument.load(inputFileWithEmbeddedFileAsByteArray);
         PDDocument encryptedDoc = encrypt(keyLength, preferAES, sizePriorToEncr, document, "ContainsEmbedded-", permission, userpassword, ownerpassword);
 
         File decryptedFile = new File(testResultsDir, "DecryptedContainsEmbedded-" + keyLength + "-bit-" + (preferAES ? "AES" : "RC4") + ".pdf");
@@ -391,22 +385,13 @@ public class TestSymmetricKeyEncryption
         encryptedDoc.close();
     }
 
-    private byte[] getStreamAsByteArray(InputStream is) throws IOException
-    {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IOUtils.copy(is, baos);
-        is.close();
-        return baos.toByteArray();
-    }
-
     private byte[] getFileResourceAsByteArray(String testFileName) throws IOException
     {
-        return getStreamAsByteArray(testContext.getAssets().open("pdfbox/com/tom_roush/pdfbox/pdmodel/encryption/" + testFileName));
+        return IOUtils.toByteArray(testContext.getAssets().open("pdfbox/com/tom_roush/pdfbox/pdmodel/encryption/" + testFileName));
     }
 
     private byte[] getFileAsByteArray(File f) throws IOException
     {
-        return getStreamAsByteArray(new FileInputStream(f));
+        return IOUtils.toByteArray(new FileInputStream(f));
     }
-
 }

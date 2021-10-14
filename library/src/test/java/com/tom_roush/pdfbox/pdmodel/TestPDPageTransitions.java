@@ -16,16 +16,16 @@
  */
 package com.tom_roush.pdfbox.pdmodel;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDTransition;
 import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDTransitionDirection;
 import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDTransitionStyle;
-
 import org.junit.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
@@ -37,15 +37,15 @@ public class TestPDPageTransitions
 {
 
     @Test
-    public void readTransitions() throws IOException
+    public void readTransitions() throws IOException, URISyntaxException
     {
-        PDDocument doc = PDDocument.load(this.getClass().getResourceAsStream(
-                "/pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/pagenavigation/transitions_test.pdf"));
+        PDDocument doc = PDDocument.load(new File(this.getClass().getResource(
+            "/pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/pagenavigation/transitions_test.pdf").toURI()));
         PDTransition firstTransition = doc.getPages().get(0).getTransition();
         assertEquals(PDTransitionStyle.Glitter.name(), firstTransition.getStyle());
         assertEquals(2, firstTransition.getDuration(), 0);
         assertEquals(PDTransitionDirection.TOP_LEFT_TO_BOTTOM_RIGHT.getCOSBase(),
-                firstTransition.getDirection());
+            firstTransition.getDirection());
         doc.close();
     }
 
@@ -65,8 +65,7 @@ public class TestPDPageTransitions
         document.close();
 
         // read
-        byte[] pdf = baos.toByteArray();
-        PDDocument doc = PDDocument.load(new ByteArrayInputStream(pdf));
+        PDDocument doc = PDDocument.load(baos.toByteArray());
         page = doc.getPages().get(0);
         PDTransition loadedTransition = page.getTransition();
         assertEquals(PDTransitionStyle.Fly.name(), loadedTransition.getStyle());

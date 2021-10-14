@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import com.tom_roush.fontbox.util.autodetect.FontFileFinder;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

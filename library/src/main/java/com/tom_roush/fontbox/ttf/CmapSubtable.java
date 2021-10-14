@@ -21,6 +21,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,35 +86,35 @@ public class CmapSubtable
 
         switch (subtableFormat)
         {
-        case 0:
-            processSubtype0(data);
-            break;
-        case 2:
-            processSubtype2(data, numGlyphs);
-            break;
-        case 4:
-            processSubtype4(data, numGlyphs);
-            break;
-        case 6:
-            processSubtype6(data, numGlyphs);
-            break;
-        case 8:
-            processSubtype8(data, numGlyphs);
-            break;
-        case 10:
-            processSubtype10(data, numGlyphs);
-            break;
-        case 12:
-            processSubtype12(data, numGlyphs);
-            break;
-        case 13:
-            processSubtype13(data, numGlyphs);
-            break;
-        case 14:
-            processSubtype14(data, numGlyphs);
-            break;
-        default:
-            throw new IOException("Unknown cmap format:" + subtableFormat);
+            case 0:
+                processSubtype0(data);
+                break;
+            case 2:
+                processSubtype2(data, numGlyphs);
+                break;
+            case 4:
+                processSubtype4(data, numGlyphs);
+                break;
+            case 6:
+                processSubtype6(data, numGlyphs);
+                break;
+            case 8:
+                processSubtype8(data, numGlyphs);
+                break;
+            case 10:
+                processSubtype10(data, numGlyphs);
+                break;
+            case 12:
+                processSubtype12(data, numGlyphs);
+                break;
+            case 13:
+                processSubtype13(data, numGlyphs);
+                break;
+            case 14:
+                processSubtype14(data, numGlyphs);
+                break;
+            default:
+                throw new IOException("Unknown cmap format:" + subtableFormat);
         }
     }
 
@@ -536,7 +537,7 @@ public class CmapSubtable
         characterCodeToGlyphId = new HashMap<Integer, Integer>(glyphMapping.length);
         for (int i = 0; i < glyphMapping.length; i++)
         {
-            int glyphIndex = (glyphMapping[i] + 256) % 256;
+            int glyphIndex = glyphMapping[i] & 0xFF;
             glyphIdToCharacterCode[glyphIndex] = i;
             characterCodeToGlyphId.put(i, glyphIndex);
         }
@@ -649,16 +650,22 @@ public class CmapSubtable
         {
             return null;
         }
+        List<Integer> codes = null;
         if (code == Integer.MIN_VALUE)
         {
             List<Integer> mappedValues = glyphIdToCharacterCodeMultiple.get(gid);
             if (mappedValues != null)
             {
-                return new ArrayList<Integer>(mappedValues);
+                codes = new ArrayList<Integer>(mappedValues);
+                // sort the list to provide a reliable order
+                Collections.sort(codes);
             }
         }
-        List<Integer> codes = new ArrayList<Integer>(1);
-        codes.add(code);
+        else
+        {
+            codes = new ArrayList<Integer>(1);
+            codes.add(code);
+        }
         return codes;
     }
 

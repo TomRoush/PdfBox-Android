@@ -34,7 +34,7 @@ import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
-import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 
@@ -69,8 +69,7 @@ class PDDefaultAppearanceString
      * @param defaultAppearance DA entry
      * @throws IOException If the DA could not be parsed
      */
-    PDDefaultAppearanceString(COSString defaultAppearance, PDResources defaultResources)
-        throws IOException
+    PDDefaultAppearanceString(COSString defaultAppearance, PDResources defaultResources) throws IOException
     {
         if (defaultAppearance == null)
         {
@@ -101,16 +100,16 @@ class PDDefaultAppearanceString
         {
             if (token instanceof COSObject)
             {
-                arguments.add(((COSObject)token).getObject());
+                arguments.add(((COSObject) token).getObject());
             }
             else if (token instanceof Operator)
             {
-                processOperator((Operator)token, arguments);
+                processOperator((Operator) token, arguments);
                 arguments = new ArrayList<COSBase>();
             }
             else
             {
-                arguments.add((COSBase)token);
+                arguments.add((COSBase) token);
             }
             token = parser.parseNextToken();
         }
@@ -131,7 +130,15 @@ class PDDefaultAppearanceString
         {
             processSetFont(operands);
         }
+        else if ("g".equals(name))
+        {
+            processSetFontColor(operands);
+        }
         else if ("rg".equals(name))
+        {
+            processSetFontColor(operands);
+        }
+        else if ("k".equals(name))
         {
             processSetFontColor(operands);
         }
@@ -147,8 +154,7 @@ class PDDefaultAppearanceString
     {
         if (operands.size() < 2)
         {
-            throw new IOException(
-                "Missing operands for set font operator " + Arrays.toString(operands.toArray()));
+            throw new IOException("Missing operands for set font operator " + Arrays.toString(operands.toArray()));
         }
 
         COSBase base0 = operands.get(0);
@@ -161,10 +167,10 @@ class PDDefaultAppearanceString
         {
             return;
         }
-        COSName fontName = (COSName)base0;
+        COSName fontName = (COSName) base0;
 
         PDFont font = defaultResources.getFont(fontName);
-        float fontSize = ((COSNumber)base1).floatValue();
+        float fontSize = ((COSNumber) base1).floatValue();
 
         // todo: handle cases where font == null with special mapping logic (see PDFBOX-2661)
         if (font == null)
@@ -182,17 +188,28 @@ class PDDefaultAppearanceString
      * This is assumed to be an RGB color.
      *
      * @param operands the color components
-     *
      * @throws IOException in case of the color components not matching
      */
     private void processSetFontColor(List<COSBase> operands) throws IOException
     {
-        PDColorSpace colorSpace = PDDeviceRGB.INSTANCE;
-        if (colorSpace instanceof PDDeviceColorSpace &&
-            operands.size() < colorSpace.getNumberOfComponents())
+        PDColorSpace colorSpace = null;
+
+        if (operands.size() == 1)
         {
-            throw new IOException("Missing operands for set non stroking color operator " +
-                Arrays.toString(operands.toArray()));
+            colorSpace = PDDeviceGray.INSTANCE;
+        }
+        else if (operands.size() == 3)
+        {
+            colorSpace = PDDeviceRGB.INSTANCE;
+        }
+        else if (operands.size() == 4)
+        {
+//            colorSpace = PDDeviceCMYK.INSTANCE; TODO: PdfBox-Android
+            colorSpace = PDDeviceRGB.INSTANCE;
+        }
+        else
+        {
+            throw new IOException("Missing operands for set non stroking color operator " + Arrays.toString(operands.toArray()));
         }
         COSArray array = new COSArray();
         array.addAll(operands);

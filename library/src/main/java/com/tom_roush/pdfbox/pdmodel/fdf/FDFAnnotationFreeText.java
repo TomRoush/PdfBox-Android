@@ -41,15 +41,14 @@ public class FDFAnnotationFreeText extends FDFAnnotation
     /**
      * COS Model value for SubType entry.
      */
-    public static final String SUBTYPE ="FreeText";
+    public static final String SUBTYPE = "FreeText";
 
     /**
      * Default constructor.
      */
     public FDFAnnotationFreeText()
     {
-        super();
-        annot.setName( COSName.SUBTYPE, SUBTYPE );
+        annot.setName(COSName.SUBTYPE, SUBTYPE);
     }
 
     /**
@@ -57,9 +56,9 @@ public class FDFAnnotationFreeText extends FDFAnnotation
      *
      * @param a An existing FDF Annotation.
      */
-    public FDFAnnotationFreeText( COSDictionary a )
+    public FDFAnnotationFreeText(COSDictionary a)
     {
-        super( a );
+        super(a);
     }
 
     /**
@@ -69,7 +68,7 @@ public class FDFAnnotationFreeText extends FDFAnnotation
      *
      * @throws IOException If there is an error extracting information from the element.
      */
-    public FDFAnnotationFreeText( Element element ) throws IOException
+    public FDFAnnotationFreeText(Element element) throws IOException
     {
         super(element);
         annot.setName(COSName.SUBTYPE, SUBTYPE);
@@ -159,7 +158,7 @@ public class FDFAnnotationFreeText extends FDFAnnotation
      */
     public float[] getCallout()
     {
-        COSArray array = (COSArray)annot.getDictionaryObject(COSName.CL);
+        COSArray array = (COSArray) annot.getDictionaryObject(COSName.CL);
         if (array != null)
         {
             return array.toFloatArray();
@@ -280,7 +279,7 @@ public class FDFAnnotationFreeText extends FDFAnnotation
      */
     public PDRectangle getFringe()
     {
-        COSArray rd = (COSArray)annot.getDictionaryObject(COSName.RD);
+        COSArray rd = (COSArray) annot.getDictionaryObject(COSName.RD);
         if (rd != null)
         {
             return new PDRectangle(rd);

@@ -420,7 +420,7 @@ public class PDFMergerUtility
         PDDocumentOutline srcOutline = srcCatalog.getDocumentOutline();
         if (srcOutline != null)
         {
-            if (destOutline == null)
+            if (destOutline == null || destOutline.getFirstChild() == null)
             {
                 PDDocumentOutline cloned = new PDDocumentOutline((COSDictionary) cloner.cloneForNewDocument(srcOutline));
                 destCatalog.setDocumentOutline(cloned);
@@ -667,7 +667,6 @@ public class PDFMergerUtility
     private void mergeAcroForm(PDFCloneUtility cloner, PDAcroForm destAcroForm, PDAcroForm srcAcroForm)
         throws IOException
     {
-
         List<PDField> srcFields = srcAcroForm.getFields();
 
         if (srcFields != null)
@@ -683,7 +682,7 @@ public class PDFMergerUtility
                 String fieldName = destField.getPartialName();
                 if (fieldName.startsWith(prefix))
                 {
-                    nextFieldNum = Math.max(nextFieldNum, Integer.parseInt(fieldName.substring(prefixLength, fieldName.length()))+1);
+                    nextFieldNum = Math.max(nextFieldNum, Integer.parseInt(fieldName.substring(prefixLength, fieldName.length())) + 1);
                 }
             }
 

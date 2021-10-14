@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * This table is specified only in the OpenType specification (1.3 and later).
  *
  * @author Glenn Adams
+ *
  */
 public class VerticalOriginTable extends TTFTable
 {

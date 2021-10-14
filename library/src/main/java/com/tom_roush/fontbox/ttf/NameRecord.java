@@ -20,7 +20,7 @@ import java.io.IOException;
 
 /**
  * A name record in the name table.
- * 
+ *
  * @author Ben Litchfield
  */
 public class NameRecord
@@ -63,7 +63,7 @@ public class NameRecord
     public static final int NAME_VERSION = 5;
     public static final int NAME_POSTSCRIPT_NAME = 6;
     public static final int NAME_TRADEMARK = 7;
-    
+
     private int platformId;
     private int platformEncodingId;
     private int languageId;
@@ -71,7 +71,7 @@ public class NameRecord
     private int stringLength;
     private int stringOffset;
     private String string;
-    
+
     /**
      * @return Returns the stringLength.
      */
@@ -100,7 +100,7 @@ public class NameRecord
     {
         this.stringOffset = stringOffsetValue;
     }
-    
+
     /**
      * @return Returns the languageId.
      */
@@ -157,10 +157,10 @@ public class NameRecord
     {
         this.platformId = platformIdValue;
     }
-    
+
     /**
      * This will read the required data from the stream.
-     * 
+     *
      * @param ttf The font that is being read.
      * @param data The stream to read the data from.
      * @throws IOException If there is an error reading the data.
@@ -174,20 +174,20 @@ public class NameRecord
         stringLength = data.readUnsignedShort();
         stringOffset = data.readUnsignedShort();
     }
-    
+
     /**
      * Return a string representation of this class.
-     * 
+     *
      * @return A string for this class.
      */
     public String toString()
     {
-        return 
-            "platform=" + platformId + 
-            " pEncoding=" + platformEncodingId + 
-            " language=" + languageId + 
-            " name=" + nameId + 
-            " " + string;
+        return
+            "platform=" + platformId +
+                " pEncoding=" + platformEncodingId +
+                " language=" + languageId +
+                " name=" + nameId +
+                " " + string;
     }
     /**
      * @return Returns the string.

@@ -20,7 +20,6 @@ import android.content.Context;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,26 +29,23 @@ import java.security.cert.X509Certificate;
 
 import javax.crypto.Cipher;
 
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.io.MemoryUsageSetting;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
 import com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyProtectionPolicy;
 import com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyRecipient;
-import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
-import static org.junit.Assert.fail;
+import junit.framework.TestCase;
 
 /**
  * Tests for public key encryption.
  *
  * @author Ben Litchfield
  */
-public class TestPublicKeyEncryption
+public class TestPublicKeyEncryption extends TestCase
 {
 
     private AccessPermission permission1;
@@ -64,7 +60,7 @@ public class TestPublicKeyEncryption
     private String password1;
     private String password2;
 
-    Context testContext;
+    private Context testContext;
     private final String path = "pdfbox/com/tom_roush/pdfbox/pdmodel/encryption/";
 
     /**
@@ -73,8 +69,11 @@ public class TestPublicKeyEncryption
     private PDDocument document;
 
 
-    @Before
-    public void setUp() throws Exception
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void setUp() throws Exception
     {
         if (Cipher.getMaxAllowedKeyLength("AES") != Integer.MAX_VALUE)
         {
@@ -114,19 +113,14 @@ public class TestPublicKeyEncryption
         keyStore1 = "test1.pfx";
         keyStore2 = "test2.pfx";
 
-        InputStream input = testContext.getAssets().open(path + "test.pdf");
-        try
-        {
-            document = PDDocument.load(input);
-        }
-        finally
-        {
-            input.close();
-        }
+        document = PDDocument.load(testContext.getAssets().open(path + "test.pdf"));
     }
 
-    @After
-    public void tearDown() throws Exception
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected void tearDown() throws Exception
     {
         document.close();
     }
@@ -137,7 +131,6 @@ public class TestPublicKeyEncryption
      *
      * @throws Exception If there is an unexpected error during the test.
      */
-    @Test
     public void testProtectionError() throws Exception
     {
         PublicKeyProtectionPolicy policy = new PublicKeyProtectionPolicy();
@@ -155,7 +148,7 @@ public class TestPublicKeyEncryption
         {
             String msg = ex.getMessage();
             Assert.assertTrue("not the expected exception: " + msg,
-                    msg.contains("serial-#: rid 2 vs. cert 3"));
+                msg.contains("serial-#: rid 2 vs. cert 3"));
         }
         finally
         {
@@ -173,7 +166,6 @@ public class TestPublicKeyEncryption
      *
      * @throws Exception If there is an unexpected error during the test.
      */
-    @Test
     public void testProtection() throws Exception
     {
         PublicKeyProtectionPolicy policy = new PublicKeyProtectionPolicy();
@@ -186,7 +178,7 @@ public class TestPublicKeyEncryption
             Assert.assertTrue(encryptedDoc.isEncrypted());
 
             AccessPermission permission =
-                    encryptedDoc.getCurrentAccessPermission();
+                encryptedDoc.getCurrentAccessPermission();
             Assert.assertFalse(permission.canAssembleDocument());
             Assert.assertFalse(permission.canExtractContent());
             Assert.assertTrue(permission.canExtractForAccessibility());
@@ -208,7 +200,6 @@ public class TestPublicKeyEncryption
      *
      * @throws Exception If there is an error during the test.
      */
-    @Test
     public void testMultipleRecipients() throws Exception
     {
         PublicKeyProtectionPolicy policy = new PublicKeyProtectionPolicy();
@@ -221,7 +212,7 @@ public class TestPublicKeyEncryption
         try
         {
             AccessPermission permission =
-                    encryptedDoc1.getCurrentAccessPermission();
+                encryptedDoc1.getCurrentAccessPermission();
             Assert.assertFalse(permission.canAssembleDocument());
             Assert.assertFalse(permission.canExtractContent());
             Assert.assertTrue(permission.canExtractForAccessibility());
@@ -241,7 +232,7 @@ public class TestPublicKeyEncryption
         try
         {
             AccessPermission permission =
-                    encryptedDoc2.getCurrentAccessPermission();
+                encryptedDoc2.getCurrentAccessPermission();
             Assert.assertFalse(permission.canAssembleDocument());
             Assert.assertFalse(permission.canExtractContent());
             Assert.assertTrue(permission.canExtractForAccessibility());
@@ -265,14 +256,14 @@ public class TestPublicKeyEncryption
      * @param decryptionPassword password to be used to decrypt the doc
      * @param keyStore password to be used to decrypt the doc
      * @return reloaded document
-     * @throws Exception if
+     * @throws Exception if 
      */
     private PDDocument reload(PDDocument doc, String decryptionPassword, InputStream keyStore)
-            throws IOException, NoSuchAlgorithmException
+        throws IOException, NoSuchAlgorithmException
     {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        doc.save(buffer);
-        return PDDocument.load(new ByteArrayInputStream(buffer.toByteArray()), decryptionPassword,
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        doc.save(baos);
+        return PDDocument.load(baos.toByteArray(), decryptionPassword,
             keyStore, null, MemoryUsageSetting.setupMainMemoryOnly());
     }
 
@@ -294,7 +285,7 @@ public class TestPublicKeyEncryption
             PublicKeyRecipient recipient = new PublicKeyRecipient();
             recipient.setPermission(permission);
             recipient.setX509(
-                    (X509Certificate) factory.generateCertificate(input));
+                (X509Certificate) factory.generateCertificate(input));
             return recipient;
         }
         finally

@@ -126,13 +126,13 @@ public class CMap
     /**
      * Returns an int for the given byte array
      */
-    private int toInt(byte[] data, int dataLen)
+    static int toInt(byte[] data, int dataLen)
     {
         int code = 0;
         for (int i = 0; i < dataLen; ++i)
         {
             code <<= 8;
-            code |= (data[i] + 256) % 256;
+            code |= (data[i] & 0xFF);
         }
         return code;
     }

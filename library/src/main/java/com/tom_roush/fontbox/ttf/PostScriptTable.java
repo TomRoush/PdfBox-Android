@@ -20,7 +20,7 @@ import java.io.IOException;
 
 /**
  * A table in a true type font.
- * 
+ *
  * @author Ben Litchfield
  */
 public class PostScriptTable extends TTFTable
@@ -32,7 +32,7 @@ public class PostScriptTable extends TTFTable
     private long isFixedPitch;
     private long minMemType42;
     private long maxMemType42;
-    private long minMemType1;
+    private long mimMemType1;
     private long maxMemType1;
     private String[] glyphNames = null;
 
@@ -48,7 +48,7 @@ public class PostScriptTable extends TTFTable
 
     /**
      * This will read the required data from the stream.
-     * 
+     *
      * @param ttf The font that is being read.
      * @param data The stream to read the data from.
      * @throws IOException If there is an error reading the data.
@@ -63,7 +63,7 @@ public class PostScriptTable extends TTFTable
         isFixedPitch = data.readUnsignedInt();
         minMemType42 = data.readUnsignedInt();
         maxMemType42 = data.readUnsignedInt();
-        minMemType1 = data.readUnsignedInt();
+        mimMemType1 = data.readUnsignedInt();
         maxMemType1 = data.readUnsignedInt();
 
         if (formatType == 1.0f)
@@ -231,7 +231,7 @@ public class PostScriptTable extends TTFTable
      */
     public long getMinMemType1()
     {
-        return minMemType1;
+        return mimMemType1;
     }
 
     /**
@@ -239,7 +239,7 @@ public class PostScriptTable extends TTFTable
      */
     public void setMimMemType1(long mimMemType1Value)
     {
-        this.minMemType1 = mimMemType1Value;
+        this.mimMemType1 = mimMemType1Value;
     }
 
     /**

@@ -27,6 +27,7 @@ import java.io.IOException;
  */
 public class KerningTable extends TTFTable
 {
+
     /**
      * Tag to identify this table.
      */
@@ -65,8 +66,7 @@ public class KerningTable extends TTFTable
         }
         else
         {
-            Log.d("PdfBox-Android", "Skipped kerning table due to an unsupported kerning table " +
-                "version: " + version);
+            Log.d("PdfBox-Android", "Skipped kerning table due to an unsupported kerning table version: " + version);
         }
         if (numSubtables > 0)
         {

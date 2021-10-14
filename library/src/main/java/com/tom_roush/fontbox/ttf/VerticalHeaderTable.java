@@ -31,6 +31,7 @@ import java.io.IOException;
  * This table is specified in both the TrueType and OpenType specifications.
  *
  * @author Glenn Adams
+ *
  */
 public class VerticalHeaderTable extends TTFTable
 {
@@ -99,7 +100,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return advanceHeightMax;
     }
-
     /**
      * @return Returns the ascender.
      */
@@ -107,7 +107,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return ascender;
     }
-
     /**
      * @return Returns the caretSlopeRise.
      */
@@ -115,7 +114,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return caretSlopeRise;
     }
-
     /**
      * @return Returns the caretSlopeRun.
      */
@@ -123,7 +121,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return caretSlopeRun;
     }
-
     /**
      * @return Returns the caretOffset.
      */
@@ -131,7 +128,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return caretOffset;
     }
-
     /**
      * @return Returns the descender.
      */
@@ -139,7 +135,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return descender;
     }
-
     /**
      * @return Returns the lineGap.
      */
@@ -147,7 +142,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return lineGap;
     }
-
     /**
      * @return Returns the metricDataFormat.
      */
@@ -155,7 +149,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return metricDataFormat;
     }
-
     /**
      * @return Returns the minTopSideBearing.
      */
@@ -163,7 +156,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return minTopSideBearing;
     }
-
     /**
      * @return Returns the minBottomSideBearing.
      */
@@ -171,7 +163,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return minBottomSideBearing;
     }
-
     /**
      * @return Returns the numberOfVMetrics.
      */
@@ -179,7 +170,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return numberOfVMetrics;
     }
-
     /**
      * @return Returns the reserved1.
      */
@@ -187,7 +177,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return reserved1;
     }
-
     /**
      * @return Returns the reserved2.
      */
@@ -195,7 +184,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return reserved2;
     }
-
     /**
      * @return Returns the reserved3.
      */
@@ -203,7 +191,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return reserved3;
     }
-
     /**
      * @return Returns the reserved4.
      */
@@ -211,7 +198,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return reserved4;
     }
-
     /**
      * @return Returns the version.
      */
@@ -219,7 +205,6 @@ public class VerticalHeaderTable extends TTFTable
     {
         return version;
     }
-
     /**
      * @return Returns the yMaxExtent.
      */
