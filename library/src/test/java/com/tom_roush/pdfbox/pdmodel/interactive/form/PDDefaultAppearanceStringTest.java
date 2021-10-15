@@ -23,7 +23,6 @@ import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 
 public class PDDefaultAppearanceStringTest
 {
-    // Used to check resources lookup
+    // Used to check resources lookup 
     private PDResources resources;
     private COSName fontResourceName;
 
@@ -47,11 +46,9 @@ public class PDDefaultAppearanceStringTest
     @Test
     public void testParseDAString() throws IOException
     {
-        COSString sampleString = new COSString(
-            "/" + fontResourceName.getName() + " 12 Tf 0.019 0.305 0.627 rg 0g");
+        COSString sampleString = new COSString("/" + fontResourceName.getName() + " 12 Tf 0.019 0.305 0.627 rg");
 
-        PDDefaultAppearanceString defaultAppearanceString = new PDDefaultAppearanceString(
-            sampleString, resources);
+        PDDefaultAppearanceString defaultAppearanceString = new PDDefaultAppearanceString(sampleString, resources);
 
         assertEquals(12, defaultAppearanceString.getFontSize(), 0.001);
         assertEquals(PDType1Font.HELVETICA, defaultAppearanceString.getFont());
@@ -61,17 +58,17 @@ public class PDDefaultAppearanceStringTest
         assertEquals(0.627, defaultAppearanceString.getFontColor().getComponents()[2], 0.0001);
     }
 
-    @Test(expected = IOException.class)
+    @Test(expected=IOException.class)
     public void testFontResourceUnavailable() throws IOException
     {
-        COSString sampleString = new COSString("/Helvetica 12 Tf 0.019 0.305 0.627 rg 0g");
+        COSString sampleString = new COSString("/Helvetica 12 Tf 0.019 0.305 0.627 rg");
         new PDDefaultAppearanceString(sampleString, resources);
     }
 
-    @Test(expected = IOException.class)
+    @Test(expected=IOException.class)
     public void testWrongNumberOfColorArguments() throws IOException
     {
-        COSString sampleString = new COSString("/Helvetica 12 Tf 0.305 0.627 rg 0g");
+        COSString sampleString = new COSString("/Helvetica 12 Tf 0.305 0.627 rg");
         new PDDefaultAppearanceString(sampleString, resources);
     }
 }

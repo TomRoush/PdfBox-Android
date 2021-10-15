@@ -52,7 +52,7 @@ public abstract class Filter
      * @throws IOException if the stream cannot be decoded
      */
     public abstract DecodeResult decode(InputStream encoded, OutputStream decoded, COSDictionary parameters,
-                            int index) throws IOException;
+        int index) throws IOException;
 
     /**
      * Encodes data.
@@ -63,14 +63,14 @@ public abstract class Filter
      * @throws IOException if the stream cannot be encoded
      */
     public final void encode(InputStream input, OutputStream encoded, COSDictionary parameters,
-                            int index) throws IOException
+        int index) throws IOException
     {
         encode(input, encoded, parameters.asUnmodifiableDictionary());
     }
 
     // implemented in subclasses
     protected abstract void encode(InputStream input, OutputStream encoded,
-                                   COSDictionary parameters) throws IOException;
+        COSDictionary parameters) throws IOException;
 
     // gets the decode params for a specific filter index, this is used to
     // normalise the DecodeParams entry so that it is always a dictionary
@@ -91,8 +91,8 @@ public abstract class Filter
         }
         else if (obj != null)
         {
-        	Log.e("PdfBox-Android", "Expected DecodeParams to be an Array or Dictionary but found " +
-                      obj.getClass().getName());
+            Log.e("PdfBox-Android", "Expected DecodeParams to be an Array or Dictionary but found " +
+                obj.getClass().getName());
         }
         return new COSDictionary();
     }
@@ -105,23 +105,6 @@ public abstract class Filter
      * @return The image reader for the format.
      * @throws MissingImageReaderException if no image reader is found.
      */
-//    protected static ImageReader findImageReader(String formatName, String errorCause) throws MissingImageReaderException
-//    {
-//        Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(formatName);
-//        ImageReader reader = null;
-//        while (readers.hasNext())
-//        {
-//            reader = readers.next();
-//            if (reader.canReadRaster())
-//            {
-//                break;
-//            }
-//        }
-//        if (reader == null)
-//        {
-//            throw new MissingImageReaderException("Cannot read " + formatName + " image: " + errorCause);
-//        }
-//        return reader;
-//    }TODO: PdfBox-Android
+//    protected static ImageReader findImageReader(String formatName, String errorCause) throws MissingImageReaderException TODO: PdfBox-Android
 
 }

@@ -24,12 +24,17 @@ import android.content.Context;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URISyntaxException;
 
 import com.tom_roush.fontbox.ttf.TTFParser;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
@@ -37,15 +42,15 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
 
 import org.junit.Before;
-
-import junit.framework.TestCase;
+import org.junit.Test;
 
 /**
  *
  * @author adam
  */
-public class PDFontTest extends TestCase
+public class PDFontTest
 {
+
     private Context testContext;
 
     @Before
@@ -56,15 +61,23 @@ public class PDFontTest extends TestCase
     }
 
     /**
-     * Test of the error reported in PDFBox-988
+     * Test of the error reported in PDFBOX-988
+     *
+     * @throws IOException
+     * @throws URISyntaxException
      */
-    public void testPDFBox988() throws Exception
+    @Test
+    public void testPDFBox988() throws IOException, URISyntaxException
     {
         PDDocument doc = null;
         try
         {
-            doc = PDDocument.load(testContext.getAssets()
-                .open("pdfbox/com/tom_roush/pdfbox/pdmodel/font/F001u_3_7j.pdf"));
+            File pdf = new File(testContext.getCacheDir(), "F001u_3_7j.pdf");
+            OutputStream os = new FileOutputStream(pdf);
+            IOUtils.copy(testContext.getAssets().open("pdfbox/com/tom_roush/pdfbox/pdmodel/font/F001u_3_7j.pdf"), os);
+            os.close();
+
+            doc = PDDocument.load(pdf);
             PDFRenderer renderer = new PDFRenderer(doc);
             renderer.renderImage(0);
             // the allegation is that renderImage() will crash the JVM or hang
@@ -82,12 +95,13 @@ public class PDFontTest extends TestCase
      * PDFBOX-3337: Test ability to reuse a TrueTypeFont for several PDFs to avoid parsing it over
      * and over again.
      *
-     * @throws java.io.IOException
+     * @throws IOException
      */
+    @Test
     public void testPDFBox3337() throws IOException
     {
-        InputStream ttfStream = testContext.getAssets()
-            .open("com/tom_roush/pdfbox/resources/ttf/LiberationSans-Regular.ttf");
+        InputStream ttfStream = testContext.getAssets().open(
+            "com/tom_roush/pdfbox/resources/ttf/LiberationSans-Regular.ttf");
         final TrueTypeFont ttf = new TTFParser ().parse (ttfStream);
 
         for (int i = 0; i < 2; ++i)
@@ -108,4 +122,6 @@ public class PDFontTest extends TestCase
             doc.close();
         }
     }
+
+    // testPDFBox3747 skipped as its Windows specific
 }

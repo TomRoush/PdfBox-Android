@@ -20,11 +20,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDOutputIntent;
-
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -188,5 +189,14 @@ public class TestPDDocumentCatalog
                 colorProfile.close();
             }
         }
+    }
+
+    @Test
+    public void handleBooleanInOpenAction() throws IOException
+    {
+        //PDFBOX-3772 -- allow for COSBoolean
+        PDDocument doc = new PDDocument();
+        doc.getDocumentCatalog().getCOSObject().setBoolean(COSName.OPEN_ACTION, false);
+        assertNull(doc.getDocumentCatalog().getOpenAction());
     }
 }

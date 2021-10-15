@@ -19,7 +19,6 @@ package com.tom_roush.pdfbox.filter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.IOUtils;
@@ -50,8 +49,8 @@ final class CCITTFaxFilter extends Filter
         int height = parameters.getInt(COSName.HEIGHT, COSName.H, 0);
         if (rows > 0 && height > 0)
         {
-            // ensure that rows doesn't contain implausible data, see PDFBOX-771
-            rows = Math.min(rows, height);
+            // PDFBOX-771, PDFBOX-3727: rows in DecodeParms sometimes contains an incorrect value
+            rows = height;
         }
         else
         {
@@ -105,7 +104,7 @@ final class CCITTFaxFilter extends Filter
         // repair missing color space
         if (!parameters.containsKey(COSName.COLORSPACE))
         {
-            result.getParameters().setName(COSName.COLORSPACE, COSName.DEVICEGRAY.getName());
+            result.getParameters().setItem(COSName.COLORSPACE, COSName.DEVICEGRAY);
         }
 
         decoded.write(decompressed);

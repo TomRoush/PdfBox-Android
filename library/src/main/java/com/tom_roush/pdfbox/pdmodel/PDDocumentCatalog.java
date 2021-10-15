@@ -22,6 +22,7 @@ import java.util.List;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSBoolean;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSObject;
@@ -248,6 +249,17 @@ public class PDDocumentCatalog implements COSObjectable
         {
             return null;
         }
+        else if (openAction instanceof COSBoolean)
+        {
+            if (((COSBoolean) openAction).getValue() == false)
+            {
+                return null;
+            }
+            else
+            {
+                throw new IOException("Can't create OpenAction from COSBoolean");
+            }
+        }
         else if (openAction instanceof COSDictionary)
         {
             return PDActionFactory.createAction((COSDictionary)openAction);
@@ -437,7 +449,14 @@ public class PDDocumentCatalog implements COSObjectable
         String mode = root.getNameAsString(COSName.PAGE_MODE);
         if (mode != null)
         {
-            return PageMode.fromString(mode);
+            try
+            {
+                return PageMode.fromString(mode);
+            }
+            catch (IllegalArgumentException e)
+            {
+                return PageMode.USE_NONE;
+            }
         }
         else
         {

@@ -17,6 +17,9 @@
 
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import android.graphics.Path;
+import android.graphics.RectF;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -237,11 +240,30 @@ abstract class TrueTypeEmbedder implements Subsetter
         }
         else
         {
-            // estimate by summing the typographical +ve ascender and -ve descender
-            fd.setCapHeight((os2.getTypoAscender() + os2.getTypoDescender()) * scaling);
-
-            // estimate by halving the typographical ascender
-            fd.setXHeight(os2.getTypoAscender() / 2.0f * scaling);
+            Path capHPath = ttf.getPath("H");
+            if (capHPath != null)
+            {
+                RectF capHPathBounds = new RectF();
+                capHPath.computeBounds(capHPathBounds, true);
+                fd.setCapHeight(Math.round(capHPathBounds.bottom) * scaling);
+            }
+            else
+            {
+                // estimate by summing the typographical +ve ascender and -ve descender
+                fd.setCapHeight((os2.getTypoAscender() + os2.getTypoDescender()) * scaling);
+            }
+            Path xPath = ttf.getPath("x");
+            if (xPath != null)
+            {
+                RectF xPathBounds = new RectF();
+                xPath.computeBounds(xPathBounds, true);
+                fd.setXHeight(Math.round(xPathBounds.bottom) * scaling);
+            }
+            else
+            {
+                // estimate by halving the typographical ascender
+                fd.setXHeight(os2.getTypoAscender() / 2.0f * scaling);
+            }
         }
 
         // StemV - there's no true TTF equivalent of this, so we estimate it

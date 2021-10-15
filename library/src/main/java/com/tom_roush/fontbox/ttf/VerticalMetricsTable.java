@@ -27,6 +27,7 @@ import java.io.IOException;
  * This table is specified in both the TrueType and OpenType specifications.
  *
  * @author Glenn Adams
+ *
  */
 public class VerticalMetricsTable extends TTFTable
 {
@@ -60,9 +61,9 @@ public class VerticalMetricsTable extends TTFTable
         int numGlyphs = ttf.getNumberOfGlyphs();
 
         int bytesRead = 0;
-        advanceHeight = new int[numVMetrics];
-        topSideBearing = new short[numVMetrics];
-        for (int i = 0; i < numVMetrics; i++)
+        advanceHeight = new int[ numVMetrics ];
+        topSideBearing = new short[ numVMetrics ];
+        for( int i=0; i<numVMetrics; i++ )
         {
             advanceHeight[i] = data.readUnsignedShort();
             topSideBearing[i] = data.readSignedShort();
@@ -79,8 +80,8 @@ public class VerticalMetricsTable extends TTFTable
                 numberNonVertical = numGlyphs;
             }
 
-            nonVerticalTopSideBearing = new short[numberNonVertical];
-            for (int i = 0; i < numberNonVertical; i++)
+            nonVerticalTopSideBearing = new short[ numberNonVertical ];
+            for( int i=0; i<numberNonVertical; i++ )
             {
                 if (bytesRead < getLength())
                 {
@@ -108,7 +109,7 @@ public class VerticalMetricsTable extends TTFTable
         {
             // monospaced fonts may not have a height for every glyph
             // the last one is for subsequent glyphs
-            return advanceHeight[advanceHeight.length - 1];
+            return advanceHeight[advanceHeight.length -1];
         }
     }
 }

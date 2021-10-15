@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.util;
 
 import java.nio.charset.Charset;
@@ -38,6 +39,9 @@ public final class Charsets
 
     /*** ISO-8859-1 charset */
     public static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
+
+    /*** Windows-1252 charset */
+    public static final Charset WINDOWS_1252 = Charset.forName("Windows-1252");
 
     /*** UTF-8 charset */
     public static final Charset UTF_8 = Charset.forName("UTF-8");

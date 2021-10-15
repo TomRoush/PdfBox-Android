@@ -20,7 +20,7 @@ import java.io.IOException;
 
 /**
  * A table in a true type font.
- * 
+ *
  * @author Ben Litchfield
  */
 public class TTFTable
@@ -29,7 +29,7 @@ public class TTFTable
     private long checkSum;
     private long offset;
     private long length;
-    
+
     /**
      * Indicates if the table is initialized or not.
      */
@@ -53,7 +53,7 @@ public class TTFTable
     /**
      * @return Returns the checkSum.
      */
-    public long getCheckSum() 
+    public long getCheckSum()
     {
         return checkSum;
     }
@@ -69,7 +69,7 @@ public class TTFTable
     /**
      * @return Returns the length.
      */
-    public long getLength() 
+    public long getLength()
     {
         return length;
     }
@@ -85,7 +85,7 @@ public class TTFTable
     /**
      * @return Returns the offset.
      */
-    public long getOffset() 
+    public long getOffset()
     {
         return offset;
     }
@@ -101,7 +101,7 @@ public class TTFTable
     /**
      * @return Returns the tag.
      */
-    public String getTag() 
+    public String getTag()
     {
         return tag;
     }
@@ -113,10 +113,10 @@ public class TTFTable
     {
         this.tag = tagValue;
     }
-    
+
     /**
      * Indicates if the table is already initialized.
-     * 
+     *
      * @return true if the table is initialized
      */
     public boolean getInitialized()
@@ -126,7 +126,7 @@ public class TTFTable
 
     /**
      * This will read the required data from the stream.
-     * 
+     *
      * @param ttf The font that is being read.
      * @param data The stream to read the data from.
      * @throws IOException If there is an error reading the data.

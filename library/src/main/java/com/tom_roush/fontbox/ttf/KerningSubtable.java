@@ -68,7 +68,6 @@ public class KerningSubtable
         }
         else if (version == 1)
         {
-
             readSubtable1(data);
         }
         else
@@ -180,8 +179,8 @@ public class KerningSubtable
         int version = data.readUnsignedShort();
         if (version != 0)
         {
-            throw new UnsupportedOperationException("Unsupported kerning sub-table version: "
-                + version);
+            Log.i("PdfBox-Android", "Unsupported kerning sub-table version: " + version);
+            return;
         }
         int length = data.readUnsignedShort();
         if (length < 6)
@@ -225,14 +224,12 @@ public class KerningSubtable
 
     private void readSubtable0Format2(TTFDataStream data) throws IOException
     {
-        throw new UnsupportedOperationException(
-            "Kerning table version 0 format 2 not yet supported.");
+        Log.i("PdfBox-Android", "Kerning subtable format 2 not yet supported.");
     }
 
     private void readSubtable1(TTFDataStream data) throws IOException
     {
-        throw new UnsupportedOperationException(
-            "Kerning table version 1 formats not yet supported.");
+        Log.i("PdfBox-Android", "Kerning subtable format 1 not yet supported.");
     }
 
     private static boolean isBitsSet(int bits, int mask, int shift)

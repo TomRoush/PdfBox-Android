@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import com.tom_roush.pdfbox.cos.COSDocument;
 import com.tom_roush.pdfbox.io.MemoryUsageSetting;
@@ -32,6 +33,7 @@ import com.tom_roush.pdfbox.io.RandomAccessBufferedFileInputStream;
 import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.io.ScratchFile;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -108,10 +110,10 @@ public class TestPDFParser
     }
 
     @Test
-    public void testPDFParserMissingCatalog() throws IOException
+    public void testPDFParserMissingCatalog() throws IOException, URISyntaxException
     {
         // PDFBOX-3060
-        PDDocument.load(TestPDFParser.class.getResourceAsStream("/pdfbox/com/tom_roush/pdfbox/pdfparser/MissingCatalog.pdf")).close();
+        PDDocument.load(new File(TestPDFParser.class.getResource("/pdfbox/com/tom_roush/pdfbox/pdfparser/MissingCatalog.pdf").toURI())).close();
     }
 
     private void executeParserTest(RandomAccessRead source, MemoryUsageSetting memUsageSetting) throws IOException

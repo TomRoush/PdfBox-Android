@@ -16,8 +16,6 @@
  */
 package com.tom_roush.pdfbox.text;
 
-import android.util.Log;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -31,6 +29,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -133,7 +132,7 @@ public class TestTextStripper
         }
         catch (IOException e)
         {
-            Log.e("PdfBox-Android", e.getMessage(), e);
+            System.out.println(e.getMessage());
         }
         // If you want to test a single file using DEBUG logging, from an IDE,
         // you can do something like this:
@@ -171,7 +170,7 @@ public class TestTextStripper
                 if (expectedArray[expectedIndex] != actualArray[actualIndex])
                 {
                     equals = false;
-                    Log.w("PdfBox-Android", "Lines differ at index" + " expected:" + expectedIndex + "-" +
+                    System.out.println("Lines differ at index" + " expected:" + expectedIndex + "-" +
                         (int)expectedArray[expectedIndex] + " actual:" + actualIndex + "-" +
                         (int)actualArray[actualIndex]);
                     break;
@@ -186,12 +185,12 @@ public class TestTextStripper
                 if (expectedIndex != expectedArray.length)
                 {
                     equals = false;
-                    Log.w("PdfBox-Android", "Expected line is longer at:" + expectedIndex);
+                    System.out.println("Expected line is longer at:" + expectedIndex);
                 }
                 if (actualIndex != actualArray.length)
                 {
                     equals = false;
-                    Log.w("PdfBox-Android", "Actual line is longer at:" + actualIndex);
+                    System.out.println("Actual line is longer at:" + actualIndex);
                 }
             }
         }
@@ -237,11 +236,11 @@ public class TestTextStripper
     {
         if (bSort)
         {
-            Log.i("PdfBox-Android", "Preparing to parse " + inFile.getName() + " for sorted test");
+            System.out.println("Preparing to parse " + inFile.getName() + " for sorted test");
         }
         else
         {
-            Log.i("PdfBox-Android", "Preparing to parse " + inFile.getName() + " for standard test");
+            System.out.println("Preparing to parse " + inFile.getName() + " for standard test");
         }
 
         if (!outDir.exists())
@@ -303,14 +302,14 @@ public class TestTextStripper
 
             if (bLogResult)
             {
-                Log.i("PdfBox-Android", "Text for " + inFile.getName() + ":");
-                Log.i("PdfBox-Android", stripper.getText(document));
+                System.out.println("Text for " + inFile.getName() + ":");
+                System.out.println(stripper.getText(document));
             }
 
             if (!expectedFile.exists())
             {
                 this.bFail = true;
-                Log.e("PdfBox-Android", "FAILURE: Input verification file: " + expectedFile.getAbsolutePath() +
+                System.out.println("FAILURE: Input verification file: " + expectedFile.getAbsolutePath() +
                     " did not exist");
                 return;
             }
@@ -338,7 +337,7 @@ public class TestTextStripper
                 {
                     this.bFail = true;
                     localFail = true;
-                    Log.e("PdfBox-Android", "FAILURE: Line mismatch for file " + inFile.getName() + " (sort = " +
+                    System.out.println("FAILURE: Line mismatch for file " + inFile.getName() + " (sort = " +
                         bSort + ")" + " at expected line: " + expectedReader.getLineNumber() +
                         " at actual line: " + actualReader.getLineNumber() +
                         "\nexpected line was: \"" + expectedLine + "\"" +
@@ -452,10 +451,10 @@ public class TestTextStripper
      * @throws IOException
      */
     @Test
-    public void testStripByOutlineItems() throws IOException
+    public void testStripByOutlineItems() throws IOException, URISyntaxException
     {
         PDDocument doc = PDDocument.load(
-            TestPDPageTree.class.getResourceAsStream("/pdfbox/com/tom_roush/pdfbox/pdmodel/with_outline.pdf"));
+            new File(TestPDPageTree.class.getResource("/pdfbox/com/tom_roush/pdfbox/pdmodel/with_outline.pdf").toURI()));
         PDDocumentOutline outline = doc.getDocumentCatalog().getDocumentOutline();
         Iterable<PDOutlineItem> children = outline.children();
         Iterator<PDOutlineItem> it = children.iterator();

@@ -24,6 +24,7 @@ import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
@@ -38,10 +39,16 @@ public abstract class SetColor extends OperatorProcessor
     public void process(Operator operator, List<COSBase> arguments) throws IOException
     {
         PDColorSpace colorSpace = getColorSpace();
-        if (/*!(colorSpace instanceof PDPattern) && TODO: PdfBox-Android */
-            arguments.size() < colorSpace.getNumberOfComponents())
+//        if (!(colorSpace instanceof PDPattern)) TODO: PdfBox-Android
         {
-            throw new MissingOperandException(operator, arguments);
+            if (arguments.size() < colorSpace.getNumberOfComponents())
+            {
+                throw new MissingOperandException(operator, arguments);
+            }
+            if (!checkArrayTypesClass(arguments, COSNumber.class))
+            {
+                return;
+            }
         }
         COSArray array = new COSArray();
         array.addAll(arguments);

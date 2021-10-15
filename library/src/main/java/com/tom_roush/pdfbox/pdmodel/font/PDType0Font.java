@@ -69,7 +69,6 @@ public class PDType0Font extends PDFont implements PDVectorFont
      *
      * @param doc The PDF document that will hold the embedded font.
      * @param input A TrueType font.
-     *
      * @return A Type0 font with a CIDFontType2 descendant.
      * @throws IOException If there is an error reading the font stream.
      */
@@ -99,7 +98,6 @@ public class PDType0Font extends PDFont implements PDVectorFont
      * @param doc The PDF document that will hold the embedded font.
      * @param ttf A TrueType font.
      * @param embedSubset True if the font will be subset before embedding
-     *
      * @return A Type0 font with a CIDFontType2 descendant.
      * @throws IOException If there is an error reading the font stream.
      */
@@ -263,34 +261,6 @@ public class PDType0Font extends PDFont implements PDVectorFont
     }
 
     /**
-     * Returns the name of CJK CMap represented by the given CIDSystemInfo, if any.
-     */
-    private String getCJKCMap(PDCIDSystemInfo ros)
-    {
-        // CJK can fallback to using CIDSystemInfo
-        if (ros.getOrdering().equals("GB1"))
-        {
-            return "Adobe-GB1-0";
-        }
-        else if (ros.getOrdering().equals("CNS1"))
-        {
-            return "Adobe-CNS1-0";
-        }
-        else if (ros.getOrdering().equals("Japan1"))
-        {
-            return "Adobe-Japan1-1";
-        }
-        else if (ros.getOrdering().equals("Korea1"))
-        {
-            return "Adobe-Korea1-0";
-        }
-        else
-        {
-            throw new IllegalStateException();
-        }
-    }
-
-    /**
      * Returns the PostScript name of the font.
      */
     public String getBaseFont()
@@ -429,8 +399,7 @@ public class PDType0Font extends PDFont implements PDVectorFont
             {
                 // if no value has been produced, there is no way to obtain Unicode for the character.
                 String cid = "CID+" + codeToCID(code);
-                Log.w("PdfBox-Android",
-                    "No Unicode mapping for " + cid + " (" + code + ") in font " + getName());
+                Log.w("PdfBox-Android", "No Unicode mapping for " + cid + " (" + code + ") in font " + getName());
                 // we keep track of which warnings have been issued, so we don't log multiple times
                 noUnicode.add(code);
             }

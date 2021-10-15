@@ -210,6 +210,11 @@ public class PDFParser extends COSParser
         {
             rebuildTrailer = true;
         }
+        // check if the trailer contains a Root object
+        if (isLenient() && trailer != null && trailer.getItem(COSName.ROOT) == null)
+        {
+            rebuildTrailer = true;
+        }
         if (rebuildTrailer)
         {
             trailer = rebuildTrailer();

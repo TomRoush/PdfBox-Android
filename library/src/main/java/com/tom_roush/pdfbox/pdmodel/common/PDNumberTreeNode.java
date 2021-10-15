@@ -19,7 +19,6 @@ package com.tom_roush.pdfbox.pdmodel.common;
 import android.util.Log;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -200,17 +199,14 @@ public class PDNumberTreeNode implements COSObjectable
      */
     protected COSObjectable convertCOSToPD( COSBase base ) throws IOException
     {
-        COSObjectable retval = null;
         try
         {
-            Constructor<? extends COSObjectable> ctor = valueType.getConstructor(base.getClass());
-            retval = ctor.newInstance(base);
+            return valueType.getDeclaredConstructor(base.getClass()).newInstance(base);
         }
         catch( Throwable t )
         {
-            throw new IOException( "Error while trying to create value in number tree:" + t.getMessage(), t);
+            throw new IOException("Error while trying to create value in number tree:" + t.getMessage(), t);
         }
-        return retval;
     }
 
     /**

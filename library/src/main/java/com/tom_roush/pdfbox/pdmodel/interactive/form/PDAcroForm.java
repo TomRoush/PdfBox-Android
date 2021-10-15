@@ -43,6 +43,7 @@ import com.tom_roush.pdfbox.pdmodel.fdf.FDFCatalog;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFDictionary;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFDocument;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFField;
+import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
@@ -87,7 +88,45 @@ public final class PDAcroForm implements COSObjectable
     {
         document = doc;
         dictionary = form;
+        verifyOrCreateDefaults();
     }
+
+    /*
+     * Verify that there are default entries for required
+     * properties.
+     *
+     * If these are missing create default entries similar to
+     * Adobe Reader / Adobe Acrobat
+     *
+     */
+    private void verifyOrCreateDefaults()
+    {
+        // TODO: the handling of the missing properties is suitable
+        // if there are no entries at all. It might be necessary to enhance that
+        // if only parts are missing
+
+        final String AdobeDefaultAppearanceString = "/Helv 0 Tf 0 g ";
+
+        // DA entry is required
+        if (getDefaultAppearance().length() == 0)
+        {
+            setDefaultAppearance(AdobeDefaultAppearanceString);
+        }
+
+        // DR entry is required
+        if (getDefaultResources() == null)
+        {
+            // Adobe Acrobat uses Helvetica as a default font and
+            // stores that under the name '/Helv' in the resources dictionary
+            // Zapf Dingbats is included per default for check boxes and
+            // radio buttons as /ZaDb.
+            PDResources resources = new PDResources();
+            resources.put(COSName.getPDFName("Helv"), PDType1Font.HELVETICA);
+            resources.put(COSName.getPDFName("ZaDb"), PDType1Font.ZAPF_DINGBATS);
+            setDefaultResources(resources);
+        }
+    }
+
 
     /**
      * This will get the document associated with this form.
@@ -222,7 +261,7 @@ public final class PDAcroForm implements COSObjectable
 
         // indicates if the original content stream
         // has been wrapped in a q...Q pair.
-        boolean isContentStreamWrapped = false;
+        boolean isContentStreamWrapped;
 
         // the content stream to write to
         PDPageContentStream contentStream;
@@ -258,7 +297,7 @@ public final class PDAcroForm implements COSObjectable
 
                     contentStream.saveGraphicsState();
 
-                    // translate the appearance stream to the widget location if there is 
+                    // translate the appearance stream to the widget location if there is
                     // not already a transformation in place
                     boolean needsTranslation = resolveNeedsTranslation(appearanceStream);
 
@@ -313,7 +352,7 @@ public final class PDAcroForm implements COSObjectable
     }
 
     /**
-     * Refreshes the appearance streams and appearance dictionaries for 
+     * Refreshes the appearance streams and appearance dictionaries for
      * the widget annotations of all fields.
      *
      * @throws IOException
@@ -330,7 +369,7 @@ public final class PDAcroForm implements COSObjectable
     }
 
     /**
-     * Refreshes the appearance streams and appearance dictionaries for 
+     * Refreshes the appearance streams and appearance dictionaries for
      * the widget annotations of the specified fields.
      *
      * @param fields
@@ -354,7 +393,7 @@ public final class PDAcroForm implements COSObjectable
      * A field might have children that are fields (non-terminal field) or does not
      * have children which are fields (terminal fields).
      *
-     * The fields within an AcroForm are organized in a tree structure. The documents root fields 
+     * The fields within an AcroForm are organized in a tree structure. The documents root fields
      * might either be terminal fields, non-terminal fields or a mixture of both. Non-terminal fields
      * mark branches which contents can be retrieved using {@link PDNonTerminalField#getChildren()}.
      *
@@ -514,17 +553,17 @@ public final class PDAcroForm implements COSObjectable
     }
 
     /**
-     * This will get the default resources for the acro form.
+     * This will get the default resources for the AcroForm.
      *
-     * @return The default resources.
+     * @return The default resources or null if their is none.
      */
     public PDResources getDefaultResources()
     {
         PDResources retval = null;
-        COSDictionary dr = (COSDictionary) dictionary.getDictionaryObject(COSName.DR);
-        if (dr != null)
+        COSBase base = dictionary.getDictionaryObject(COSName.DR);
+        if (base instanceof COSDictionary)
         {
-            retval = new PDResources(dr, document.getResourceCache());
+            retval = new PDResources((COSDictionary) base, document.getResourceCache());
         }
         return retval;
     }

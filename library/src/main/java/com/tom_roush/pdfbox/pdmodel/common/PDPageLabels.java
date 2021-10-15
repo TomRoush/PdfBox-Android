@@ -21,9 +21,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
+import java.util.Map.Entry;
+import java.util.NavigableSet;
+import java.util.TreeSet;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -237,6 +239,16 @@ public class PDPageLabels implements COSObjectable
             }
         });
         return map;
+    }
+
+    /**
+     * Get an ordered set of page indices having a page label range.
+     *
+     * @return set of page indices.
+     */
+    public NavigableSet<Integer> getPageIndices()
+    {
+        return new TreeSet(labels.keySet());
     }
 
     /**

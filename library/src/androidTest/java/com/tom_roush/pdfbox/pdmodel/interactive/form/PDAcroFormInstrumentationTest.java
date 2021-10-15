@@ -23,34 +23,28 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import java.io.File;
 import java.io.IOException;
 
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import com.tom_roush.pdfbox.rendering.TestRendering;
-import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
  * Test for the PDButton class.
+ *
  */
-public class PDAcroFormTest
+public class PDAcroFormInstrumentationTest
 {
 
-    private PDDocument document;
-    private PDAcroForm acroForm;
-
     private static File OUT_DIR;
-    private static final String IN_DIR = "pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/form";
+    private static final File IN_DIR = new File("pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/form");
 
-    Context testContext;
+    private Context testContext;
 
     @Before
     public void setUp()
@@ -58,50 +52,14 @@ public class PDAcroFormTest
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
 
-        document = new PDDocument();
-        acroForm = new PDAcroForm(document);
-        document.getDocumentCatalog().setAcroForm(acroForm);
-
         OUT_DIR = new File(testContext.getCacheDir(), "pdfbox-test-output");
         OUT_DIR.mkdirs();
     }
 
     @Test
-    public void testFieldsEntry()
-    {
-        // the /Fields entry has been created with the AcroForm
-        // as this is a required entry
-        assertNotNull(acroForm.getFields());
-        assertEquals(acroForm.getFields().size(), 0);
-
-        // there shouldn't be an exception if there is no such field
-        assertNull(acroForm.getField("foo"));
-
-        // remove the required entry which is the case for some
-        // PDFs (see PDFBOX-2965)
-        acroForm.getCOSObject().removeItem(COSName.FIELDS);
-
-        // ensure there is always an empty collection returned
-        assertNotNull(acroForm.getFields());
-        assertEquals(acroForm.getFields().size(), 0);
-
-        // there shouldn't be an exception if there is no such field
-        assertNull(acroForm.getField("foo"));
-    }
-
-    @Test
-    public void testAcroFormProperties()
-    {
-        assertTrue(acroForm.getDefaultAppearance().isEmpty());
-        acroForm.setDefaultAppearance("/Helv 0 Tf 0 g");
-        assertEquals(acroForm.getDefaultAppearance(), "/Helv 0 Tf 0 g");
-    }
-
-    @Test
     public void testFlatten() throws IOException
     {
-        PDDocument testPdf = PDDocument.load(
-            testContext.getAssets().open(IN_DIR + "/" + "AlignmentTests.pdf"));
+        PDDocument testPdf = PDDocument.load(testContext.getAssets().open(IN_DIR + "/" + "AlignmentTests.pdf"));
         testPdf.getDocumentCatalog().getAcroForm().flatten();
         assertTrue(testPdf.getDocumentCatalog().getAcroForm().getFields().isEmpty());
         File file = new File(OUT_DIR, "AlignmentTests-flattened.pdf");
@@ -120,8 +78,7 @@ public class PDAcroFormTest
     @Test
     public void testFlattenWidgetNoRef() throws IOException
     {
-        PDDocument testPdf = PDDocument.load(
-            testContext.getAssets().open(IN_DIR + "/" + "AlignmentTests.pdf"));
+        PDDocument testPdf = PDDocument.load(testContext.getAssets().open(IN_DIR + "/" + "AlignmentTests.pdf"));
         PDAcroForm acroForm = testPdf.getDocumentCatalog().getAcroForm();
         for (PDField field : acroForm.getFieldTree()) {
             for (PDAnnotationWidget widget : field.getWidgets()) {
@@ -136,12 +93,6 @@ public class PDAcroFormTest
         TestRendering testRendering = new TestRendering();
         testRendering.setUp();
         testRendering.render(file);
-    }
-
-    @After
-    public void tearDown() throws IOException
-    {
-        document.close();
     }
 
 }

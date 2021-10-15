@@ -17,7 +17,6 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import android.graphics.Path;
-import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;
 
@@ -467,9 +466,9 @@ public class PDType1Font extends PDSimpleFont
         }
         float width = genericFont.getWidth(name);
 
-        PointF p = new PointF(width, 0);
-        fontMatrixTransform.transform(p, p);
-        return (float)p.x;
+        float[] p = { width, 0 };
+        fontMatrixTransform.transform(p, 0, p, 0, 1);
+        return p[0];
     }
 
     @Override
@@ -500,7 +499,7 @@ public class PDType1Font extends PDSimpleFont
     @Override
     protected Encoding readEncodingFromFont() throws IOException
     {
-        if (getStandard14AFM() != null)
+        if (!isEmbedded() && getStandard14AFM() != null)
         {
             // read from AFM
             return new Type1Encoding(getStandard14AFM());

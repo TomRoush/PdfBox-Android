@@ -370,7 +370,9 @@ final class FileSystemFontProvider extends FontProvider
         }
         catch (IOException e)
         {
-            Log.e("PdfBox-Android", "Could not write to font cache", e);
+            Log.w("PdfBox-Android", "Could not write to font cache", e);
+            Log.w("PdfBox-Android", "Installed fonts information will have to be reloaded for each start");
+            Log.w("PdfBox-Android", "You can assign a directory to the 'pdfbox.fontcache' property");
         }
         finally
         {
@@ -634,7 +636,7 @@ final class FileSystemFontProvider extends FontProvider
                     NamingTable name = ttf.getNaming();
                     if (name != null)
                     {
-                        Log.d("PdfBox-Android",format +": '" + name.getPostScriptName() + "' / '" +
+                        Log.d("PdfBox-Android", format +": '" + name.getPostScriptName() + "' / '" +
                             name.getFontFamily() + "' / '" +
                             name.getFontSubFamily() + "'");
                     }
