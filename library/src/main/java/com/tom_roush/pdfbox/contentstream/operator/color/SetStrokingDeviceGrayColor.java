@@ -16,13 +16,13 @@
  */
 package com.tom_roush.pdfbox.contentstream.operator.color;
 
+import java.io.IOException;
+import java.util.List;
+
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
-import com.tom_roush.pdfbox.contentstream.operator.Operator;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * G: Set the stroking colour space to DeviceGray and set the gray level to use for stroking

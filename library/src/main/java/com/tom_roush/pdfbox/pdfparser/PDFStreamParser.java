@@ -22,7 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.tom_roush.pdfbox.contentstream.PDContentStream;
@@ -420,11 +419,12 @@ public class PDFStreamParser extends BaseParser
                     noBinData = false;
                 }
             }
-            pdfSource.unread(Arrays.copyOfRange(binCharTestArr, 0, readBytes));
+            pdfSource.unread(binCharTestArr, 0, readBytes);
         }
         if (!noBinData)
         {
-            Log.w("PdfBox-Android", "ignoring 'EI' assumed to be in the middle of inline image");
+            Log.w("PdfBox-Android", "ignoring 'EI' assumed to be in the middle of inline image at stream offset " +
+                pdfSource.getPosition());
         }
         return noBinData;
     }

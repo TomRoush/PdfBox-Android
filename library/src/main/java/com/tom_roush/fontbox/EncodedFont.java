@@ -17,9 +17,8 @@
 
 package com.tom_roush.fontbox;
 
-import com.tom_roush.fontbox.encoding.Encoding;
-
 import java.io.IOException;
+import com.tom_roush.fontbox.encoding.Encoding;
 
 /**
  * A PostScript font which uses an encoding vector.

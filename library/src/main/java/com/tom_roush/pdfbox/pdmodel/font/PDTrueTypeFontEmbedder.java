@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
@@ -22,8 +23,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
 import com.tom_roush.fontbox.ttf.HorizontalMetricsTable;
+import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
@@ -50,10 +51,10 @@ final class PDTrueTypeFontEmbedder extends TrueTypeEmbedder
      * @param encoding The PostScript encoding vector to be used for embedding.
      * @throws IOException if the TTF could not be read
      */
-    PDTrueTypeFontEmbedder(PDDocument document, COSDictionary dict, InputStream ttfStream,
+    PDTrueTypeFontEmbedder(PDDocument document, COSDictionary dict, TrueTypeFont ttf,
         Encoding encoding) throws IOException
     {
-        super(document, dict, ttfStream, false);
+        super(document, dict, ttf, false);
         dict.setItem(COSName.SUBTYPE, COSName.TRUE_TYPE);
 
         GlyphList glyphList = GlyphList.getAdobeGlyphList();
@@ -119,8 +120,8 @@ final class PDTrueTypeFontEmbedder extends TrueTypeEmbedder
     }
 
     @Override
-    protected void buildSubset(InputStream ttfSubset, String tag, Map<Integer, Integer> gidToCid)
-        throws IOException
+    protected void buildSubset(InputStream ttfSubset, String tag,
+        Map<Integer, Integer> gidToCid) throws IOException
     {
         // use PDType0Font instead
         throw new UnsupportedOperationException();

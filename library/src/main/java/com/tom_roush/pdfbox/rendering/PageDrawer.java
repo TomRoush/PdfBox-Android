@@ -662,10 +662,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             // apply the CTM
             for (int i = 0; i < dashArray.length; ++i)
             {
-                // minimum line dash width avoids JVM crash, see PDFBOX-2373, PDFBOX-2929, PDFBOX-3204
+                // minimum line dash width avoids JVM crash,
+                // see PDFBOX-2373, PDFBOX-2929, PDFBOX-3204, PDFBOX-3813
                 // also avoid 0 in array like "[ 0 1000 ] 0 d", see PDFBOX-3724
                 float w = transformWidth(dashArray[i]);
-                dashArray[i] = Math.max(w, 0.035f);
+                dashArray[i] = Math.max(w, 0.062f);
             }
             phaseStart = (int)transformWidth(phaseStart);
 
@@ -841,6 +842,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //        {
 //            linePath.setFillType(clipWindingRule);
 //            getGraphicsState().intersectClippingPath(linePath);
+//
+//            // PDFBOX-3836: lastClip needs to be reset, because after intersection it is still the same
+//            // object, thus setClip() would believe that it is cached.
+//            lastClip = null;
+//
 //            clipWindingRule = null;
 //        } TODO: PdfBox-Android causes rendering issues
         linePath.reset();
@@ -854,10 +860,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
         if (!pdImage.getInterpolate())
         {
-            Matrix m = new Matrix(xform);
-            m.concatenate(ctm);
-            boolean isScaledUp = pdImage.getWidth() < Math.round(Math.abs(m.getScalingFactorX())) ||
-                pdImage.getHeight() < Math.round(Math.abs(m.getScalingFactorY()));
+            boolean isScaledUp = pdImage.getWidth() < Math.round(at.getScaleX()) ||
+                pdImage.getHeight() < Math.round(at.getScaleY());
 
             // if the image is scaled down, we use smooth interpolation, eg PDFBOX-2364
             // only when scaled up do we use nearest neighbour, eg PDFBOX-2302 / mori-cvpr01.pdf
@@ -1155,7 +1159,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         COSArray border = annotation.getBorder();
         if (borderStyle == null)
         {
-            if (border.get(2) instanceof COSNumber)
+            if (border.getObject(2) instanceof COSNumber)
             {
                 ab.width = ((COSNumber) border.getObject(2)).floatValue();
             }

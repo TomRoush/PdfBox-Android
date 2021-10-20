@@ -294,8 +294,8 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
     public void insertInnerFormToHolderResources(PDFormXObject innerForm,
         PDResources holderFormResources)
     {
-        COSName innerFormName = holderFormResources.add(innerForm, "FRM");
-        pdfStructure.setInnerFormName(innerFormName);
+        holderFormResources.put(COSName.FRM, innerForm);
+        pdfStructure.setInnerFormName(COSName.FRM);
         Log.i("PdfBox-Android", "Now inserted inner form inside holder form");
     }
 
@@ -328,12 +328,26 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
 
         imageFormResources.getCOSObject().setDirect(true);
 
-        COSName imageFormName = innerFormResource.add(imageForm, "n");
+        COSName imageFormName = COSName.getPDFName("n2");
+        innerFormResource.put(imageFormName, imageForm);
         COSName imageName = imageFormResources.add(img, "img");
         pdfStructure.setImageForm(imageForm);
         pdfStructure.setImageFormName(imageFormName);
         pdfStructure.setImageName(imageName);
         Log.i("PdfBox-Android", "Created image form");
+    }
+
+    @Override
+    public void createBackgroundLayerForm(PDResources innerFormResource, PDRectangle formatter)
+        throws IOException
+    {
+        // create blank n0 background layer form
+        PDFormXObject n0Form = new PDFormXObject(pdfStructure.getTemplate().getDocument().createCOSStream());
+        n0Form.setBBox(formatter);
+        n0Form.setResources(new PDResources());
+        n0Form.setFormType(1);
+        innerFormResource.put(COSName.getPDFName("n0"), n0Form);
+        Log.i("PdfBox-Android", "Created background layer form");
     }
 
     @Override
@@ -351,7 +365,7 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
 
     @Override
     public void injectAppearanceStreams(PDStream holderFormStream, PDStream innerFormStream,
-        PDStream imageFormStream, COSName imageObjectName,
+        PDStream imageFormStream, COSName imageFormName,
         COSName imageName, COSName innerFormName,
         PDVisibleSignDesigner properties) throws IOException
     {
@@ -361,7 +375,7 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
         // imageName + " Do Q\n" + builder.toString();
         String imgFormContent    = "q " + 100 + " 0 0 50 0 0 cm /" + imageName.getName() + " Do Q\n";
         String holderFormContent = "q 1 0 0 1 0 0 cm /" + innerFormName.getName() + " Do Q\n";
-        String innerFormContent  = "q 1 0 0 1 0 0 cm /" + imageObjectName.getName() + " Do Q\n";
+        String innerFormContent  = "q 1 0 0 1 0 0 cm /n0 Do Q q 1 0 0 1 0 0 cm /" + imageFormName.getName() + " Do Q\n";
 
         appendRawCommands(pdfStructure.getHolderFormStream().createOutputStream(), holderFormContent);
         appendRawCommands(pdfStructure.getInnerFormStream().createOutputStream(), innerFormContent);

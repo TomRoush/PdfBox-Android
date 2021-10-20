@@ -56,7 +56,7 @@ interface SequentialSource extends Closeable
     /**
      * Returns offset of next byte to be returned by a read method.
      *
-     * @return offset of next byte which will be returned with next {@link #read()} (if no more
+     * @return offset of next byte which will be returned with next {@link #read()} (if no more 
      * bytes are left it returns a value &gt;= length of source).
      * @throws IOException If there was an error while reading the data.
      */
@@ -74,17 +74,27 @@ interface SequentialSource extends Closeable
      * Unreads a single byte.
      *
      * @param b byte array to push back
-     * @throws IOException If there is an error while seeking
+     * @throws IOException if there is an error while unreading
      */
     void unread(int b) throws IOException;
 
     /**
      * Unreads an array of bytes.
      *
-     * @param bytes byte array to push back
-     * @throws IOException If there is an error while seeking
+     * @param bytes byte array to be unread
+     * @throws IOException if there is an error while unreading
      */
     void unread(byte[] bytes) throws IOException;
+
+    /**
+     * Unreads a portion of an array of bytes.
+     *
+     * @param bytes byte array to be unread
+     * @param start start index
+     * @param len number of bytes to be unread
+     * @throws IOException if there is an error while unreading
+     */
+    void unread(byte[] bytes, int start, int len) throws IOException;
 
     /**
      * Reads a given number of bytes in its entirety.

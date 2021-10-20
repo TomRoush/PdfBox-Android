@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
-import java.util.Arrays;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -336,60 +335,43 @@ public abstract class BaseParser
     }
 
     /**
-     * This is really a bug in the Document creators code, but it caused a crash
-     * in PDFBox, the first bug was in this format:
-     * /Title ( (5)
-     * /Creator which was patched in 1 place.
-     * However it missed the case where the Close Paren was escaped
+     * This is really a bug in the Document creators code, but it caused a crash in PDFBox, the first bug was in this
+     * format: /Title ( (5) /Creator which was patched in 1 place.
      *
-     * The second bug was in this format
-     * /Title (c:\)
-     * /Producer
+     * However it missed the case where the number of opening and closing parenthesis isn't balanced
      *
-     * This patch  moves this code out of the parseCOSString method, so it can be used twice.
+     * The second bug was in this format /Title (c:\) /Producer
      *
+     * This patch moves this code out of the parseCOSString method, so it can be used twice.
      *
      * @param bracesParameter the number of braces currently open.
      *
      * @return the corrected value of the brace counter
      * @throws IOException
      */
-    private int checkForMissingCloseParen(final int bracesParameter) throws IOException
+    private int checkForEndOfString(final int bracesParameter) throws IOException
     {
         int braces = bracesParameter;
         byte[] nextThreeBytes = new byte[3];
         int amountRead = seqSource.read(nextThreeBytes);
 
-        //lets handle the special case seen in Bull  River Rules and Regulations.pdf
-        //The dictionary looks like this
-        //    2 0 obj
-        //    <<
-        //        /Type /Info
-        //        /Creator (PaperPort http://www.scansoft.com)
-        //        /Producer (sspdflib 1.0 http://www.scansoft.com)
-        //        /Title ( (5)
-        //        /Author ()
-        //        /Subject ()
-        //
-        // Notice the /Title, the braces are not even but they should
-        // be.  So lets assume that if we encounter an this scenario
-        //   <end_brace><new_line><opening_slash> then that
-        // means that there is an error in the pdf and assume that
-        // was the end of the document.
-        //
-        if (amountRead == 3 &&
-            (( nextThreeBytes[0] == ASCII_CR  // Look for a carriage return
-                && nextThreeBytes[1] == ASCII_LF  // Look for a new line
-                && nextThreeBytes[2] == 0x2f ) // Look for a slash /
-                // Add a second case without a new line
-                || (nextThreeBytes[0] == ASCII_CR  // Look for a carriage return
-                && nextThreeBytes[1] == 0x2f )))  // Look for a slash /
+        // Check the next 3 bytes if available
+        // The following cases are valid indicators for the end of the string
+        // 1. Next line contains another COSObject: CR + LF + '/'
+        // 2. COSDictionary ends in the next line: CR + LF + '>'
+        // 3. Next line contains another COSObject: CR + '/'
+        // 4. COSDictionary ends in the next line: CR + '>'
+        if (amountRead == 3 && nextThreeBytes[0] == ASCII_CR)
         {
-            braces = 0;
+            if ( (nextThreeBytes[1] == ASCII_LF && (nextThreeBytes[2] == '/') || nextThreeBytes[2] == '>')
+                || nextThreeBytes[1] == '/' || nextThreeBytes[1] == '>')
+            {
+                braces = 0;
+            }
         }
         if (amountRead > 0)
         {
-            seqSource.unread(Arrays.copyOfRange(nextThreeBytes, 0, amountRead));
+            seqSource.unread(nextThreeBytes, 0, amountRead);
         }
         return braces;
     }
@@ -404,18 +386,11 @@ public abstract class BaseParser
     protected COSString parseCOSString() throws IOException
     {
         char nextChar = (char) seqSource.read();
-        char openBrace;
-        char closeBrace;
-        if( nextChar == '(' )
-        {
-            openBrace = '(';
-            closeBrace = ')';
-        }
-        else if( nextChar == '<' )
+        if (nextChar == '<')
         {
             return parseCOSHexString();
         }
-        else
+        else if (nextChar != '(')
         {
             throw new IOException( "parseCOSString string should start with '(' or '<' and not '" +
                 nextChar + "' " + seqSource);
@@ -423,8 +398,7 @@ public abstract class BaseParser
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        //This is the number of braces read
-        //
+        // This is the number of braces read
         int braces = 1;
         int c = seqSource.read();
         while( braces > 0 && c != -1)
@@ -432,17 +406,17 @@ public abstract class BaseParser
             char ch = (char)c;
             int nextc = -2; // not yet read
 
-            if(ch == closeBrace)
+            if (ch == ')')
             {
 
                 braces--;
-                braces = checkForMissingCloseParen(braces);
+                braces = checkForEndOfString(braces);
                 if( braces != 0 )
                 {
                     out.write(ch);
                 }
             }
-            else if( ch == openBrace )
+            else if (ch == '(')
             {
                 braces++;
                 out.write(ch);
@@ -470,7 +444,7 @@ public abstract class BaseParser
                         break;
                     case ')':
                         // PDFBox 276 /Title (c:\)
-                        braces = checkForMissingCloseParen(braces);
+                        braces = checkForEndOfString(braces);
                         if( braces != 0 )
                         {
                             out.write(next);
@@ -870,125 +844,125 @@ public abstract class BaseParser
         char c = (char)nextByte;
         switch(c)
         {
-        case '<':
-        {
-            // pull off first left bracket
-            int leftBracket = seqSource.read();
-            // check for second left bracket
-            c = (char) seqSource.peek();
-            seqSource.unread(leftBracket);
-            if(c == '<')
+            case '<':
             {
+                // pull off first left bracket
+                int leftBracket = seqSource.read();
+                // check for second left bracket
+                c = (char) seqSource.peek();
+                seqSource.unread(leftBracket);
+                if(c == '<')
+                {
 
-                retval = parseCOSDictionary();
-                skipSpaces();
+                    retval = parseCOSDictionary();
+                    skipSpaces();
+                }
+                else
+                {
+                    retval = parseCOSString();
+                }
+                break;
             }
-            else
+            case '[':
             {
+                // array
+                retval = parseCOSArray();
+                break;
+            }
+            case '(':
                 retval = parseCOSString();
-            }
-            break;
-        }
-        case '[':
-        {
-            // array
-            retval = parseCOSArray();
-            break;
-        }
-        case '(':
-            retval = parseCOSString();
-            break;
-        case '/':
-            // name
-            retval = parseCOSName();
-            break;
-        case 'n':
-        {
-            // null
-            readExpectedString(NULL);
-            retval = COSNull.NULL;
-            break;
-        }
-        case 't':
-        {
-            String trueString = new String( seqSource.readFully(4), ISO_8859_1 );
-            if( trueString.equals( TRUE ) )
+                break;
+            case '/':
+                // name
+                retval = parseCOSName();
+                break;
+            case 'n':
             {
-                retval = COSBoolean.TRUE;
+                // null
+                readExpectedString(NULL);
+                retval = COSNull.NULL;
+                break;
             }
-            else
+            case 't':
             {
-                throw new IOException( "expected true actual='" + trueString + "' " + seqSource +
-                    "' at offset " + seqSource.getPosition());
-            }
-            break;
-        }
-        case 'f':
-        {
-            String falseString = new String( seqSource.readFully(5), ISO_8859_1 );
-            if( falseString.equals( FALSE ) )
-            {
-                retval = COSBoolean.FALSE;
-            }
-            else
-            {
-                throw new IOException( "expected false actual='" + falseString + "' " + seqSource +
-                    "' at offset " + seqSource.getPosition());
-            }
-            break;
-        }
-        case 'R':
-            seqSource.read();
-            retval = new COSObject(null);
-            break;
-        case (char)-1:
-            return null;
-        default:
-        {
-            if( Character.isDigit(c) || c == '-' || c == '+' || c == '.')
-            {
-                StringBuilder buf = new StringBuilder();
-                int ic = seqSource.read();
-                c = (char)ic;
-                while( Character.isDigit( c )||
-                    c == '-' ||
-                    c == '+' ||
-                    c == '.' ||
-                    c == 'E' ||
-                    c == 'e' )
+                String trueString = new String( seqSource.readFully(4), ISO_8859_1 );
+                if( trueString.equals( TRUE ) )
                 {
-                    buf.append( c );
-                    ic = seqSource.read();
+                    retval = COSBoolean.TRUE;
+                }
+                else
+                {
+                    throw new IOException( "expected true actual='" + trueString + "' " + seqSource +
+                        "' at offset " + seqSource.getPosition());
+                }
+                break;
+            }
+            case 'f':
+            {
+                String falseString = new String( seqSource.readFully(5), ISO_8859_1 );
+                if( falseString.equals( FALSE ) )
+                {
+                    retval = COSBoolean.FALSE;
+                }
+                else
+                {
+                    throw new IOException( "expected false actual='" + falseString + "' " + seqSource +
+                        "' at offset " + seqSource.getPosition());
+                }
+                break;
+            }
+            case 'R':
+                seqSource.read();
+                retval = new COSObject(null);
+                break;
+            case (char)-1:
+                return null;
+            default:
+            {
+                if( Character.isDigit(c) || c == '-' || c == '+' || c == '.')
+                {
+                    StringBuilder buf = new StringBuilder();
+                    int ic = seqSource.read();
                     c = (char)ic;
+                    while( Character.isDigit( c )||
+                        c == '-' ||
+                        c == '+' ||
+                        c == '.' ||
+                        c == 'E' ||
+                        c == 'e' )
+                    {
+                        buf.append( c );
+                        ic = seqSource.read();
+                        c = (char)ic;
+                    }
+                    if( ic != -1 )
+                    {
+                        seqSource.unread(ic);
+                    }
+                    retval = COSNumber.get( buf.toString() );
                 }
-                if( ic != -1 )
+                else
                 {
-                    seqSource.unread(ic);
-                }
-                retval = COSNumber.get( buf.toString() );
-            }
-            else
-            {
-                //This is not suppose to happen, but we will allow for it
-                //so we are more compatible with POS writers that don't
-                //follow the spec
-                String badString = readString();
-                if( badString == null || badString.length() == 0 )
-                {
-                    int peek = seqSource.peek();
-                    // we can end up in an infinite loop otherwise
-                    throw new IOException( "Unknown dir object c='" + c +
-                        "' cInt=" + (int)c + " peek='" + (char)peek
-                        + "' peekInt=" + peek + " at offset " + seqSource.getPosition() );
-                }
+                    //This is not suppose to happen, but we will allow for it
+                    //so we are more compatible with POS writers that don't
+                    //follow the spec
+                    String badString = readString();
+                    if( badString == null || badString.length() == 0 )
+                    {
+                        int peek = seqSource.peek();
+                        // we can end up in an infinite loop otherwise
+                        throw new IOException( "Unknown dir object c='" + c +
+                            "' cInt=" + (int)c + " peek='" + (char)peek
+                            + "' peekInt=" + peek + " at offset " + seqSource.getPosition() );
+                    }
 
-                // if it's an endstream/endobj, we want to put it back so the caller will see it
-                if(ENDOBJ_STRING.equals(badString) || ENDSTREAM_STRING.equals(badString))
-                {
-                    seqSource.unread(badString.getBytes(ISO_8859_1));
+                    // if it's an endstream/endobj, we want to put it back so the caller will see it
+                    if(ENDOBJ_STRING.equals(badString) || ENDSTREAM_STRING.equals(badString))
+                    {
+                        seqSource.unread(badString.getBytes(ISO_8859_1));
+                    }
                 }
             }
-        }
         }
         return retval;
     }

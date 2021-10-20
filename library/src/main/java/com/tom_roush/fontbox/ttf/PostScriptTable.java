@@ -16,6 +16,8 @@
  */
 package com.tom_roush.fontbox.ttf;
 
+import android.util.Log;
+
 import java.io.IOException;
 
 /**
@@ -142,6 +144,7 @@ public class PostScriptTable extends TTFTable
         else if (formatType == 3.0f)
         {
             // no postscript information is provided.
+            Log.d("PdfBox-Android", "No PostScript name information is provided for the font " + font.getName());
         }
         initialized = true;
     }
@@ -311,7 +314,7 @@ public class PostScriptTable extends TTFTable
      */
     public String getName(int gid)
     {
-        if (gid < 0 || glyphNames == null || gid > glyphNames.length)
+        if (gid < 0 || glyphNames == null || gid >= glyphNames.length)
         {
             return null;
         }

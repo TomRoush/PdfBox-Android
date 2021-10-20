@@ -131,6 +131,10 @@ public class CFFParser
         @SuppressWarnings("unused")
         Header header = readHeader(input);
         String[] nameIndex = readStringIndexData(input);
+        if (nameIndex == null)
+        {
+            throw new IOException("Name index missing in CFF font");
+        }
         byte[][] topDictIndex = readIndexData(input);
         stringIndex = readStringIndexData(input);
         byte[][] globalSubrIndex = readIndexData(input);
@@ -343,40 +347,40 @@ public class CFFParser
             {
                 switch (nibble)
                 {
-                case 0x0:
-                case 0x1:
-                case 0x2:
-                case 0x3:
-                case 0x4:
-                case 0x5:
-                case 0x6:
-                case 0x7:
-                case 0x8:
-                case 0x9:
-                    sb.append(nibble);
-                    exponentMissing = false;
-                    break;
-                case 0xa:
-                    sb.append(".");
-                    break;
-                case 0xb:
-                    sb.append("E");
-                    exponentMissing = true;
-                    break;
-                case 0xc:
-                    sb.append("E-");
-                    exponentMissing = true;
-                    break;
-                case 0xd:
-                    break;
-                case 0xe:
-                    sb.append("-");
-                    break;
-                case 0xf:
-                    done = true;
-                    break;
-                default:
-                    throw new IllegalArgumentException();
+                    case 0x0:
+                    case 0x1:
+                    case 0x2:
+                    case 0x3:
+                    case 0x4:
+                    case 0x5:
+                    case 0x6:
+                    case 0x7:
+                    case 0x8:
+                    case 0x9:
+                        sb.append(nibble);
+                        exponentMissing = false;
+                        break;
+                    case 0xa:
+                        sb.append(".");
+                        break;
+                    case 0xb:
+                        sb.append("E");
+                        exponentMissing = true;
+                        break;
+                    case 0xc:
+                        sb.append("E-");
+                        exponentMissing = true;
+                        break;
+                    case 0xd:
+                        break;
+                    case 0xe:
+                        sb.append("-");
+                        break;
+                    case 0xf:
+                        done = true;
+                        break;
+                    default:
+                        throw new IllegalArgumentException();
                 }
             }
         }
@@ -747,17 +751,14 @@ public class CFFParser
         int format = dataInput.readCard8();
         int baseFormat = format & 0x7f;
 
-        if (baseFormat == 0)
+        switch (baseFormat)
         {
-            return readFormat0Encoding(dataInput, charset, format);
-        }
-        else if (baseFormat == 1)
-        {
-            return readFormat1Encoding(dataInput, charset, format);
-        }
-        else
-        {
-            throw new IllegalArgumentException();
+            case 0:
+                return readFormat0Encoding(dataInput, charset, format);
+            case 1:
+                return readFormat1Encoding(dataInput, charset, format);
+            default:
+                throw new IllegalArgumentException();
         }
     }
 
@@ -834,17 +835,14 @@ public class CFFParser
     private static FDSelect readFDSelect(CFFDataInput dataInput, int nGlyphs, CFFCIDFont ros) throws IOException
     {
         int format = dataInput.readCard8();
-        if (format == 0)
+        switch (format)
         {
-            return readFormat0FDSelect(dataInput, format, nGlyphs, ros);
-        }
-        else if (format == 3)
-        {
-            return readFormat3FDSelect(dataInput, format, nGlyphs, ros);
-        }
-        else
-        {
-            throw new IllegalArgumentException();
+            case 0:
+                return readFormat0FDSelect(dataInput, format, nGlyphs, ros);
+            case 3:
+                return readFormat3FDSelect(dataInput, format, nGlyphs, ros);
+            default:
+                throw new IllegalArgumentException();
         }
     }
 
@@ -1003,21 +1001,16 @@ public class CFFParser
         throws IOException
     {
         int format = dataInput.readCard8();
-        if (format == 0)
+        switch (format)
         {
-            return readFormat0Charset(dataInput, format, nGlyphs, isCIDFont);
-        }
-        else if (format == 1)
-        {
-            return readFormat1Charset(dataInput, format, nGlyphs, isCIDFont);
-        }
-        else if (format == 2)
-        {
-            return readFormat2Charset(dataInput, format, nGlyphs, isCIDFont);
-        }
-        else
-        {
-            throw new IllegalArgumentException();
+            case 0:
+                return readFormat0Charset(dataInput, format, nGlyphs, isCIDFont);
+            case 1:
+                return readFormat1Charset(dataInput, format, nGlyphs, isCIDFont);
+            case 2:
+                return readFormat2Charset(dataInput, format, nGlyphs, isCIDFont);
+            default:
+                throw new IllegalArgumentException();
         }
     }
 
@@ -1207,12 +1200,12 @@ public class CFFParser
                 {
                     switch (operand.intValue())
                     {
-                    case 0:
-                        return Boolean.FALSE;
-                    case 1:
-                        return Boolean.TRUE;
-                    default:
-                        break;
+                        case 0:
+                            return Boolean.FALSE;
+                        case 1:
+                            return Boolean.TRUE;
+                        default:
+                            break;
                     }
                 }
                 throw new IllegalArgumentException();
@@ -1322,7 +1315,7 @@ public class CFFParser
         protected EmptyCharset(int numCharStrings)
         {
             super(true);
-            addCID(0 ,0); // .notdef
+            addCID(0, 0); // .notdef
 
             // Adobe Reader treats CID as GID, PDFBOX-2571 p11.
             for (int i = 1; i <= numCharStrings; i++)

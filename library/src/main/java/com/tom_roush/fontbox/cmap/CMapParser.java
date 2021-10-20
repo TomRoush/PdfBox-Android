@@ -362,15 +362,20 @@ public class CMapParser
             if (nextToken instanceof List<?>)
             {
                 array = (List<byte[]>) nextToken;
+                if (array.isEmpty())
+                {
+                    continue;
+                }
                 tokenBytes = array.get(0);
             }
             else
             {
                 tokenBytes = (byte[]) nextToken;
             }
-            if (tokenBytes.length == 0)
+            if (tokenBytes == null || tokenBytes.length == 0)
             {
                 // PDFBOX-3450: ignore <>
+                // PDFBOX-3807: ignore null
                 continue;
             }
             boolean done = false;

@@ -82,6 +82,21 @@ public class JPEGFactoryTest
             "pdfbox/com/tom_roush/pdfbox/pdmodel/graphics/image/jpeg.jpg"));
     }
 
+    /*
+     * Tests JPEGFactory#createFromStream(PDDocument document, InputStream
+     * stream) with CMYK color JPEG file
+     */
+    public void testCreateFromStreamCMYK() throws IOException
+    {
+        PDDocument document = new PDDocument();
+        InputStream stream = testContext.getAssets().open("pdfbox/com/tom_roush/pdfbox/pdmodel/graphics/image/jpegcmyk.jpg");
+        PDImageXObject ximage = JPEGFactory.createFromStream(document, stream);
+        validate(ximage, 8, 343, 287, "jpg", PDDeviceRGB.INSTANCE.getName()); // TODO: PdfBox-Android
+
+        doWritePDF(document, ximage, testResultsDir, "jpegcmykstream.pdf");
+        checkJpegStream(testResultsDir, "jpegcmykstream.pdf", testContext.getAssets().open("pdfbox/com/tom_roush/pdfbox/pdmodel/graphics/image/jpegcmyk.jpg"));
+    }
+
     /**
      * Tests JPEGFactory#createFromStream(PDDocument document, InputStream
      * stream) with gray JPEG file

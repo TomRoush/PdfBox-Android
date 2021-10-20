@@ -16,6 +16,7 @@
  */
 package com.tom_roush.fontbox.util;
 
+
 import java.util.List;
 
 /**
@@ -34,19 +35,19 @@ public class BoundingBox
     /**
      * Default constructor.
      */
-    public BoundingBox() 
+    public BoundingBox()
     {
     }
-    
+
     /**
      * Constructor.
-     * 
+     *
      * @param minX lower left x value
      * @param minY lower left y value
      * @param maxX upper right x value
      * @param maxY upper right y value
      */
-    public BoundingBox(float minX, float minY, float maxX, float maxY) 
+    public BoundingBox(float minX, float minY, float maxX, float maxY)
     {
         lowerLeftX = minX;
         lowerLeftY = minY;
@@ -146,7 +147,7 @@ public class BoundingBox
     {
         this.upperRightY = upperRightYValue;
     }
-    
+
     /**
      * This will get the width of this rectangle as calculated by
      * upperRightX - lowerLeftX.
@@ -168,21 +169,21 @@ public class BoundingBox
     {
         return getUpperRightY() - getLowerLeftY();
     }
-    
+
     /**
      * Checks if a point is inside this rectangle.
-     * 
+     *
      * @param x The x coordinate.
      * @param y The y coordinate.
-     * 
+     *
      * @return true If the point is on the edge or inside the rectangle bounds. 
      */
     public boolean contains( float x, float y )
     {
         return x >= lowerLeftX && x <= upperRightX &&
-               y >= lowerLeftY && y <= upperRightY;
+            y >= lowerLeftY && y <= upperRightY;
     }
-    
+
     /**
      * This will return a string representation of this rectangle.
      *
@@ -192,6 +193,7 @@ public class BoundingBox
     public String toString()
     {
         return "[" + getLowerLeftX() + "," + getLowerLeftY() + "," +
-                     getUpperRightX() + "," + getUpperRightY() +"]";
+            getUpperRightX() + "," + getUpperRightY() +"]";
     }
+
 }

@@ -48,7 +48,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
      *
      * @param pfbStream .pfb input stream, including headers
      * @return a type1 font
-     * 
+     *
      * @throws IOException if something went wrong
      */
     public static Type1Font createWithPFB(InputStream pfbStream) throws IOException
@@ -129,7 +129,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     // private caches
     private final Map<String, Type1CharString> charStringCache =
-            new ConcurrentHashMap<String, Type1CharString>();
+        new ConcurrentHashMap<String, Type1CharString>();
 
     // raw data
     private final byte[] segment1, segment2;
@@ -210,7 +210,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the font name.
-     * 
+     *
      * @return the font name
      */
     public String getFontName()
@@ -230,7 +230,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the paint type.
-     * 
+     *
      * @return the paint type
      */
     public int getPaintType()
@@ -240,7 +240,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the font type.
-     * 
+     *
      * @return the font type
      */
     public int getFontType()
@@ -250,7 +250,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the font matrix.
-     * 
+     *
      * @return the font matrix
      */
     public List<Number> getFontMatrix()
@@ -260,7 +260,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the font bounding box.
-     * 
+     *
      * @return the font bounding box
      */
     @Override
@@ -271,7 +271,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns unique ID.
-     * 
+     *
      * @return the unique ID
      */
     public int getUniqueID()
@@ -281,7 +281,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the stroke width.
-     * 
+     *
      * @return the stroke width
      */
     public float getStrokeWidth()
@@ -291,7 +291,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the font ID.
-     * 
+     *
      * @return the font ID
      */
     public String getFontID()
@@ -303,7 +303,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the version.
-     * 
+     *
      * @return the version
      */
     public String getVersion()
@@ -313,7 +313,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the notice.
-     * 
+     *
      * @return the notice
      */
     public String getNotice()
@@ -333,7 +333,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the family name.
-     * 
+     *
      * @return the family name
      */
     public String getFamilyName()
@@ -343,7 +343,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the weight.
-     * 
+     *
      * @return the weight
      */
     public String getWeight()
@@ -353,7 +353,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the italic angle.
-     * 
+     *
      * @return the italic angle
      */
     public float getItalicAngle()
@@ -363,7 +363,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Determines if the font has a fixed pitch.
-     * 
+     *
      * @return true if the font has a fixed pitch
      */
     public boolean isFixedPitch()
@@ -373,7 +373,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the underline position
-     * 
+     *
      * @return the underline position
      */
     public float getUnderlinePosition()
@@ -383,7 +383,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the underline thickness.
-     * 
+     *
      * @return the underline thickness
      */
     public float getUnderlineThickness()
@@ -395,7 +395,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the blues values.
-     * 
+     *
      * @return the blues values
      */
     public List<Number> getBlueValues()
@@ -405,7 +405,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the other blues values.
-     * 
+     *
      * @return the other blues values
      */
     public List<Number> getOtherBlues()
@@ -415,7 +415,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the family blues values.
-     * 
+     *
      * @return the family blues values
      */
     public List<Number> getFamilyBlues()
@@ -425,7 +425,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the other family blues values.
-     * 
+     *
      * @return the other family blues values
      */
     public List<Number> getFamilyOtherBlues()
@@ -435,7 +435,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the blue scale.
-     * 
+     *
      * @return the blue scale
      */
     public float getBlueScale()
@@ -445,7 +445,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the blue shift.
-     * 
+     *
      * @return the blue shift
      */
     public int getBlueShift()
@@ -455,7 +455,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the blue fuzz.
-     * 
+     *
      * @return the blue fuzz
      */
     public int getBlueFuzz()
@@ -465,7 +465,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the StdHW value.
-     * 
+     *
      * @return the StdHW value
      */
     public List<Number> getStdHW()
@@ -475,7 +475,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the StdVW value.
-     * 
+     *
      * @return the StdVW value
      */
     public List<Number> getStdVW()
@@ -485,7 +485,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the StemSnapH value.
-     * 
+     *
      * @return the StemSnapH value
      */
     public List<Number> getStemSnapH()
@@ -495,7 +495,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the StemSnapV value.
-     * 
+     *
      * @return the StemSnapV value
      */
     public List<Number> getStemSnapV()
@@ -505,7 +505,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Determines if the font is bold.
-     * 
+     *
      * @return true if the font is bold
      */
     public boolean isForceBold()
@@ -515,7 +515,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
 
     /**
      * Returns the language group.
-     * 
+     *
      * @return the language group
      */
     public int getLanguageGroup()
@@ -550,7 +550,7 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
     public String toString()
     {
         return getClass().getName() + "[fontName=" + fontName + ", fullName=" + fullName
-                + ", encoding=" + encoding + ", charStringsDict=" + charstrings
-                + "]";
+            + ", encoding=" + encoding + ", charStringsDict=" + charstrings
+            + "]";
     }
 }

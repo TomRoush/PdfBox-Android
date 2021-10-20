@@ -46,7 +46,6 @@ public class PDFTextStripperByArea extends PDFTextStripper
      */
     public PDFTextStripperByArea() throws IOException
     {
-        super();
         super.setShouldSeparateByBeads(false);
     }
 
