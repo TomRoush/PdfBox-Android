@@ -14,15 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.encryption;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  * Manages security handlers for the application.
@@ -38,29 +36,23 @@ public final class SecurityHandlerFactory
     /** Singleton instance */
     public static final SecurityHandlerFactory INSTANCE = new SecurityHandlerFactory();
 
-    static
-    {
-        Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-        Security.addProvider(new BouncyCastleProvider());
-    }
-
     private final Map<String, Class<? extends SecurityHandler>> nameToHandler =
-            new HashMap<String, Class<? extends SecurityHandler>>();
+        new HashMap<String, Class<? extends SecurityHandler>>();
 
     private final Map<Class<? extends ProtectionPolicy>,
-                      Class<? extends SecurityHandler>> policyToHandler =
-            new HashMap<Class<? extends ProtectionPolicy>,
-                        Class<? extends SecurityHandler>>();
+        Class<? extends SecurityHandler>> policyToHandler =
+        new HashMap<Class<? extends ProtectionPolicy>,
+            Class<? extends SecurityHandler>>();
 
     private SecurityHandlerFactory()
     {
         registerHandler(StandardSecurityHandler.FILTER,
-                        StandardSecurityHandler.class,
-                        StandardProtectionPolicy.class);
+            StandardSecurityHandler.class,
+            StandardProtectionPolicy.class);
 
         registerHandler(PublicKeySecurityHandler.FILTER,
-                        PublicKeySecurityHandler.class,
-                        PublicKeyProtectionPolicy.class);
+            PublicKeySecurityHandler.class,
+            PublicKeyProtectionPolicy.class);
     }
 
     /**
@@ -75,8 +67,8 @@ public final class SecurityHandlerFactory
      * @param protectionPolicy protection policy class to register
      */
     public void registerHandler(String name,
-                                Class<? extends SecurityHandler> securityHandler,
-                                Class<? extends ProtectionPolicy> protectionPolicy)
+        Class<? extends SecurityHandler> securityHandler,
+        Class<? extends ProtectionPolicy> protectionPolicy)
     {
         if (nameToHandler.containsKey(name))
         {
@@ -123,7 +115,7 @@ public final class SecurityHandlerFactory
         return newSecurityHandler(handlerClass, argsClasses, args);
     }
 
-    /** Returns a new security handler for the given parameters, or null none is available.
+    /* Returns a new security handler for the given parameters, or null none is available.
      *
      * @param handlerClass the handler class.
      * @param argsClasses the parameter array.
@@ -136,7 +128,7 @@ public final class SecurityHandlerFactory
         try
         {
             Constructor<? extends SecurityHandler> ctor =
-                    handlerClass.getDeclaredConstructor(argsClasses);
+                handlerClass.getDeclaredConstructor(argsClasses);
             return ctor.newInstance(args);
         }
         catch(NoSuchMethodException e)

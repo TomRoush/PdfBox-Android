@@ -103,12 +103,20 @@ public class Overlay
     public PDDocument overlay(Map<Integer, String> specificPageOverlayFile)
         throws IOException
     {
+        Map<String, PDDocument> loadedDocuments = new HashMap<String, PDDocument>();
+        Map<PDDocument, LayoutPage> layouts = new HashMap<PDDocument, LayoutPage>();
         loadPDFs();
         for (Map.Entry<Integer, String> e : specificPageOverlayFile.entrySet())
         {
-            PDDocument doc = loadPDF(e.getValue());
+            PDDocument doc = loadedDocuments.get(e.getValue());
+            if (doc == null)
+            {
+                doc = loadPDF(e.getValue());
+                loadedDocuments.put(e.getValue(), doc);
+                layouts.put(doc, getLayoutPage(doc));
+            }
             specificPageOverlay.put(e.getKey(), doc);
-            specificPageOverlayPage.put(e.getKey(), getLayoutPage(doc));
+            specificPageOverlayPage.put(e.getKey(), layouts.get(doc));
         }
         processPages(inputPDFDocument);
         return inputPDFDocument;
@@ -279,7 +287,7 @@ public class Overlay
     {
         List<COSStream> contentStreams = createContentStreamList(contents);
         // concatenate streams
-        COSStream concatStream = new COSStream();
+        COSStream concatStream = inputPDFDocument.getDocument().createCOSStream();
         OutputStream out = concatStream.createOutputStream(COSName.FLATE_DECODE);
         for (COSStream contentStream : contentStreams)
         {
@@ -331,22 +339,22 @@ public class Overlay
             COSArray contentArray = new COSArray();
             switch (position)
             {
-            case FOREGROUND:
-                // save state
-                contentArray.add(createStream("q\n"));
-                addOriginalContent(contents, contentArray);
-                // restore state
-                contentArray.add(createStream("Q\n"));
-                // overlay content
-                overlayPage(contentArray, page, pageCount + 1, document.getNumberOfPages());
-                break;
-            case BACKGROUND:
-                // overlay content
-                overlayPage(contentArray, page, pageCount + 1, document.getNumberOfPages());
-                addOriginalContent(contents, contentArray);
-                break;
-            default:
-                throw new IOException("Unknown type of position:" + position);
+                case FOREGROUND:
+                    // save state
+                    contentArray.add(createStream("q\n"));
+                    addOriginalContent(contents, contentArray);
+                    // restore state
+                    contentArray.add(createStream("Q\n"));
+                    // overlay content
+                    overlayPage(contentArray, page, pageCount + 1, document.getNumberOfPages());
+                    break;
+                case BACKGROUND:
+                    // overlay content
+                    overlayPage(contentArray, page, pageCount + 1, document.getNumberOfPages());
+                    addOriginalContent(contents, contentArray);
+                    break;
+                default:
+                    throw new IOException("Unknown type of position:" + position);
             }
             pageDictionary.setItem(COSName.CONTENTS, contentArray);
             pageCount++;
@@ -464,8 +472,9 @@ public class Overlay
 
     private COSStream createStream(String content) throws IOException
     {
-        COSStream stream = new COSStream();
-        OutputStream out = stream.createOutputStream(COSName.FLATE_DECODE);
+        COSStream stream = inputPDFDocument.getDocument().createCOSStream();
+        OutputStream out = stream.createOutputStream(
+            content.length() > 20 ? COSName.FLATE_DECODE : null);
         out.write(content.getBytes("ISO-8859-1"));
         out.close();
         return stream;

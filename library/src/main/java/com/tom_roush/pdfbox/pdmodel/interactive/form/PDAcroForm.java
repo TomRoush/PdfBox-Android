@@ -105,20 +105,20 @@ public final class PDAcroForm implements COSObjectable
         // if there are no entries at all. It might be necessary to enhance that
         // if only parts are missing
 
-        final String AdobeDefaultAppearanceString = "/Helv 0 Tf 0 g ";
+        final String adobeDefaultAppearanceString = "/Helv 0 Tf 0 g ";
 
         // DA entry is required
         if (getDefaultAppearance().length() == 0)
         {
-            setDefaultAppearance(AdobeDefaultAppearanceString);
+            setDefaultAppearance(adobeDefaultAppearanceString);
         }
 
         // DR entry is required
         if (getDefaultResources() == null)
         {
-            // Adobe Acrobat uses Helvetica as a default font and
+            // Adobe Acrobat uses Helvetica as a default font and 
             // stores that under the name '/Helv' in the resources dictionary
-            // Zapf Dingbats is included per default for check boxes and
+            // Zapf Dingbats is included per default for check boxes and 
             // radio buttons as /ZaDb.
             PDResources resources = new PDResources();
             resources.put(COSName.getPDFName("Helv"), PDType1Font.HELVETICA);
@@ -297,7 +297,7 @@ public final class PDAcroForm implements COSObjectable
 
                     contentStream.saveGraphicsState();
 
-                    // translate the appearance stream to the widget location if there is
+                    // translate the appearance stream to the widget location if there is 
                     // not already a transformation in place
                     boolean needsTranslation = resolveNeedsTranslation(appearanceStream);
 
@@ -352,7 +352,7 @@ public final class PDAcroForm implements COSObjectable
     }
 
     /**
-     * Refreshes the appearance streams and appearance dictionaries for
+     * Refreshes the appearance streams and appearance dictionaries for 
      * the widget annotations of all fields.
      *
      * @throws IOException
@@ -369,7 +369,7 @@ public final class PDAcroForm implements COSObjectable
     }
 
     /**
-     * Refreshes the appearance streams and appearance dictionaries for
+     * Refreshes the appearance streams and appearance dictionaries for 
      * the widget annotations of the specified fields.
      *
      * @param fields
@@ -393,7 +393,7 @@ public final class PDAcroForm implements COSObjectable
      * A field might have children that are fields (non-terminal field) or does not
      * have children which are fields (terminal fields).
      *
-     * The fields within an AcroForm are organized in a tree structure. The documents root fields
+     * The fields within an AcroForm are organized in a tree structure. The documents root fields 
      * might either be terminal fields, non-terminal fields or a mixture of both. Non-terminal fields
      * mark branches which contents can be retrieved using {@link PDNonTerminalField#getChildren()}.
      *

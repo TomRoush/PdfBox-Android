@@ -30,7 +30,7 @@ public interface FontDirFinder
 {
     /**
      * Finds a list of font files.
-     * 
+     *
      * @return list of font files.
      */
     List<File> find();

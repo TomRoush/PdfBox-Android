@@ -27,7 +27,7 @@ import com.tom_roush.fontbox.util.Charsets;
 
 /**
  * A table in a true type font.
- * 
+ *
  * @author Ben Litchfield
  */
 public class NamingTable extends TTFTable
@@ -52,7 +52,7 @@ public class NamingTable extends TTFTable
 
     /**
      * This will read the required data from the stream.
-     * 
+     *
      * @param ttf The font that is being read.
      * @param data The stream to read the data from.
      * @throws IOException If there is an error reading the data.
@@ -79,61 +79,59 @@ public class NamingTable extends TTFTable
                 nr.setString(null);
                 continue;
             }
-            
+
             data.seek(getOffset() + (2*3)+numberOfNameRecords*2*6+nr.getStringOffset());
             int platform = nr.getPlatformId();
             int encoding = nr.getPlatformEncodingId();
             Charset charset = Charsets.ISO_8859_1;
-            if (platform == NameRecord.PLATFORM_WINDOWS &&
-                (encoding == NameRecord.ENCODING_WINDOWS_SYMBOL ||
-                    encoding == NameRecord.ENCODING_WINDOWS_UNICODE_BMP))
+            if (platform == NameRecord.PLATFORM_WINDOWS && (encoding == NameRecord.ENCODING_WINDOWS_SYMBOL || encoding == NameRecord.ENCODING_WINDOWS_UNICODE_BMP))
+            {
+                charset = Charsets.UTF_16;
+            }
+            else if (platform == NameRecord.PLATFORM_UNICODE)
             {
                 charset = Charsets.UTF_16;
             }
             else if (platform == NameRecord.PLATFORM_ISO)
             {
-                if (encoding == 0)
+                switch (encoding)
                 {
-                    charset = Charsets.US_ASCII;
-                }
-                else if (encoding == 1)
-                {
-                    //not sure is this is correct??
-                    charset = Charsets.ISO_10646;
-                }
-                else if (encoding == 2)
-                {
-                    charset = Charsets.ISO_8859_1;
+                    case 0:
+                        charset = Charsets.US_ASCII;
+                        break;
+                    case 1:
+                        //not sure is this is correct??
+                        charset = Charsets.ISO_10646;
+                        break;
+                    case 2:
+                        charset = Charsets.ISO_8859_1;
+                        break;
+                    default:
+                        break;
                 }
             }
-            
             String string = data.readString(nr.getStringLength(), charset);
             nr.setString(string);
         }
 
         // build multi-dimensional lookup table
-        lookupTable = new HashMap<Integer, Map<Integer, Map<Integer, Map<Integer, String>>>>(
-            nameRecords.size());
+        lookupTable = new HashMap<Integer, Map<Integer, Map<Integer, Map<Integer, String>>>>(nameRecords.size());
         for (NameRecord nr : nameRecords)
         {
             // name id
-            Map<Integer, Map<Integer, Map<Integer, String>>> platformLookup = lookupTable.get(
-                nr.getNameId());
+            Map<Integer, Map<Integer, Map<Integer, String>>> platformLookup = lookupTable.get(nr.getNameId());
             if (platformLookup == null)
             {
                 platformLookup = new HashMap<Integer, Map<Integer, Map<Integer, String>>>();
                 lookupTable.put(nr.getNameId(), platformLookup);
             }
-
             // platform id
-            Map<Integer, Map<Integer, String>> encodingLookup = platformLookup.get(
-                nr.getPlatformId());
+            Map<Integer, Map<Integer, String>> encodingLookup = platformLookup.get(nr.getPlatformId());
             if (encodingLookup == null)
             {
                 encodingLookup = new HashMap<Integer, Map<Integer, String>>();
                 platformLookup.put(nr.getPlatformId(), encodingLookup);
             }
-
             // encoding id
             Map<Integer, String> languageLookup = encodingLookup.get(nr.getPlatformEncodingId());
             if (languageLookup == null)
@@ -141,7 +139,6 @@ public class NamingTable extends TTFTable
                 languageLookup = new HashMap<Integer, String>();
                 encodingLookup.put(nr.getPlatformEncodingId(), languageLookup);
             }
-
             // language id / string
             languageLookup.put(nr.getLanguageId(), nr.getString());
         }
@@ -152,17 +149,16 @@ public class NamingTable extends TTFTable
 
         // extract PostScript name, only these two formats are valid
         psName = getName(NameRecord.NAME_POSTSCRIPT_NAME,
-                         NameRecord.PLATFORM_MACINTOSH,
-                         NameRecord.ENCODING_MACINTOSH_ROMAN,
-                         NameRecord.LANGUGAE_MACINTOSH_ENGLISH);
+            NameRecord.PLATFORM_MACINTOSH,
+            NameRecord.ENCODING_MACINTOSH_ROMAN,
+            NameRecord.LANGUGAE_MACINTOSH_ENGLISH);
         if (psName == null)
         {
             psName = getName(NameRecord.NAME_POSTSCRIPT_NAME,
-                             NameRecord.PLATFORM_WINDOWS,
-                             NameRecord.ENCODING_WINDOWS_UNICODE_BMP,
-                             NameRecord.LANGUGAE_WINDOWS_EN_US);
+                NameRecord.PLATFORM_WINDOWS,
+                NameRecord.ENCODING_WINDOWS_UNICODE_BMP,
+                NameRecord.LANGUGAE_WINDOWS_EN_US);
         }
-
         if (psName != null)
         {
             psName = psName.trim();
@@ -180,10 +176,10 @@ public class NamingTable extends TTFTable
         for (int i = 4; i >= 0; i--)
         {
             String nameUni =
-                    getName(nameId,
-                            NameRecord.PLATFORM_UNICODE,
-                            i,
-                            NameRecord.LANGUGAE_UNICODE);
+                getName(nameId,
+                    NameRecord.PLATFORM_UNICODE,
+                    i,
+                    NameRecord.LANGUGAE_UNICODE);
             if (nameUni != null)
             {
                 return nameUni;
@@ -192,10 +188,10 @@ public class NamingTable extends TTFTable
 
         // Windows, Unicode BMP, EN-US
         String nameWin =
-                getName(nameId,
-                        NameRecord.PLATFORM_WINDOWS,
-                        NameRecord.ENCODING_WINDOWS_UNICODE_BMP,
-                        NameRecord.LANGUGAE_WINDOWS_EN_US);
+            getName(nameId,
+                NameRecord.PLATFORM_WINDOWS,
+                NameRecord.ENCODING_WINDOWS_UNICODE_BMP,
+                NameRecord.LANGUGAE_WINDOWS_EN_US);
         if (nameWin != null)
         {
             return nameWin;
@@ -203,10 +199,10 @@ public class NamingTable extends TTFTable
 
         // Macintosh, Roman, English
         String nameMac =
-                getName(nameId,
-                        NameRecord.PLATFORM_MACINTOSH,
-                        NameRecord.ENCODING_MACINTOSH_ROMAN,
-                        NameRecord.LANGUGAE_MACINTOSH_ENGLISH);
+            getName(nameId,
+                NameRecord.PLATFORM_MACINTOSH,
+                NameRecord.ENCODING_MACINTOSH_ROMAN,
+                NameRecord.LANGUGAE_MACINTOSH_ENGLISH);
         if (nameMac != null)
         {
             return nameMac;
@@ -253,7 +249,7 @@ public class NamingTable extends TTFTable
     {
         return nameRecords;
     }
-    
+
     /**
      * Returns the font family name, in English.
      *

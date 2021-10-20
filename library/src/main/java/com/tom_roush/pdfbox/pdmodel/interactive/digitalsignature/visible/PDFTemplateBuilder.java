@@ -222,6 +222,16 @@ public interface PDFTemplateBuilder
         PDImageXObject img) throws IOException;
 
     /**
+     * Creates the background layer form (n0).
+     *
+     * @param innerFormResource
+     * @param formatter
+     * @throws IOException
+     */
+    void createBackgroundLayerForm(PDResources innerFormResource, PDRectangle formatter)
+        throws IOException;
+
+    /**
      * Inject procSetArray
      *
      * @param innerForm
@@ -241,14 +251,14 @@ public interface PDFTemplateBuilder
      * @param holderFormStream
      * @param innerFormStream
      * @param imageFormStream
-     * @param imageObjectName
+     * @param imageFormName
      * @param imageName
      * @param innerFormName
      * @param properties
      * @throws IOException
      */
     void injectAppearanceStreams(PDStream holderFormStream, PDStream innerFormStream,
-        PDStream imageFormStream, COSName imageObjectName, COSName imageName,
+        PDStream imageFormStream, COSName imageFormName, COSName imageName,
         COSName innerFormName, PDVisibleSignDesigner properties) throws IOException;
 
     /**

@@ -85,20 +85,24 @@ public final class JPEGFactory
         BitmapFactory.decodeStream(byteStream, null, options);
         byteStream.reset();
 
-        // create Image XObject from stream
+        PDColorSpace colorSpace = PDDeviceRGB.INSTANCE; // TODO: PdfBox-Android
+
+        // create PDImageXObject from stream
         PDImageXObject pdImage = new PDImageXObject(document, byteStream,
-            COSName.DCT_DECODE, options.outWidth, options.outHeight,
-            8, //awtImage.getColorModel().getComponentSize(0),
-            PDDeviceRGB.INSTANCE //getColorSpaceFromAWT(awtImage)); // TODO: PdfBox-Android
-        );
+            COSName.DCT_DECODE, options.outWidth, options.outHeight, 8, colorSpace);
 
         return pdImage;
     }
 
     /**
-     * Creates a new JPEG Image XObject from a Buffered Image.
+     * Creates a new JPEG PDImageXObject from a Bitmap.
+     * <p>
+     * Do not read a JPEG image from a stream/file and call this method; you'll get more speed and
+     * quality by calling {@link #createFromStream(com.tom_roush.pdfbox.pdmodel.PDDocument,
+     * java.io.InputStream) createFromStream()} instead.
+     *
      * @param document the document where the image will be created
-     * @param image the buffered image to embed
+     * @param image the Bitmap to embed
      * @return a new Image XObject
      * @throws IOException if the JPEG data cannot be written
      */
@@ -109,10 +113,15 @@ public final class JPEGFactory
     }
 
     /**
-     * Creates a new JPEG Image XObject from a Buffered Image and a given quality.
+     * Creates a new JPEG PDImageXObject from a Bitmap and a given quality.
+     * <p>
+     * Do not read a JPEG image from a stream/file and call this method; you'll get more speed and
+     * quality by calling {@link #createFromStream(com.tom_roush.pdfbox.pdmodel.PDDocument,
+     * java.io.InputStream) createFromStream()} instead.
+     *
      * The image will be created at 72 DPI.
      * @param document the document where the image will be created
-     * @param image the buffered image to embed
+     * @param image the Bitmap to embed
      * @param quality the desired JPEG compression quality
      * @return a new Image XObject
      * @throws IOException if the JPEG data cannot be written
@@ -124,9 +133,14 @@ public final class JPEGFactory
     }
 
     /**
-     * Creates a new JPEG Image XObject from a Buffered Image, a given quality and DPI.
+     * Creates a new JPEG Image XObject from a Bitmap, a given quality and DPI.
+     * <p>
+     * Do not read a JPEG image from a stream/file and call this method; you'll get more speed and
+     * quality by calling {@link #createFromStream(com.tom_roush.pdfbox.pdmodel.PDDocument,
+     * java.io.InputStream) createFromStream()} instead.
+     *
      * @param document the document where the image will be created
-     * @param image the buffered image to embed
+     * @param image the Bitmap to embed
      * @param quality the desired JPEG compression quality
      * @param dpi the desired DPI (resolution) of the JPEG
      * @return a new Image XObject
@@ -308,33 +322,7 @@ public final class JPEGFactory
     }
 
     // returns a PDColorSpace for a given BufferedImage
-    //	private static PDColorSpace getColorSpaceFromAWT(Bitmap awtImage)
-    //	{
-    //		if (awtImage.getColorModel().getNumComponents() == 1)
-    //		{
-    //			// 256 color (gray) JPEG
-    //			return PDDeviceGray.INSTANCE;
-    //		}
-    //
-    //		ColorSpace awtColorSpace = awtImage.getColorModel().getColorSpace();
-    //		if (awtColorSpace instanceof ICC_ColorSpace && !awtColorSpace.isCS_sRGB())
-    //		{
-    //			throw new UnsupportedOperationException("ICC color spaces not implemented");
-    //		}
-    //
-    //		switch (awtColorSpace.getType())
-    //		{
-    //			case ColorSpace.TYPE_RGB:
-    //				return PDDeviceRGB.INSTANCE;
-    //			case ColorSpace.TYPE_GRAY:
-    //				return PDDeviceGray.INSTANCE;
-    //			case ColorSpace.TYPE_CMYK:
-    //				return PDDeviceCMYK.INSTANCE;
-    //			default:
-    //				throw new UnsupportedOperationException("color space not implemented: "
-    //						+ awtColorSpace.getType());
-    //		}
-    //	} TODO: PdfBox-Android
+    //	private static PDColorSpace getColorSpaceFromAWT(Bitmap awtImage) TODO: PdfBox-Android
 
     // returns the color channels of an image
     private static Bitmap getColorImage(Bitmap image)

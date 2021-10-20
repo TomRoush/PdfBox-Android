@@ -17,15 +17,17 @@
 
 package com.tom_roush.pdfbox.cos;
 
-import org.junit.Test;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * Test for PDFDocEncoding.
+ *
  */
 public class PDFDocEncodingTest
 {
@@ -83,10 +85,28 @@ public class PDFDocEncodingTest
     @Test
     public void testDeviations()
     {
-        for (String deviation : deviations)
+        for (String deviation: deviations)
         {
             COSString cosString = new COSString(deviation);
             assertEquals(cosString.getString(), deviation);
+        }
+    }
+
+    /**
+     * PDFBOX-3864: Test that chars smaller than 256 which are NOT part of PDFDocEncoding are
+     * handled correctly.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testPDFBox3864() throws IOException
+    {
+        for (int i = 0; i < 256; i++)
+        {
+            String hex = String.format("FEFF%04X", i);
+            COSString cs1 = COSString.parseHex(hex);
+            COSString cs2 = new COSString(cs1.getString());
+            assertEquals(cs1, cs2);
         }
     }
 }

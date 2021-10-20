@@ -298,17 +298,28 @@ public class TrueTypeFont implements FontBoxFont, Closeable
     }
 
     /**
-     * This permit to get the data of the True Type Font
+     * Get the data of the TrueType Font
      * program representing the stream used to build this 
      * object (normally from the TTFParser object).
      *
-     * @return COSStream True type font program stream
+     * @return COSStream TrueType font program stream
      *
      * @throws IOException If there is an error getting the font data.
      */
     public InputStream getOriginalData() throws IOException
     {
         return data.getOriginalData();
+    }
+
+    /**
+     * Get the data size of the TrueType Font program representing the stream used to build this
+     * object (normally from the TTFParser object).
+     *
+     * @return the size.
+     */
+    public long getOriginalDataSize()
+    {
+        return data.getOriginalDataSize();
     }
 
     /**
@@ -476,7 +487,7 @@ public class TrueTypeFont implements FontBoxFont, Closeable
         {
             if (isStrict)
             {
-                throw new IOException("The TrueType font does not contain a 'cmap' table");
+                throw new IOException("The TrueType font " + getName() + " does not contain a 'cmap' table");
             }
             else
             {

@@ -153,7 +153,16 @@ public abstract class PDColorSpace implements COSObjectable
         else if (colorSpace instanceof COSArray)
         {
             COSArray array = (COSArray)colorSpace;
-            COSName name = (COSName)array.getObject(0);
+            if (array.size() == 0)
+            {
+                throw new IOException("Colorspace array is empty");
+            }
+            COSBase base = array.getObject(0);
+            if (!(base instanceof COSName))
+            {
+                throw new IOException("First element in colorspace array must be a name");
+            }
+            COSName name = (COSName) base;
 
             // TODO cache these returned color spaces?
 
@@ -274,30 +283,7 @@ public abstract class PDColorSpace implements COSObjectable
      */
     public abstract Bitmap toRGBImage(Bitmap raster) throws IOException;
 
-//    /**
-//     * Returns the (A)RGB equivalent of the given raster, using the given AWT color space
-//     * to perform the conversion.
-//     * @param raster the source raster
-//     * @param colorSpace the AWT
-//     * @return an (A)RGB buffered image
-//     */
-//    protected BufferedImage toRGBImageAWT(WritableRaster raster, ColorSpace colorSpace)
-//    {
-//        //
-//        // WARNING: this method is performance sensitive, modify with care!
-//        //
-//
-//        // ICC Profile color transforms are only fast when performed using ColorConvertOp
-//        ColorModel colorModel = new ComponentColorModel(colorSpace,
-//            false, false, Transparency.OPAQUE, raster.getDataBuffer().getDataType());
-//
-//        BufferedImage src = new BufferedImage(colorModel, raster, false, null);
-//        BufferedImage dest = new BufferedImage(raster.getWidth(), raster.getHeight(),
-//            BufferedImage.TYPE_INT_RGB);
-//        ColorConvertOp op = new ColorConvertOp(null);
-//        op.filter(src, dest);
-//        return dest;
-//    } TODO: PdfBox-Android
+//    protected BufferedImage toRGBImageAWT(WritableRaster raster, ColorSpace colorSpace) TODO: PdfBox-Android
 
     @Override
     public COSBase getCOSObject()

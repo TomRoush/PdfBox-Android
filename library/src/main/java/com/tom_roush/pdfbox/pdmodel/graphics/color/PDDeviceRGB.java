@@ -120,10 +120,6 @@ public final class PDDeviceRGB extends PDDeviceColorSpace
         }
         return raster;
 
-//        init();
-//        ColorModel colorModel = new ComponentColorModel(awtColorSpace,
-//            false, false, Transparency.OPAQUE, raster.getDataBuffer().getDataType());
-//
-//        return new BufferedImage(colorModel, raster, false, null); TODO: PdfBox-Android
+        // TODO: PdfBox-Android use color model
     }
 }

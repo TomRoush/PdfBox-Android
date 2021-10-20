@@ -103,7 +103,7 @@ public abstract class PDButton extends PDTerminalField
     /**
      * Determines if radio button bit is set.
      *
-     * @return true if type of button field is a push button.
+     * @return true if type of button field is a radio button.
      */
     public boolean isRadioButton()
     {
@@ -205,7 +205,7 @@ public abstract class PDButton extends PDTerminalField
 
 
     /**
-     * This will get the export values.
+     * This will get the (optional) export values.
      *
      * <p>The export values are defined in the field dictionaries /Opt key.</p>
      *
@@ -219,7 +219,9 @@ public abstract class PDButton extends PDTerminalField
      *  </li>
      * </ul>
      *
-     * @return List containing all possible export values. If there is no Opt entry an empty list will be returned.
+     * @return List containing all possible export values. If there is no /Opt entry an empty list will be returned.
+     *
+     * @see #getOnValues()
      */
     public List<String> getExportValues()
     {

@@ -22,6 +22,7 @@ import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.tom_roush.harmony.awt.geom.AffineTransform;
@@ -224,7 +225,7 @@ class AppearanceGeneratorHelper
                 setAppearanceContent(widget, appearanceStream);
             }
 
-            // restore the field level appearance;
+            // restore the field level appearance
             defaultAppearance =  acroFormAppearance;
         }
     }
@@ -461,7 +462,8 @@ class AppearanceGeneratorHelper
 
         // special handling for comb boxes as these are like table cells with individual
         // chars
-        if (shallComb()) {
+        if (shallComb())
+        {
             insertGeneratedCombAppearance(contents, appearanceStream, font, fontSize);
         }
         else if (field instanceof PDListBox)
@@ -576,16 +578,13 @@ class AppearanceGeneratorHelper
             (appearanceStream.getBBox().getHeight() - ascentAtFontSize)/2;
 
         float prevCharWidth = 0f;
-        float currCharWidth = 0f;
 
-        float xOffset =  combWidth/2;
-
-        String combString = "";
+        float xOffset = combWidth / 2;
 
         for (int i = 0; i < numChars; i++)
         {
-            combString = value.substring(i, i+1);
-            currCharWidth = font.getStringWidth(combString) / FONTSCALE * fontSize/2;
+            String combString = value.substring(i, i+1);
+            float currCharWidth = font.getStringWidth(combString) / FONTSCALE * fontSize/2;
 
             xOffset = xOffset + prevCharWidth/2 - currCharWidth/2;
 
@@ -605,19 +604,13 @@ class AppearanceGeneratorHelper
         List<String> values = ((PDListBox) field).getValue();
         List<String> options = ((PDListBox) field).getOptionsExportValues();
 
-        // TODO: support highlighting multiple items if multiselect is set
-
-        int selectedIndex = 0;
-
-        if (!values.isEmpty() && !options.isEmpty())
+        if (!values.isEmpty() && !options.isEmpty() && indexEntries.isEmpty())
         {
-            if (!indexEntries.isEmpty())
+            // create indexEntries from options
+            indexEntries = new ArrayList<Integer>();
+            for (String v : values)
             {
-                selectedIndex = indexEntries.get(0);
-            }
-            else
-            {
-                selectedIndex = options.indexOf(values.get(0));
+                indexEntries.add(options.indexOf(v));
             }
         }
 
@@ -626,18 +619,21 @@ class AppearanceGeneratorHelper
         // display starts with the first entry in Opt.
         int topIndex = ((PDListBox) field).getTopIndex();
 
-        float highlightBoxHeight = font.getBoundingBox().getHeight() * fontSize / FONTSCALE - 2f;
+        float highlightBoxHeight = font.getBoundingBox().getHeight() * fontSize / FONTSCALE;
 
         // the padding area 
         PDRectangle paddingEdge = applyPadding(appearanceStream.getBBox(), 1);
 
-        contents.setNonStrokingColor(HIGHLIGHT_COLOR[0],HIGHLIGHT_COLOR[1],HIGHLIGHT_COLOR[2]);
+        for (int selectedIndex : indexEntries)
+        {
+            contents.setNonStrokingColor(HIGHLIGHT_COLOR[0], HIGHLIGHT_COLOR[1], HIGHLIGHT_COLOR[2]);
 
-        contents.addRect(paddingEdge.getLowerLeftX(),
-            paddingEdge.getUpperRightY() - highlightBoxHeight * (selectedIndex - topIndex + 1),
-            paddingEdge.getWidth(),
-            highlightBoxHeight);
-        contents.fill();
+            contents.addRect(paddingEdge.getLowerLeftX(),
+                paddingEdge.getUpperRightY() - highlightBoxHeight * (selectedIndex - topIndex + 1) + 2,
+                paddingEdge.getWidth(),
+                highlightBoxHeight);
+            contents.fill();
+        }
         contents.setNonStrokingColor(0);
     }
 

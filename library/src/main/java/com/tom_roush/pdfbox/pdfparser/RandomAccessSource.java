@@ -17,9 +17,9 @@
 
 package com.tom_roush.pdfbox.pdfparser;
 
-import com.tom_roush.pdfbox.io.RandomAccessRead;
-
 import java.io.IOException;
+
+import com.tom_roush.pdfbox.io.RandomAccessRead;
 
 /**
  * A SequentialSource backed by a RandomAccessRead.
@@ -78,6 +78,12 @@ final class RandomAccessSource implements SequentialSource
     public void unread(byte[] bytes) throws IOException
     {
         reader.rewind(bytes.length);
+    }
+
+    @Override
+    public void unread(byte[] bytes, int start, int len) throws IOException
+    {
+        reader.rewind(len - start);
     }
 
     @Override
