@@ -16,9 +16,10 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
-import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSInteger;
+
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDLineDashPattern;
 
@@ -31,8 +32,7 @@ public class PDBorderStyleDictionary implements COSObjectable
 {
 
     /*
-     * The various values of the style for the border as defined in the PDF 1.6
-     * reference Table 8.13
+     * The various values of the style for the border as defined in the PDF 1.6 reference Table 8.13
      */
 
     /**
@@ -73,10 +73,9 @@ public class PDBorderStyleDictionary implements COSObjectable
     /**
      * Constructor.
      *
-     * @param dict
-     *            a border style dictionary.
+     * @param dict a border style dictionary.
      */
-    public PDBorderStyleDictionary( COSDictionary dict )
+    public PDBorderStyleDictionary(COSDictionary dict)
     {
         dictionary = dict;
     }
@@ -95,18 +94,28 @@ public class PDBorderStyleDictionary implements COSObjectable
     /**
      * This will set the border width in points, 0 = no border.
      *
-     * @param w
-     *            float the width in points
+     * There is a bug in Adobe Reader DC, float values are ignored for text field widgets. As a
+     * workaround, floats that are integers (e.g. 2.0) are written as integer in the PDF.
+     *
+     * @param w float the width in points
      */
-    public void setWidth( float w )
+    public void setWidth(float w)
     {
-        getCOSObject().setFloat("W", w);
+        // PDFBOX-3929 workaround 
+        if (w == (int) w)
+        {
+            getCOSObject().setInt("W", (int) w);
+        }
+        else
+        {
+            getCOSObject().setFloat("W", w);
+        }
     }
 
     /**
      * This will retrieve the border width in points, 0 = no border.
      *
-     * @return flaot the width of the border in points
+     * @return The width of the border in points.
      */
     public float getWidth()
     {
@@ -116,17 +125,15 @@ public class PDBorderStyleDictionary implements COSObjectable
     /**
      * This will set the border style, see the STYLE_* constants for valid values.
      *
-     * @param s
-     *            the border style to use
+     * @param s the border style to use
      */
-    public void setStyle( String s )
+    public void setStyle(String s)
     {
         getCOSObject().setName("S", s);
     }
 
     /**
-     * This will retrieve the border style, see the STYLE_* constants for valid
-     * values.
+     * This will retrieve the border style, see the STYLE_* constants for valid values.
      *
      * @return the style of the border
      */
@@ -138,13 +145,12 @@ public class PDBorderStyleDictionary implements COSObjectable
     /**
      * This will set the dash style used for drawing the border.
      *
-     * @param dashArray
-     *            the dash style to use
+     * @param dashArray the dash style to use
      */
-    public void setDashStyle( COSArray dashArray )
+    public void setDashStyle(COSArray dashArray)
     {
         COSArray array = null;
-        if( dashArray != null )
+        if (dashArray != null)
         {
             array = dashArray;
         }
@@ -162,10 +168,10 @@ public class PDBorderStyleDictionary implements COSObjectable
         if (d == null)
         {
             d = new COSArray();
-            d.add( COSInteger.THREE );
+            d.add(COSInteger.THREE);
             getCOSObject().setItem("D", d);
         }
-        return new PDLineDashPattern( d, 0 );
+        return new PDLineDashPattern(d, 0);
     }
 
 }

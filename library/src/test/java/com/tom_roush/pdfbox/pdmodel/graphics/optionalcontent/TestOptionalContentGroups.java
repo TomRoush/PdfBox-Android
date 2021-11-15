@@ -19,6 +19,7 @@ package com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import com.tom_roush.harmony.awt.AWTColor;
@@ -27,6 +28,7 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
@@ -50,7 +52,6 @@ public class TestOptionalContentGroups extends TestCase
 
     /**
      * Tests OCG generation.
-     *
      * @throws Exception if an error occurs
      */
     public void testOCGGeneration() throws Exception
@@ -62,10 +63,10 @@ public class TestOptionalContentGroups extends TestCase
             PDPage page = new PDPage();
             doc.addPage(page);
             PDResources resources = page.getResources();
-            if (resources == null)
+            if( resources == null )
             {
                 resources = new PDResources();
-                page.setResources(resources);
+                page.setResources( resources );
             }
 
             //Prepare OCG functionality
@@ -93,8 +94,7 @@ public class TestOptionalContentGroups extends TestCase
             assertFalse(ocprops.isGroupEnabled("disabled"));
 
             //Setup page content stream and paint background/title
-            PDPageContentStream contentStream = new PDPageContentStream(doc, page,
-                PDPageContentStream.AppendMode.OVERWRITE, false);
+            PDPageContentStream contentStream = new PDPageContentStream(doc, page, AppendMode.OVERWRITE, false);
             PDFont font = PDType1Font.HELVETICA_BOLD;
             contentStream.beginMarkedContent(COSName.OC, background);
             contentStream.beginText();
@@ -145,7 +145,6 @@ public class TestOptionalContentGroups extends TestCase
 
     /**
      * Tests OCG functions on a loaded PDF.
-     *
      * @throws Exception if an error occurs
      */
     public void testOCGConsumption() throws Exception
@@ -166,7 +165,7 @@ public class TestOptionalContentGroups extends TestCase
             PDResources resources = page.getResources();
 
             COSName mc0 = COSName.getPDFName("oc1");
-            PDOptionalContentGroup ocg = (PDOptionalContentGroup) resources.getProperties(mc0);
+            PDOptionalContentGroup ocg = (PDOptionalContentGroup)resources.getProperties(mc0);
             assertNotNull(ocg);
             assertEquals("background", ocg.getName());
 
@@ -190,12 +189,20 @@ public class TestOptionalContentGroups extends TestCase
             assertNull(ocgs.getGroup("inexistent"));
 
             Collection<PDOptionalContentGroup> coll = ocgs.getOptionalContentGroups();
-            coll.contains(background);
-
+            assertEquals(3, coll.size());
+            Set<String> nameSet = new HashSet<String>();
+            for (PDOptionalContentGroup ocg2 : coll)
+            {
+                nameSet.add(ocg2.getName());
+            }
+            assertTrue(nameSet.contains("background"));
+            assertTrue(nameSet.contains("enabled"));
+            assertTrue(nameSet.contains("disabled"));
         }
         finally
         {
             doc.close();
         }
     }
+
 }

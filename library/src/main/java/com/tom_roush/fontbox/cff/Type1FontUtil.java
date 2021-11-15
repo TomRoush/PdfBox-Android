@@ -16,6 +16,8 @@
  */
 package com.tom_roush.fontbox.cff;
 
+import java.util.Locale;
+
 /**
  * This class contains some helper methods handling Type1-Fonts.
  *
@@ -43,7 +45,7 @@ public final class Type1FontUtil
             {
                 sb.append("0");
             }
-            sb.append(string.toUpperCase());
+            sb.append(string.toUpperCase(Locale.US));
         }
         return sb.toString();
     }

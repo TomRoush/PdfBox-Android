@@ -30,6 +30,7 @@ import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
@@ -130,6 +131,7 @@ public abstract class PDAnnotation implements COSObjectable
                 || PDAnnotationTextMarkup.SUB_TYPE_SQUIGGLY.equals(subtype)
                 || PDAnnotationTextMarkup.SUB_TYPE_STRIKEOUT.equals(subtype))
             {
+                // see 12.5.6.10 Text Markup Annotations
                 annot = new PDAnnotationTextMarkup(annotDic);
             }
             else if (PDAnnotationLink.SUB_TYPE.equals(subtype))
@@ -260,12 +262,7 @@ public abstract class PDAnnotation implements COSObjectable
      */
     public COSName getAppearanceState()
     {
-        COSName name = (COSName) getCOSObject().getDictionaryObject(COSName.AS);
-        if (name != null)
-        {
-            return name;
-        }
-        return null;
+        return getCOSObject().getCOSName(COSName.AS);
     }
 
     /**
@@ -275,14 +272,7 @@ public abstract class PDAnnotation implements COSObjectable
      */
     public void setAppearanceState(String as)
     {
-        if (as == null)
-        {
-            getCOSObject().removeItem(COSName.AS);
-        }
-        else
-        {
-            getCOSObject().setItem(COSName.AS, COSName.getPDFName(as));
-        }
+        getCOSObject().setName(COSName.AS, as);
     }
 
     /**
@@ -292,10 +282,10 @@ public abstract class PDAnnotation implements COSObjectable
      */
     public PDAppearanceDictionary getAppearance()
     {
-        COSDictionary apDic = (COSDictionary) dictionary.getDictionaryObject(COSName.AP);
-        if (apDic != null)
+        COSBase base = dictionary.getDictionaryObject(COSName.AP);
+        if (base instanceof COSDictionary)
         {
-            return new PDAppearanceDictionary(apDic);
+            return new PDAppearanceDictionary((COSDictionary) base);
         }
         return null;
     }
@@ -307,12 +297,7 @@ public abstract class PDAnnotation implements COSObjectable
      */
     public void setAppearance(PDAppearanceDictionary appearance)
     {
-        COSDictionary ap = null;
-        if (appearance != null)
-        {
-            ap = appearance.getCOSObject();
-        }
-        dictionary.setItem(COSName.AP, ap);
+        dictionary.setItem(COSName.AP, appearance);
     }
 
     /**
@@ -621,6 +606,33 @@ public abstract class PDAnnotation implements COSObjectable
     }
 
     /**
+     * This will get the optional content group or optional content membership dictionary for the
+     * annotation.
+     *
+     * @return The optional content group or optional content membership dictionary or null if there
+     * is none.
+     */
+    public PDPropertyList getOptionalContent()
+    {
+        COSBase base = getCOSObject().getDictionaryObject(COSName.OC);
+        if (base instanceof COSDictionary)
+        {
+            return PDPropertyList.create((COSDictionary) base);
+        }
+        return null;
+    }
+
+    /**
+     * Sets the optional content group or optional content membership dictionary for the annotation.
+     *
+     * @param oc The optional content group or optional content membership dictionary.
+     */
+    public void setOptionalContent(PDPropertyList oc)
+    {
+        getCOSObject().setItem(COSName.OC, oc);
+    }
+
+    /**
      * This will retrieve the border array. If none is available then it will return the default,
      * which is [0 0 1]. The array consists of at least three numbers defining the horizontal corner
      * radius, vertical corner radius, and border width. The array may have a fourth element, an
@@ -751,10 +763,10 @@ public abstract class PDAnnotation implements COSObjectable
      */
     public PDPage getPage()
     {
-        COSDictionary p = (COSDictionary) this.getCOSObject().getDictionaryObject(COSName.P);
-        if (p != null)
+        COSBase base = this.getCOSObject().getDictionaryObject(COSName.P);
+        if (base instanceof COSDictionary)
         {
-            return new PDPage(p);
+            return new PDPage((COSDictionary) base);
         }
         return null;
     }

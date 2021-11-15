@@ -1858,7 +1858,14 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
             {
                 input = PDFBoxResourceLoader.getStream(path);
             }
-            parseBidiFile(input);
+            if (input != null)
+            {
+                parseBidiFile(input);
+            }
+            else
+            {
+                Log.w("PdfBox-Android", "Could not find '" + path + "', mirroring char map will be empty: ");
+            }
         }
         catch (IOException e)
         {

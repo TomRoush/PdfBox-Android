@@ -110,6 +110,10 @@ final class Type1Parser
         {
             // premature end
             Token token = lexer.peekToken();
+            if (token == null)
+            {
+                break;
+            }
             if (token.getKind() == Token.NAME &&
                 (token.getText().equals("currentdict") || token.getText().equals("end")))
             {
@@ -118,7 +122,7 @@ final class Type1Parser
 
             // key/value
             String key = read(Token.LITERAL).getText();
-            if (key.equals("FontInfo"))
+            if (key.equals("FontInfo") || key.equals("Fontinfo"))
             {
                 readFontInfo(readSimpleDict());
             }
@@ -319,12 +323,20 @@ final class Type1Parser
 
         for (int i = 0; i < length; i++)
         {
+            if (lexer.peekToken() == null)
+            {
+                break;
+            }
             if (lexer.peekToken().getKind() == Token.NAME &&
                 !lexer.peekToken().getText().equals("end"))
             {
                 read(Token.NAME);
             }
             // premature end
+            if (lexer.peekToken() == null)
+            {
+                break;
+            }
             if (lexer.peekToken().getKind() == Token.NAME &&
                 lexer.peekToken().getText().equals("end"))
             {
@@ -508,7 +520,7 @@ final class Type1Parser
         for (int i = 0; i < length; i++)
         {
             // premature end
-            if (lexer.peekToken().getKind() != Token.LITERAL)
+            if (lexer.peekToken() == null || lexer.peekToken().getKind() != Token.LITERAL)
             {
                 break;
             }
@@ -652,6 +664,10 @@ final class Type1Parser
         for (int i = 0; i < length; i++)
         {
             // premature end
+            if (lexer.peekToken() == null)
+            {
+                break;
+            }
             if (!(lexer.peekToken().getKind() == Token.NAME &&
                 lexer.peekToken().getText().equals("dup")))
             {
@@ -710,6 +726,10 @@ final class Type1Parser
         for (int i = 0; i < length; i++)
         {
             // premature end
+            if (lexer.peekToken() == null)
+            {
+                break;
+            }
             if (lexer.peekToken().getKind() == Token.NAME &&
                 lexer.peekToken().getText().equals("end"))
             {
@@ -884,9 +904,9 @@ final class Type1Parser
     {
         // calculate needed length
         int len = 0;
-        for (int i = 0; i < bytes.length; ++i)
+        for (byte by : bytes)
         {
-            if (Character.digit((char) bytes[i], 16) != -1)
+            if (Character.digit((char) by, 16) != -1)
             {
                 ++len;
             }
@@ -894,9 +914,9 @@ final class Type1Parser
         byte[] res = new byte[len / 2];
         int r = 0;
         int prev = -1;
-        for (int i = 0; i < bytes.length; ++i)
+        for (byte by : bytes)
         {
-            int digit = Character.digit((char) bytes[i], 16);
+            int digit = Character.digit((char) by, 16);
             if (digit != -1)
             {
                 if (prev == -1)

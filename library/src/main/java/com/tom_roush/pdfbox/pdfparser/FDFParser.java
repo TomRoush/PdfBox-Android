@@ -72,6 +72,18 @@ public class FDFParser extends COSParser
         init();
     }
 
+    /**
+     * Tell if the dictionary is a FDF catalog.
+     *
+     * @param dictionary
+     * @return
+     */
+    @Override
+    protected final boolean isCatalog(COSDictionary dictionary)
+    {
+        return dictionary.containsKey(COSName.FDF);
+    }
+
     private void init() throws IOException
     {
         String eofLookupRangeStr = System.getProperty(SYSPROP_EOFLOOKUPRANGE);
@@ -100,30 +112,30 @@ public class FDFParser extends COSParser
     private void initialParse() throws IOException
     {
         COSDictionary trailer = null;
-        // parse startxref
-        long startXRefOffset = getStartxrefOffset();
         boolean rebuildTrailer = false;
-        if (startXRefOffset > 0)
+        try
         {
-            try
+            // parse startxref
+            long startXRefOffset = getStartxrefOffset();
+            if (startXRefOffset > 0)
             {
                 trailer = parseXref(startXRefOffset);
             }
-            catch (IOException exception)
+            else if (isLenient())
             {
-                if (isLenient())
-                {
-                    rebuildTrailer = true;
-                }
-                else
-                {
-                    throw exception;
-                }
+                rebuildTrailer = true;
             }
         }
-        else if (isLenient())
+        catch (IOException exception)
         {
-            rebuildTrailer = true;
+            if (isLenient())
+            {
+                rebuildTrailer = true;
+            }
+            else
+            {
+                throw exception;
+            }
         }
         if (rebuildTrailer)
         {

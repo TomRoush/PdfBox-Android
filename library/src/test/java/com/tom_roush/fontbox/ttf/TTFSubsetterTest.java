@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map.Entry;
 
 import com.tom_roush.fontbox.util.autodetect.FontFileFinder;
@@ -138,7 +139,7 @@ public class TTFSubsetterTest
         File simhei = null;
         for (URI uri : files)
         {
-            if (uri.getPath() != null && uri.getPath().toLowerCase().endsWith("simhei.ttf"))
+            if (uri.getPath() != null && uri.getPath().toLowerCase(Locale.US).endsWith("simhei.ttf"))
             {
                 simhei = new File(uri);
             }

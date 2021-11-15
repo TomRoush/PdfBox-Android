@@ -39,6 +39,7 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSDocument;
+import com.tom_roush.pdfbox.cos.COSInputStream;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNull;
 import com.tom_roush.pdfbox.cos.COSNumber;
@@ -111,6 +112,16 @@ public class COSParser extends BaseParser
      */
     protected static final char[] OBJ_MARKER = new char[] { 'o', 'b', 'j' };
 
+    /**
+     * trailer-marker.
+     */
+    private static final char[] TRAILER_MARKER = new char[] { 't', 'r', 'a', 'i', 'l', 'e', 'r' };
+
+    /**
+     * ObjStream-marker.
+     */
+    private static final char[] OBJ_STREAM = new char[] { '/', 'O', 'b', 'j', 'S', 't', 'm' };
+
     private long trailerOffset;
 
     /**
@@ -124,6 +135,8 @@ public class COSParser extends BaseParser
     private boolean isLenient = true;
 
     protected boolean initialParseDone = false;
+
+    private boolean trailerWasRebuild = false;
     /**
      * Contains all found objects of a brute force search.
      */
@@ -187,6 +200,53 @@ public class COSParser extends BaseParser
     }
 
     /**
+     * Read the trailer information and provide a COSDictionary containing the trailer information.
+     *
+     * @return a COSDictionary containing the trailer information
+     * @throws IOException if something went wrong
+     */
+    protected COSDictionary retrieveTrailer() throws IOException
+    {
+        COSDictionary trailer = null;
+        boolean rebuildTrailer = false;
+        try
+        {
+            // parse startxref
+            // TODO FDF files don't have a startxref value, so that rebuildTrailer is triggered
+            long startXRefOffset = getStartxrefOffset();
+            if (startXRefOffset > -1)
+            {
+                trailer = parseXref(startXRefOffset);
+            }
+            else
+            {
+                rebuildTrailer = isLenient();
+            }
+        }
+        catch (IOException exception)
+        {
+            if (isLenient())
+            {
+                rebuildTrailer = true;
+            }
+            else
+            {
+                throw exception;
+            }
+        }
+        // check if the trailer contains a Root object
+        if (trailer != null && trailer.getItem(COSName.ROOT) == null)
+        {
+            rebuildTrailer = isLenient();
+        }
+        if (rebuildTrailer)
+        {
+            trailer = rebuildTrailer();
+        }
+        return trailer;
+    }
+
+    /**
      * Parses cross reference tables.
      *
      * @param startXRefOffset start offset of the first table
@@ -206,10 +266,9 @@ public class COSParser extends BaseParser
         document.setStartXref(startXrefOffset);
         long prev = startXrefOffset;
         // ---- parse whole chain of xref tables/object streams using PREV reference
-        long lastPrev = -1;
-        while (prev > 0 && prev != lastPrev)
+        Set<Long> prevSet = new HashSet<Long>();
+        while (prev > 0)
         {
-            lastPrev = prev;
             // seek to xref table
             source.seek(prev);
 
@@ -299,11 +358,11 @@ public class COSParser extends BaseParser
                     }
                 }
             }
-        }
-        if (prev == lastPrev)
-        {
-            //TODO better idea needed? PDFBOX-3446
-            throw new IOException("/Prev loop at offset " + prev);
+            if (prevSet.contains(prev))
+            {
+                throw new IOException("/Prev loop at offset " + prev);
+            }
+            prevSet.add(prev);
         }
         // ---- build valid xrefs out of the xref chain
         xrefTrailerResolver.setStartxref(startXrefOffset);
@@ -392,34 +451,14 @@ public class COSParser extends BaseParser
         }
         // find last startxref preceding EOF marker
         bufOff = lastIndexOf(STARTXREF, buf, bufOff);
-        long startXRefOffset = skipBytes + bufOff;
-
         if (bufOff < 0)
         {
-            if (isLenient)
-            {
-                Log.d("PdfBox-Android", "Performing brute force search for last startxref entry");
-                long bfOffset = bfSearchForLastStartxrefEntry();
-                boolean offsetIsValid = false;
-                if (bfOffset > -1)
-                {
-                    source.seek(bfOffset);
-                    long bfXref = parseStartXref();
-                    if (bfXref > -1)
-                    {
-                        offsetIsValid = checkXRefOffset(bfXref) == bfXref;
-                    }
-                }
-                source.seek(0);
-                // use the new offset only if it is a valid pointer to a xref table
-                return offsetIsValid ? bfOffset : -1;
-            }
-            else
-            {
-                throw new IOException("Missing 'startxref' marker.");
-            }
+            throw new IOException("Missing 'startxref' marker.");
         }
-        return startXRefOffset;
+        else
+        {
+            return skipBytes + bufOff;
+        }
     }
 
     /**
@@ -605,6 +644,12 @@ public class COSParser extends BaseParser
                                 {
                                     stmObjects = new ArrayList<COSObject>();
                                     objToBeParsed.put(fileOffset, stmObjects);
+                                }
+                                // java does not have a test for immutable
+                                else if (!(stmObjects instanceof ArrayList))
+                                {
+                                    throw new IOException(obj + " cannot be assigned to offset " +
+                                        fileOffset + ", this belongs to " + stmObjects.get(0));
                                 }
                                 stmObjects.add(obj);
                             }
@@ -837,7 +882,24 @@ public class COSParser extends BaseParser
         if (objstmBaseObj instanceof COSStream)
         {
             // parse object stream
-            PDFObjectStreamParser parser = new PDFObjectStreamParser((COSStream) objstmBaseObj, document);
+            PDFObjectStreamParser parser;
+            try
+            {
+                parser = new PDFObjectStreamParser((COSStream) objstmBaseObj, document);
+            }
+            catch (IOException ex)
+            {
+                if (isLenient)
+                {
+                    Log.e("PdfBox-Android", "object stream " + objstmObjNr + " could not be parsed due to an exception", ex);
+                    return;
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
+
             try
             {
                 parser.parse();
@@ -888,7 +950,8 @@ public class COSParser extends BaseParser
         else if (lengthBaseObj instanceof COSObject)
         {
             COSObject lengthObj = (COSObject) lengthBaseObj;
-            if (lengthObj.getObject() == null)
+            COSBase length = lengthObj.getObject();
+            if (length == null)
             {
                 // not read so far, keep current stream position
                 final long curFileOffset = source.getPosition();
@@ -896,17 +959,24 @@ public class COSParser extends BaseParser
                 parseObjectDynamically(lengthObj, isObjectStream);
                 // reset current stream position
                 source.seek(curFileOffset);
-                if (lengthObj.getObject() == null)
-                {
-                    throw new IOException("Length object content was not read.");
-                }
+                length = lengthObj.getObject();
             }
-            if (!(lengthObj.getObject() instanceof COSNumber))
+            if (length == null)
+            {
+                throw new IOException("Length object content was not read.");
+            }
+            if (COSNull.NULL == length)
+            {
+                Log.w("PdfBox-Android", "Length object (" + lengthObj.getObjectNumber() + " "
+                    + lengthObj.getGenerationNumber() + ") not found");
+                return null;
+            }
+            if (!(length instanceof COSNumber))
             {
                 throw new IOException("Wrong type of referenced length object " + lengthObj
-                    + ": " + lengthObj.getObject().getClass().getSimpleName());
+                    + ": " + length.getClass().getSimpleName());
             }
-            retVal = (COSNumber) lengthObj.getObject();
+            retVal = (COSNumber) length;
         }
         else
         {
@@ -1237,7 +1307,7 @@ public class COSParser extends BaseParser
                     // check the dictionary to avoid false positives
                     COSDictionary dict = parseCOSDictionary();
                     source.seek(startXRefOffset);
-                    if (dict != null && "XRef".equals(dict.getNameAsString(COSName.TYPE)))
+                    if ("XRef".equals(dict.getNameAsString(COSName.TYPE)))
                     {
                         return true;
                     }
@@ -1320,54 +1390,8 @@ public class COSParser extends BaseParser
             bfSearchForObjects();
             if (bfSearchCOSObjectKeyOffsets != null && !bfSearchCOSObjectKeyOffsets.isEmpty())
             {
-                List<COSObjectKey> objStreams = new ArrayList<COSObjectKey>();
-                // find all object streams
-                for (COSObjectKey key : xrefOffset.keySet())
-                {
-                    Long offset = xrefOffset.get(key);
-                    if (offset != null && offset < 0)
-                    {
-                        COSObjectKey objStream = new COSObjectKey(-offset, 0);
-                        if (!objStreams.contains(objStream))
-                        {
-                            objStreams.add(new COSObjectKey(-offset, 0));
-                        }
-                    }
-                }
-                // remove all found object streams
-                if (!objStreams.isEmpty())
-                {
-                    for (COSObjectKey key : objStreams)
-                    {
-                        if (bfSearchCOSObjectKeyOffsets.containsKey(key))
-                        {
-                            // remove all parsed objects which are part of an object stream
-                            Set<Long> objects = xrefTrailerResolver
-                                .getContainedObjectNumbers((int) (key.getNumber()));
-                            for (Long objNr : objects)
-                            {
-                                COSObjectKey streamObjectKey = new COSObjectKey(objNr, 0);
-                                Long streamObjectOffset = bfSearchCOSObjectKeyOffsets
-                                    .get(streamObjectKey);
-                                if (streamObjectOffset != null && streamObjectOffset > 0)
-                                {
-                                    bfSearchCOSObjectKeyOffsets.remove(streamObjectKey);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // remove all objects which are part of an object stream which wasn't found
-                            Set<Long> objects = xrefTrailerResolver
-                                .getContainedObjectNumbers((int) (key.getNumber()));
-                            for (Long objNr : objects)
-                            {
-                                xrefOffset.remove(new COSObjectKey(objNr, 0));
-                            }
-                        }
-                    }
-                }
                 Log.d("PdfBox-Android", "Replaced read xref table with the results of a brute force search");
+                xrefOffset.clear();
                 xrefOffset.putAll(bfSearchCOSObjectKeyOffsets);
             }
         }
@@ -1441,12 +1465,13 @@ public class COSParser extends BaseParser
             long lastObjectId = Long.MIN_VALUE;
             int lastGenID = Integer.MIN_VALUE;
             long lastObjOffset = Long.MIN_VALUE;
-            String objString = " obj";
-            char[] string = objString.toCharArray();
+            char[] objString = " obj".toCharArray();
+            char[] endobjString = "endo".toCharArray();
+            boolean endOfObjFound = false;
             do
             {
                 source.seek(currentOffset);
-                if (isString(string))
+                if (isString(objString))
                 {
                     long tempOffset = currentOffset - 1;
                     source.seek(tempOffset);
@@ -1483,20 +1508,32 @@ public class COSParser extends BaseParser
                                 lastObjectId = objectId;
                                 lastGenID = genID;
                                 lastObjOffset = tempOffset + 1;
+                                currentOffset += objString.length - 1;
+                                endOfObjFound = false;
                             }
                         }
                     }
                 }
+                // check for "endo" as abbreviation for "endobj", as the pdf may be cut off
+                // in the middle of the keyword, see PDFBOX-3936.
+                // We could possibly implement a more intelligent algorithm if necessary
+                else if (isString(endobjString))
+                {
+                    endOfObjFound = true;
+                    currentOffset += endobjString.length - 1;
+                }
                 currentOffset++;
             }
             while (currentOffset < lastEOFMarker && !source.isEOF());
-            if (lastEOFMarker < Long.MAX_VALUE && lastObjOffset > 0)
+            if ((lastEOFMarker < Long.MAX_VALUE || endOfObjFound) && lastObjOffset > 0)
             {
-                // if the pdf wasn't cut off in the middle the last object id has to added here
-                // so that it can't get lost as there isn't any subsequent object id
+                // if the pdf wasn't cut off in the middle or if the last object ends with a "endobj" marker
+                // the last object id has to be added here so that it can't get lost as there isn't any subsequent
+                // object id
                 bfSearchCOSObjectKeyOffsets.put(new COSObjectKey(lastObjectId, lastGenID),
                     lastObjOffset);
             }
+            bfSearchForObjStreams();
             // reestablish origin position
             source.seek(originOffset);
         }
@@ -1584,6 +1621,137 @@ public class COSParser extends BaseParser
     }
 
     /**
+     * Brute force search for all trailer marker.
+     *
+     * @throws IOException if something went wrong
+     */
+    private boolean bfSearchForTrailer(COSDictionary trailer) throws IOException
+    {
+        Map<String, COSDictionary> trailerDicts = new HashMap<String, COSDictionary>();
+        long originOffset = source.getPosition();
+        source.seek(MINIMUM_SEARCH_OFFSET);
+        while (!source.isEOF())
+        {
+            // search for trailer marker
+            if (isString(TRAILER_MARKER))
+            {
+                source.seek(source.getPosition() + TRAILER_MARKER.length);
+                try
+                {
+                    boolean rootFound = false;
+                    boolean infoFound = false;
+                    skipSpaces();
+                    COSDictionary trailerDict = parseCOSDictionary();
+                    StringBuilder trailerKeys = new StringBuilder();
+                    if (trailerDict.containsKey(COSName.ROOT))
+                    {
+                        COSBase rootObj = trailerDict.getItem(COSName.ROOT);
+                        if (rootObj instanceof COSObject)
+                        {
+                            long objNumber = ((COSObject) rootObj).getObjectNumber();
+                            int genNumber = ((COSObject) rootObj).getGenerationNumber();
+                            trailerKeys.append(objNumber).append(" ");
+                            trailerKeys.append(genNumber).append(" ");
+                            rootFound = true;
+                        }
+                    }
+                    if (trailerDict.containsKey(COSName.INFO))
+                    {
+                        COSBase infoObj = trailerDict.getItem(COSName.INFO);
+                        long objNumber = ((COSObject) infoObj).getObjectNumber();
+                        int genNumber = ((COSObject) infoObj).getGenerationNumber();
+                        trailerKeys.append(objNumber).append(" ");
+                        trailerKeys.append(genNumber).append(" ");
+                        infoFound = true;
+                    }
+                    if (rootFound && infoFound)
+                    {
+                        trailerDicts.put(trailerKeys.toString(), trailerDict);
+                    }
+                }
+                catch (IOException exception)
+                {
+                    continue;
+                }
+            }
+            source.read();
+        }
+        source.seek(originOffset);
+        // eliminate double entries
+        int trailerdictsSize = trailerDicts.size();
+        String firstEntry = null;
+        if (trailerdictsSize > 0)
+        {
+            String[] keys = new String[trailerdictsSize];
+            trailerDicts.keySet().toArray(keys);
+            firstEntry = keys[0];
+            for (int i = 1; i < trailerdictsSize; i++)
+            {
+                if (firstEntry.equals(keys[i]))
+                {
+                    trailerDicts.remove(keys[i]);
+                }
+            }
+        }
+        // continue if one entry is left only
+        if (trailerDicts.size() == 1)
+        {
+            boolean rootFound = false;
+            boolean infoFound = false;
+            COSDictionary trailerDict = trailerDicts.get(firstEntry);
+            COSBase rootObj = trailerDict.getItem(COSName.ROOT);
+            if (rootObj instanceof COSObject)
+            {
+                // check if the dictionary can be dereferenced and is the one we are looking for
+                COSDictionary rootDict = retrieveCOSDictionary((COSObject) rootObj);
+                if (rootDict != null && isCatalog(rootDict))
+                {
+                    rootFound = true;
+                }
+            }
+            COSBase infoObj = trailerDict.getItem(COSName.INFO);
+            if (infoObj instanceof COSObject)
+            {
+                // check if the dictionary can be dereferenced and is the one we are looking for
+                COSDictionary infoDict = retrieveCOSDictionary((COSObject) infoObj);
+                if (infoDict != null && isInfo(infoDict))
+                {
+                    infoFound = true;
+                }
+            }
+            if (rootFound && infoFound)
+            {
+                trailer.setItem(COSName.ROOT, rootObj);
+                trailer.setItem(COSName.INFO, infoObj);
+                if (trailerDict.containsKey(COSName.ENCRYPT))
+                {
+                    COSBase encObj = trailerDict.getItem(COSName.ENCRYPT);
+                    if (encObj instanceof COSObject)
+                    {
+                        // check if the dictionary can be dereferenced
+                        // TODO check if the dictionary is an encryption dictionary?
+                        COSDictionary encDict = retrieveCOSDictionary((COSObject) encObj);
+                        if (encDict != null)
+                        {
+                            trailer.setItem(COSName.ENCRYPT, encObj);
+                        }
+                    }
+                }
+                if (trailerDict.containsKey(COSName.ID))
+                {
+                    COSBase idObj = trailerDict.getItem(COSName.ID);
+                    if (idObj instanceof COSArray)
+                    {
+                        trailer.setItem(COSName.ID, idObj);
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Brute force search for the last EOF marker.
      *
      * @throws IOException if something went wrong
@@ -1607,8 +1775,11 @@ public class COSParser extends BaseParser
                         // which most likely indicates that the pdf is linearized,
                         // updated or just cut off somewhere in the middle
                         skipSpaces();
-                        readObjectNumber();
-                        readGenerationNumber();
+                        if (!isString(XREF_TABLE))
+                        {
+                            readObjectNumber();
+                            readGenerationNumber();
+                        }
                     }
                     catch (IOException exception)
                     {
@@ -1625,6 +1796,166 @@ public class COSParser extends BaseParser
                 lastEOFMarker = Long.MAX_VALUE;
             }
         }
+    }
+
+    /**
+     * Brute force search for all object streams.
+     *
+     * @throws IOException if something went wrong
+     */
+    private void bfSearchForObjStreams() throws IOException
+    {
+        HashMap<Long, COSObjectKey> bfSearchObjStreamsOffsets = new HashMap<Long, COSObjectKey>();
+        long originOffset = source.getPosition();
+        source.seek(MINIMUM_SEARCH_OFFSET);
+        char[] string = " obj".toCharArray();
+        while (!source.isEOF())
+        {
+            // search for EOF marker
+            if (isString(OBJ_STREAM))
+            {
+                long currentPosition = source.getPosition();
+                // search backwards for the beginning of the object
+                long newOffset = -1;
+                COSObjectKey streamObjectKey = null;
+                boolean objFound = false;
+                for (int i = 1; i < 40 && !objFound; i++)
+                {
+                    long currentOffset = currentPosition - (i * 10);
+                    if (currentOffset > 0)
+                    {
+                        source.seek(currentOffset);
+                        for (int j = 0; j < 10; j++)
+                        {
+                            if (isString(string))
+                            {
+                                long tempOffset = currentOffset - 1;
+                                source.seek(tempOffset);
+                                int genID = source.peek();
+                                // is the next char a digit?
+                                if (isDigit(genID))
+                                {
+                                    tempOffset--;
+                                    source.seek(tempOffset);
+                                    if (isSpace())
+                                    {
+                                        int length = 0;
+                                        source.seek(--tempOffset);
+                                        while (tempOffset > MINIMUM_SEARCH_OFFSET && isDigit())
+                                        {
+                                            source.seek(--tempOffset);
+                                            length++;
+                                        }
+                                        if (length > 0)
+                                        {
+                                            source.read();
+                                            newOffset = source.getPosition();
+                                            long objNumber = readObjectNumber();
+                                            int genNumber = readGenerationNumber();
+                                            streamObjectKey = new COSObjectKey(objNumber,
+                                                genNumber);
+                                            bfSearchObjStreamsOffsets.put(newOffset,
+                                                streamObjectKey);
+                                        }
+                                    }
+                                }
+                                Log.d("PdfBox-Android", "Dictionary start for object stream -> " + newOffset);
+                                objFound = true;
+                                break;
+                            }
+                            else
+                            {
+                                currentOffset++;
+                                source.read();
+                            }
+                        }
+                    }
+                }
+                source.seek(currentPosition + OBJ_STREAM.length);
+            }
+            source.read();
+        }
+        // add all found compressed objects to the brute force search result
+        for (Long offset : bfSearchObjStreamsOffsets.keySet())
+        {
+            Long bfOffset = bfSearchCOSObjectKeyOffsets.get(bfSearchObjStreamsOffsets.get(offset));
+            // incomplete object stream found?
+            if (bfOffset == null)
+            {
+                Log.w("PdfBox-Android", "Skipped incomplete object stream:" + bfSearchObjStreamsOffsets.get(offset)
+                    + " at " + offset);
+                continue;
+            }
+            // check if the object was overwritten
+            if (offset.equals(bfOffset))
+            {
+                source.seek(offset);
+                long stmObjNumber = readObjectNumber();
+                readGenerationNumber();
+                readExpectedString(OBJ_MARKER, true);
+                int nrOfObjects = 0;
+                byte[] numbersBytes = null;
+                COSStream stream = null;
+                COSInputStream is = null;
+                try
+                {
+                    COSDictionary dict = parseCOSDictionary();
+                    int offsetFirstStream = dict.getInt(COSName.FIRST);
+                    nrOfObjects = dict.getInt(COSName.N);
+                    // skip the stream if required values are missing
+                    if (offsetFirstStream == -1 || nrOfObjects == -1)
+                    {
+                        continue;
+                    }
+                    stream = parseCOSStream(dict);
+                    is = stream.createInputStream();
+                    numbersBytes = new byte[offsetFirstStream];
+                    is.read(numbersBytes);
+                }
+                catch (IOException exception)
+                {
+                    Log.d("PdfBox-Android", "Skipped corrupt stream: (" + stmObjNumber + " 0 at offset " + offset);
+                    continue;
+                }
+                finally
+                {
+                    if (is != null)
+                    {
+                        is.close();
+                    }
+                    if (stream != null)
+                    {
+                        stream.close();
+                    }
+                }
+                int start = 0;
+                // skip spaces
+                while (numbersBytes[start] == 32)
+                {
+                    start++;
+                }
+                String numbersStr = new String(numbersBytes, start, numbersBytes.length - start,
+                    "ISO-8859-1");
+                numbersStr = numbersStr.replaceAll("\n", " ").replaceAll("  ", " ");
+                String[] numbers = numbersStr.split(" ");
+                if (numbers.length < nrOfObjects * 2)
+                {
+                    Log.d("PdfBox-Android", "Skipped corrupt stream: (" + stmObjNumber + " 0 at offset " + offset);
+                    continue;
+                }
+                for (int i = 0; i < nrOfObjects; i++)
+                {
+                    long objNumber = Long.parseLong(numbers[i * 2]);
+                    COSObjectKey objKey = new COSObjectKey(objNumber, 0);
+                    Long existingOffset = bfSearchCOSObjectKeyOffsets.get(objKey);
+                    if (existingOffset == null || offset > existingOffset)
+                    {
+                        bfSearchCOSObjectKeyOffsets.put(objKey, -stmObjNumber);
+                    }
+                }
+            }
+        }
+        source.seek(originOffset);
     }
 
     /**
@@ -1658,28 +1989,6 @@ public class COSParser extends BaseParser
             }
             source.seek(originOffset);
         }
-    }
-
-    /**
-     * Brute force search for the last startxref entry.
-     *
-     * @throws IOException if something went wrong
-     */
-    private long bfSearchForLastStartxrefEntry() throws IOException
-    {
-        long lastStartxref = -1;
-        source.seek(MINIMUM_SEARCH_OFFSET);
-        // search for startxref
-        while (!source.isEOF())
-        {
-            if (isString(STARTXREF))
-            {
-                lastStartxref = source.getPosition();
-                source.seek(lastStartxref + 9);
-            }
-            source.read();
-        }
-        return lastStartxref;
     }
 
     /**
@@ -1722,7 +2031,6 @@ public class COSParser extends BaseParser
                                     // is the next char a digit?
                                     if (isDigit(genID))
                                     {
-                                        genID -= 48;
                                         tempOffset--;
                                         source.seek(tempOffset);
                                         if (isSpace())
@@ -1790,55 +2098,184 @@ public class COSParser extends BaseParser
             xrefTrailerResolver.setStartxref(0);
             trailer = xrefTrailerResolver.getTrailer();
             getDocument().setTrailer(trailer);
-            // search for the different parts of the trailer dictionary
-            for (Entry<COSObjectKey, Long> entry : bfSearchCOSObjectKeyOffsets.entrySet())
+            if (!bfSearchForTrailer(trailer))
             {
-                Long offset = entry.getValue();
-                source.seek(offset);
-                readObjectNumber();
-                readGenerationNumber();
-                readExpectedString(OBJ_MARKER, true);
-                try
+                // search for the different parts of the trailer dictionary
+                for (Entry<COSObjectKey, Long> entry : bfSearchCOSObjectKeyOffsets.entrySet())
                 {
-                    if (source.peek() != '<')
+                    COSDictionary dictionary = retrieveCOSDictionary(entry.getKey(),
+                        entry.getValue());
+                    if (dictionary == null)
                     {
                         continue;
                     }
-                    COSDictionary dictionary = parseCOSDictionary();
-                    if (dictionary != null)
+                    // document catalog
+                    if (isCatalog(dictionary))
                     {
-                        // document catalog
-                        if (COSName.CATALOG.equals(dictionary.getCOSName(COSName.TYPE)))
-                        {
-                            trailer.setItem(COSName.ROOT, document.getObjectFromPool(entry.getKey()));
-                        }
-                        // info dictionary
-                        else if (dictionary.containsKey(COSName.MOD_DATE) &&
-                            (dictionary.containsKey(COSName.TITLE)
-                                || dictionary.containsKey(COSName.AUTHOR)
-                                || dictionary.containsKey(COSName.SUBJECT)
-                                || dictionary.containsKey(COSName.KEYWORDS)
-                                || dictionary.containsKey(COSName.CREATOR)
-                                || dictionary.containsKey(COSName.PRODUCER)
-                                || dictionary.containsKey(COSName.CREATION_DATE)))
-                        {
-                            trailer.setItem(COSName.INFO, document.getObjectFromPool(entry.getKey()));
-                        }
-                        // TODO encryption dictionary
+                        trailer.setItem(COSName.ROOT, document.getObjectFromPool(entry.getKey()));
                     }
-                }
-                catch(IOException exception)
-                {
-                    Log.d("PdfBox-Android", "Skipped object " + entry.getKey() + ", either it's corrupt or not a dictionary");
+                    // info dictionary
+                    else if (isInfo(dictionary))
+                    {
+                        trailer.setItem(COSName.INFO, document.getObjectFromPool(entry.getKey()));
+                    }
+                    // encryption dictionary, if existing, is lost
+                    // We can't run "Algorithm 2" from PDF specification because of missing ID
                 }
             }
         }
+        trailerWasRebuild = true;
         return trailer;
     }
 
+    private COSDictionary retrieveCOSDictionary(COSObject object) throws IOException
+    {
+        COSObjectKey key = new COSObjectKey((COSObject) object);
+        Long offset = bfSearchCOSObjectKeyOffsets.get(key);
+        if (offset != null)
+        {
+            return retrieveCOSDictionary(key, offset);
+        }
+        return null;
+    }
+
+    private COSDictionary retrieveCOSDictionary(COSObjectKey key, long offset) throws IOException
+    {
+        COSDictionary dictionary = null;
+        // handle compressed objects
+        if (offset < 0)
+        {
+            COSObject compressedObject = document.getObjectFromPool(key);
+            if (compressedObject.getObject() == null)
+            {
+                parseObjectStream((int) -offset);
+            }
+            COSBase baseObject = compressedObject.getObject();
+            if (baseObject instanceof COSDictionary)
+            {
+                dictionary = (COSDictionary) baseObject;
+            }
+        }
+        else
+        {
+            source.seek(offset);
+            readObjectNumber();
+            readGenerationNumber();
+            readExpectedString(OBJ_MARKER, true);
+            if (source.peek() != '<')
+            {
+                return null;
+            }
+            try
+            {
+                dictionary = parseCOSDictionary();
+            }
+            catch (IOException exception)
+            {
+                Log.d("PdfBox-Android", "Skipped object " + key
+                    + ", either it's corrupt or not a dictionary");
+            }
+        }
+        return dictionary;
+    }
+
     /**
-     * This will parse the startxref section from the stream.
-     * The startxref value is ignored.
+     * Check if all entries of the pages dictionary are present. Those which can't be dereferenced are removed.
+     *
+     * @param root the root dictionary of the pdf
+     */
+    protected void checkPages(COSDictionary root)
+    {
+        if (trailerWasRebuild && root != null)
+        {
+            // check if all page objects are dereferenced
+            COSBase pages = root.getDictionaryObject(COSName.PAGES);
+            if (pages instanceof COSDictionary)
+            {
+                checkPagesDictionary((COSDictionary) pages);
+            }
+        }
+    }
+
+    private int checkPagesDictionary(COSDictionary pagesDict)
+    {
+        // check for kids
+        COSBase kids = pagesDict.getDictionaryObject(COSName.KIDS);
+        int numberOfPages = 0;
+        if (kids instanceof COSArray)
+        {
+            COSArray kidsArray = (COSArray) kids;
+            List<? extends COSBase> kidsList = kidsArray.toList();
+            for (COSBase kid : kidsList)
+            {
+                COSObject kidObject = (COSObject) kid;
+                COSBase kidBaseobject = kidObject.getObject();
+                // object wasn't dereferenced -> remove it
+                if (kidBaseobject.equals(COSNull.NULL))
+                {
+                    Log.w("PdfBox-Android", "Removed null object " + kid + " from pages dictionary");
+                    kidsArray.remove(kid);
+                }
+                else if (kidBaseobject instanceof COSDictionary)
+                {
+                    COSDictionary kidDictionary = (COSDictionary) kidBaseobject;
+                    COSName type = kidDictionary.getCOSName(COSName.TYPE);
+                    if (COSName.PAGES.equals(type))
+                    {
+                        // process nested pages dictionaries
+                        numberOfPages += checkPagesDictionary(kidDictionary);
+                    }
+                    else if (COSName.PAGE.equals(type))
+                    {
+                        // count pages
+                        numberOfPages++;
+                    }
+                }
+            }
+        }
+        // fix counter
+        pagesDict.setInt(COSName.COUNT, numberOfPages);
+        return numberOfPages;
+    }
+
+    /**
+     * Tell if the dictionary is a PDF catalog. Override this for an FDF catalog.
+     *
+     * @param dictionary
+     * @return true if the given dictionary is a root dictionary
+     */
+    protected boolean isCatalog(COSDictionary dictionary)
+    {
+        return COSName.CATALOG.equals(dictionary.getCOSName(COSName.TYPE));
+    }
+
+    /**
+     * Tell if the dictionary is an info dictionary.
+     *
+     * @param dictionary
+     * @return true if the given dictionary is an info dictionary
+     */
+    private boolean isInfo(COSDictionary dictionary)
+    {
+        if (dictionary.containsKey(COSName.PARENT) || dictionary.containsKey(COSName.A) || dictionary.containsKey(COSName.DEST))
+        {
+            return false;
+        }
+        if (!dictionary.containsKey(COSName.MOD_DATE) && !dictionary.containsKey(COSName.TITLE)
+            && !dictionary.containsKey(COSName.AUTHOR)
+            && !dictionary.containsKey(COSName.SUBJECT)
+            && !dictionary.containsKey(COSName.KEYWORDS)
+            && !dictionary.containsKey(COSName.CREATOR)
+            && !dictionary.containsKey(COSName.PRODUCER)
+            && !dictionary.containsKey(COSName.CREATION_DATE))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * This will parse the startxref section from the stream. The startxref value is ignored.
      *
      * @return the startxref value or -1 on parsing error
      * @throws IOException If an IO error occurs.
@@ -1880,10 +2317,7 @@ public class COSParser extends BaseParser
                 }
                 numberOfBytes += readMore;
             }
-            if (Arrays.equals(string, bytesRead))
-            {
-                bytesMatching = true;
-            }
+            bytesMatching = Arrays.equals(string, bytesRead);
             source.rewind(numberOfBytes);
         }
         return bytesMatching;
@@ -1905,6 +2339,7 @@ public class COSParser extends BaseParser
             if (source.read() != c)
             {
                 bytesMatching = false;
+                break;
             }
         }
         source.seek(originOffset);
@@ -2158,7 +2593,7 @@ public class COSParser extends BaseParser
                         COSObjectKey objKey = new COSObjectKey(currObjID, currGenID);
                         xrefTrailerResolver.setXRef(objKey, currOffset);
                     }
-                    catch(NumberFormatException e)
+                    catch (NumberFormatException e)
                     {
                         throw new IOException(e);
                     }
@@ -2244,7 +2679,7 @@ public class COSParser extends BaseParser
         {
             throw new IOException("Missing root object specification in trailer.");
         }
-        return parseObjectDynamically(root, false);
+        return root.getObject();
     }
 
 }

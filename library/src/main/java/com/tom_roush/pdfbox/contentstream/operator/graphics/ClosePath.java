@@ -36,7 +36,7 @@ public final class ClosePath extends GraphicsOperatorProcessor
     {
         if (context.getCurrentPoint() == null)
         {
-            Log.w("PdfBox-Android", "ClosePath wihtout initial MoveTo");
+            Log.w("PdfBox-Android", "ClosePath without initial MoveTo");
             return;
         }
         context.closePath();

@@ -45,11 +45,10 @@ public class CurveToReplicateInitialPoint extends GraphicsOperatorProcessor
         {
             return;
         }
-
-        COSNumber x2 = (COSNumber) operands.get(0);
-        COSNumber y2 = (COSNumber) operands.get(1);
-        COSNumber x3 = (COSNumber) operands.get(2);
-        COSNumber y3 = (COSNumber) operands.get(3);
+        COSNumber x2 = (COSNumber)operands.get(0);
+        COSNumber y2 = (COSNumber)operands.get(1);
+        COSNumber x3 = (COSNumber)operands.get(2);
+        COSNumber y3 = (COSNumber)operands.get(3);
 
         PointF currentPoint = context.getCurrentPoint();
 
@@ -63,9 +62,9 @@ public class CurveToReplicateInitialPoint extends GraphicsOperatorProcessor
         }
         else
         {
-            context.curveTo(currentPoint.x, currentPoint.y,
-                    point2.x, point2.y,
-                    point3.x, point3.y);
+            context.curveTo((float) currentPoint.x, (float) currentPoint.y,
+                point2.x, point2.y,
+                point3.x, point3.y);
         }
     }
 

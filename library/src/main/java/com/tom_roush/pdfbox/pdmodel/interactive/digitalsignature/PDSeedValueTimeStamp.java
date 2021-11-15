@@ -27,7 +27,7 @@ import com.tom_roush.pdfbox.cos.COSName;
  */
 public class PDSeedValueTimeStamp
 {
-    private COSDictionary dictionary;
+    private final COSDictionary dictionary;
 
     /**
      * Default constructor.
@@ -61,7 +61,7 @@ public class PDSeedValueTimeStamp
 
     /**
      * Returns the URL.
-     * 
+     *
      * @return the URL
      */
     public String getURL()
@@ -80,7 +80,7 @@ public class PDSeedValueTimeStamp
 
     /**
      * Indicates if a timestamp is required.
-     * 
+     *
      * @return true if a timestamp is required
      */
     public boolean isTimestampRequired()
@@ -90,7 +90,7 @@ public class PDSeedValueTimeStamp
 
     /**
      * Sets if a timestamp is reuqired or not.
-     * 
+     *
      * @param flag true if a timestamp is required
      */
     public void setTimestampRequired(boolean flag)

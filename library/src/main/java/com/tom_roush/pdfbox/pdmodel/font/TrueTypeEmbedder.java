@@ -194,6 +194,8 @@ abstract class TrueTypeEmbedder implements Subsetter
             case OS2WindowsMetricsTable.FAMILY_CLASS_SCRIPTS:
                 fd.setScript(true);
                 break;
+            default:
+                break;
         }
 
         fd.setFontWeight(os2.getWeightClass());
@@ -261,6 +263,8 @@ abstract class TrueTypeEmbedder implements Subsetter
 
     /**
      * Returns the FontBox font.
+     *
+     * @deprecated
      */
     @Deprecated
     public TrueTypeFont getTrueTypeFont()

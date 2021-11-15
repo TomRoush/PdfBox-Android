@@ -17,13 +17,20 @@
 
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.DictionaryEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.MacRomanEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.WinAnsiEncoding;
+import com.tom_roush.pdfbox.text.PDFTextStripper;
 
 import junit.framework.TestCase;
 
@@ -59,5 +66,37 @@ public class TestFontEncoding extends TestCase
         DictionaryEncoding dictEncoding = new DictionaryEncoding(dictEncodingDict, false, null);
         assertNull(dictEncoding.getNameToCodeMap().get("space"));
         assertEquals(32, dictEncoding.getNameToCodeMap().get("a").intValue());
+    }
+
+    /**
+     * PDFBOX-3826: Some unicodes are reached by several names in glyphlist.txt, e.g. tilde and
+     * ilde.
+     *
+     * @throws IOException
+     */
+    public void testPDFBox3884() throws IOException
+    {
+        PDDocument doc = new PDDocument();
+        PDPage page = new PDPage();
+        doc.addPage(page);
+        PDPageContentStream cs = new PDPageContentStream(doc, page);
+        cs.setFont(PDType1Font.HELVETICA, 20);
+        cs.beginText();
+        cs.newLineAtOffset(100, 700);
+        // first tilde is "asciitilde" (from the keyboard), 2nd tilde is "tilde"
+        // using ˜ would bring IllegalArgumentException prior to bugfix
+        cs.showText("~˜");
+        cs.endText();
+        cs.close();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        doc.save(baos);
+        doc.close();
+
+        // verify
+        doc = PDDocument.load(baos.toByteArray());
+        PDFTextStripper stripper = new PDFTextStripper();
+        String text = stripper.getText(doc);
+        assertEquals("~˜", text.trim());
+        doc.close();
     }
 }

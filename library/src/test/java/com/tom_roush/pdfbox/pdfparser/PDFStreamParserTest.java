@@ -15,12 +15,12 @@
  */
 package com.tom_roush.pdfbox.pdfparser;
 
+import java.io.IOException;
+import java.util.List;
+
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 
 import junit.framework.TestCase;
-
-import java.io.IOException;
-import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
 
@@ -31,6 +31,7 @@ import static org.junit.Assert.assertArrayEquals;
  */
 public class PDFStreamParserTest extends TestCase
 {
+
     /**
      * Tests for inline images, whether the EI is correctly identified as
      * ending. To test hasNoFollowingBinData(), the amount of data after EI nust
@@ -48,6 +49,8 @@ public class PDFStreamParserTest extends TestCase
         testInlineImage2ops("ID\n12345EI  EMC", "12345", "EMC");
         testInlineImage2ops("ID\n12345EI  Q ", "12345", "Q");
         testInlineImage2ops("ID\n12345EI  EMC ", "12345", "EMC");
+
+        testInlineImage2ops("ID\n12345EI \000Q", "12345", "Q");
 
         testInlineImage2ops("ID\n12345EI Q                             ", "12345", "Q");
         testInlineImage2ops("ID\n12345EI EMC                           ", "12345", "EMC");
@@ -118,4 +121,5 @@ public class PDFStreamParserTest extends TestCase
         pdfStreamParser.parse();
         return pdfStreamParser.getTokens();
     }
+
 }
