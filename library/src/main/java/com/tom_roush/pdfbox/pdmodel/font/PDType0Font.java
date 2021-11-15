@@ -117,15 +117,22 @@ public class PDType0Font extends PDFont implements PDVectorFont
     public PDType0Font(COSDictionary fontDictionary) throws IOException
     {
         super(fontDictionary);
-        COSArray descendantFonts = (COSArray)dict.getDictionaryObject(COSName.DESCENDANT_FONTS);
-        COSDictionary descendantFontDictionary = (COSDictionary) descendantFonts.getObject(0);
-
-        if (descendantFontDictionary == null)
+        COSBase base = dict.getDictionaryObject(COSName.DESCENDANT_FONTS);
+        if (!(base instanceof COSArray))
+        {
+            throw new IOException("Missing descendant font array");
+        }
+        COSArray descendantFonts = (COSArray) base;
+        if (descendantFonts.size() == 0)
+        {
+            throw new IOException("Descendant font array is empty");
+        }
+        COSBase descendantFontDictBase = descendantFonts.getObject(0);
+        if (!(descendantFontDictBase instanceof COSDictionary))
         {
             throw new IOException("Missing descendant font dictionary");
         }
-
-        descendantFont = PDFontFactory.createDescendantFont(descendantFontDictionary, this);
+        descendantFont = PDFontFactory.createDescendantFont((COSDictionary) descendantFontDictBase, this);
         readEncoding();
         fetchCMapUCS2();
     }
@@ -223,11 +230,11 @@ public class PDType0Font extends PDFont implements PDVectorFont
         PDCIDSystemInfo ros = descendantFont.getCIDSystemInfo();
         if (ros != null)
         {
-            isDescendantCJK = ros.getRegistry().equals("Adobe") &&
-                (ros.getOrdering().equals("GB1") ||
-                    ros.getOrdering().equals("CNS1") ||
-                    ros.getOrdering().equals("Japan1") ||
-                    ros.getOrdering().equals("Korea1"));
+            isDescendantCJK = "Adobe".equals(ros.getRegistry()) &&
+                ("GB1".equals(ros.getOrdering()) ||
+                    "CNS1".equals(ros.getOrdering()) ||
+                    "Japan1".equals(ros.getOrdering()) ||
+                    "Korea1".equals(ros.getOrdering()));
         }
     }
 
@@ -265,16 +272,9 @@ public class PDType0Font extends PDFont implements PDVectorFont
             // try to find the corresponding Unicode (UC2) CMap
             if (strName != null)
             {
-                CMap cMap = CMapManager.getPredefinedCMap(strName);
-                if (cMap != null)
-                {
-                    String ucs2Name = cMap.getRegistry() + "-" + cMap.getOrdering() + "-UCS2";
-                    CMap ucs2CMap = CMapManager.getPredefinedCMap(ucs2Name);
-                    if (ucs2CMap != null)
-                    {
-                        cMapUCS2 = ucs2CMap;
-                    }
-                }
+                CMap prdCMap = CMapManager.getPredefinedCMap(strName);
+                String ucs2Name = prdCMap.getRegistry() + "-" + prdCMap.getOrdering() + "-UCS2";
+                cMapUCS2 = CMapManager.getPredefinedCMap(ucs2Name);
             }
         }
     }

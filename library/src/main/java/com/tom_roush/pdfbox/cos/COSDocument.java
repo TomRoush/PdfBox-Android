@@ -354,9 +354,7 @@ public class COSDocument extends COSBase implements Closeable
     /**
      * This will get the document catalog.
      *
-     * Maybe this should move to an object at PDFEdit level
-     *
-     * @return catalog is the root of all document activities
+     * @return @return The catalog is the root of the document; never null.
      *
      * @throws IOException If no catalog can be found.
      */
@@ -373,7 +371,7 @@ public class COSDocument extends COSBase implements Closeable
     /**
      * This will get a list of all available objects.
      *
-     * @return A list of all objects.
+     * @return A list of all objects, never null.
      */
     public List<COSObject> getObjects()
     {
@@ -425,16 +423,12 @@ public class COSDocument extends COSBase implements Closeable
         if (!closed)
         {
             // close all open I/O streams
-            List<COSObject> list = getObjects();
-            if (list != null)
+            for (COSObject object : getObjects())
             {
-                for (COSObject object : list)
+                COSBase cosObject = object.getObject();
+                if (cosObject instanceof COSStream)
                 {
-                    COSBase cosObject = object.getObject();
-                    if (cosObject instanceof COSStream)
-                    {
-                        ((COSStream)cosObject).close();
-                    }
+                    ((COSStream) cosObject).close();
                 }
             }
             for (COSStream stream : streams)

@@ -215,6 +215,8 @@ public class PDFRenderer
                     translateX = cropBox.getWidth();
                     translateY = cropBox.getHeight();
                     break;
+                default:
+                    break;
             }
             canvas.translate(translateX, translateY);
             canvas.rotate(rotationAngle);

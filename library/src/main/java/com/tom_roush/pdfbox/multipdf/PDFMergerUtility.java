@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,13 +48,17 @@ import com.tom_roush.pdfbox.pdmodel.PDDocumentNameDictionary;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.PageMode;
+import com.tom_roush.pdfbox.pdmodel.common.PDDestinationOrAction;
 import com.tom_roush.pdfbox.pdmodel.common.PDMetadata;
 import com.tom_roush.pdfbox.pdmodel.common.PDNumberTreeNode;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDMarkInfo;
 import com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureTreeRoot;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDOutputIntent;
+import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionGoTo;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
@@ -254,15 +257,13 @@ public class PDFMergerUtility
                 MemoryUsageSetting partitionedMemSetting = memUsageSetting != null ?
                     memUsageSetting.getPartitionedCopy(sources.size()+1) :
                     MemoryUsageSetting.setupMainMemoryOnly();
-                Iterator<InputStream> sit = sources.iterator();
                 destination = new PDDocument(partitionedMemSetting);
 
-                while (sit.hasNext())
+                for (InputStream sourceInputStream : sources)
                 {
-                    sourceFile = sit.next();
-                    source = PDDocument.load(sourceFile, partitionedMemSetting);
-                    tobeclosed.add(source);
-                    appendDocument(destination, source);
+                    PDDocument sourceDoc = PDDocument.load(sourceInputStream, partitionedMemSetting);
+                    tobeclosed.add(sourceDoc);
+                    appendDocument(destination, sourceDoc);
                 }
 
                 // optionally set meta data
@@ -343,8 +344,29 @@ public class PDFMergerUtility
             destination.setVersion(srcVersion);
         }
 
+        int pageIndexOpenActionDest = -1;
         if (destCatalog.getOpenAction() == null)
         {
+            // PDFBOX-3972: get local dest page index, it must be reassigned after the page cloning
+            PDDestinationOrAction openAction = srcCatalog.getOpenAction();
+            PDDestination openActionDestination;
+            if (openAction instanceof PDActionGoTo)
+            {
+                openActionDestination = ((PDActionGoTo) openAction).getDestination();
+            }
+            else
+            {
+                openActionDestination = (PDDestination) openAction;
+            }
+            if (openActionDestination instanceof PDPageDestination)
+            {
+                PDPage page = ((PDPageDestination) openActionDestination).getPage();
+                if (page != null)
+                {
+                    pageIndexOpenActionDest = srcCatalog.getPages().indexOf(page);
+                }
+            }
+
             destCatalog.setOpenAction(srcCatalog.getOpenAction());
         }
 
@@ -559,6 +581,7 @@ public class PDFMergerUtility
         }
 
         Map<COSDictionary, COSDictionary> objMapping = new HashMap<COSDictionary, COSDictionary>();
+        int pageIndex = 0;
         for (PDPage page : srcCatalog.getPages())
         {
             PDPage newPage = new PDPage((COSDictionary) cloner.cloneForNewDocument(page.getCOSObject()));
@@ -588,6 +611,24 @@ public class PDFMergerUtility
                 // TODO update mapping for XObjects
             }
             destination.addPage(newPage);
+
+            if (pageIndex == pageIndexOpenActionDest)
+            {
+                // PDFBOX-3972: reassign the page.
+                // The openAction is either a PDActionGoTo or a PDPageDestination
+                PDDestinationOrAction openAction = destCatalog.getOpenAction();
+                PDPageDestination pageDestination;
+                if (destCatalog.getOpenAction() instanceof PDActionGoTo)
+                {
+                    pageDestination = (PDPageDestination) ((PDActionGoTo) openAction).getDestination();
+                }
+                else
+                {
+                    pageDestination = (PDPageDestination) openAction;
+                }
+                pageDestination.setPage(newPage);
+            }
+            ++pageIndex;
         }
         if (mergeStructTree)
         {

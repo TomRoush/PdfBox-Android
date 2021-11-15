@@ -105,8 +105,7 @@ public final class PDDeviceRGB extends PDDeviceColorSpace
         }
         else
         {
-//            init();
-//            return awtColorSpace.toRGB(value); TODO: PdfBox-Android
+//            TODO: PdfBox-Android
             return initialColor.getComponents();
         }
     }

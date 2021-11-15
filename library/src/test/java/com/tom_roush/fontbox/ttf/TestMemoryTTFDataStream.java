@@ -16,12 +16,12 @@
  */
 package com.tom_roush.fontbox.ttf;
 
-import junit.framework.TestCase;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import junit.framework.TestCase;
 
 public class TestMemoryTTFDataStream extends TestCase
 {
@@ -45,10 +45,8 @@ public class TestMemoryTTFDataStream extends TestCase
         }
         finally
         {
-            if (dataStream != null)
-            {
-                dataStream.close();
-            }
+            dataStream.close();
         }
     }
+
 }

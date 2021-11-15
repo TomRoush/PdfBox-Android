@@ -24,6 +24,7 @@ import com.tom_roush.pdfbox.cos.COSBase;
 
 /**
  * b* Close, fill and stroke the path with even-odd winding rule.
+ *
  */
 public final class CloseFillEvenOddAndStrokePath extends GraphicsOperatorProcessor
 {

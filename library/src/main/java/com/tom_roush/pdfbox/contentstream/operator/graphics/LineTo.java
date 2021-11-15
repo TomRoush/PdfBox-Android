@@ -52,8 +52,8 @@ public class LineTo extends GraphicsOperatorProcessor
             return;
         }
         // append straight line segment from the current point to the point
-        COSNumber x = (COSNumber)base0;
-        COSNumber y = (COSNumber)base1;
+        COSNumber x = (COSNumber) base0;
+        COSNumber y = (COSNumber) base1;
 
         PointF pos = context.transformedPoint(x.floatValue(), y.floatValue());
 

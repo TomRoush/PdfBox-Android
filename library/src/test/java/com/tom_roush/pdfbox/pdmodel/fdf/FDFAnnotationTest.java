@@ -16,12 +16,12 @@
  */
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
-import org.junit.Test;
-
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
+import java.net.URISyntaxException;
 import java.util.List;
+
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
@@ -29,34 +29,17 @@ import static org.junit.Assert.assertEquals;
  * Tests for the FDFAnnotation class.
  *
  * @author Johanneke Lamberink
+ *
  */
 public class FDFAnnotationTest
 {
-
     @Test
-    public void loadXFDFAnnotations() throws IOException
+    public void loadXFDFAnnotations() throws IOException, URISyntaxException
     {
-        FDFDocument fdfDoc = null;
-        InputStream stream = null;
-        List<FDFAnnotation> fdfAnnots = new ArrayList<FDFAnnotation>();
-        try
-        {
-            stream = FDFAnnotationTest.class.getResourceAsStream(
-                    "/pdfbox/com/tom_roush/pdfbox/pdmodel/fdf/xfdf-test-document-annotations.xml");
-            fdfDoc = FDFDocument.loadXFDF(stream);
-            fdfAnnots = fdfDoc.getCatalog().getFDF().getAnnotations();
-            assertEquals(17, fdfAnnots.size());
-        }
-        finally
-        {
-            if (stream != null)
-            {
-                stream.close();
-            }
-            if (fdfDoc != null)
-            {
-                fdfDoc.close();
-            }
-        }
+        File f = new File(FDFAnnotationTest.class.getResource("/pdfbox/com/tom_roush/pdfbox/pdmodel/fdf/xfdf-test-document-annotations.xml").toURI());
+        FDFDocument fdfDoc = FDFDocument.loadXFDF(f);
+        List<FDFAnnotation> fdfAnnots = fdfDoc.getCatalog().getFDF().getAnnotations();
+        assertEquals(17, fdfAnnots.size());
+        fdfDoc.close();
     }
 }

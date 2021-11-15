@@ -87,7 +87,7 @@ public class Type1CharString
 
     /**
      * Returns the bounds of the renderer path.
-     * @return the bounds as Rectangle2D
+     * @return the bounds as RectF
      */
     public RectF getBounds()
     {
@@ -136,7 +136,7 @@ public class Type1CharString
     }
 
     /**
-     * Renders the Type 1 char string sequence to a GeneralPath.
+     * Renders the Type 1 char string sequence to a Path.
      */
     private void render()
     {
@@ -473,43 +473,37 @@ public class Type1CharString
     {
         // base character
         String baseName = StandardEncoding.INSTANCE.getName(bchar.intValue());
-        if (baseName != null)
+        try
         {
-            try
-            {
-                Type1CharString base = font.getType1CharString(baseName);
-                path.op(base.getPath(), Path.Op.UNION); // TODO: PdfBox-Android
-                PathMeasure pm = new PathMeasure(path, false);
-                //coordinates will be here
-                float aCoordinates[] = {0f, 0f};
+            Type1CharString base = font.getType1CharString(baseName);
+            path.op(base.getPath(), Path.Op.UNION); // TODO: PdfBox-Android
+            PathMeasure pm = new PathMeasure(path, false);
+            //coordinates will be here
+            float aCoordinates[] = {0f, 0f};
 
-                //get coordinates of the middle point
-                for (int i = 0; i < pm.getLength(); i++)
-                {
-                    pm.getPosTan(pm.getLength() * 0.5f, aCoordinates, null);
-                }
-            }
-            catch (IOException e)
+            //get coordinates of the middle point
+            for (int i = 0; i < pm.getLength(); i++)
             {
-                Log.w("PdfBox-Android", "invalid seac character in glyph " + glyphName + " of font " + fontName);
+                pm.getPosTan(pm.getLength() * 0.5f, aCoordinates, null);
             }
+        }
+        catch (IOException e)
+        {
+            Log.w("PdfBox-Android", "invalid seac character in glyph " + glyphName + " of font " + fontName);
         }
         // accent character
         String accentName = StandardEncoding.INSTANCE.getName(achar.intValue());
-        if (accentName != null)
+        try
         {
-            try
-            {
-                Type1CharString accent = font.getType1CharString(accentName);
-                AffineTransform at = AffineTransform.getTranslateInstance(
-                    leftSideBearing.x + adx.floatValue(),
-                    leftSideBearing.y + ady.floatValue());
-                path.op(accent.getPath(), Path.Op.UNION); // TODO: PdfBox-Android
-            }
-            catch (IOException e)
-            {
-                Log.w("PdfBox-Android", "invalid seac character in glyph " + glyphName + " of font " + fontName);
-            }
+            Type1CharString accent = font.getType1CharString(accentName);
+            AffineTransform at = AffineTransform.getTranslateInstance(
+                leftSideBearing.x + adx.floatValue(),
+                leftSideBearing.y + ady.floatValue());
+            path.op(accent.getPath(), Path.Op.UNION); // TODO: PdfBox-Android
+        }
+        catch (IOException e)
+        {
+            Log.w("PdfBox-Android", "invalid seac character in glyph " + glyphName + " of font " + fontName);
         }
     }
 

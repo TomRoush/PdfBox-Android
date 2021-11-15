@@ -23,15 +23,16 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import java.io.File;
 import java.io.IOException;
 
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.io.MemoryUsageSetting;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitDestination;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
-import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import junit.framework.TestCase;
 
 /**
  * Test suite for PDFMergerUtility.
@@ -39,25 +40,30 @@ import static org.junit.Assert.assertEquals;
  * @author Maruan Sahyoun (PDF files)
  * @author Tilman Hausherr (code)
  */
-public class PDFMergerUtilityTest
+public class PDFMergerUtilityTest extends TestCase
 {
     final String SRCDIR = "pdfbox/input/merge";
     String TARGETTESTDIR;
     final int DPI = 96;
-    Context testContext;
+    private Context testContext;
 
-    @Before
-    public void setUp() throws Exception
+    @Override
+    protected void setUp() throws Exception
     {
+        super.setUp();
+
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
         TARGETTESTDIR = testContext.getCacheDir() + "/pdfbox-test-output/merge/";
+
         new File(TARGETTESTDIR).mkdirs();
         if (!new File(TARGETTESTDIR).exists())
         {
             throw new IOException("could not create output directory");
         }
     }
+
+
 
     /**
      * Tests whether the merge of two PDF files with identically named but
@@ -69,17 +75,18 @@ public class PDFMergerUtilityTest
      *
      * @throws IOException if something goes wrong.
      */
-    @Test
     public void testPDFMergerUtility() throws IOException
     {
         checkMergeIdentical("PDFBox.GlobalResourceMergeTest.Doc01.decoded.pdf",
             "PDFBox.GlobalResourceMergeTest.Doc02.decoded.pdf",
-            "GlobalResourceMergeTestResult.pdf", MemoryUsageSetting.setupMainMemoryOnly());
+            "GlobalResourceMergeTestResult.pdf",
+            MemoryUsageSetting.setupMainMemoryOnly());
 
         // once again, with scratch file
         checkMergeIdentical("PDFBox.GlobalResourceMergeTest.Doc01.decoded.pdf",
             "PDFBox.GlobalResourceMergeTest.Doc02.decoded.pdf",
-            "GlobalResourceMergeTestResult2.pdf", MemoryUsageSetting.setupTempFileOnly());
+            "GlobalResourceMergeTestResult2.pdf",
+            MemoryUsageSetting.setupTempFileOnly());
     }
 
     /**
@@ -91,34 +98,77 @@ public class PDFMergerUtilityTest
      */
     public void testJpegCcitt() throws IOException
     {
-        checkMergeIdentical("jpegrgb.pdf", "multitiff.pdf", "JpegMultiMergeTestResult.pdf",
+        checkMergeIdentical("jpegrgb.pdf",
+            "multitiff.pdf",
+            "JpegMultiMergeTestResult.pdf",
             MemoryUsageSetting.setupMainMemoryOnly());
 
         // once again, with scratch file
-        checkMergeIdentical("jpegrgb.pdf", "multitiff.pdf", "JpegMultiMergeTestResult.pdf",
+        checkMergeIdentical("jpegrgb.pdf",
+            "multitiff.pdf",
+            "JpegMultiMergeTestResult.pdf",
             MemoryUsageSetting.setupTempFileOnly());
     }
 
     // see PDFBOX-2893
-    @Test
     public void testPDFMergerUtility2() throws IOException
     {
         checkMergeIdentical("PDFBox.GlobalResourceMergeTest.Doc01.pdf",
             "PDFBox.GlobalResourceMergeTest.Doc02.pdf",
-            "GlobalResourceMergeTestResult.pdf", MemoryUsageSetting.setupMainMemoryOnly());
+            "GlobalResourceMergeTestResult.pdf",
+            MemoryUsageSetting.setupMainMemoryOnly());
 
         // once again, with scratch file
         checkMergeIdentical("PDFBox.GlobalResourceMergeTest.Doc01.pdf",
             "PDFBox.GlobalResourceMergeTest.Doc02.pdf",
-            "GlobalResourceMergeTestResult2.pdf", MemoryUsageSetting.setupTempFileOnly());
+            "GlobalResourceMergeTestResult2.pdf",
+            MemoryUsageSetting.setupTempFileOnly());
+    }
+
+    /**
+     * PDFBOX-3972: Test that OpenAction page destination isn't lost after merge.
+     *
+     * @throws IOException
+     */
+    public void testPDFMergerOpenAction() throws IOException
+    {
+        PDDocument doc1 = new PDDocument();
+        doc1.addPage(new PDPage());
+        doc1.addPage(new PDPage());
+        doc1.addPage(new PDPage());
+        doc1.save(new File(TARGETTESTDIR,"MergerOpenActionTest1.pdf"));
+        doc1.close();
+
+        PDDocument doc2 = new PDDocument();
+        doc2.addPage(new PDPage());
+        doc2.addPage(new PDPage());
+        doc2.addPage(new PDPage());
+        PDPageDestination dest = new PDPageFitDestination();
+        dest.setPage(doc2.getPage(1));
+        doc2.getDocumentCatalog().setOpenAction(dest);
+        doc2.save(new File(TARGETTESTDIR,"MergerOpenActionTest2.pdf"));
+        doc2.close();
+
+        PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
+        pdfMergerUtility.addSource(new File(TARGETTESTDIR, "MergerOpenActionTest1.pdf"));
+        pdfMergerUtility.addSource(new File(TARGETTESTDIR, "MergerOpenActionTest2.pdf"));
+        pdfMergerUtility.setDestinationFileName(TARGETTESTDIR + "MergerOpenActionTestResult.pdf");
+        pdfMergerUtility.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+
+        PDDocument mergedDoc = PDDocument.load(new File(TARGETTESTDIR, "MergerOpenActionTestResult.pdf"));
+        PDDocumentCatalog documentCatalog = mergedDoc.getDocumentCatalog();
+        dest = (PDPageDestination) documentCatalog.getOpenAction();
+        assertEquals(4, documentCatalog.getPages().indexOf(dest.getPage()));
+        mergedDoc.close();
     }
 
     // checks that the result file of a merge has the same rendering as the two
     // source files
     private void checkMergeIdentical(String filename1, String filename2, String mergeFilename,
-        MemoryUsageSetting memUsageSetting) throws IOException
+        MemoryUsageSetting memUsageSetting)
+        throws IOException
     {
-        PDDocument srcDoc1 = PDDocument.load(testContext.getAssets().open(SRCDIR + "/" + filename1), (String) null);
+        PDDocument srcDoc1 = PDDocument.load(testContext.getAssets().open(SRCDIR + "/" + filename1), (String)null);
         int src1PageCount = srcDoc1.getNumberOfPages();
         PDFRenderer src1PdfRenderer = new PDFRenderer(srcDoc1);
         Bitmap[] src1ImageTab = new Bitmap[src1PageCount];
@@ -128,7 +178,7 @@ public class PDFMergerUtilityTest
         }
         srcDoc1.close();
 
-        PDDocument srcDoc2 = PDDocument.load(testContext.getAssets().open(SRCDIR + "/" + filename2), (String) null);
+        PDDocument srcDoc2 = PDDocument.load(testContext.getAssets().open(SRCDIR + "/" + filename2), (String)null);
         int src2PageCount = srcDoc2.getNumberOfPages();
         PDFRenderer src2PdfRenderer = new PDFRenderer(srcDoc2);
         Bitmap[] src2ImageTab = new Bitmap[src2PageCount];
@@ -145,7 +195,7 @@ public class PDFMergerUtilityTest
         pdfMergerUtility.mergeDocuments(memUsageSetting);
 
         PDDocument mergedDoc
-            = PDDocument.load(new File(TARGETTESTDIR, mergeFilename), (String) null);
+            = PDDocument.load(new File(TARGETTESTDIR, mergeFilename), (String)null);
         PDFRenderer mergePdfRenderer = new PDFRenderer(mergedDoc);
         int mergePageCount = mergedDoc.getNumberOfPages();
         assertEquals(src1PageCount + src2PageCount, mergePageCount);
@@ -169,14 +219,13 @@ public class PDFMergerUtilityTest
         assertEquals(bim1.getWidth(), bim2.getWidth());
         int w = bim1.getWidth();
         int h = bim1.getHeight();
-
-        int[] bim1Pixels = new int[w * h];
-        bim1.getPixels(bim1Pixels, 0, w, 0, 0, w, h);
-        int[] bim2Pixels = new int[w * h];
-        bim2.getPixels(bim2Pixels, 0, w, 0, 0, w, h);
-        for (int pixelIdx = 0; pixelIdx < w * h; pixelIdx++)
+        for (int i = 0; i < w; ++i)
         {
-            assertEquals(bim1Pixels[pixelIdx], bim2Pixels[pixelIdx]);
+            for (int j = 0; j < h; ++j)
+            {
+                assertEquals(bim1.getPixel(i, j), bim2.getPixel(i, j));
+            }
         }
     }
+
 }

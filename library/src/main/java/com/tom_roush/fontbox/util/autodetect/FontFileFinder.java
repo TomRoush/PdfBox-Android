@@ -22,6 +22,7 @@ import android.util.Log;
 import java.io.File;
 import java.net.URI;
 import java.util.List;
+import java.util.Locale;
 
 import com.tom_roush.pdfbox.android.PDFBoxConfig;
 
@@ -159,7 +160,7 @@ public class FontFileFinder
      */
     private boolean checkFontfile(File file)
     {
-        String name = file.getName().toLowerCase();
+        String name = file.getName().toLowerCase(Locale.US);
         return (name.endsWith(".ttf") || name.endsWith(".otf") || name.endsWith(".pfb") || name.endsWith(".ttc"))
             // PDFBOX-3377 exclude weird files in AIX
             && !name.startsWith("fonts.");

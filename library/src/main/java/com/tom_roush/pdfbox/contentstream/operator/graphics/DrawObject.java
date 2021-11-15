@@ -18,16 +18,16 @@ package com.tom_roush.pdfbox.contentstream.operator.graphics;
 
 import java.io.IOException;
 import java.util.List;
-
 import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
-import com.tom_roush.pdfbox.contentstream.operator.Operator;
+
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.MissingResourceException;
-import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDTransparencyGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
 
 /**
  * Do: Draws an XObject.
@@ -49,7 +49,7 @@ public final class DrawObject extends GraphicsOperatorProcessor
         {
             return;
         }
-        COSName objectName = (COSName)base0;
+        COSName objectName = (COSName) base0;
         PDXObject xobject = context.getResources().getXObject(objectName);
 
         if (xobject == null)
@@ -63,11 +63,11 @@ public final class DrawObject extends GraphicsOperatorProcessor
         }
         else if (xobject instanceof PDTransparencyGroup)
         {
-            getContext().showTransparencyGroup((PDTransparencyGroup)xobject);
+            getContext().showTransparencyGroup((PDTransparencyGroup) xobject);
         }
         else if (xobject instanceof PDFormXObject)
         {
-            getContext().showForm((PDFormXObject)xobject);
+            getContext().showForm((PDFormXObject) xobject);
         }
     }
 

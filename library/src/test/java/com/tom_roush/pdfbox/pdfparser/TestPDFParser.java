@@ -33,6 +33,8 @@ import com.tom_roush.pdfbox.io.RandomAccessBufferedFileInputStream;
 import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.io.ScratchFile;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDDocumentInformation;
+import com.tom_roush.pdfbox.util.DateConverter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -42,9 +44,9 @@ import static org.junit.Assert.assertNotNull;
 
 public class TestPDFParser
 {
-
     private static final String PATH_OF_PDF = "src/test/resources/pdfbox/input/yaddatest.pdf";
     private static final File tmpDirectory = new File(System.getProperty("java.io.tmpdir"));
+    private static final File TARGETPDFDIR = new File("target/pdfs");
 
     private int numberOfTmpFiles = 0;
 
@@ -114,6 +116,169 @@ public class TestPDFParser
     {
         // PDFBOX-3060
         PDDocument.load(new File(TestPDFParser.class.getResource("/pdfbox/com/tom_roush/pdfbox/pdfparser/MissingCatalog.pdf").toURI())).close();
+    }
+
+    /**
+     * Test whether /Info dictionary is retrieved correctly when rebuilding the trailer of a corrupt
+     * file. An incorrect algorithm would result in an outline dictionary being mistaken for an
+     * /Info.
+     *
+     * @throws IOException
+     */
+//    @Test TODO: PdfBox-Android - provide test PDF
+    public void testPDFBox3208() throws IOException
+    {
+        PDDocument doc = PDDocument.load(new File(TARGETPDFDIR,"PDFBOX-3208-L33MUTT2SVCWGCS6UIYL5TH3PNPXHIS6.pdf"));
+
+        PDDocumentInformation di = doc.getDocumentInformation();
+        assertEquals("Liquent Enterprise Services", di.getAuthor());
+        assertEquals("Liquent services server", di.getCreator());
+        assertEquals("Amyuni PDF Converter version 4.0.0.9", di.getProducer());
+        assertEquals("", di.getKeywords());
+        assertEquals("", di.getSubject());
+        assertEquals("892B77DE781B4E71A1BEFB81A51A5ABC_20140326022424.docx", di.getTitle());
+        assertEquals(DateConverter.toCalendar("D:20140326142505-02'00'"), di.getCreationDate());
+        assertEquals(DateConverter.toCalendar("20140326172513Z"), di.getModificationDate());
+
+        doc.close();
+    }
+
+    /**
+     * Test whether the /Info is retrieved correctly when rebuilding the trailer of a corrupt file,
+     * despite the /Info dictionary not having a modification date.
+     *
+     * @throws IOException
+     */
+//    @Test TODO: PdfBox-Android - provide test PDF
+    public void testPDFBox3940() throws IOException
+    {
+        PDDocument doc = PDDocument.load(new File(TARGETPDFDIR,"PDFBOX-3940-079977.pdf"));
+        PDDocumentInformation di = doc.getDocumentInformation();
+        assertEquals("Unknown", di.getAuthor());
+        assertEquals("C:REGULA~1IREGSFR_EQ_EM.WP", di.getCreator());
+        assertEquals("Acrobat PDFWriter 3.02 for Windows", di.getProducer());
+        assertEquals("", di.getKeywords());
+        assertEquals("", di.getSubject());
+        assertEquals("C:REGULA~1IREGSFR_EQ_EM.PDF", di.getTitle());
+        assertEquals(DateConverter.toCalendar("Tuesday, July 28, 1998 4:00:09 PM"), di.getCreationDate());
+
+        doc.close();
+    }
+
+    /**
+     * PDFBOX-3783: test parsing of file with trash after %%EOF.
+     *
+     * @throws IOException
+     */
+//    @Test TODO: PdfBox-Android - provide test PDF
+    public void testPDFBox3783() throws IOException
+    {
+        PDDocument.load(new File(TARGETPDFDIR,"PDFBOX-3783-72GLBIGUC6LB46ELZFBARRJTLN4RBSQM.pdf")).close();
+    }
+
+    /**
+     * PDFBOX-3785, PDFBOX-3957:
+     * Test whether truncated file with several revisions has correct page count.
+     *
+     * @throws IOException
+     */
+//    @Test TODO: PdfBox-Android - provide test PDF
+    public void testPDFBox3785() throws IOException
+    {
+        PDDocument doc = PDDocument.load(new File(TARGETPDFDIR,"PDFBOX-3785-202097.pdf"));
+        assertEquals(11, doc.getNumberOfPages());
+        doc.close();
+    }
+
+    /**
+     * PDFBOX-3947: test parsing of file with broken object stream.
+     *
+     * @throws IOException
+     */
+//    @Test TODO: PdfBox-Android - provide test PDF
+    public void testPDFBox3947() throws IOException
+    {
+        PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-3947-670064.pdf")).close();
+    }
+
+    /**
+     * PDFBOX-3948: test parsing of file with object stream containing some unexpected newlines.
+     *
+     * @throws IOException
+     */
+//    @Test TODO: PdfBox-Android - provide test PDF
+    public void testPDFBox3948() throws IOException
+    {
+        PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-3948-EUWO6SQS5TM4VGOMRD3FLXZHU35V2CP2.pdf")).close();
+    }
+
+    /**
+     * PDFBOX-3949: test parsing of file with incomplete object stream.
+     *
+     * @throws IOException
+     */
+//    @Test TODO: PdfBox-Android - provide test PDF
+    public void testPDFBox3949() throws IOException
+    {
+        PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-3949-MKFYUGZWS3OPXLLVU2Z4LWCTVA5WNOGF.pdf")).close();
+    }
+
+    // testPDFBox3950 is an instrumentation test
+
+    /**
+     * PDFBOX-3951: test parsing of truncated file.
+     *
+     * @throws IOException
+     */
+//    @Test TODO: PdfBox-Android - provide test PDF
+    public void testPDFBox3951() throws IOException
+    {
+        PDDocument doc = PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-3951-FIHUZWDDL2VGPOE34N6YHWSIGSH5LVGZ.pdf"));
+        assertEquals(143, doc.getNumberOfPages());
+        doc.close();
+    }
+
+    /**
+     * PDFBOX-3964: test parsing of broken file.
+     *
+     * @throws IOException
+     */
+//    @Test TODO: PdfBox-Android - provide test PDF
+    public void testPDFBox3964() throws IOException
+    {
+        PDDocument doc = PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-3964-c687766d68ac766be3f02aaec5e0d713_2.pdf"));
+        assertEquals(10, doc.getNumberOfPages());
+        doc.close();
+    }
+
+    /**
+     * Test whether /Info dictionary is retrieved correctly in brute force search for the
+     * Info/Catalog dictionaries.
+     *
+     * @throws IOException
+     */
+//    @Test TODO: PdfBox-Android - provide test PDF
+    public void testPDFBox3977() throws IOException
+    {
+        PDDocument doc = PDDocument.load(new File(TARGETPDFDIR,"PDFBOX-3977-63NGFQRI44HQNPIPEJH5W2TBM6DJZWMI.pdf"));
+        PDDocumentInformation di = doc.getDocumentInformation();
+        assertEquals("QuarkXPress(tm) 6.52", di.getCreator());
+        assertEquals("Acrobat Distiller 7.0 pour Macintosh", di.getProducer());
+        assertEquals("Fich sal Fabr corr1 (Page 6)", di.getTitle());
+        assertEquals(DateConverter.toCalendar("D:20070608151915+02'00'"), di.getCreationDate());
+        assertEquals(DateConverter.toCalendar("D:20080604152122+02'00'"), di.getModificationDate());
+        doc.close();
+    }
+
+    /**
+     * Test parsing the "genko_oc_shiryo1.pdf" file, which is susceptible to regression.
+     *
+     * @throws IOException
+     */
+//    @Test TODO: PdfBox-Android - provide test PDF
+    public void testParseGenko() throws IOException
+    {
+        PDDocument.load(new File(TARGETPDFDIR, "genko_oc_shiryo1.pdf")).close();
     }
 
     private void executeParserTest(RandomAccessRead source, MemoryUsageSetting memUsageSetting) throws IOException

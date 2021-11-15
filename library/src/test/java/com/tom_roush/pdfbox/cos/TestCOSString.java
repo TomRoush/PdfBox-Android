@@ -66,7 +66,7 @@ public class TestCOSString extends TestCOSBase
 
     /**
      * Test setForceHexForm() and setForceLiteralForm() - tests these two methods do enforce the
-     * different String output forms within PDF.
+     * different String output forms within PDF. 
      */
     public void testSetForceHexLiteralForm()
     {
@@ -152,8 +152,8 @@ public class TestCOSString extends TestCOSBase
         String hexForm = createHex(expected);
         assertEquals(hexForm, test1.toHexString());
         COSString escCS = new COSString(ESC_CHAR_STRING);
-        // Not sure whether the escaped characters should be escaped or not, presumably since
-        // writePDF() gives you the proper formatted text, getHex() should ONLY convert to hex.
+        // Not sure whether the escaped characters should be escaped or not, presumably since 
+        // writePDF() gives you the proper formatted text, getHex() should ONLY convert to hex. 
         assertEquals(createHex(ESC_CHAR_STRING), escCS.toHexString());
     }
 
@@ -352,5 +352,16 @@ public class TestCOSString extends TestCOSBase
         assertFalse(test1.equals(test2));
         assertFalse(test2.equals(test1));
         assertFalse(test1.getString().equals(test2.getString()));
+    }
+
+    /**
+     * PDFBOX-3881: Test that if String has only the BOM, that it be an empty string.
+     *
+     * @throws IOException
+     */
+    public void testEmptyStringWithBOM() throws IOException
+    {
+        assertTrue(COSString.parseHex("FEFF").getString().isEmpty());
+        assertTrue(COSString.parseHex("FFFE").getString().isEmpty());
     }
 }

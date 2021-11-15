@@ -92,21 +92,20 @@ public class PDCIDFontType2 extends PDCIDFont
             boolean fontIsDamaged = false;
             TrueTypeFont ttfFont = null;
 
-            PDStream stream;
-            if (fd.getFontFile2() != null)
+            PDStream stream = null;
+            if (fd != null)
             {
                 stream = fd.getFontFile2();
+                if (stream == null)
+                {
+                    stream = fd.getFontFile3();
+                }
+                if (stream == null)
+                {
+                    // Acrobat looks in FontFile too, even though it is not in the spec, see PDFBOX-2599
+                    stream = fd.getFontFile();
+                }
             }
-            else if (fd.getFontFile3() != null)
-            {
-                stream = fd.getFontFile3();
-            }
-            else
-            {
-                // Acrobat looks in FontFile too, even though it is not in the spec, see PDFBOX-2599
-                stream = fd.getFontFile();
-            }
-
             if (stream != null)
             {
                 try
@@ -145,29 +144,34 @@ public class PDCIDFontType2 extends PDCIDFont
 
             if (ttfFont == null)
             {
-                // find font or substitute
-                CIDFontMapping mapping = FontMappers.instance()
-                    .getCIDFont(getBaseFont(), getFontDescriptor(),
-                        getCIDSystemInfo());
-
-                if (mapping.isCIDFont())
-                {
-                    ttfFont = mapping.getFont();
-                }
-                else
-                {
-                    ttfFont = (TrueTypeFont)mapping.getTrueTypeFont();
-                }
-
-                if (mapping.isFallback())
-                {
-                    Log.w("PdfBox-Android", "Using fallback font " + ttfFont.getName() + " for CID-keyed TrueType font " + getBaseFont());
-                }
+                ttfFont = findFontOrSubstitute();
             }
             ttf = ttfFont;
         }
         cmap = ttf.getUnicodeCmap(false);
         cid2gid = readCIDToGIDMap();
+    }
+
+    private TrueTypeFont findFontOrSubstitute() throws IOException
+    {
+        TrueTypeFont ttfFont;
+
+        CIDFontMapping mapping = FontMappers.instance()
+            .getCIDFont(getBaseFont(), getFontDescriptor(),
+                getCIDSystemInfo());
+        if (mapping.isCIDFont())
+        {
+            ttfFont = mapping.getFont();
+        }
+        else
+        {
+            ttfFont = (TrueTypeFont)mapping.getTrueTypeFont();
+        }
+        if (mapping.isFallback())
+        {
+            Log.w("PdfBox-Android", "Using fallback font " + ttfFont.getName() + " for CID-keyed TrueType font " + getBaseFont());
+        }
+        return ttfFont;
     }
 
     @Override

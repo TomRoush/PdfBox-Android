@@ -21,6 +21,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.zip.Deflater;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -35,6 +36,14 @@ import com.tom_roush.pdfbox.cos.COSName;
  */
 public abstract class Filter
 {
+    /**
+     * Compression Level System Property. Set this to a value from 0 to 9 to change the zlib deflate
+     * compression level used to compress /Flate streams. The default value is -1 which is
+     * {@link Deflater#DEFAULT_COMPRESSION}. To set maximum compression, use
+     * {@code System.setProperty(Filter.SYSPROP_DEFLATELEVEL, "9");}
+     */
+    public static final String SYSPROP_DEFLATELEVEL = "com.tom_roush.pdfbox.filter.deflatelevel";
+
     /**
      * Constructor.
      */
@@ -76,12 +85,16 @@ public abstract class Filter
     // normalise the DecodeParams entry so that it is always a dictionary
     protected COSDictionary getDecodeParams(COSDictionary dictionary, int index)
     {
+        COSBase filter = dictionary.getDictionaryObject(COSName.FILTER, COSName.F);
         COSBase obj = dictionary.getDictionaryObject(COSName.DECODE_PARMS, COSName.DP);
-        if (obj instanceof COSDictionary)
+        if (filter instanceof COSName && obj instanceof COSDictionary)
         {
+            // PDFBOX-3932: The PDF specification requires "If there is only one filter and that 
+            // filter has parameters, DecodeParms shall be set to the filter’s parameter dictionary" 
+            // but tests show that Adobe means "one filter name object".
             return (COSDictionary)obj;
         }
-        else if (obj instanceof COSArray)
+        else if (filter instanceof COSArray && obj instanceof COSArray)
         {
             COSArray array = (COSArray)obj;
             if (index < array.size())
@@ -89,7 +102,7 @@ public abstract class Filter
                 return (COSDictionary)array.getObject(index);
             }
         }
-        else if (obj != null)
+        else if (obj != null && !(filter instanceof COSArray || obj instanceof COSArray))
         {
             Log.e("PdfBox-Android", "Expected DecodeParams to be an Array or Dictionary but found " +
                 obj.getClass().getName());
@@ -97,14 +110,6 @@ public abstract class Filter
         return new COSDictionary();
     }
 
-    /**
-     * Finds a suitable image reader for a format.
-     *
-     * @param formatName The format to search for.
-     * @param errorCause The probably cause if something goes wrong.
-     * @return The image reader for the format.
-     * @throws MissingImageReaderException if no image reader is found.
-     */
 //    protected static ImageReader findImageReader(String formatName, String errorCause) throws MissingImageReaderException TODO: PdfBox-Android
 
 }

@@ -16,19 +16,30 @@
 
 package com.tom_roush.pdfbox.pdfparser;
 
-import junit.framework.TestCase;
-
-import org.junit.Assert;
-
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
+import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
+import com.tom_roush.pdfbox.pdmodel.PDDocumentNameDictionary;
+import com.tom_roush.pdfbox.pdmodel.PDEmbeddedFilesNameTreeNode;
+import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDComplexFileSpecification;
+import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDEmbeddedFile;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  *
  * @author Tilman Hausherr
  */
-public class EndstreamOutputStreamTest extends TestCase
+public class EndstreamOutputStreamTest
 {
+    @Test
     public void testEndstreamOutputStream() throws IOException
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -94,5 +105,34 @@ public class EndstreamOutputStreamTest extends TestCase
         feos.flush();
         byte[] expectedResult5 = { 1, 2, 3, 4, '\r', '\n', 5, 6, 7, '\r', 8, 9, '\n', '\r'};
         Assert.assertArrayEquals(expectedResult5, baos.toByteArray());
+    }
+
+    @Test
+    public void testPDFBox2079EmbeddedFile() throws IOException
+    {
+        // there should be 17660 bytes in the zip file.
+        // in PDFBox 1.8.5, windows newline is appended to the byte stream
+        // yielding 17662 bytes, which causes a problem for ZipFile in Java 1.6
+
+        // Modification of embedded_zip.pdf for 2.0:
+        // /Length entry removed to force usage of EndstreamOutputStream
+        PDDocument doc = PDDocument.load(
+            new File("src/test/resources/pdfbox/com/tom_roush/pdfbox/pdfparser", "embedded_zip.pdf"));
+        PDDocumentCatalog catalog = doc.getDocumentCatalog();
+        PDDocumentNameDictionary names = catalog.getNames();
+        PDEmbeddedFilesNameTreeNode node = names.getEmbeddedFiles();
+        Map<String, PDComplexFileSpecification> map = node.getNames();
+        Assert.assertEquals(1, map.size());
+        PDComplexFileSpecification spec = map.get("My first attachment");
+        PDEmbeddedFile file = spec.getEmbeddedFile();
+        InputStream input = file.createInputStream();
+        File d = new File("target/test-output");
+        d.mkdirs();
+        File f = new File(d, spec.getFile());
+        OutputStream os = new FileOutputStream(f);
+        IOUtils.copy(input, os);
+        os.close();
+        Assert.assertEquals(17660, f.length());
+        doc.close();
     }
 }

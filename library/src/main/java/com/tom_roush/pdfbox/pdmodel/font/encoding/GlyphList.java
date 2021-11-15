@@ -37,27 +37,29 @@ public final class GlyphList
     private static final GlyphList DEFAULT = load("glyphlist.txt", 4281);
 
     // Zapf Dingbats has its own glyph list
-    private static final GlyphList ZAPF_DINGBATS = load("zapfdingbats.txt", 201);
+    private static final GlyphList ZAPF_DINGBATS = load("zapfdingbats.txt",201);
 
     /**
      * Loads a glyph list from disk.
      */
     private static GlyphList load(String filename, int numberOfEntries)
     {
+        ClassLoader loader = GlyphList.class.getClassLoader();
         try
         {
             String path = "com/tom_roush/pdfbox/resources/glyphlist/";
+            String resourcePath = path + filename;
+            InputStream resourceStream;
             if (PDFBoxResourceLoader.isReady())
             {
-                return new GlyphList(PDFBoxResourceLoader.getStream(path + filename),
-                    numberOfEntries);
+                resourceStream = PDFBoxResourceLoader.getStream(resourcePath);
             }
             else
             {
                 // Fallback
-                ClassLoader loader = GlyphList.class.getClassLoader();
-                return new GlyphList(loader.getResourceAsStream(path + filename), numberOfEntries);
+                resourceStream = loader.getResourceAsStream(resourcePath);
             }
+            return new GlyphList(resourceStream, numberOfEntries);
         }
         catch (IOException e)
         {
@@ -77,7 +79,7 @@ public final class GlyphList
                     + "use GlyphList.DEFAULT.addGlyphs(Properties) instead");
             }
         }
-        catch (SecurityException e) // can occur on System.getProperty
+        catch (SecurityException e)  // can occur on System.getProperty
         {
             // PDFBOX-1946 ignore and continue
         }
@@ -109,8 +111,8 @@ public final class GlyphList
     /**
      * Creates a new GlyphList from a glyph list file.
      *
-     * @param input glyph list in Adobe format
      * @param numberOfEntries number of expected values used to preallocate the correct amount of memory
+     * @param input glyph list in Adobe format
      * @throws IOException if the glyph list could not be read
      */
     public GlyphList(InputStream input, int numberOfEntries) throws IOException
@@ -171,7 +173,15 @@ public final class GlyphList
                     nameToUnicode.put(name, string);
 
                     // reverse mapping
-                    if (!unicodeToName.containsKey(string))
+                    // PDFBOX-3884: take the various standard encodings as canonical, 
+                    // e.g. tilde over ilde
+                    final boolean forceOverride =
+                        WinAnsiEncoding.INSTANCE.contains(name) ||
+                            MacRomanEncoding.INSTANCE.contains(name) ||
+                            MacExpertEncoding.INSTANCE.contains(name) ||
+                            SymbolEncoding.INSTANCE.contains(name) ||
+                            ZapfDingbatsEncoding.INSTANCE.contains(name);
+                    if (!unicodeToName.containsKey(string) || forceOverride)
                     {
                         unicodeToName.put(string, name);
                     }

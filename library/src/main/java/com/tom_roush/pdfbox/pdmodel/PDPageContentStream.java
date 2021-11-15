@@ -104,7 +104,8 @@ public final class PDPageContentStream implements Closeable
     private final byte[] formatBuffer = new byte[32];
 
     /**
-     * Create a new PDPage content stream.
+     * Create a new PDPage content stream. This constructor overwrites all existing content streams
+     * of this page.
      *
      * @param document The document the page is part of.
      * @param sourcePage The page to write the contents to.
@@ -134,7 +135,10 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * Create a new PDPage content stream.
+     * Create a new PDPage content stream. If the appendContent parameter is set to
+     * {@link AppendMode#APPEND}, you may want to use
+     * {@link #PDPageContentStream(PDDocument, PDPage, PDPageContentStream.AppendMode, boolean, boolean)}
+     * instead, with the fifth parameter set to true.
      *
      * @param document The document the page is part of.
      * @param sourcePage The page to write the contents to.
@@ -1366,7 +1370,7 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * Draw a rectangle on the page using the current non stroking color.
+     * Fill a rectangle on the page using the current non stroking color.
      *
      * @param x The lower left x coordinate.
      * @param y The lower left y coordinate.
@@ -1577,7 +1581,7 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * Draw a line on the page using the current non stroking color and the current line width.
+     * Draw a line on the page using the current stroking color and the current line width.
      *
      * @param xStart The start x coordinate.
      * @param yStart The start y coordinate.
@@ -1635,7 +1639,7 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * Draw a polygon on the page using the current non stroking color.
+     * Draw a polygon on the page using the current stroking color.
      * @param x x coordinate of each points
      * @param y y coordinate of each points
      * @throws IOException If there is an error while drawing on the screen.
@@ -1654,7 +1658,7 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * Draw and fill a polygon on the page using the current non stroking color.
+     * Draw and fill a polygon on the page using the current stroking / non stroking colors.
      * @param x x coordinate of each points
      * @param y y coordinate of each points
      * @throws IOException If there is an error while drawing on the screen.
@@ -2039,6 +2043,10 @@ public final class PDPageContentStream implements Closeable
         {
             throw new IllegalStateException("Error: setMiterLimit is not allowed within a text block.");
         }
+        if (miterLimit <= 0.0)
+        {
+            throw new IllegalArgumentException("A miter limit <= 0 is invalid and will not render in Acrobat Reader");
+        }
         writeOperand(miterLimit);
         writeOperator("M");
     }
@@ -2396,5 +2404,18 @@ public final class PDPageContentStream implements Closeable
     {
         writeOperand(spacing);
         writeOperator("Tw");
+    }
+
+    /**
+     * Set the horizontal scaling to scale / 100.
+     *
+     * @param scale number specifying the percentage of the normal width. Default value: 100 (normal
+     * width).
+     * @throws IOException If the content stream could not be written.
+     */
+    public void setHorizontalScaling(float scale) throws IOException
+    {
+        writeOperand(scale);
+        writeOperator("Tz");
     }
 }

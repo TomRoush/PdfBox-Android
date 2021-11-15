@@ -27,7 +27,7 @@ import com.tom_roush.pdfbox.cos.COSName;
  */
 public class PDSeedValueMDP
 {
-    private COSDictionary dictionary;
+    private final COSDictionary dictionary;
 
     /**
      * Default constructor.
@@ -61,7 +61,7 @@ public class PDSeedValueMDP
 
     /**
      * Return the P value.
-     * 
+     *
      * @return the P value
      */
     public int getP()
@@ -71,7 +71,7 @@ public class PDSeedValueMDP
 
     /**
      * Set the P value.
-     * 
+     *
      * @param p the value to be set as P
      */
     public void setP(int p)
