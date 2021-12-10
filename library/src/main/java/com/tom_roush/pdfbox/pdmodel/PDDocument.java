@@ -97,7 +97,6 @@ public class PDDocument implements Closeable
         PDDeviceRGB.INSTANCE.toRGB(new float[]{1,1,1,1});
         try
         {
-            //TODO remove this and deprecated COSNumber statics in 3.0
             COSNumber.get("0");
             COSNumber.get("1");
         }
@@ -155,7 +154,7 @@ public class PDDocument implements Closeable
      * Creates an empty PDF document.
      * You need to add at least one page for the document to be valid.
      *
-     * @param memUsageSetting defines how memory is used for buffering PDF streams
+     * @param memUsageSetting defines how memory is used for buffering PDF streams 
      */
     public PDDocument(MemoryUsageSetting memUsageSetting)
     {
@@ -333,7 +332,7 @@ public class PDDocument implements Closeable
         // better make it configurable (not all users need/want PDF/A but their own setting):
 
         // to conform PDF/A-1 requirement:
-        // The /F key's Print flag bit shall be set to 1 and
+        // The /F key's Print flag bit shall be set to 1 and 
         // its Hidden, Invisible and NoView flag bits shall be set to 0
         signatureField.getWidgets().get(0).setPrinted(true);
 
@@ -368,8 +367,8 @@ public class PDDocument implements Closeable
         // Create Annotation / Field for signature
         List<PDAnnotation> annotations = page.getAnnotations();
 
-        // Make /Annots a direct object to avoid problem if it is an existing indirect object:
-        // it would not be updated in incremental save, and if we'd set the /Annots array "to be updated"
+        // Make /Annots a direct object to avoid problem if it is an existing indirect object: 
+        // it would not be updated in incremental save, and if we'd set the /Annots array "to be updated" 
         // while keeping it indirect, Adobe Reader would claim that the document had been modified.
         page.setAnnotations(annotations);
 
@@ -907,7 +906,7 @@ public class PDDocument implements Closeable
      * Parses a PDF.
      *
      * @param file file to be loaded
-     * @param memUsageSetting defines how memory is used for buffering PDF streams
+     * @param memUsageSetting defines how memory is used for buffering PDF streams 
      *
      * @return loaded document
      *
@@ -942,7 +941,7 @@ public class PDDocument implements Closeable
      *
      * @param file file to be loaded
      * @param password password to be used for decryption
-     * @param memUsageSetting defines how memory is used for buffering PDF streams
+     * @param memUsageSetting defines how memory is used for buffering PDF streams 
      *
      * @return loaded document
      *
@@ -960,7 +959,7 @@ public class PDDocument implements Closeable
      *
      * @param file file to be loaded
      * @param password password to be used for decryption
-     * @param keyStore key store to be used for decryption when using public key security
+     * @param keyStore key store to be used for decryption when using public key security 
      * @param alias alias to be used for decryption when using public key security
      *
      * @return loaded document
@@ -978,9 +977,9 @@ public class PDDocument implements Closeable
      *
      * @param file file to be loaded
      * @param password password to be used for decryption
-     * @param keyStore key store to be used for decryption when using public key security
+     * @param keyStore key store to be used for decryption when using public key security 
      * @param alias alias to be used for decryption when using public key security
-     * @param memUsageSetting defines how memory is used for buffering PDF streams
+     * @param memUsageSetting defines how memory is used for buffering PDF streams 
      *
      * @return loaded document
      *
@@ -1034,7 +1033,7 @@ public class PDDocument implements Closeable
      * random access to the pdf.
      *
      * @param input stream that contains the document.
-     * @param memUsageSetting defines how memory is used for buffering input stream and PDF streams
+     * @param memUsageSetting defines how memory is used for buffering input stream and PDF streams 
      *
      * @return loaded document
      *
@@ -1071,7 +1070,7 @@ public class PDDocument implements Closeable
      *
      * @param input stream that contains the document.
      * @param password password to be used for decryption
-     * @param keyStore key store to be used for decryption when using public key security
+     * @param keyStore key store to be used for decryption when using public key security 
      * @param alias alias to be used for decryption when using public key security
      *
      * @return loaded document
@@ -1091,7 +1090,7 @@ public class PDDocument implements Closeable
      *
      * @param input stream that contains the document.
      * @param password password to be used for decryption
-     * @param memUsageSetting defines how memory is used for buffering input stream and PDF streams
+     * @param memUsageSetting defines how memory is used for buffering input stream and PDF streams 
      *
      * @return loaded document
      *
@@ -1111,9 +1110,9 @@ public class PDDocument implements Closeable
      *
      * @param input stream that contains the document.
      * @param password password to be used for decryption
-     * @param keyStore key store to be used for decryption when using public key security
+     * @param keyStore key store to be used for decryption when using public key security 
      * @param alias alias to be used for decryption when using public key security
-     * @param memUsageSetting defines how memory is used for buffering input stream and PDF streams
+     * @param memUsageSetting defines how memory is used for buffering input stream and PDF streams 
      *
      * @return loaded document
      *
@@ -1175,7 +1174,7 @@ public class PDDocument implements Closeable
      *
      * @param input byte array that contains the document.
      * @param password password to be used for decryption
-     * @param keyStore key store to be used for decryption when using public key security
+     * @param keyStore key store to be used for decryption when using public key security 
      * @param alias alias to be used for decryption when using public key security
      *
      * @return loaded document
@@ -1194,9 +1193,9 @@ public class PDDocument implements Closeable
      *
      * @param input byte array that contains the document.
      * @param password password to be used for decryption
-     * @param keyStore key store to be used for decryption when using public key security
+     * @param keyStore key store to be used for decryption when using public key security 
      * @param alias alias to be used for decryption when using public key security
-     * @param memUsageSetting defines how memory is used for buffering input stream and PDF streams
+     * @param memUsageSetting defines how memory is used for buffering input stream and PDF streams 
      *
      * @return loaded document
      *
@@ -1275,7 +1274,7 @@ public class PDDocument implements Closeable
      * Save the PDF as an incremental update. This is only possible if the PDF was loaded from a
      * file or a stream, not if the document was created in PDFBox itself.
      *
-     * @param output stream to write
+     * @param output stream to write. It should <i><b>not</b></i> point to the source file.
      * @throws IOException if the output could not be written
      * @throws IllegalStateException if the document was not loaded from a file or a stream.
      */
@@ -1331,7 +1330,7 @@ public class PDDocument implements Closeable
      * {@code PDDocument} instance and only AFTER {@link ExternalSigningSupport} instance is used.
      * </p>
      *
-     * @param output stream to write final PDF
+     * @param output stream to write final PDF. It should <i><b>not</b></i> point to the source file.
      * @return instance to be used for external signing and setting CMS signature
      * @throws IOException if the output could not be written
      * @throws IllegalStateException if the document was not loaded from a file or a stream or
@@ -1583,6 +1582,8 @@ public class PDDocument implements Closeable
 
     /**
      * Returns the resource cache associated with this document, or null if there is none.
+     *
+     * @return the resource cache or null.
      */
     public ResourceCache getResourceCache()
     {

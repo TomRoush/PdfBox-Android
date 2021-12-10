@@ -59,7 +59,8 @@ public class PDDocumentCatalog implements COSObjectable
     private PDAcroForm cachedAcroForm;
 
     /**
-     * Constructor. AcroForm.
+     * Constructor. Internal PDFBox use only! If you need to get the document catalog, call
+     * {@link PDDocument#getDocumentCatalog()}.
      *
      * @param doc The document that this catalog is part of.
      */
@@ -72,7 +73,8 @@ public class PDDocumentCatalog implements COSObjectable
     }
 
     /**
-     * Constructor.
+     * Constructor. Internal PDFBox use only! If you need to get the document catalog, call
+     * {@link PDDocument#getDocumentCatalog()}.
      *
      * @param doc The document that this catalog is part of.
      * @param rootDictionary The root dictionary that this object wraps.
@@ -122,6 +124,8 @@ public class PDDocumentCatalog implements COSObjectable
 
     /**
      * Returns all pages in the document, as a page tree.
+     *
+     * @return the page tree of all pages
      */
     public PDPageTree getPages()
     {
@@ -173,6 +177,8 @@ public class PDDocumentCatalog implements COSObjectable
 
     /**
      * Returns the document's article threads.
+     *
+     * @return a list containing all article threads.
      */
     public List<PDThread> getThreads()
     {
@@ -443,6 +449,8 @@ public class PDDocumentCatalog implements COSObjectable
 
     /**
      * Returns the page display mode.
+     *
+     * @return the page mode.
      */
     public PageMode getPageMode()
     {
@@ -476,6 +484,8 @@ public class PDDocumentCatalog implements COSObjectable
 
     /**
      * Returns the page layout.
+     *
+     * @return the page layout.
      */
     public PageLayout getPageLayout()
     {
@@ -502,6 +512,8 @@ public class PDDocumentCatalog implements COSObjectable
 
     /**
      * Returns the document-level URI.
+     *
+     * @return the document-level URI
      */
     public PDURIDictionary getURI()
     {
@@ -521,6 +533,8 @@ public class PDDocumentCatalog implements COSObjectable
 
     /**
      * Get the document's structure tree root, or null if none exists.
+     *
+     * @return the structure tree root.
      */
     public PDStructureTreeRoot getStructureTreeRoot()
     {
@@ -540,6 +554,8 @@ public class PDDocumentCatalog implements COSObjectable
 
     /**
      * Returns the language for the document, or null.
+     *
+     * @return the language or null.
      */
     public String getLanguage()
     {

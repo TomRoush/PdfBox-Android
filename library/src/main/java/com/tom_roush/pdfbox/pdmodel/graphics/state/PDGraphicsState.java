@@ -565,7 +565,7 @@ public class PDGraphicsState implements Cloneable
     }
 
     /**
-     * Sets the the stroking color space.
+     * Sets the stroking color space.
      *
      * @param colorSpace The new stroking color space.
      */
@@ -585,7 +585,7 @@ public class PDGraphicsState implements Cloneable
     }
 
     /**
-     * Sets the the non-stroking color space.
+     * Sets the non-stroking color space.
      *
      * @param colorSpace The new non-stroking color space.
      */
@@ -641,15 +641,9 @@ public class PDGraphicsState implements Cloneable
         return clippingPath;
     }
 
-//    public Composite getStrokingJavaComposite()
-//    {
-//        return BlendComposite.getInstance(blendMode, (float) alphaConstant);
-//    } TODO: PdfBox-Android
+//    public Composite getStrokingJavaComposite() TODO: PdfBox-Android
 
-//    public Composite getNonStrokingJavaComposite()
-//    {
-//        return BlendComposite.getInstance(blendMode, (float) nonStrokingAlphaConstant);
-//    } TODO: PdfBox-Android
+//    public Composite getNonStrokingJavaComposite() TODO: PdfBox-Android
 
     /**
      * This will get the transfer function.

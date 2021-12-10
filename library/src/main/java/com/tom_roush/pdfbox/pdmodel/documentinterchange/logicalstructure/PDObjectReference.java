@@ -29,6 +29,8 @@ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationUnknown;
 
 /**
  * An object reference.
+ * <p>
+ * This is described as "Entries in an object reference dictionary" in the PDF specification.
  *
  * @author Johannes Koch
  */

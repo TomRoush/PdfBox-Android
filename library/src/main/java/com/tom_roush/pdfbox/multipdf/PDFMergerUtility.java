@@ -38,7 +38,6 @@ import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.cos.COSStream;
-import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.io.MemoryUsageSetting;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
@@ -72,8 +71,6 @@ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
  */
 public class PDFMergerUtility
 {
-    private static final String STRUCTURETYPE_DOCUMENT = "Document";
-
     private final List<InputStream> sources;
     private final List<FileInputStream> fileInputStreams;
     private String destinationFileName;
@@ -349,15 +346,17 @@ public class PDFMergerUtility
         {
             // PDFBOX-3972: get local dest page index, it must be reassigned after the page cloning
             PDDestinationOrAction openAction = srcCatalog.getOpenAction();
-            PDDestination openActionDestination;
+            PDDestination openActionDestination = null;
             if (openAction instanceof PDActionGoTo)
             {
                 openActionDestination = ((PDActionGoTo) openAction).getDestination();
             }
-            else
+            else if (openAction instanceof PDDestination)
             {
                 openActionDestination = (PDDestination) openAction;
             }
+            // note that it can also be something else, e.g. PDActionJavaScript, then do nothing.
+
             if (openActionDestination instanceof PDPageDestination)
             {
                 PDPage page = ((PDPageDestination) openActionDestination).getPage();
@@ -618,7 +617,7 @@ public class PDFMergerUtility
                 // The openAction is either a PDActionGoTo or a PDPageDestination
                 PDDestinationOrAction openAction = destCatalog.getOpenAction();
                 PDPageDestination pageDestination;
-                if (destCatalog.getOpenAction() instanceof PDActionGoTo)
+                if (openAction instanceof PDActionGoTo)
                 {
                     pageDestination = (PDPageDestination) ((PDActionGoTo) openAction).getDestination();
                 }
@@ -652,15 +651,12 @@ public class PDFMergerUtility
             {
                 updateParentEntry(destKArray, kDictLevel0);
                 newKArray.addAll(destKArray);
-                if (mergeStructTree)
-                {
-                    updateParentEntry(srcKArray, kDictLevel0);
-                }
+                updateParentEntry(srcKArray, kDictLevel0);
                 newKArray.addAll(srcKArray);
             }
             kDictLevel0.setItem(COSName.K, newKArray);
             kDictLevel0.setItem(COSName.P, destStructTree);
-            kDictLevel0.setItem(COSName.S, new COSString(STRUCTURETYPE_DOCUMENT));
+            kDictLevel0.setItem(COSName.S, COSName.DOCUMENT);
             destStructTree.setK(kDictLevel0);
         }
     }
@@ -712,8 +708,9 @@ public class PDFMergerUtility
         throws IOException
     {
         List<PDField> srcFields = srcAcroForm.getFields();
+        COSArray destFields;
 
-        if (srcFields != null)
+        if (srcFields != null && !srcFields.isEmpty())
         {
             // if a form is merged multiple times using PDFBox the newly generated
             // fields starting with dummyFieldName may already exist. We need to determine the last unique 
@@ -730,8 +727,19 @@ public class PDFMergerUtility
                 }
             }
 
-            COSArray destFields = (COSArray) destAcroForm.getCOSObject().getItem(COSName.FIELDS);
-            for (PDField srcField : srcAcroForm.getFieldTree())
+            // get the destinations root fields. Could be that the entry doesn't exist
+            // or is of wrong type
+            COSBase base = destAcroForm.getCOSObject().getItem(COSName.FIELDS);
+            if (base instanceof COSArray)
+            {
+                destFields = (COSArray) base;
+            }
+            else
+            {
+                destFields = new COSArray();
+            }
+
+            for (PDField srcField : srcAcroForm.getFields())
             {
                 COSDictionary dstField = (COSDictionary) cloner.cloneForNewDocument(srcField.getCOSObject());
                 // if the form already has a field with this name then we need to rename this field

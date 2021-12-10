@@ -25,8 +25,10 @@ import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
 
+
 /**
  * M: Set miter limit.
+ *
  */
 public class SetLineMiterLimit extends OperatorProcessor
 {

@@ -21,6 +21,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.util.Log;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ import com.tom_roush.harmony.javax.imageio.stream.ImageInputStream;
 import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageInputStream;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.filter.DecodeOptions;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
@@ -142,27 +144,50 @@ final class SampledImageReader
      */
     public static Bitmap getRGBImage(PDImage pdImage, COSArray colorKey) throws IOException
     {
+        return getRGBImage(pdImage, null, 1, colorKey);
+    }
+
+    private static Rect clipRegion(PDImage pdImage, Rect region)
+    {
+        if (region == null)
+        {
+            return new Rect(0, 0, pdImage.getWidth(), pdImage.getHeight());
+        }
+        else
+        {
+            int x = Math.max(0, region.left);
+            int y = Math.max(0, region.top);
+            int width = Math.min(region.width(), pdImage.getWidth() - x);
+            int height = Math.min(region.height(), pdImage.getHeight() - y);
+            return new Rect(x, y, width, height);
+        }
+    }
+
+    public static Bitmap getRGBImage(PDImage pdImage, Rect region, int subsampling,
+        COSArray colorKey) throws IOException
+    {
         if (pdImage.isEmpty())
         {
             throw new IOException("Image stream is empty");
         }
+        Rect clipped = clipRegion(pdImage, region);
 
         // get parameters, they must be valid or have been repaired
         final PDColorSpace colorSpace = pdImage.getColorSpace();
         final int numComponents = colorSpace.getNumberOfComponents();
-        final int width = pdImage.getWidth();
-        final int height = pdImage.getHeight();
+        final int width = (int) Math.ceil(clipped.width() / subsampling);
+        final int height = (int) Math.ceil(clipped.height() / subsampling);
         final int bitsPerComponent = pdImage.getBitsPerComponent();
         final float[] decode = getDecodeArray(pdImage);
 
-        if (width <= 0 || height <= 0)
+        if (width <= 0 || height <= 0 || pdImage.getWidth() <= 0 || pdImage.getHeight() <= 0)
         {
             throw new IOException("image width and height must be positive");
         }
 
         if (bitsPerComponent == 1 && colorKey == null && numComponents == 1)
         {
-            return from1Bit(pdImage);
+            return from1Bit(pdImage, clipped, subsampling, width, height);
         }
 
         //
@@ -172,42 +197,69 @@ final class SampledImageReader
         // in PDColorSpace#toRGBImage expects an 8-bit range, i.e. 0-255.
         //
         final float[] defaultDecode = pdImage.getColorSpace().getDefaultDecode(8);
-        if (pdImage.getSuffix() != null && pdImage.getSuffix().equals("jpg"))
+        if (pdImage.getSuffix() != null && pdImage.getSuffix().equals("jpg") && subsampling == 1)
         {
             return BitmapFactory.decodeStream(pdImage.createInputStream());
         }
         else if (bitsPerComponent == 8 && Arrays.equals(decode, defaultDecode) && colorKey == null)
         {
             // convert image, faster path for non-decoded, non-colormasked 8-bit images
-            return from8bit(pdImage);
+            return from8bit(pdImage, clipped, subsampling, width, height);
         }
         Log.e("PdfBox-Android", "Trying to create other-bit image not supported");
-//        return fromAny(pdImage, raster, colorKey);
-        return from8bit(pdImage);
+//        return fromAny(pdImage, raster, colorKey, clipped, subsampling, width, height);
+        return from8bit(pdImage, clipped, subsampling, width, height);
     }
 
-    private static Bitmap from1Bit(PDImage pdImage) throws IOException
+    private static Bitmap from1Bit(PDImage pdImage, Rect clipped, int subsampling,
+        final int width, final int height) throws IOException
     {
         final PDColorSpace colorSpace = pdImage.getColorSpace();
-        final int width = pdImage.getWidth();
-        final int height = pdImage.getHeight();
         final float[] decode = getDecodeArray(pdImage);
         Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8);
         ByteBuffer buffer = ByteBuffer.allocate(raster.getRowBytes() * height);
         raster.copyPixelsToBuffer(buffer);
-        byte[] output = buffer.array();
+        byte[] output;
 
+        DecodeOptions options = new DecodeOptions(subsampling);
+        options.setSourceRegion(clipped);
         // read bit stream
         InputStream iis = null;
         try
         {
-            // create stream
-            iis = pdImage.createInputStream();
+            final int inputWidth;
+            final int startx;
+            final int starty;
+            final int scanWidth;
+            final int scanHeight;
+            if (options.isFilterSubsampled())
+            {
+                // Decode options were honored, and so there is no need for additional clipping or subsampling
+                inputWidth = width;
+                startx = 0;
+                starty = 0;
+                scanWidth = width;
+                scanHeight = height;
+                subsampling = 1;
+            }
+            else
+            {
+                // Decode options not honored, so we need to clip and subsample ourselves.
+                inputWidth = pdImage.getWidth();
+                startx = clipped.left;
+                starty = clipped.top;
+                scanWidth = clipped.width();
+                scanHeight = clipped.height();
+            }
+            output = buffer.array();
             final boolean isIndexed =
                 false; // TODO: PdfBox-Android colorSpace instanceof PDIndexed;
 
-            int rowLen = width / 8;
-            if (width % 8 > 0)
+            // create stream
+            iis = pdImage.createInputStream(options);
+
+            int rowLen = inputWidth / 8;
+            if (inputWidth % 8 > 0)
             {
                 rowLen++;
             }
@@ -227,24 +279,31 @@ final class SampledImageReader
             }
             byte[] buff = new byte[rowLen];
             int idx = 0;
-            for (int y = 0; y < height; y++)
+            for (int y = 0; y < starty + scanHeight; y++)
             {
                 int x = 0;
                 int readLen = iis.read(buff);
+                if (y < starty || y % subsampling > 0)
+                {
+                    continue;
+                }
                 for (int r = 0; r < rowLen && r < readLen; r++)
                 {
                     int value = buff[r];
                     int mask = 128;
                     for (int i = 0; i < 8; i++)
                     {
-                        int bit = value & mask;
-                        mask >>= 1;
-                        output[idx++] = bit == 0 ? value0 : value1;
-                        x++;
-                        if (x == width)
+                        if (x >= startx + scanWidth)
                         {
                             break;
                         }
+                        int bit = value & mask;
+                        mask >>= 1;
+                        if (x >= startx && x % subsampling == 0)
+                        {
+                            output[idx++] = bit == 0 ? value0 : value1;
+                        }
+                        x++;
                     }
                 }
                 if (readLen != rowLen)
@@ -270,26 +329,56 @@ final class SampledImageReader
     }
 
     // faster, 8-bit non-decoded, non-colormasked image conversion
-    private static Bitmap from8bit(PDImage pdImage)
-        throws IOException
+    private static Bitmap from8bit(PDImage pdImage, Rect clipped, int subsampling, final int width,
+        final int height) throws IOException
     {
-        InputStream input = pdImage.createInputStream();
+        DecodeOptions options = new DecodeOptions(subsampling);
+        options.setSourceRegion(clipped);
+        InputStream input = pdImage.createInputStream(options);
         try
         {
-            // get the raster's underlying byte buffer
-            final int width = pdImage.getWidth();
-            final int height = pdImage.getHeight();
+            final int inputWidth;
+            final int startx;
+            final int starty;
+            final int scanWidth;
+            final int scanHeight;
+            if (options.isFilterSubsampled())
+            {
+                // Decode options were honored, and so there is no need for additional clipping or subsampling
+                inputWidth = width;
+                startx = 0;
+                starty = 0;
+                scanWidth = width;
+                scanHeight = height;
+                subsampling = 1;
+            }
+            else
+            {
+                // Decode options not honored, so we need to clip and subsample ourselves.
+                inputWidth = pdImage.getWidth();
+                startx = clipped.left;
+                starty = clipped.top;
+                scanWidth = clipped.width();
+                scanHeight = clipped.height();
+            }
             final int numComponents = pdImage.getColorSpace().getNumberOfComponents();
+            // get the raster's underlying byte buffer
             int[] banks = new int[width * height];
-            byte[] tempBytes = new byte[numComponents * width];
+//            byte[][] banks = ((DataBufferByte) raster.getDataBuffer()).getBankData();
+            byte[] tempBytes = new byte[numComponents * inputWidth];
             // compromise between memory and time usage:
             // reading the whole image consumes too much memory
             // reading one pixel at a time makes it slow in our buffering infrastructure 
             int i = 0;
-            for (int y = 0; y < height; ++y)
+            for (int y = 0; y < starty + scanHeight; ++y)
             {
                 input.read(tempBytes);
-                for (int x = 0; x < width; ++x)
+                if (y < starty || y % subsampling > 0)
+                {
+                    continue;
+                }
+
+                for (int x = startx; x < startx + scanWidth; x += subsampling)
                 {
                     int tempBytesIdx = x * numComponents;
                     if (numComponents == 3)
@@ -319,154 +408,11 @@ final class SampledImageReader
     }
 
     // slower, general-purpose image conversion from any image format
-//    private static BufferedImage fromAny(PDImage pdImage, WritableRaster raster, COSArray colorKey)
-//        throws IOException
-//    {
-//        final PDColorSpace colorSpace = pdImage.getColorSpace();
-//        final int numComponents = colorSpace.getNumberOfComponents();
-//        final int width = pdImage.getWidth();
-//        final int height = pdImage.getHeight();
-//        final int bitsPerComponent = pdImage.getBitsPerComponent();
-//        final float[] decode = getDecodeArray(pdImage);
-//
-//        // read bit stream
-//        ImageInputStream iis = null;
-//        try
-//        {
-//            // create stream
-//            iis = new MemoryCacheImageInputStream(pdImage.createInputStream());
-//            final float sampleMax = (float)Math.pow(2, bitsPerComponent) - 1f;
-//            final boolean isIndexed = colorSpace instanceof PDIndexed;
-//
-//            // init color key mask
-//            float[] colorKeyRanges = null;
-//            BufferedImage colorKeyMask = null;
-//            if (colorKey != null)
-//            {
-//                colorKeyRanges = colorKey.toFloatArray();
-//                colorKeyMask = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-//            }
-//
-//            // calculate row padding
-//            int padding = 0;
-//            if (width * numComponents * bitsPerComponent % 8 > 0)
-//            {
-//                padding = 8 - (width * numComponents * bitsPerComponent % 8);
-//            }
-//
-//            // read stream
-//            byte[] srcColorValues = new byte[numComponents];
-//            byte[] alpha = new byte[1];
-//            for (int y = 0; y < height; y++)
-//            {
-//                for (int x = 0; x < width; x++)
-//                {
-//                    boolean isMasked = true;
-//                    for (int c = 0; c < numComponents; c++)
-//                    {
-//                        int value = (int)iis.readBits(bitsPerComponent);
-//
-//                        // color key mask requires values before they are decoded
-//                        if (colorKeyRanges != null)
-//                        {
-//                            isMasked &= value >= colorKeyRanges[c * 2] &&
-//                                value <= colorKeyRanges[c * 2 + 1];
-//                        }
-//
-//                        // decode array
-//                        final float dMin = decode[c * 2];
-//                        final float dMax = decode[(c * 2) + 1];
-//
-//                        // interpolate to domain
-//                        float output = dMin + (value * ((dMax - dMin) / sampleMax));
-//
-//                        if (isIndexed)
-//                        {
-//                            // indexed color spaces get the raw value, because the TYPE_BYTE
-//                            // below cannot be reversed by the color space without it having
-//                            // knowledge of the number of bits per component
-//                            srcColorValues[c] = (byte)Math.round(output);
-//                        }
-//                        else
-//                        {
-//                            // interpolate to TYPE_BYTE
-//                            int outputByte = Math.round(((output - Math.min(dMin, dMax)) /
-//                                Math.abs(dMax - dMin)) * 255f);
-//
-//                            srcColorValues[c] = (byte)outputByte;
-//                        }
-//                    }
-//                    raster.setDataElements(x, y, srcColorValues);
-//
-//                    // set alpha channel in color key mask, if any
-//                    if (colorKeyMask != null)
-//                    {
-//                        alpha[0] = (byte)(isMasked ? 255 : 0);
-//                        colorKeyMask.getRaster().setDataElements(x, y, alpha);
-//                    }
-//                }
-//
-//                // rows are padded to the nearest byte
-//                iis.readBits(padding);
-//            }
-//
-//            // use the color space to convert the image to RGB
-//            BufferedImage rgbImage = colorSpace.toRGBImage(raster);
-//
-//            // apply color mask, if any
-//            if (colorKeyMask != null)
-//            {
-//                return applyColorKeyMask(rgbImage, colorKeyMask);
-//            }
-//            else
-//            {
-//                return rgbImage;
-//            }
-//        }
-//        finally
-//        {
-//            if (iis != null)
-//            {
-//                iis.close();
-//            }
-//        }
-//    } TODO: PdfBox-Android
+//    private static BufferedImage fromAny(PDImage pdImage, WritableRaster raster, COSArray colorKey, Rectangle clipped,
+//        int subsampling, final int width, final int height) TODO: Pdfbox-Android
 
     // color key mask: RGB + Binary -> ARGB
-//    private static BufferedImage applyColorKeyMask(BufferedImage image, BufferedImage mask)
-//        throws IOException
-//    {
-//        int width = image.getWidth();
-//        int height = image.getHeight();
-//
-//        // compose to ARGB
-//        BufferedImage masked = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-//
-//        WritableRaster src = image.getRaster();
-//        WritableRaster dest = masked.getRaster();
-//        WritableRaster alpha = mask.getRaster();
-//
-//        float[] rgb = new float[3];
-//        float[] rgba = new float[4];
-//        float[] alphaPixel = null;
-//        for (int y = 0; y < height; y++)
-//        {
-//            for (int x = 0; x < width; x++)
-//            {
-//                src.getPixel(x, y, rgb);
-//
-//                rgba[0] = rgb[0];
-//                rgba[1] = rgb[1];
-//                rgba[2] = rgb[2];
-//                alphaPixel = alpha.getPixel(x, y, alphaPixel);
-//                rgba[3] = 255 - alphaPixel[0];
-//
-//                dest.setPixel(x, y, rgba);
-//            }
-//        }
-//
-//        return masked;
-//    } TODO: PdfBox-Android
+//    private static BufferedImage applyColorKeyMask(BufferedImage image, BufferedImage mask) TODO: PdfBox-Android
 
     // gets decode array from dictionary or returns default
     private static float[] getDecodeArray(PDImage pdImage) throws IOException

@@ -18,7 +18,6 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
-
 import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
@@ -88,6 +87,15 @@ public interface PDFontLike
      * @param code character code
      */
     float getWidth(int code) throws IOException;
+
+    /**
+     * Returns true if the Font dictionary specifies an explicit width for the given glyph.
+     * This includes Width, W but not default widths entries.
+     *
+     * @param code character code
+     * @throws IOException if the font could not be read
+     */
+    boolean hasExplicitWidth(int code) throws IOException;
 
     /**
      * Returns the width of a glyph in the embedded font file.

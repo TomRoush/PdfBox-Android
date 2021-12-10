@@ -28,7 +28,9 @@ import android.graphics.Region;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.tom_roush.harmony.awt.geom.AffineTransform;
@@ -57,6 +59,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDGraphicsState;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDSoftMask;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.RenderingMode;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.AnnotationFilter;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationMarkup;
@@ -68,9 +71,12 @@ import com.tom_roush.pdfbox.util.Vector;
  * Paints a page in a PDF document to a Canvas context. May be subclassed to provide custom
  * rendering.
  *
- * <p>If you want to do custom graphics processing rather than Canvas rendering, then you should
- * subclass PDFGraphicsStreamEngine instead. Subclassing PageDrawer is only suitable for cases
- * where the goal is to render onto a Canvas surface.
+ * <p>
+ * If you want to do custom graphics processing rather than Canvas rendering, then you should
+ * subclass {@link PDFGraphicsStreamEngine} instead. Subclassing PageDrawer is only suitable for
+ * cases where the goal is to render onto a {@link Canvas} surface. In that case you'll also
+ * have to subclass {@link PDFRenderer} and modify
+ * {@link PDFRenderer#createPageDrawer(PageDrawerParameters)}.
  *
  * @author Ben Litchfield
  */
@@ -78,6 +84,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 {
     // parent document renderer - note: this is needed for not-yet-implemented resource caching
     private final PDFRenderer renderer;
+
+    private final boolean subsamplingAllowed;
 
     // the graphics device to draw to, xform is the initial transform of the device (i.e. DPI)
     private Paint paint;
@@ -100,13 +108,25 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     // last clipping path
     private Region lastClip;
 
-    // buffered clipping area for text being drawn
-    private Region textClippingArea;
+    // shapes of glyphs being drawn to be used for clipping
+    private List<Path> textClippings;
 
     // glyph cache
     private final Map<PDFont, Glyph2D> fontGlyph2D = new HashMap<PDFont, Glyph2D>();
 
     private PointF currentPoint = new PointF();
+
+    /**
+     * Default annotations filter, returns all annotations
+     */
+    private AnnotationFilter annotationFilter = new AnnotationFilter()
+    {
+        @Override
+        public boolean accept(PDAnnotation annotation)
+        {
+            return true;
+        }
+    };
 
     /**
      * Constructor.
@@ -118,6 +138,29 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     {
         super(parameters.getPage());
         this.renderer = parameters.getRenderer();
+        this.subsamplingAllowed = parameters.isSubsamplingAllowed();
+    }
+
+    /**
+     * Return the AnnotationFilter.
+     *
+     * @return the AnnotationFilter
+     */
+    public AnnotationFilter getAnnotationFilter()
+    {
+        return annotationFilter;
+    }
+
+    /**
+     * Set the AnnotationFilter.
+     *
+     * <p>Allows to only render annotation accepted by the filter.
+     *
+     * @param annotationFilter the AnnotationFilter
+     */
+    public void setAnnotationFilter(AnnotationFilter annotationFilter)
+    {
+        this.annotationFilter = annotationFilter;
     }
 
     /**
@@ -150,9 +193,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     private void setRenderingHints()
     {
 //        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-//                                  RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+//            RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 //        graphics.setRenderingHint(RenderingHints.KEY_RENDERING,
-//                                  RenderingHints.VALUE_RENDER_QUALITY);
+//            RenderingHints.VALUE_RENDER_QUALITY);
         paint.setAntiAlias(true);
     }
 
@@ -183,7 +226,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
         processPage(getPage());
 
-        for (PDAnnotation annotation : getPage().getAnnotations())
+        for (PDAnnotation annotation : getPage().getAnnotations(annotationFilter))
         {
             showAnnotation(annotation);
         }
@@ -191,97 +234,15 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //        graphics = null;
     }
 
-//    /**
-//     * Draws the pattern stream to the requested context.
-//     *
-//     * @param g The graphics context to draw onto.
-//     * @param pattern The tiling pattern to be used.
-//     * @param colorSpace color space for this tiling.
-//     * @param color color for this tiling.
-//     * @param patternMatrix the pattern matrix
-//     * @throws IOException If there is an IO error while drawing the page.
-//     */
 //    void drawTilingPattern(Graphics2D g, PDTilingPattern pattern, PDColorSpace colorSpace,
-//        PDColor color, Matrix patternMatrix) throws IOException
-//    {
-//        Graphics2D oldGraphics = graphics;
-//        graphics = g;
-//
-//        Path oldLinePath = linePath;
-//        linePath = new GeneralPath();
-//        int oldClipWindingRule = clipWindingRule;
-//        clipWindingRule = -1;
-//
-//        Area oldLastClip = lastClip;
-//        lastClip = null;
-//
-//        boolean oldFlipTG = flipTG;
-//        flipTG = true;
-//
-//        setRenderingHints();
-//        processTilingPattern(pattern, color, colorSpace, patternMatrix);
-//
-//        flipTG = oldFlipTG;
-//        graphics = oldGraphics;
-//        linePath = oldLinePath;
-//        lastClip = oldLastClip;
-//        clipWindingRule = oldClipWindingRule;
-//    } TODO: PdfBox-Android
+//        PDColor color, Matrix patternMatrix) throws IOException TODO: PdfBox-Android
 
     private float clampColor(float color)
     {
         return color < 0 ? 0 : (color > 1 ? 1 : color);
     }
 
-//    /**
-//     * Returns an AWT paint for the given PDColor.
-//     *
-//     * @param color The color to get a paint for. This can be an actual color or a pattern.
-//     * @throws IOException
-//     */
-//    protected Paint getPaint(PDColor color) throws IOException
-//    {
-//        PDColorSpace colorSpace = color.getColorSpace();
-//        if (!(colorSpace instanceof PDPattern))
-//        {
-//            float[] rgb = colorSpace.toRGB(color.getComponents());
-//            return new Color(clampColor(rgb[0]), clampColor(rgb[1]), clampColor(rgb[2]));
-//        }
-//        else
-//        {
-//            PDPattern patternSpace = (PDPattern)colorSpace;
-//            PDAbstractPattern pattern = patternSpace.getPattern(color);
-//            if (pattern instanceof PDTilingPattern)
-//            {
-//                PDTilingPattern tilingPattern = (PDTilingPattern) pattern;
-//
-//                if (tilingPattern.getPaintType() == PDTilingPattern.PAINT_COLORED)
-//                {
-//                    // colored tiling pattern
-//                    return tilingPaintFactory.create(tilingPattern, null, null, xform);
-//                }
-//                else
-//                {
-//                    // uncolored tiling pattern
-//                    return tilingPaintFactory.create(tilingPattern,
-//                        patternSpace.getUnderlyingColorSpace(), color, xform);
-//                }
-//            }
-//            else
-//            {
-//                PDShadingPattern shadingPattern = (PDShadingPattern)pattern;
-//                PDShading shading = shadingPattern.getShading();
-//                if (shading == null)
-//                {
-//                    Log.e("PdfBox-Android", "shadingPattern is null, will be filled with transparency");
-//                    return new Color(0,0,0,0);
-//                }
-//                return shading.toPaint(Matrix.concatenate(getInitialMatrix(),
-//                    shadingPattern.getMatrix()));
-//
-//            }
-//        }
-//    } TODO: PdfBox-Android
+//    protected Paint getPaint(PDColor color) throws IOException TODO: PdfBox-Android
 
     // returns an integer for color that Android understands from the PDColor
     // TODO: alpha?
@@ -324,8 +285,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
      */
     private void beginTextClip()
     {
-        // buffer the text clip because it represents a single clipping area
-        textClippingArea = new Region();
+        // buffer the text clippings because they represents a single clipping area
+        textClippings = new ArrayList<Path>();
     }
 
     /**
@@ -337,10 +298,17 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         RenderingMode renderingMode = state.getTextState().getRenderingMode();
 
         // apply the buffered clip as one area
-        if (renderingMode.isClip() && !textClippingArea.isEmpty())
+        if (renderingMode.isClip() && !textClippings.isEmpty())
         {
-            state.intersectClippingPath(textClippingArea);
-            textClippingArea = null;
+            // PDFBOX-4150: this is much faster than using textClippingArea.add(new Area(glyph))
+            // https://stackoverflow.com/questions/21519007/fast-union-of-shapes-in-java
+            Path path = new Path();
+            for (Path shape : textClippings)
+            {
+                path.addPath(shape);
+            }
+            state.intersectClippingPath(path);
+            textClippings = new ArrayList<Path>();
 
             // PDFBOX-3681: lastClip needs to be reset, because after intersection it is still the same 
             // object, thus setClip() would believe that it is cached.
@@ -378,8 +346,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         Path path = glyph2D.getPathForCharacterCode(code);
         if (path != null)
         {
-            // stretch non-embedded glyph if it does not match the width contained in the PDF
-            if (!font.isEmbedded())
+            // Stretch non-embedded glyph if it does not match the height/width contained in the PDF.
+            // Vertical fonts have zero X displacement, so the following code scales to 0 if we don't skip it.
+            // TODO: How should vertical fonts be handled?
+            if (!font.isEmbedded() && !font.isVertical() && !font.isStandard14() && font.hasExplicitWidth(code))
             {
                 float fontWidth = font.getWidthFromFont(code);
                 if (fontWidth > 0 && // ignore spaces
@@ -419,7 +389,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
             if (renderingMode.isClip())
             {
-//                textClippingArea.add(new Area(glyph)); TODO: PdfBox-Android
+//                textClippings.add(glyph); TODO: PdfBox-Android
             }
         }
     }
@@ -504,134 +474,23 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         linePath.close();
     }
 
-    //TODO: move soft mask apply to getPaint()?
-//    private Paint applySoftMaskToPaint(Paint parentPaint, PDSoftMask softMask) throws IOException
-//    {
-//        if (softMask == null || softMask.getGroup() == null)
-//        {
-//            return parentPaint;
-//        }
-//        PDColor backdropColor = null;
-//        if (COSName.LUMINOSITY.equals(softMask.getSubType()))
-//        {
-//            COSArray backdropColorArray = softMask.getBackdropColor();
-//            PDColorSpace colorSpace = softMask.getGroup().getGroup().getColorSpace();
-//            if (colorSpace != null && backdropColorArray != null)
-//            {
-//                backdropColor = new PDColor(backdropColorArray, colorSpace);
-//            }
-//        }
-//        TransparencyGroup transparencyGroup = new TransparencyGroup(softMask.getGroup(), true,
-//            softMask.getInitialTransformationMatrix(), backdropColor);
-//        Bitmap image = transparencyGroup.getImage();
-//        if (image == null)
-//        {
-//            // Adobe Reader ignores empty softmasks instead of using bc color
-//            // sample file: PDFJS-6967_reduced_outside_softmask.pdf
-//            return parentPaint;
-//        }
-//        Bitmap gray = new Bitmap(image.getWidth(), image.getHeight(), Bitmap.TYPE_BYTE_GRAY);
-//        if (COSName.ALPHA.equals(softMask.getSubType()))
-//        {
-//            gray.setData(image.getAlphaRaster());
-//        }
-//        else if (COSName.LUMINOSITY.equals(softMask.getSubType()))
-//        {
-//            Graphics g = gray.getGraphics();
-//            g.drawImage(image, 0, 0, null);
-//            g.dispose();
-//        }
-//        else
-//        {
-//            throw new IOException("Invalid soft mask subtype.");
-//        }
-//        gray = getRotatedImage(gray);
-//        Rectangle2D tpgBounds = transparencyGroup.getBounds();
-//        adjustRectangle(tpgBounds);
-//        return new SoftMask(parentPaint, gray, tpgBounds, backdropColor, softMask.getTransferFunction());
-//    } TODO: PdfBox-Android
+//    private Paint applySoftMaskToPaint(Paint parentPaint, PDSoftMask softMask) throws IOException TODO: Pdfbox-Android
 
-    // this adjusts the rectangle to the rotated image to put the soft mask at the correct position
-    //TODO after all transparency problems have been solved:
-    // 1. shouldn't this be done in transparencyGroup.getBounds() ?
-    // 2. change transparencyGroup.getBounds() to getOrigin(), because size isn't used in SoftMask
-    // 3. Is it possible to create the softmask and transparency group in the correct rotation?
-    //    (needs rendering identity testing before committing!)
-//    private void adjustRectangle(Rectangle2D r)
-//    {
-//        Matrix m = new Matrix(xform);
-//        if (pageRotation == 90)
-//        {
-//            r.setRect(pageSize.getHeight() * m.getScalingFactorY() - r.getY() - r.getHeight(),
-//                r.getX(),
-//                r.getWidth(),
-//                r.getHeight());
-//        }
-//        if (pageRotation == 180)
-//        {
-//            r.setRect(pageSize.getWidth() * m.getScalingFactorX() - r.getX() - r.getWidth(),
-//                pageSize.getHeight() * m.getScalingFactorY() - r.getY() - r.getHeight(),
-//                r.getWidth(),
-//                r.getHeight());
-//        }
-//        if (pageRotation == 270)
-//        {
-//            r.setRect(r.getY(),
-//                pageSize.getWidth() * m.getScalingFactorX() - r.getX() - r.getWidth(),
-//                r.getWidth(),
-//                r.getHeight());
-//        }
-//    } TODO: PdfBox-Android
+//    private void adjustRectangle(RectF r) TODO: PdfBox-Android
 
-    // return quadrant-rotated image with adjusted size
-//    private Bitmap getRotatedImage(Bitmap gray) throws IOException
-//    {
-//        Bitmap gray2;
-//        AffineTransform at;
-//        switch (pageRotation % 360)
-//        {
-//            case 90:
-//                gray2 = new Bitmap(gray.getHeight(), gray.getWidth(), Bitmap.TYPE_BYTE_GRAY);
-//                at = AffineTransform.getQuadrantRotateInstance(1, gray.getHeight() / 2d, gray.getHeight() / 2d);
-//                break;
-//            case 180:
-//                gray2 = new Bitmap(gray.getWidth(), gray.getHeight(), Bitmap.TYPE_BYTE_GRAY);
-//                at = AffineTransform.getQuadrantRotateInstance(2, gray.getWidth()/ 2d, gray.getHeight() / 2d);
-//                break;
-//            case 270:
-//                gray2 = new Bitmap(gray.getHeight(), gray.getWidth(), Bitmap.TYPE_BYTE_GRAY);
-//                at = AffineTransform.getQuadrantRotateInstance(3, gray.getWidth()/ 2d, gray.getWidth() / 2d);
-//                break;
-//            default:
-//                return gray;
-//        }
-//        Graphics2D g2 = (Graphics2D) gray2.getGraphics();
-//        g2.drawImage(gray, at, null);
-//        g2.dispose();
-//        return gray2;
-//    } TODO: PdfBox-Android
+//    private Bitmap getRotatedImage(Bitmap gray) throws IOException TODO: PdfBox-Android
 
-    // returns the stroking AWT Paint
-//    private Paint getStrokingPaint() throws IOException
-//    {
-//        return applySoftMaskToPaint(
-//            getPaint(getGraphicsState().getStrokingColor()),
-//            getGraphicsState().getSoftMask());
-//    } TODO: PdfBox-Android
+//    private Paint getStrokingPaint() throws IOException TODO: PdfBox-Android
 
-    private int getStrokingColor() throws IOException {
+    private int getStrokingColor() throws IOException
+    {
         return getColor(getGraphicsState().getStrokingColor());
     }
 
-    // returns the non-stroking AWT Paint
-//    private Paint getNonStrokingPaint() throws IOException
-//    {
-//        return applySoftMaskToPaint(
-//            getPaint(getGraphicsState().getNonStrokingColor()),
-//            getGraphicsState().getSoftMask());
-//    } TODO: PdfBox-Android
+//    private Paint getNonStrokingPaint() throws IOException TODO: PdfBox-Android
 
-    private int getNonStrokingColor() throws IOException {
+    private int getNonStrokingColor() throws IOException
+    {
         return getColor(getGraphicsState().getNonStrokingColor());
     }
 
@@ -694,7 +553,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     {
 //        graphics.setComposite(getGraphicsState().getStrokingJavaComposite());
         setStroke();
-        paint.setARGB(255, 0, 0, 0); // TODO set the correct color from graphics state. FIXME: 2.0, isn't this done below?
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(getStrokingColor());
         setClip();
@@ -721,8 +579,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             bounds.height() > 1;
         if (noAntiAlias)
         {
-//            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-//                RenderingHints.VALUE_ANTIALIAS_OFF);
             paint.setAntiAlias(false);
         }
 
@@ -739,28 +595,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
     }
 
-    // checks whether this is a shading pattern and if yes,
-    // get the transformed BBox and intersect with current paint area
-    // need to do it here and not in shading getRaster() because it may have been rotated
-//    private void intersectShadingBBox(PDColor color, Area area) throws IOException
-//    {
-//        if (color.getColorSpace() instanceof PDPattern)
-//        {
-//            PDColorSpace colorSpace = color.getColorSpace();
-//            PDAbstractPattern pat = ((PDPattern) colorSpace).getPattern(color);
-//            if (pat instanceof PDShadingPattern)
-//            {
-//                PDShading shading = ((PDShadingPattern) pat).getShading();
-//                PDRectangle bbox = shading.getBBox();
-//                if (bbox != null)
-//                {
-//                    Matrix m = Matrix.concatenate(getInitialMatrix(), pat.getMatrix());
-//                    Area bboxArea = new Area(bbox.transform(m));
-//                    area.intersect(bboxArea);
-//                }
-//            }
-//        }
-//    } TODO: PdfBox-Android
+//    private void intersectShadingBBox(PDColor color, Area area) throws IOException TODO: PdfBox-Android
 
     /**
      * Returns true if the given path is rectangular.
@@ -867,71 +702,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
         if (pdImage.isStencil())
         {
-//            if (getGraphicsState().getNonStrokingColor().getColorSpace() instanceof PDPattern)
-//            {
-//                // The earlier code for stencils (see "else") doesn't work with patterns because the
-//                // CTM is not taken into consideration.
-//                // this code is based on the fact that it is easily possible to draw the mask and
-//                // the paint at the correct place with the existing code, but not in one step.
-//                // Thus what we do is to draw both in separate images, then combine the two and draw
-//                // the result.
-//                // Note that the device scale is not used. In theory, some patterns can get better
-//                // at higher resolutions but the stencil would become more and more "blocky".
-//                // If anybody wants to do this, have a look at the code in showTransparencyGroup().
-//
-//                // draw the paint
-//                Paint paint = getNonStrokingPaint();
-//                Rectangle2D unitRect = new Rectangle2D.Float(0, 0, 1, 1);
-//                Rectangle2D bounds = at.createTransformedShape(unitRect).getBounds2D();
-//                Bitmap renderedPaint =
-//                    new Bitmap((int) Math.ceil(bounds.getWidth()),
-//                        (int) Math.ceil(bounds.getHeight()),
-//                        Bitmap.TYPE_INT_ARGB);
-//                Graphics2D g = (Graphics2D) renderedPaint.getGraphics();
-//                g.translate(-bounds.getMinX(), -bounds.getMinY());
-//                g.setPaint(paint);
-//                g.fill(bounds);
-//                g.dispose();
-//
-//                // draw the mask
-//                Bitmap mask = pdImage.getImage();
-//                Bitmap renderedMask = new Bitmap((int) Math.ceil(bounds.getWidth()),
-//                    (int) Math.ceil(bounds.getHeight()),
-//                    Bitmap.TYPE_INT_RGB);
-//                g = (Graphics2D) renderedMask.getGraphics();
-//                g.translate(-bounds.getMinX(), -bounds.getMinY());
-//                AffineTransform imageTransform = new AffineTransform(at);
-//                imageTransform.scale(1.0 / mask.getWidth(), -1.0 / mask.getHeight());
-//                imageTransform.translate(0, -mask.getHeight());
-//                g.drawImage(mask, imageTransform, null);
-//                g.dispose();
-//
-//                // apply the mask
-//                final int[] transparent = new int[4];
-//                int[] alphaPixel = null;
-//                WritableRaster raster = renderedPaint.getRaster();
-//                WritableRaster alpha = renderedMask.getRaster();
-//                int h = renderedMask.getRaster().getHeight();
-//                int w = renderedMask.getRaster().getWidth();
-//                for (int y = 0; y < h; y++)
-//                {
-//                    for (int x = 0; x < w; x++)
-//                    {
-//                        alphaPixel = alpha.getPixel(x, y, alphaPixel);
-//                        if (alphaPixel[0] == 255)
-//                        {
-//                            raster.setPixel(x, y, transparent);
-//                        }
-//                    }
-//                }
-//
-//                // draw the image
-//                setClip();
-//                graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
-//                graphics.drawImage(renderedPaint,
-//                    AffineTransform.getTranslateInstance(bounds.getMinX(), bounds.getMinY()),
-//                    null);
-//            }
+//            if (getGraphicsState().getNonStrokingColor().getColorSpace() instanceof PDPattern) TODO: PdfBox-Android
 //            else
 //            {
                 // fill the image with stenciled paint
@@ -943,8 +714,17 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
         else
         {
-            // draw the image
-            drawBitmap(pdImage.getImage(), at);
+            if (subsamplingAllowed)
+            {
+                int subsampling = getSubsampling(pdImage, at);
+                // draw the subsampled image
+                drawBitmap(pdImage.getImage(null, subsampling), at);
+            }
+            else
+            {
+                // subsampling not allowed, draw the image
+                drawBitmap(pdImage.getImage(), at);
+            }
         }
 
         if (!pdImage.getInterpolate())
@@ -955,14 +735,46 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
     }
 
+    /**
+     * Calculated the subsampling frequency for a given PDImage based on the current transformation
+     * and its calculated transform
+     *
+     * @param pdImage PDImage to be drawn
+     * @param at Transform that will be applied to the image when drawing
+     * @return The rounded-down ratio of image pixels to drawn pixels. Returned value will always be
+     * >=1.
+     */
+    private int getSubsampling(PDImage pdImage, AffineTransform at)
+    {
+        // calculate subsampling according to the resulting image size
+        double scale = Math.abs(at.getDeterminant() * xform.getDeterminant());
+
+        int subsampling = (int) Math.floor(Math.sqrt(pdImage.getWidth() * pdImage.getHeight() / scale));
+        if (subsampling > 8)
+        {
+            subsampling = 8;
+        }
+        if (subsampling < 1)
+        {
+            subsampling = 1;
+        }
+        if (subsampling > pdImage.getWidth() || subsampling > pdImage.getHeight())
+        {
+            // For very small images it is possible that the subsampling would imply 0 size.
+            // To avoid problems, the subsampling is set to no less than the smallest dimension.
+            subsampling = Math.min(pdImage.getWidth(), pdImage.getHeight());
+        }
+        return subsampling;
+    }
+
     private void drawBitmap(Bitmap image, AffineTransform at) throws IOException
     {
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
         setClip();
+        AffineTransform imageTransform = new AffineTransform(at);
         PDSoftMask softMask = getGraphicsState().getSoftMask();
         if( softMask != null )
         {
-            AffineTransform imageTransform = new AffineTransform(at);
             imageTransform.scale(1, -1);
             imageTransform.translate(0, -1);
 //            Paint awtPaint = new TexturePaint(image,
@@ -983,7 +795,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
             int width = image.getWidth();
             int height = image.getHeight();
-            AffineTransform imageTransform = new AffineTransform(at);
             imageTransform.scale(1.0 / width, -1.0 / height);
             imageTransform.translate(0, -height);
             canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
@@ -1283,7 +1094,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
     }
 
-    public void setStroke(Paint p, float width, Paint.Cap cap, Paint.Join join, float miterLimit, float[] dash, float dash_phase) {
+    public void setStroke(Paint p, float width, Paint.Cap cap, Paint.Join join, float miterLimit, float[] dash, float dash_phase)
+    {
         p.setStrokeWidth(width);
         p.setStrokeCap(cap);
         p.setStrokeJoin(join);
@@ -1323,12 +1135,15 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         // adjust bbox (x,y) position at the initial scale + cropbox
 //        float x = bbox.getLowerLeftX() - pageSize.getLowerLeftX();
 //        float y = pageSize.getUpperRightY() - bbox.getUpperRightY();
-//        graphics.translate(x * xScale, y * yScale);
 
         if (flipTG)
         {
 //            graphics.translate(0, image.getHeight());
 //            graphics.scale(1, -1);
+        }
+        else
+        {
+//            graphics.translate(x * xScale, y * yScale);
         }
 
         PDSoftMask softMask = getGraphicsState().getSoftMask();
@@ -1356,7 +1171,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     {
 //        private final Bitmap image;
 //        private final PDRectangle bbox;
-//
+
 //        private final int minX;
 //        private final int minY;
 //        private final int width;
@@ -1491,33 +1306,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
 
         // http://stackoverflow.com/a/21181943/535646
-//        private Bitmap create2ByteGrayAlphaImage(int width, int height)
-//        {
-//            /**
-//             * gray + alpha
-//             */
-//            int[] bandOffsets = new int[] {1, 0};
-//            int bands = bandOffsets.length;
-//
-//            /**
-//             * Color Model usesd for raw GRAY + ALPHA
-//             */
-//            final ColorModel CM_GRAY_ALPHA
-//                = new ComponentColorModel(
-//                ColorSpace.getInstance(ColorSpace.CS_GRAY),
-//                true, false, Transparency.TRANSLUCENT, DataBuffer.TYPE_BYTE);
-//
-//            // Init data buffer of type byte
-//            DataBuffer buffer = new DataBufferByte(width * height * bands);
-//
-//            // Wrap the data buffer in a raster
-//            WritableRaster raster =
-//                Raster.createInterleavedRaster(buffer, width, height,
-//                    width * bands, bands, bandOffsets, new Point(0, 0));
-//
-//            // Create a custom Bitmap with the raster and a suitable color model
-//            return new Bitmap(CM_GRAY_ALPHA, raster, false, null);
-//        } TODO: PdfBox-Android
+//        private BufferedImage create2ByteGrayAlphaImage(int width, int height) TODO: PdfBox-Android
 
         private boolean isGray(PDColorSpace colorSpace)
         {

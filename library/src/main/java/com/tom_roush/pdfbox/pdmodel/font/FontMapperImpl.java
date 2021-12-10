@@ -535,7 +535,7 @@ final class FontMapperImpl implements FontMapper
                     {
                         return new CIDFontMapping((OpenTypeFont)font, null, true);
                     }
-                    else
+                    else if (font != null)
                     {
                         return new CIDFontMapping(null, font, true);
                     }

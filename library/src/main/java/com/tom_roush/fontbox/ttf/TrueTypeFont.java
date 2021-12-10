@@ -21,8 +21,10 @@ import android.graphics.Path;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,7 @@ public class TrueTypeFont implements FontBoxFont, Closeable
     protected Map<String,TTFTable> tables = new HashMap<String,TTFTable>();
     private final TTFDataStream data;
     private Map<String, Integer> postScriptNames;
+    private final List<String> enabledGsubFeatures = new ArrayList<String>();
 
     /**
      * Constructor.  Clients should use the TTFParser to create a new TrueTypeFont object.
@@ -298,6 +301,17 @@ public class TrueTypeFont implements FontBoxFont, Closeable
     }
 
     /**
+     * Get the "gsub" table for this TTF.
+     *
+     * @return The "gsub" table.
+     * @throws IOException if there was an error reading the table.
+     */
+    public GlyphSubstitutionTable getGsub() throws IOException
+    {
+        return (GlyphSubstitutionTable) getTable(GlyphSubstitutionTable.TAG);
+    }
+
+    /**
      * Get the data of the TrueType Font
      * program representing the stream used to build this 
      * object (normally from the TTFParser object).
@@ -467,7 +481,9 @@ public class TrueTypeFont implements FontBoxFont, Closeable
      * by which this is accomplished are implementation-dependent."
      *
      * @throws IOException if the font could not be read
+     * @deprecated Use {@link #getUnicodeCmapLookup()} instead
      */
+    @Deprecated
     public CmapSubtable getUnicodeCmap() throws IOException
     {
         return getUnicodeCmap(true);
@@ -479,8 +495,52 @@ public class TrueTypeFont implements FontBoxFont, Closeable
      *
      * @param isStrict False if we allow falling back to any cmap, even if it's not Unicode.
      * @throws IOException if the font could not be read, or there is no Unicode cmap
+     * @deprecated Use {@link #getUnicodeCmapLookup(boolean)} instead
      */
+    @Deprecated
     public CmapSubtable getUnicodeCmap(boolean isStrict) throws IOException
+    {
+        return getUnicodeCmapImpl(isStrict);
+    }
+
+    /**
+     * Returns the best Unicode from the font (the most general). The PDF spec says that "The means
+     * by which this is accomplished are implementation-dependent."
+     *
+     * The returned cmap will perform glyph substitution.
+     *
+     * @throws IOException if the font could not be read
+     */
+    public CmapLookup getUnicodeCmapLookup() throws IOException
+    {
+        return getUnicodeCmapLookup(true);
+    }
+
+    /**
+     * Returns the best Unicode from the font (the most general). The PDF spec says that "The means
+     * by which this is accomplished are implementation-dependent."
+     *
+     * The returned cmap will perform glyph substitution.
+     *
+     * @param isStrict False if we allow falling back to any cmap, even if it's not Unicode.
+     * @throws IOException if the font could not be read, or there is no Unicode cmap
+     */
+    public CmapLookup getUnicodeCmapLookup(boolean isStrict) throws IOException
+    {
+        CmapSubtable cmap = getUnicodeCmapImpl(isStrict);
+        if (!enabledGsubFeatures.isEmpty())
+        {
+            GlyphSubstitutionTable table = getGsub();
+            if (table != null)
+            {
+                return new SubstitutingCmapLookup(cmap, (GlyphSubstitutionTable) table,
+                    Collections.unmodifiableList(enabledGsubFeatures));
+            }
+        }
+        return cmap;
+    }
+
+    private CmapSubtable getUnicodeCmapImpl(boolean isStrict) throws IOException
     {
         CmapTable cmapTable = getCmap();
         if (cmapTable == null)
@@ -497,6 +557,11 @@ public class TrueTypeFont implements FontBoxFont, Closeable
 
         CmapSubtable cmap = cmapTable.getSubtable(CmapTable.PLATFORM_UNICODE,
             CmapTable.ENCODING_UNICODE_2_0_FULL);
+        if (cmap == null)
+        {
+            cmap = cmapTable.getSubtable(CmapTable.PLATFORM_WINDOWS,
+                CmapTable.ENCODING_WIN_UNICODE_FULL);
+        }
         if (cmap == null)
         {
             cmap = cmapTable.getSubtable(CmapTable.PLATFORM_UNICODE,
@@ -550,7 +615,7 @@ public class TrueTypeFont implements FontBoxFont, Closeable
         int uni = parseUniName(name);
         if (uni > -1)
         {
-            CmapSubtable cmap = getUnicodeCmap(false);
+            CmapLookup cmap = getUnicodeCmapLookup(false);
             return cmap.getGlyphId(uni);
         }
 
@@ -638,6 +703,36 @@ public class TrueTypeFont implements FontBoxFont, Closeable
     {
         float scale = 1000f / getUnitsPerEm();
         return Arrays.<Number>asList(0.001f * scale, 0, 0, 0.001f * scale, 0, 0);
+    }
+
+    /**
+     * Enable a particular glyph substitution feature. This feature might not be supported by the
+     * font, or might not be implemented in PDFBox yet.
+     *
+     * @param featureTag The GSUB feature to enable
+     */
+    public void enableGsubFeature(String featureTag)
+    {
+        enabledGsubFeatures.add(featureTag);
+    }
+
+    /**
+     * Disable a particular glyph substitution feature.
+     *
+     * @param featureTag The GSUB feature to disable
+     */
+    public void disableGsubFeature(String featureTag)
+    {
+        enabledGsubFeatures.remove(featureTag);
+    }
+
+    /**
+     * Enable glyph substitutions for vertical writing.
+     */
+    public void enableVerticalSubstitutions()
+    {
+        enableGsubFeature("vrt2");
+        enableGsubFeature("vert");
     }
 
     @Override

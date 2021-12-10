@@ -207,22 +207,13 @@ public class PDFormXObject extends PDXObject implements PDContentStream
     }
 
     /**
-     * This will get the optional Matrix of an XObjectForm. It maps the form space to user space.
+     * This will get the optional matrix of an XObjectForm. It maps the form space to user space.
      * @return the form matrix if available, or the identity matrix.
      */
     @Override
     public Matrix getMatrix()
     {
-        COSArray array = (COSArray) getCOSObject().getDictionaryObject(COSName.MATRIX);
-        if (array != null)
-        {
-            return new Matrix(array);
-        }
-        else
-        {
-            // default value is the identity matrix
-            return new Matrix();
-        }
+        return Matrix.createMatrix(getCOSObject().getDictionaryObject(COSName.MATRIX));
     }
 
     /**

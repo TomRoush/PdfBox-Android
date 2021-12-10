@@ -136,6 +136,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
     public static final COSName CMAPNAME = new COSName("CMapName");
     public static final COSName CMYK = new COSName("CMYK");
     public static final COSName CO = new COSName("CO");
+    public static final COSName COLOR = new COSName("Color");
     public static final COSName COLOR_BURN = new COSName("ColorBurn");
     public static final COSName COLOR_DODGE = new COSName("ColorDodge");
     public static final COSName COLORANTS = new COSName("Colorants");
@@ -194,6 +195,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
     public static final COSName DOC_CHECKSUM = new COSName("DocChecksum");
     public static final COSName DOC_TIME_STAMP = new COSName("DocTimeStamp");
     public static final COSName DOCMDP = new COSName("DocMDP");
+    public static final COSName DOCUMENT = new COSName("Document");
     public static final COSName DOMAIN = new COSName("Domain");
     public static final COSName DOS = new COSName("DOS");
     public static final COSName DP = new COSName("DP");
@@ -273,6 +275,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
     public static final COSName HIDE_MENUBAR = new COSName("HideMenubar");
     public static final COSName HIDE_TOOLBAR = new COSName("HideToolbar");
     public static final COSName HIDE_WINDOWUI = new COSName("HideWindowUI");
+    public static final COSName HUE = new COSName("Hue");
     // I
     public static final COSName I = new COSName("I");
     public static final COSName IC = new COSName("IC");
@@ -343,6 +346,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
     public static final COSName MCID = new COSName("MCID");
     public static final COSName MDP = new COSName("MDP");
     public static final COSName MEDIA_BOX = new COSName("MediaBox");
+    public static final COSName MEASURE = new COSName("Measure");
     public static final COSName METADATA = new COSName("Metadata");
     public static final COSName MISSING_WIDTH = new COSName("MissingWidth");
     public static final COSName MIX = new COSName("Mix");
@@ -356,6 +360,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
     public static final COSName NAME = new COSName("Name");
     public static final COSName NAMES = new COSName("Names");
     public static final COSName NEED_APPEARANCES = new COSName("NeedAppearances");
+    public static final COSName NEW_WINDOW = new COSName("NewWindow");
     public static final COSName NEXT = new COSName("Next");
     public static final COSName NM = new COSName("NM");
     public static final COSName NON_EFONT_NO_WARN = new COSName("NonEFontNoWarn");
@@ -461,6 +466,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
     // S
     public static final COSName S = new COSName("S");
     public static final COSName SA = new COSName("SA");
+    public static final COSName SATURATION = new COSName("Saturation");
     public static final COSName SCREEN = new COSName("Screen");
     public static final COSName SE = new COSName("SE");
     public static final COSName SEPARATION = new COSName("Separation");
@@ -549,6 +555,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
     public static final COSName VIEW_CLIP = new COSName("ViewClip");
     public static final COSName VIEWER_PREFERENCES = new COSName("ViewerPreferences");
     public static final COSName VOLUME = new COSName("Volume");
+    public static final COSName VP = new COSName("VP");
     // W
     public static final COSName W = new COSName("W");
     public static final COSName W2 = new COSName("W2");
@@ -689,7 +696,7 @@ public final class COSName extends COSBase implements Comparable<COSName>
     public void writePDF(OutputStream output) throws IOException
     {
         output.write('/');
-        byte[] bytes = getName().getBytes(Charsets.US_ASCII);
+        byte[] bytes = getName().getBytes(Charsets.UTF_8);
         for (byte b : bytes)
         {
             int current = b & 0xFF;

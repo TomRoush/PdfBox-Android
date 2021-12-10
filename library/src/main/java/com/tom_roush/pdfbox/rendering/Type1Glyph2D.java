@@ -26,7 +26,7 @@ import java.util.Map;
 import com.tom_roush.pdfbox.pdmodel.font.PDSimpleFont;
 
 /**
- * Glyph to GeneralPath conversion for Type 1 PFB and CFF, and TrueType fonts with a 'post' table.
+ * Glyph to Path conversion for Type 1 PFB and CFF, and TrueType fonts with a 'post' table.
  */
 final class Type1Glyph2D implements Glyph2D
 {
@@ -56,15 +56,23 @@ final class Type1Glyph2D implements Glyph2D
                 String name = font.getEncoding().getName(code);
                 if (!font.hasGlyph(name))
                 {
-                    Log.w("PdfBox-Android",
-                        "No glyph for " + code + " (" + name + ") in font " + font.getName());
+                    Log.w("PdfBox-Android", "No glyph for code " + code + " (" + name + ") in font " + font.getName());
+                    if (code == 10 && font.isStandard14())
+                    {
+                        // PDFBOX-4001 return empty path for line feed on std14
+                        path = new Path();
+                        cache.put(code, path);
+                        return path;
+                    }
                 }
+
                 // todo: can this happen? should it be encapsulated?
                 path = font.getPath(name);
                 if (path == null)
                 {
                     path = font.getPath(".notdef");
                 }
+
 //                cache.put(code, path); TODO: PdfBox-Android
                 return path;
             }
@@ -72,7 +80,7 @@ final class Type1Glyph2D implements Glyph2D
             {
                 // todo: escalate this error?
                 Log.e("PdfBox-Android", "Glyph rendering failed", e);
-                return new Path();
+                path = new Path();
             }
         }
         return path;

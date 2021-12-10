@@ -17,13 +17,6 @@
 
 package com.tom_roush.pdfbox.cos;
 
-import com.tom_roush.pdfbox.filter.DecodeResult;
-import com.tom_roush.pdfbox.filter.Filter;
-import com.tom_roush.pdfbox.io.RandomAccess;
-import com.tom_roush.pdfbox.io.RandomAccessInputStream;
-import com.tom_roush.pdfbox.io.RandomAccessOutputStream;
-import com.tom_roush.pdfbox.io.ScratchFile;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
@@ -31,6 +24,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.tom_roush.pdfbox.filter.DecodeOptions;
+import com.tom_roush.pdfbox.filter.DecodeResult;
+import com.tom_roush.pdfbox.filter.Filter;
+import com.tom_roush.pdfbox.io.RandomAccess;
+import com.tom_roush.pdfbox.io.RandomAccessInputStream;
+import com.tom_roush.pdfbox.io.RandomAccessOutputStream;
+import com.tom_roush.pdfbox.io.ScratchFile;
 
 /**
  * An InputStream which reads from an encoded COS stream.
@@ -52,6 +53,12 @@ public final class COSInputStream extends FilterInputStream
     static COSInputStream create(List<Filter> filters, COSDictionary parameters, InputStream in,
         ScratchFile scratchFile) throws IOException
     {
+        return create(filters, parameters, in, scratchFile, DecodeOptions.DEFAULT);
+    }
+
+    static COSInputStream create(List<Filter> filters, COSDictionary parameters, InputStream in,
+        ScratchFile scratchFile, DecodeOptions options) throws IOException
+    {
         List<DecodeResult> results = new ArrayList<DecodeResult>();
         InputStream input = in;
         if (filters.isEmpty())
@@ -67,8 +74,7 @@ public final class COSInputStream extends FilterInputStream
                 {
                     // scratch file
                     final RandomAccess buffer = scratchFile.createBuffer();
-                    DecodeResult result = filters.get(i).decode(input,
-                        new RandomAccessOutputStream(buffer), parameters, i);
+                    DecodeResult result = filters.get(i).decode(input, new RandomAccessOutputStream(buffer), parameters, i, options);
                     results.add(result);
                     input = new RandomAccessInputStream(buffer)
                     {
@@ -83,7 +89,7 @@ public final class COSInputStream extends FilterInputStream
                 {
                     // in-memory
                     ByteArrayOutputStream output = new ByteArrayOutputStream();
-                    DecodeResult result = filters.get(i).decode(input, output, parameters, i);
+                    DecodeResult result = filters.get(i).decode(input, output, parameters, i, options);
                     results.add(result);
                     input = new ByteArrayInputStream(output.toByteArray());
                 }
@@ -108,6 +114,8 @@ public final class COSInputStream extends FilterInputStream
 
     /**
      * Returns the result of the last filter, for use by repair mechanisms.
+     *
+     * @return the result of the decoding.
      */
     public DecodeResult getDecodeResult()
     {

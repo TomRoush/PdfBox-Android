@@ -42,7 +42,7 @@ public class FDFAnnotationPolygon extends FDFAnnotation
     /**
      * COS Model value for SubType entry.
      */
-    public static final String SUBTYPE ="Polygon";
+    public static final String SUBTYPE = "Polygon";
 
     /**
      * Default constructor.
@@ -50,7 +50,7 @@ public class FDFAnnotationPolygon extends FDFAnnotation
     public FDFAnnotationPolygon()
     {
         super();
-        annot.setName( COSName.SUBTYPE, SUBTYPE );
+        annot.setName(COSName.SUBTYPE, SUBTYPE);
     }
 
     /**
@@ -58,9 +58,9 @@ public class FDFAnnotationPolygon extends FDFAnnotation
      *
      * @param a An existing FDF Annotation.
      */
-    public FDFAnnotationPolygon( COSDictionary a )
+    public FDFAnnotationPolygon(COSDictionary a)
     {
-        super( a );
+        super(a);
     }
 
     /**
@@ -70,7 +70,7 @@ public class FDFAnnotationPolygon extends FDFAnnotation
      *
      * @throws IOException If there is an error extracting information from the element.
      */
-    public FDFAnnotationPolygon( Element element ) throws IOException
+    public FDFAnnotationPolygon(Element element) throws IOException
     {
         super(element);
         annot.setName(COSName.SUBTYPE, SUBTYPE);
@@ -109,11 +109,11 @@ public class FDFAnnotationPolygon extends FDFAnnotation
     }
 
     /**
-     * This will set the coordinates of the the vertices.
+     * This will set the coordinates of the vertices.
      *
      * @param vertices array of floats [x1, y1, x2, y2, ...] vertex coordinates in default user space.
      */
-    public final void setVertices(float[] vertices)
+    public void setVertices(float[] vertices)
     {
         COSArray newVertices = new COSArray();
         newVertices.setFloatArray(vertices);
@@ -121,7 +121,7 @@ public class FDFAnnotationPolygon extends FDFAnnotation
     }
 
     /**
-     * This will get the coordinates of the the vertices.
+     * This will get the coordinates of the vertices.
      *
      * @return array of floats [x1, y1, x2, y2, ...] vertex coordinates in default user space.
      */
@@ -143,7 +143,7 @@ public class FDFAnnotationPolygon extends FDFAnnotation
      *
      * @param color The interior color of the drawn area.
      */
-    public void setInteriorColor(AWTColor color)
+    public final void setInteriorColor(AWTColor color)
     {
         COSArray array = null;
         if (color != null)

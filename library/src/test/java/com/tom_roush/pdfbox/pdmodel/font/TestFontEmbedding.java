@@ -17,6 +17,13 @@
 
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
@@ -25,14 +32,11 @@ import com.tom_roush.pdfbox.text.PDFTextStripper;
 
 import junit.framework.TestCase;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
 /**
  * Tests font embedding.
  *
  * @author John Hewson
+ * @author Tilman Hausherr
  */
 public class TestFontEmbedding extends TestCase
 {
@@ -58,6 +62,115 @@ public class TestFontEmbedding extends TestCase
     public void testCIDFontType2Subset() throws Exception
     {
         validateCIDFontType2(true);
+    }
+
+    /**
+     * Embed a monospace TTF as vertical CIDFontType2 with subsetting.
+     *
+     * @throws IOException
+     */
+//    TODO: PdfBox-Android - provide test file
+    public void _testCIDFontType2VerticalSubsetMonospace() throws IOException
+    {
+        String text = "「ABC」";
+        String expectedExtractedtext = "「\nA\nB\nC\n」";
+        File pdf = new File(OUT_DIR, "CIDFontType2VM.pdf");
+
+        PDDocument document = new PDDocument();
+        PDPage page = new PDPage(PDRectangle.A4);
+        document.addPage(page);
+
+        File ipafont = new File("target/fonts/ipag00303", "ipag.ttf");
+        PDType0Font vfont = PDType0Font.loadVertical(document, ipafont);
+
+        PDPageContentStream contentStream = new PDPageContentStream(document, page);
+        contentStream.beginText();
+        contentStream.setFont(vfont, 20);
+        contentStream.newLineAtOffset(50, 700);
+        contentStream.showText(text);
+        contentStream.endText();
+        contentStream.close();
+
+        // Check the font substitution
+        byte[] encode = vfont.encode(text);
+        int cid = ((encode[0] & 0xFF) << 8) + (encode[1] & 0xFF);
+        assertEquals(7392, cid); // it's 441 without substitution
+
+        // Check the dictionaries
+        COSDictionary fontDict = vfont.getCOSObject();
+        assertEquals(COSName.IDENTITY_V, fontDict.getDictionaryObject(COSName.ENCODING));
+
+        document.save(pdf);
+
+        // Vertical metrics are fixed during subsetting, so do this after calling save()
+        COSDictionary descFontDict = vfont.getDescendantFont().getCOSObject();
+        COSArray dw2 = (COSArray) descFontDict.getDictionaryObject(COSName.DW2);
+        assertNull(dw2); // This font uses default values for DW2
+        COSArray w2 = (COSArray) descFontDict.getDictionaryObject(COSName.W2);
+        assertEquals(0, w2.size()); // Monospaced font has no entries
+
+        document.close();
+
+        // Check text extraction
+        String extracted = getUnicodeText(pdf);
+        assertEquals(expectedExtractedtext, extracted.replaceAll("\r", "").trim());
+    }
+
+    /**
+     * Embed a proportional TTF as vertical CIDFontType2 with subsetting.
+     *
+     * @throws IOException
+     */
+    public void testCIDFontType2VerticalSubsetProportional() throws IOException
+    {
+        String text = "「ABC」";
+        String expectedExtractedtext = "「\nA\nB\nC\n」";
+        File pdf = new File(OUT_DIR, "CIDFontType2VP.pdf");
+
+        PDDocument document = new PDDocument();
+
+        PDPage page = new PDPage(PDRectangle.A4);
+        document.addPage(page);
+        File ipafont = new File("target/fonts/ipagp00303", "ipagp.ttf");
+        PDType0Font vfont = PDType0Font.loadVertical(document, ipafont);
+        PDPageContentStream contentStream = new PDPageContentStream(document, page);
+
+        contentStream.beginText();
+        contentStream.setFont(vfont, 20);
+        contentStream.newLineAtOffset(50, 700);
+        contentStream.showText(text);
+        contentStream.endText();
+        contentStream.close();
+
+        // Check the font substitution
+        byte[] encode = vfont.encode(text);
+        int cid = ((encode[0] & 0xFF) << 8) + (encode[1] & 0xFF);
+        assertEquals(12607, cid); // it's 12461 without substitution
+        // Check the dictionaries
+        COSDictionary fontDict = vfont.getCOSObject();
+        assertEquals(COSName.IDENTITY_V, fontDict.getDictionaryObject(COSName.ENCODING));
+
+        document.save(pdf);
+
+        // Vertical metrics are fixed during subsetting, so do this after calling save()
+        COSDictionary descFontDict = vfont.getDescendantFont().getCOSObject();
+        COSArray dw2 = (COSArray) descFontDict.getDictionaryObject(COSName.DW2);
+        assertNull(dw2); // This font uses default values for DW2
+        // c [ w1_1y v_1x v_1y ... w1_ny v_nx v_ny ]
+        COSArray w2 = (COSArray) descFontDict.getDictionaryObject(COSName.W2);
+        assertEquals(2, w2.size());
+        assertEquals(12607, w2.getInt(0)); // Start CID
+        COSArray metrics = (COSArray) w2.getObject(1);
+        int i = 0;
+        for (int n : new int[] {-570, 500, 450, -570, 500, 880})
+        {
+            assertEquals(n, metrics.getInt(i++));
+        }
+        document.close();
+
+        // Check text extraction
+        String extracted = getUnicodeText(pdf);
+        assertEquals(expectedExtractedtext, extracted.replaceAll("\r", "").trim());
     }
 
     private void validateCIDFontType2(boolean useSubset) throws Exception

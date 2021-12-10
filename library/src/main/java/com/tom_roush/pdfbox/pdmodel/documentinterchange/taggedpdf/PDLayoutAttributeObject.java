@@ -24,7 +24,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDGamma;
 
 /**
  * A Layout attribute object.
- * 
+ *
  * @author Johannes Koch
  */
 public class PDLayoutAttributeObject extends PDStandardAttributeObject
@@ -79,28 +79,28 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      */
     public static final String PLACEMENT_INLINE                = "Inline";
     /**
-     * Placement: Before: Placed so that the before edge of the element's
+     * Placement: Before: Placed so that the before edge of the element’s
      * allocation rectangle coincides with that of the nearest enclosing
      * reference area. The element may float, if necessary, to achieve the
      * specified placement. The element shall be treated as a block occupying
      * the full extent of the enclosing reference area in the inline direction.
      * Other content shall be stacked so as to begin at the after edge of the
-     * element's allocation rectangle.
+     * element’s allocation rectangle.
      */
     public static final String PLACEMENT_BEFORE                = "Before";
     /**
-     * Placement: Start: Placed so that the start edge of the element's
+     * Placement: Start: Placed so that the start edge of the element’s
      * allocation rectangle coincides with that of the nearest enclosing
      * reference area. The element may float, if necessary, to achieve the
-     * specified placement. Other content that would intrude into the element's
+     * specified placement. Other content that would intrude into the element’s
      * allocation rectangle shall be laid out as a runaround.
      */
     public static final String PLACEMENT_START                 = "Start";
     /**
-     * Placement: End: Placed so that the end edge of the element's allocation
+     * Placement: End: Placed so that the end edge of the element’s allocation
      * rectangle coincides with that of the nearest enclosing reference area.
      * The element may float, if necessary, to achieve the specified placement.
-     * Other content that would intrude into the element's allocation rectangle
+     * Other content that would intrude into the element’s allocation rectangle
      * shall be laid out as a runaround.
      */
     public static final String PLACEMENT_END                   = "End";
@@ -197,26 +197,26 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      */
     public static final String HEIGHT_AUTO                     = "Auto";
     /**
-     * BlockAlign: Before: Before edge of the first child's allocation rectangle
-     * aligned with that of the table cell's content rectangle.
+     * BlockAlign: Before: Before edge of the first child’s allocation rectangle
+     * aligned with that of the table cell’s content rectangle.
      */
     public static final String BLOCK_ALIGN_BEFORE              = "Before";
     /**
      * BlockAlign: Middle: Children centered within the table cell. The distance
-     * between the before edge of the first child's allocation rectangle and
-     * that of the table cell's content rectangle shall be the same as the
-     * distance between the after edge of the last child's allocation rectangle
-     * and that of the table cell's content rectangle.
+     * between the before edge of the first child’s allocation rectangle and
+     * that of the table cell’s content rectangle shall be the same as the
+     * distance between the after edge of the last child’s allocation rectangle
+     * and that of the table cell’s content rectangle.
      */
     public static final String BLOCK_ALIGN_MIDDLE              = "Middle";
     /**
-     * BlockAlign: After: After edge of the last child's allocation rectangle
-     * aligned with that of the table cell's content rectangle.
+     * BlockAlign: After: After edge of the last child’s allocation rectangle
+     * aligned with that of the table cell’s content rectangle.
      */
     public static final String BLOCK_ALIGN_AFTER               = "After";
     /**
      * BlockAlign: Justify: Children aligned with both the before and after
-     * edges of the table cell's content rectangle. The first child shall be
+     * edges of the table cell’s content rectangle. The first child shall be
      * placed as described for {@link #BLOCK_ALIGN_BEFORE} and the last child as
      * described for {@link #BLOCK_ALIGN_AFTER}, with equal spacing between the
      * children. If there is only one child, it shall be aligned with the before
@@ -224,20 +224,20 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      */
     public static final String BLOCK_ALIGN_JUSTIFY             = "Justify";
     /**
-     * InlineAlign: Start: Start edge of each child's allocation rectangle
-     * aligned with that of the table cell's content rectangle.
+     * InlineAlign: Start: Start edge of each child’s allocation rectangle
+     * aligned with that of the table cell’s content rectangle.
      */
     public static final String INLINE_ALIGN_START              = "Start";
     /**
      * InlineAlign: Center: Each child centered within the table cell. The
-     * distance between the start edges of the child's allocation rectangle and
-     * the table cell's content rectangle shall be the same as the distance
+     * distance between the start edges of the child’s allocation rectangle and
+     * the table cell’s content rectangle shall be the same as the distance
      * between their end edges.
      */
     public static final String INLINE_ALIGN_CENTER             = "Center";
     /**
-     * InlineAlign: End: End edge of each child's allocation rectangle aligned
-     * with that of the table cell's content rectangle.
+     * InlineAlign: End: End edge of each child’s allocation rectangle aligned
+     * with that of the table cell’s content rectangle.
      */
     public static final String INLINE_ALIGN_END                = "End";
     /**
@@ -359,7 +359,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Creates a new Layout attribute object with a given dictionary.
-     * 
+     *
      * @param dictionary the dictionary
      */
     public PDLayoutAttributeObject(COSDictionary dictionary)
@@ -372,7 +372,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      * Gets the positioning of the element with respect to the enclosing
      * reference area and other content (Placement). The default value is
      * {@link #PLACEMENT_INLINE}.
-     * 
+     *
      * @return the placement
      */
     public String getPlacement()
@@ -390,7 +390,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #PLACEMENT_START},</li>
      *   <li>{@link #PLACEMENT_END}.</li>
      * </ul>
-     * 
+     *
      * @param placement the placement
      */
     public void setPlacement(String placement)
@@ -401,7 +401,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the writing mode (WritingMode). The default value is
      * {@link #WRITING_MODE_LRTB}.
-     * 
+     *
      * @return the writing mode
      */
     public String getWritingMode()
@@ -416,7 +416,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #WRITING_MODE_RLTB},</li>
      *   <li>{@link #WRITING_MODE_TBRL}.</li>
      * </ul>
-     * 
+     *
      * @param writingMode the writing mode
      */
     public void setWritingMode(String writingMode)
@@ -426,7 +426,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Gets the background colour (BackgroundColor).
-     * 
+     *
      * @return the background colour
      */
     public PDGamma getBackgroundColor()
@@ -436,7 +436,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the background colour (BackgroundColor).
-     * 
+     *
      * @param backgroundColor the background colour
      */
     public void setBackgroundColor(PDGamma backgroundColor)
@@ -446,7 +446,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Gets the border colour (BorderColor).
-     * 
+     *
      * @return a single border colour ({@link PDGamma}) or four border colours
      *  ({@link PDFourColours})
      */
@@ -457,7 +457,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the same border colour for all four sides (BorderColor).
-     * 
+     *
      * @param borderColor the border colour
      */
     public void setAllBorderColors(PDGamma borderColor)
@@ -467,7 +467,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the border colours for four sides separately (BorderColor).
-     * 
+     *
      * @param borderColors the border colours
      */
     public void setBorderColors(PDFourColours borderColors)
@@ -478,7 +478,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the border style (BorderStyle). The default value is
      * {@link #BORDER_STYLE_NONE}.
-     * 
+     *
      * @return the border styles (a String or an array of four Strings)
      */
     public Object getBorderStyle()
@@ -501,7 +501,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #BORDER_STYLE_INSET},</li>
      *   <li>{@link #BORDER_STYLE_OUTSET}.</li>
      * </ul>
-     * 
+     *
      * @param borderStyle the border style
      */
     public void setAllBorderStyles(String borderStyle)
@@ -524,7 +524,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #BORDER_STYLE_INSET},</li>
      *   <li>{@link #BORDER_STYLE_OUTSET}.</li>
      * </ul>
-     * 
+     *
      * @param borderStyles the border styles (an array of four Strings)
      */
     public void setBorderStyles(String[] borderStyles)
@@ -534,7 +534,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Gets the border thickness (BorderThickness).
-     * 
+     *
      * @return the border thickness (a Float or an array of four floats)
      */
     public Object getBorderThickness()
@@ -544,7 +544,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the same border thickness for all four sides (BorderThickness).
-     * 
+     *
      * @param borderThickness the border thickness
      */
     public void setAllBorderThicknesses(float borderThickness)
@@ -554,7 +554,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the same border thickness for all four sides (BorderThickness).
-     * 
+     *
      * @param borderThickness the border thickness
      */
     public void setAllBorderThicknesses(int borderThickness)
@@ -564,7 +564,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the border thicknesses for four sides separately (BorderThickness).
-     * 
+     *
      * @param borderThicknesses the border thickness (an array of four floats)
      */
     public void setBorderThicknesses(float[] borderThicknesses)
@@ -574,7 +574,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Gets the padding (Padding). The default value is 0.
-     * 
+     *
      * @return the padding (a Float or an array of float)
      */
     public Object getPadding()
@@ -584,7 +584,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the same padding for all four sides (Padding).
-     * 
+     *
      * @param padding the padding
      */
     public void setAllPaddings(float padding)
@@ -594,7 +594,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the same padding for all four sides (Padding).
-     * 
+     *
      * @param padding the padding
      */
     public void setAllPaddings(int padding)
@@ -604,7 +604,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the paddings for four sides separately (Padding).
-     * 
+     *
      * @param paddings the paddings (an array of four floats)
      */
     public void setPaddings(float[] paddings)
@@ -615,7 +615,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the color to be used for drawing text and the default value for the
      * colour of table borders and text decorations (Color).
-     * 
+     *
      * @return the colour
      */
     public PDGamma getColor()
@@ -626,7 +626,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the color to be used for drawing text and the default value for the
      * colour of table borders and text decorations (Color).
-     * 
+     *
      * @param color the colour
      */
     public void setColor(PDGamma color)
@@ -637,7 +637,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the amount of extra space preceding the before edge of the BLSE in
      * the block-progression direction (SpaceBefore). The default value is 0.
-     * 
+     *
      * @return the space before
      */
     public float getSpaceBefore()
@@ -648,7 +648,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the amount of extra space preceding the before edge of the BLSE in
      * the block-progression direction (SpaceBefore).
-     * 
+     *
      * @param spaceBefore the space before
      */
     public void setSpaceBefore(float spaceBefore)
@@ -659,7 +659,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the amount of extra space preceding the before edge of the BLSE in
      * the block-progression direction (SpaceBefore).
-     * 
+     *
      * @param spaceBefore the space before
      */
     public void setSpaceBefore(int spaceBefore)
@@ -670,7 +670,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the amount of extra space following the after edge of the BLSE in
      * the block-progression direction (SpaceAfter). The default value is 0.
-     * 
+     *
      * @return the space after
      */
     public float getSpaceAfter()
@@ -681,7 +681,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the amount of extra space following the after edge of the BLSE in
      * the block-progression direction (SpaceAfter).
-     * 
+     *
      * @param spaceAfter the space after
      */
     public void setSpaceAfter(float spaceAfter)
@@ -692,7 +692,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the amount of extra space following the after edge of the BLSE in
      * the block-progression direction (SpaceAfter).
-     * 
+     *
      * @param spaceAfter the space after
      */
     public void setSpaceAfter(int spaceAfter)
@@ -703,7 +703,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the distance from the start edge of the reference area to that of
      * the BLSE in the inline-progression direction (StartIndent). The default value is 0.
-     * 
+     *
      * @return the start indent
      */
     public float getStartIndent()
@@ -714,7 +714,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the distance from the start edge of the reference area to that of
      * the BLSE in the inline-progression direction (StartIndent).
-     * 
+     *
      * @param startIndent the start indent
      */
     public void setStartIndent(float startIndent)
@@ -725,7 +725,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the distance from the start edge of the reference area to that of
      * the BLSE in the inline-progression direction (StartIndent).
-     * 
+     *
      * @param startIndent the start indent
      */
     public void setStartIndent(int startIndent)
@@ -737,7 +737,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      * Gets the distance from the end edge of the BLSE to that of the reference
      * area in the inline-progression direction (EndIndent). The default value
      * is 0.
-     * 
+     *
      * @return the end indent
      */
     public float getEndIndent()
@@ -748,7 +748,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the distance from the end edge of the BLSE to that of the reference
      * area in the inline-progression direction (EndIndent).
-     * 
+     *
      * @param endIndent the end indent
      */
     public void setEndIndent(float endIndent)
@@ -759,7 +759,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the distance from the end edge of the BLSE to that of the reference
      * area in the inline-progression direction (EndIndent).
-     * 
+     *
      * @param endIndent the end indent
      */
     public void setEndIndent(int endIndent)
@@ -771,7 +771,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      * Gets the additional distance in the inline-progression direction from the
      * start edge of the BLSE, as specified by StartIndent, to that of the first
      * line of text (TextIndent). The default value is 0.
-     * 
+     *
      * @return the text indent
      */
     public float getTextIndent()
@@ -783,7 +783,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      * Sets the additional distance in the inline-progression direction from the
      * start edge of the BLSE, as specified by StartIndent, to that of the first
      * line of text (TextIndent).
-     * 
+     *
      * @param textIndent the text indent
      */
     public void setTextIndent(float textIndent)
@@ -795,7 +795,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      * Sets the additional distance in the inline-progression direction from the
      * start edge of the BLSE, as specified by StartIndent, to that of the first
      * line of text (TextIndent).
-     * 
+     *
      * @param textIndent the text indent
      */
     public void setTextIndent(int textIndent)
@@ -807,7 +807,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      * Gets the alignment, in the inline-progression direction, of text and
      * other content within lines of the BLSE (TextAlign). The default value is
      * {@link #TEXT_ALIGN_START}.
-     * 
+     *
      * @return the text alignment
      */
     public String getTextAlign()
@@ -825,7 +825,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #TEXT_ALIGN_END},</li>
      *   <li>{@link #TEXT_ALIGN_JUSTIFY}.</li>
      * </ul>
-     * 
+     *
      * @param textIndent the text alignment
      */
     public void setTextAlign(String textIndent)
@@ -835,7 +835,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Gets the bounding box.
-     * 
+     *
      * @return the bounding box.
      */
     public PDRectangle getBBox()
@@ -851,7 +851,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the bounding box.
-     * 
+     *
      * @param bbox the bounding box
      */
     public void setBBox(PDRectangle bbox)
@@ -864,10 +864,10 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Gets the width of the element's content rectangle in the
+     * Gets the width of the element’s content rectangle in the
      * inline-progression direction (Width). The default value is
      * {@link #WIDTH_AUTO}.
-     * 
+     *
      * @return the width (a Float or a String)
      */
     public Object getWidth()
@@ -876,7 +876,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the width of the element's content rectangle in the
+     * Sets the width of the element’s content rectangle in the
      * inline-progression direction (Width) to {@link #WIDTH_AUTO}.
      */
     public void setWidthAuto()
@@ -885,9 +885,9 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the width of the element's content rectangle in the
+     * Sets the width of the element’s content rectangle in the
      * inline-progression direction (Width).
-     * 
+     *
      * @param width the width
      */
     public void setWidth(float width)
@@ -896,9 +896,9 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the width of the element's content rectangle in the
+     * Sets the width of the element’s content rectangle in the
      * inline-progression direction (Width).
-     * 
+     *
      * @param width the width
      */
     public void setWidth(int width)
@@ -907,10 +907,10 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Gets the height of the element's content rectangle in the
+     * Gets the height of the element’s content rectangle in the
      * block-progression direction (Height). The default value is
      * {@link #HEIGHT_AUTO}.
-     * 
+     *
      * @return the height (a Float or a String)
      */
     public Object getHeight()
@@ -919,7 +919,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the height of the element's content rectangle in the
+     * Sets the height of the element’s content rectangle in the
      * block-progression direction (Height) to {@link #HEIGHT_AUTO}.
      */
     public void setHeightAuto()
@@ -928,9 +928,9 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the height of the element's content rectangle in the
+     * Sets the height of the element’s content rectangle in the
      * block-progression direction (Height).
-     * 
+     *
      * @param height the height
      */
     public void setHeight(float height)
@@ -939,9 +939,9 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the height of the element's content rectangle in the
+     * Sets the height of the element’s content rectangle in the
      * block-progression direction (Height).
-     * 
+     *
      * @param height the height
      */
     public void setHeight(int height)
@@ -953,7 +953,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      * Gets the alignment, in the block-progression direction, of content within
      * the table cell (BlockAlign). The default value is
      * {@link #BLOCK_ALIGN_BEFORE}.
-     * 
+     *
      * @return the block alignment
      */
     public String getBlockAlign()
@@ -970,7 +970,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #BLOCK_ALIGN_AFTER},</li>
      *   <li>{@link #BLOCK_ALIGN_JUSTIFY}.</li>
      * </ul>
-     * 
+     *
      * @param blockAlign the block alignment
      */
     public void setBlockAlign(String blockAlign)
@@ -982,7 +982,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      * Gets the alignment, in the inline-progression direction, of content
      * within the table cell (InlineAlign). The default value is
      * {@link #INLINE_ALIGN_START}.
-     * 
+     *
      * @return the inline alignment
      */
     public String getInlineAlign()
@@ -998,7 +998,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #INLINE_ALIGN_CENTER},</li>
      *   <li>{@link #INLINE_ALIGN_END}.</li>
      * </ul>
-     * 
+     *
      * @param inlineAlign the inline alignment
      */
     public void setInlineAlign(String inlineAlign)
@@ -1009,7 +1009,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the style of the border drawn on each edge of a table cell
      * (TBorderStyle).
-     * 
+     *
      * @return the border style.
      */
     public Object getTBorderStyle()
@@ -1032,7 +1032,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #BORDER_STYLE_INSET},</li>
      *   <li>{@link #BORDER_STYLE_OUTSET}.</li>
      * </ul>
-     * 
+     *
      * @param tBorderStyle the table border style
      */
     public void setAllTBorderStyles(String tBorderStyle)
@@ -1041,22 +1041,22 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the style of the border drawn on each edge of a table cell
-     * (TBorderStyle). The values should be of:
+     * Sets the style of the border drawn on each edge of a table cell (TBorderStyle). The values should be of:
      * <ul>
-     *   <li>{@link #BORDER_STYLE_NONE},</li>
-     *   <li>{@link #BORDER_STYLE_HIDDEN},</li>
-     *   <li>{@link #BORDER_STYLE_DOTTED},</li>
-     *   <li>{@link #BORDER_STYLE_DASHED},</li>
-     *   <li>{@link #BORDER_STYLE_SOLID},</li>
-     *   <li>{@link #BORDER_STYLE_DOUBLE},</li>
-     *   <li>{@link #BORDER_STYLE_GROOVE},</li>
-     *   <li>{@link #BORDER_STYLE_RIDGE},</li>
-     *   <li>{@link #BORDER_STYLE_INSET},</li>
-     *   <li>{@link #BORDER_STYLE_OUTSET}.</li>
+     * <li>{@link #BORDER_STYLE_NONE},</li>
+     * <li>{@link #BORDER_STYLE_HIDDEN},</li>
+     * <li>{@link #BORDER_STYLE_DOTTED},</li>
+     * <li>{@link #BORDER_STYLE_DASHED},</li>
+     * <li>{@link #BORDER_STYLE_SOLID},</li>
+     * <li>{@link #BORDER_STYLE_DOUBLE},</li>
+     * <li>{@link #BORDER_STYLE_GROOVE},</li>
+     * <li>{@link #BORDER_STYLE_RIDGE},</li>
+     * <li>{@link #BORDER_STYLE_INSET},</li>
+     * <li>{@link #BORDER_STYLE_OUTSET}.</li>
      * </ul>
-     * 
-     * @param tBorderStyles
+     *
+     * @param tBorderStyles an array of border styles.
+     *
      */
     public void setTBorderStyles(String[] tBorderStyles)
     {
@@ -1064,10 +1064,10 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Gets the offset to account for the separation between the table cell's
+     * Gets the offset to account for the separation between the table cell’s
      * content rectangle and the surrounding border (TPadding). The default
      * value is 0.
-     * 
+     *
      * @return the table padding (a Float or an array of float)
      */
     public Object getTPadding()
@@ -1077,7 +1077,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the same table padding for all four sides (TPadding).
-     * 
+     *
      * @param tPadding the table padding
      */
     public void setAllTPaddings(float tPadding)
@@ -1087,7 +1087,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the same table padding for all four sides (TPadding).
-     * 
+     *
      * @param tPadding the table padding
      */
     public void setAllTPaddings(int tPadding)
@@ -1097,7 +1097,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the table paddings for four sides separately (TPadding).
-     * 
+     *
      * @param tPaddings the table paddings (an array of four floats)
      */
     public void setTPaddings(float[] tPaddings)
@@ -1106,10 +1106,10 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Gets the distance by which the element's baseline shall be shifted
+     * Gets the distance by which the element’s baseline shall be shifted
      * relative to that of its parent element (BaselineShift). The default value
      * is 0.
-     * 
+     *
      * @return the baseline shift
      */
     public float getBaselineShift()
@@ -1118,9 +1118,9 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the distance by which the element's baseline shall be shifted
+     * Sets the distance by which the element’s baseline shall be shifted
      * relative to that of its parent element (BaselineShift).
-     * 
+     *
      * @param baselineShift the baseline shift
      */
     public void setBaselineShift(float baselineShift)
@@ -1129,9 +1129,9 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the distance by which the element's baseline shall be shifted
+     * Sets the distance by which the element’s baseline shall be shifted
      * relative to that of its parent element (BaselineShift).
-     * 
+     *
      * @param baselineShift the baseline shift
      */
     public void setBaselineShift(int baselineShift)
@@ -1140,9 +1140,9 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Gets the element's preferred height in the block-progression direction
+     * Gets the element’s preferred height in the block-progression direction
      * (LineHeight). The default value is {@link #LINE_HEIGHT_NORMAL}.
-     * 
+     *
      * @return the line height (a Float or a String)
      */
     public Object getLineHeight()
@@ -1151,7 +1151,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the element's preferred height in the block-progression direction
+     * Sets the element’s preferred height in the block-progression direction
      * (LineHeight) to {@link #LINE_HEIGHT_NORMAL}.
      */
     public void setLineHeightNormal()
@@ -1160,7 +1160,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the element's preferred height in the block-progression direction
+     * Sets the element’s preferred height in the block-progression direction
      * (LineHeight) to {@link #LINE_HEIGHT_AUTO}.
      */
     public void setLineHeightAuto()
@@ -1169,9 +1169,9 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the element's preferred height in the block-progression direction
+     * Sets the element’s preferred height in the block-progression direction
      * (LineHeight).
-     * 
+     *
      * @param lineHeight the line height
      */
     public void setLineHeight(float lineHeight)
@@ -1180,9 +1180,9 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     }
 
     /**
-     * Sets the element's preferred height in the block-progression direction
+     * Sets the element’s preferred height in the block-progression direction
      * (LineHeight).
-     * 
+     *
      * @param lineHeight the line height
      */
     public void setLineHeight(int lineHeight)
@@ -1193,7 +1193,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the colour to be used for drawing text decorations
      * (TextDecorationColor).
-     * 
+     *
      * @return the text decoration colour
      */
     public PDGamma getTextDecorationColor()
@@ -1204,7 +1204,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the colour to be used for drawing text decorations
      * (TextDecorationColor).
-     * 
+     *
      * @param textDecorationColor the text decoration colour
      */
     public void setTextDecorationColor(PDGamma textDecorationColor)
@@ -1215,7 +1215,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the thickness of each line drawn as part of the text decoration
      * (TextDecorationThickness).
-     * 
+     *
      * @return the text decoration thickness
      */
     public float getTextDecorationThickness()
@@ -1226,7 +1226,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the thickness of each line drawn as part of the text decoration
      * (TextDecorationThickness).
-     * 
+     *
      * @param textDecorationThickness the text decoration thickness
      */
     public void setTextDecorationThickness(float textDecorationThickness)
@@ -1237,7 +1237,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the thickness of each line drawn as part of the text decoration
      * (TextDecorationThickness).
-     * 
+     *
      * @param textDecorationThickness the text decoration thickness
      */
     public void setTextDecorationThickness(int textDecorationThickness)
@@ -1248,7 +1248,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the type of text decoration (TextDecorationType). The default value
      * is {@link #TEXT_DECORATION_TYPE_NONE}.
-     * 
+     *
      * @return the type of text decoration
      */
     public String getTextDecorationType()
@@ -1265,7 +1265,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #TEXT_DECORATION_TYPE_OVERLINE},</li>
      *   <li>{@link #TEXT_DECORATION_TYPE_LINE_THROUGH}.</li>
      * </ul>
-     * 
+     *
      * @param textDecorationType the type of text decoration
      */
     public void setTextDecorationType(String textDecorationType)
@@ -1276,7 +1276,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the justification of the lines within a ruby assembly (RubyAlign).
      * The default value is {@link #RUBY_ALIGN_DISTRIBUTE}.
-     * 
+     *
      * @return the ruby alignment
      */
     public String getRubyAlign()
@@ -1294,7 +1294,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #RUBY_ALIGN_JUSTIFY},</li>
      *   <li>{@link #RUBY_ALIGN_DISTRIBUTE},</li>
      * </ul>
-     * 
+     *
      * @param rubyAlign the ruby alignment
      */
     public void setRubyAlign(String rubyAlign)
@@ -1306,7 +1306,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      * Gets the placement of the RT structure element relative to the RB element
      * in a ruby assembly (RubyPosition). The default value is
      * {@link #RUBY_POSITION_BEFORE}.
-     * 
+     *
      * @return the ruby position
      */
     public String getRubyPosition()
@@ -1323,7 +1323,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #RUBY_POSITION_WARICHU},</li>
      *   <li>{@link #RUBY_POSITION_INLINE}.</li>
      * </ul>
-     * 
+     *
      * @param rubyPosition the ruby position
      */
     public void setRubyPosition(String rubyPosition)
@@ -1335,7 +1335,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      * Gets the orientation of glyphs when the inline-progression direction is
      * top to bottom or bottom to top (GlyphOrientationVertical). The default
      * value is {@link #GLYPH_ORIENTATION_VERTICAL_AUTO}.
-     * 
+     *
      * @return the vertical glyph orientation
      */
     public String getGlyphOrientationVertical()
@@ -1358,7 +1358,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #GLYPH_ORIENTATION_VERTICAL_270_DEGREES},</li>
      *   <li>{@link #GLYPH_ORIENTATION_VERTICAL_360_DEGREES}.</li>
      * </ul>
-     * 
+     *
      * @param glyphOrientationVertical the vertical glyph orientation
      */
     public void setGlyphOrientationVertical(String glyphOrientationVertical)
@@ -1369,7 +1369,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the number of columns in the content of the grouping element
      * (ColumnCount). The default value is 1.
-     * 
+     *
      * @return the column count
      */
     public int getColumnCount()
@@ -1380,7 +1380,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the number of columns in the content of the grouping element
      * (ColumnCount).
-     * 
+     *
      * @param columnCount the column count
      */
     public void setColumnCount(int columnCount)
@@ -1391,7 +1391,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the desired space between adjacent columns in the inline-progression
      * direction (ColumnGap).
-     * 
+     *
      * @return the column gap (FLoat or array of floats)
      */
     public Object getColumnGap()
@@ -1402,7 +1402,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the desired space between all columns in the inline-progression
      * direction (ColumnGap).
-     * 
+     *
      * @param columnGap the column gap
      */
     public void setColumnGap(float columnGap)
@@ -1413,7 +1413,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the desired space between all columns in the inline-progression
      * direction (ColumnGap).
-     * 
+     *
      * @param columnGap the column gap
      */
     public void setColumnGap(int columnGap)
@@ -1426,7 +1426,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
      * direction (ColumnGap), the first element specifying the space between the
      * first and second columns, the second specifying the space between the
      * second and third columns, and so on.
-     * 
+     *
      * @param columnGaps the column gaps
      */
     public void setColumnGaps(float[] columnGaps)
@@ -1437,7 +1437,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the desired width of the columns, measured in default user space
      * units in the inline-progression direction (ColumnWidths).
-     * 
+     *
      * @return the column widths (Float or array of floats)
      */
     public Object getColumnWidths()
@@ -1447,7 +1447,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the same column width for all columns (ColumnWidths).
-     * 
+     *
      * @param columnWidth the column width
      */
     public void setAllColumnWidths(float columnWidth)
@@ -1457,7 +1457,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the same column width for all columns (ColumnWidths).
-     * 
+     *
      * @param columnWidth the column width
      */
     public void setAllColumnWidths(int columnWidth)
@@ -1467,7 +1467,7 @@ public class PDLayoutAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the column widths for the columns separately (ColumnWidths).
-     * 
+     *
      * @param columnWidths the column widths
      */
     public void setColumnWidths(float[] columnWidths)

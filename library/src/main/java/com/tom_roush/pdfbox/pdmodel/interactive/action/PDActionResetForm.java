@@ -38,7 +38,6 @@ public class PDActionResetForm extends PDAction
      */
     public PDActionResetForm()
     {
-        action = new COSDictionary();
         setSubType(SUB_TYPE);
     }
 
@@ -61,7 +60,7 @@ public class PDActionResetForm extends PDAction
     public COSArray getFields()
     {
         COSBase retval = this.action.getDictionaryObject(COSName.FIELDS);
-        return retval instanceof COSArray ? (COSArray)retval : null;
+        return retval instanceof COSArray ? (COSArray) retval : null;
     }
 
     /**

@@ -19,13 +19,13 @@ package com.tom_roush.pdfbox.contentstream.operator.text;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
-import com.tom_roush.pdfbox.contentstream.operator.Operator;
-import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
+
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 
 /**
  * TD: Move text position and set leading.
@@ -48,7 +48,7 @@ public class MoveTextSetLeading extends OperatorProcessor
         {
             return;
         }
-        COSNumber y = (COSNumber)base1;
+        COSNumber y = (COSNumber) base1;
 
         List<COSBase> args = new ArrayList<COSBase>();
         args.add(new COSFloat(-1 * y.floatValue()));

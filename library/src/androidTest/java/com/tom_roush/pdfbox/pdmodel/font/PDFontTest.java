@@ -1,6 +1,4 @@
 /*
- *  Copyright 2011 adam.
- *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +18,7 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -28,8 +27,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 import com.tom_roush.fontbox.ttf.TTFParser;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
@@ -50,17 +51,23 @@ import org.junit.Test;
 /**
  *
  * @author adam
+ * @author Tilman Hausherr
  */
 public class PDFontTest
 {
-
+    private File IN_DIR;
+    private File OUT_DIR;
     private Context testContext;
 
     @Before
-    public void setUp() throws IOException
+    public void setUp() throws Exception
     {
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
+        IN_DIR = new File(testContext.getCacheDir(), "fonts");
+        IN_DIR.mkdirs();
+        OUT_DIR = new File(testContext.getCacheDir(), "pdfbox-test-output");
+        OUT_DIR.mkdirs();
     }
 
     /**
@@ -117,6 +124,74 @@ public class PDFontTest
         TrueTypeFont ttf2 = new TTFParser().parse(new FileInputStream(fontFile));
         testPDFBox3826checkFonts(testPDFBox3826createDoc(ttf2), fontFile);
         ttf2.close();
+    }
+
+    /**
+     * PDFBOX-4115: Test ability to create PDF with german umlaut glyphs with a type 1 font.
+     * Test for everything that went wrong before this was fixed.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testPDFBOX4115() throws IOException
+    {
+        File fontFile = new File(IN_DIR, "n019003l.pfb");
+
+        if (!fontFile.exists())
+        {
+            try
+            {
+                Log.i("PdfBox-Android", "Font not cached, Downloading font for PDFontTest.testPDFBOX4115");
+                InputStream fontUrlStream = new URL(
+                    "https://issues.apache.org/jira/secure/attachment/12911053/n019003l.pfb")
+                    .openStream();
+                IOUtils.copy(fontUrlStream, new FileOutputStream(fontFile));
+            }
+            catch (Exception e)
+            {
+                Log.w("PdfBox-Android", "Unable to download test font. Skipping test PDFontTest.testPDFBOX4115");
+                return;
+            }
+        }
+
+        File outputFile = new File(OUT_DIR, "FontType1.pdf");
+        String text = "äöüÄÖÜ";
+
+        PDDocument doc = new PDDocument();
+
+        PDPage page = new PDPage();
+        PDPageContentStream contentStream = new PDPageContentStream(doc, page);
+
+        PDType1Font font = new PDType1Font(doc, new FileInputStream(fontFile), WinAnsiEncoding.INSTANCE);
+
+        contentStream.beginText();
+        contentStream.setFont(font, 10);
+        contentStream.newLineAtOffset(10, 700);
+        contentStream.showText(text);
+        contentStream.endText();
+        contentStream.close();
+
+        doc.addPage(page);
+
+        doc.save(outputFile);
+        doc.close();
+
+        doc = PDDocument.load(outputFile);
+
+        font = (PDType1Font) doc.getPage(0).getResources().getFont(COSName.getPDFName("F1"));
+        Assert.assertEquals(font.getEncoding(), WinAnsiEncoding.INSTANCE);
+
+        for (char c : text.toCharArray())
+        {
+            String name = font.getEncoding().getName(c);
+            Assert.assertEquals("dieresis", name.substring(1));
+            Assert.assertFalse(font.getPath(name).isEmpty());
+        }
+
+        PDFTextStripper stripper = new PDFTextStripper();
+        Assert.assertEquals(text, stripper.getText(doc).trim());
+
+        doc.close();
     }
 
     private void testPDFBox3826checkFonts(byte[] byteArray, File fontFile) throws IOException

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel;
 
 /**
@@ -79,6 +80,8 @@ public enum PageMode
 
     /**
      * Returns the string value, as used in a PDF file.
+     *
+     * @return the string value.
      */
     public String stringValue()
     {

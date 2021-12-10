@@ -16,9 +16,13 @@
  */
 package com.tom_roush.fontbox.cmap;
 
-import junit.framework.TestCase;
-
 import java.io.IOException;
+
+import com.tom_roush.fontbox.ttf.CmapLookup;
+import com.tom_roush.fontbox.ttf.TTFParser;
+import com.tom_roush.fontbox.ttf.TrueTypeFont;
+
+import junit.framework.TestCase;
 
 /**
  * This will test the CMap implementation.
@@ -39,5 +43,20 @@ public class TestCMap extends TestCase
         CMap cMap = new CMap();
         cMap.addCharMapping(bs, "a");
         assertTrue("a".equals(cMap.toUnicode(200)));
+    }
+
+    /**
+     * PDFBOX-3997: test unicode that is above the basic multilingual plane, here: helicopter
+     * symbol, or D83D DE81 in the Noto Emoji font.
+     *
+     * @throws IOException
+     */
+//    TODO: PdfBox-Android - provide test file
+    public void _testPDFBox3997() throws IOException
+    {
+        TrueTypeFont ttf = new TTFParser().parse("target/pdfs/NotoEmoji-Regular.ttf");
+        CmapLookup cmap = ttf.getUnicodeCmapLookup(false);
+        assertEquals(886, cmap.getGlyphId(0x1F681));
+        ttf.close();
     }
 }

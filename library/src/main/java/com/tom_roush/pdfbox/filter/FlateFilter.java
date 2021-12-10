@@ -40,7 +40,7 @@ import com.tom_roush.pdfbox.cos.COSName;
  */
 final class FlateFilter extends Filter
 {
-    private static final int BUFFER_SIZE = 16348;
+    private static final int BUFFER_SIZE = 0x4000;
 
     @Override
     public DecodeResult decode(InputStream encoded, OutputStream decoded,

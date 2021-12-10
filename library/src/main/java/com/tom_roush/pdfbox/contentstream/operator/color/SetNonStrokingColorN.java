@@ -18,7 +18,7 @@
 package com.tom_roush.pdfbox.contentstream.operator.color;
 
 /**
- * scn: Sets the colour to use for stroking non-stroking operations.
+ * scn: Sets the colour to use for non-stroking operations.
  * Supports Pattern, Separation, DeviceN and ICCBased colour spaces.
  *
  * @author John Hewson

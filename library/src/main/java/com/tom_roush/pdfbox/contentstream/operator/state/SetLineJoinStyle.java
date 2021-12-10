@@ -29,6 +29,7 @@ import com.tom_roush.pdfbox.cos.COSNumber;
 
 /**
  * j: Set the line join style.
+ *
  */
 public class SetLineJoinStyle extends OperatorProcessor
 {

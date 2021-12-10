@@ -23,7 +23,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
 
 /**
- * This is the class that represents a file attachement.
+ * This is the class that represents a file attachment.
  *
  * @author Ben Litchfield
  */
@@ -56,13 +56,13 @@ public class PDAnnotationFileAttachment extends PDAnnotationMarkup
      */
     public PDAnnotationFileAttachment()
     {
-        getCOSObject().setItem(COSName.SUBTYPE, COSName.getPDFName(SUB_TYPE));
+        getCOSObject().setName(COSName.SUBTYPE, SUB_TYPE);
     }
 
     /**
      * Creates a Link annotation from a COSDictionary, expected to be a correct object definition.
      *
-     * @param field the PDF objet to represent as a field.
+     * @param field the PDF object to represent as a field.
      */
     public PDAnnotationFileAttachment(COSDictionary field)
     {
@@ -98,16 +98,28 @@ public class PDAnnotationFileAttachment extends PDAnnotationMarkup
      */
     public String getAttachmentName()
     {
-        return getCOSObject().getNameAsString("Name", ATTACHMENT_NAME_PUSH_PIN);
+        return getCOSObject().getNameAsString(COSName.NAME, ATTACHMENT_NAME_PUSH_PIN);
     }
 
     /**
-     * Set the name used to draw the attachement icon. See the ATTACHMENT_NAME_XXX constants.
+     * Set the name used to draw the attachment icon. See the ATTACHMENT_NAME_XXX constants.
+     *
+     * @param name The name of the visual icon to draw.
+     * @deprecated use {@link #setAttachmentName(java.lang.String)}.
+     */
+    @Deprecated
+    public void setAttachementName(String name)
+    {
+        getCOSObject().setName(COSName.NAME, name);
+    }
+
+    /**
+     * Set the name used to draw the attachment icon. See the ATTACHMENT_NAME_XXX constants.
      *
      * @param name The name of the visual icon to draw.
      */
-    public void setAttachementName(String name)
+    public void setAttachmentName(String name)
     {
-        getCOSObject().setName("Name", name);
+        getCOSObject().setName(COSName.NAME, name);
     }
 }

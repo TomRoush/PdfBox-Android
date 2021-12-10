@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
@@ -43,8 +44,7 @@ final class Standard14Fonts
 
     private static final Set<String> STANDARD_14_NAMES = new HashSet<String>(34);
     private static final Map<String, String> STANDARD_14_MAPPING = new HashMap<String, String>(34);
-    private static final Map<String, FontMetrics> STANDARD14_AFM_MAP =
-        new HashMap<String, FontMetrics>(34);
+    private static final Map<String, FontMetrics> STANDARD14_AFM_MAP =  new HashMap<String, FontMetrics>(34);
     static
     {
         try
@@ -87,6 +87,12 @@ final class Standard14Fonts
             addAFM("Times,Italic", "Times-Italic");
             addAFM("Times,Bold", "Times-Bold");
             addAFM("Times,BoldItalic", "Times-BoldItalic");
+
+            // PDFBOX-3457: PDF.js file bug864847.pdf
+            addAFM("ArialMT", "Helvetica");
+            addAFM("Arial-ItalicMT", "Helvetica-Oblique");
+            addAFM("Arial-BoldMT", "Helvetica-Bold");
+            addAFM("Arial-BoldItalicMT", "Helvetica-BoldOblique");
         }
         catch (IOException e)
         {
@@ -111,9 +117,12 @@ final class Standard14Fonts
 
         String resourceName = "com/tom_roush/pdfbox/resources/afm/" + afmName + ".afm";
         InputStream afmStream;
-        if(PDFBoxResourceLoader.isReady()) {
+        if (PDFBoxResourceLoader.isReady())
+        {
             afmStream = PDFBoxResourceLoader.getStream(resourceName);
-        } else {
+        }
+        else
+        {
             // Fallback
             URL url = PDType1Font.class.getClassLoader().getResource(resourceName);
             if (url != null)

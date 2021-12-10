@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.tom_roush.fontbox.ttf.CmapLookup;
 import com.tom_roush.fontbox.ttf.CmapSubtable;
 import com.tom_roush.fontbox.ttf.HeaderTable;
 import com.tom_roush.fontbox.ttf.HorizontalHeaderTable;
@@ -60,7 +61,16 @@ abstract class TrueTypeEmbedder implements Subsetter
     private final PDDocument document;
     protected TrueTypeFont ttf;
     protected PDFontDescriptor fontDescriptor;
+
+    /**
+     * For API backwards compatibility.
+     *
+     * @deprecated
+     */
+    @Deprecated
     protected final CmapSubtable cmap;
+
+    protected final CmapLookup cmapLookup;
     private final Set<Integer> subsetCodePoints = new HashSet<Integer>();
     private final boolean embedSubset;
 
@@ -92,6 +102,7 @@ abstract class TrueTypeEmbedder implements Subsetter
 
         // choose a Unicode "cmap"
         cmap = ttf.getUnicodeCmap();
+        cmapLookup = ttf.getUnicodeCmapLookup();
     }
 
     public void buildFontFile2(InputStream ttfStream) throws IOException

@@ -25,7 +25,7 @@ import com.tom_roush.pdfbox.cos.COSBase;
 
 /**
  * Q: Restore the graphics state.
- * 
+ *
  * @author Laurent Huault
  */
 public class Restore extends OperatorProcessor

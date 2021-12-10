@@ -23,6 +23,7 @@ import com.tom_roush.pdfbox.cos.COSName;
  * This class will take a dictionary and determine which type of action to create.
  *
  * @author Ben Litchfield
+ *
  */
 public final class PDActionFactory
 {
@@ -47,7 +48,7 @@ public final class PDActionFactory
         PDAction retval = null;
         if( action != null )
         {
-            String type = action.getNameAsString(COSName.S);
+            String type = action.getNameAsString( COSName.S );
             if( PDActionJavaScript.SUB_TYPE.equals( type ) )
             {
                 retval = new PDActionJavaScript( action );
@@ -99,6 +100,10 @@ public final class PDActionFactory
             else if (PDActionThread.SUB_TYPE.equals(type))
             {
                 retval = new PDActionThread(action);
+            }
+            else if (PDActionEmbeddedGoTo.SUB_TYPE.equals(type))
+            {
+                retval = new PDActionEmbeddedGoTo(action);
             }
         }
         return retval;

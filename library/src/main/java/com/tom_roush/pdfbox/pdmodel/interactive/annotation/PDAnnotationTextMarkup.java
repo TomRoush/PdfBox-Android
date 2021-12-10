@@ -16,8 +16,9 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
-import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
 
 /**
@@ -67,7 +68,7 @@ public class PDAnnotationTextMarkup extends PDAnnotationMarkup
     /**
      * Creates a TextMarkup annotation from a COSDictionary, expected to be a correct object definition.
      *
-     * @param field the PDF objet to represent as a field.
+     * @param field the PDF object to represent as a field.
      */
     public PDAnnotationTextMarkup(COSDictionary field)
     {
@@ -93,15 +94,13 @@ public class PDAnnotationTextMarkup extends PDAnnotationMarkup
      */
     public float[] getQuadPoints()
     {
-        COSArray quadPoints = (COSArray) getCOSObject().getDictionaryObject(COSName.QUADPOINTS);
-        if (quadPoints != null)
+        COSBase base = getCOSObject().getDictionaryObject(COSName.QUADPOINTS);
+        if (base instanceof COSArray)
         {
-            return quadPoints.toFloatArray();
+            return ((COSArray) base).toFloatArray();
         }
-        else
-        {
-            return null; // Should never happen as this is a required item
-        }
+        // Should never happen as this is a required item
+        return null;
     }
 
     /**

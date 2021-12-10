@@ -235,6 +235,11 @@ public abstract class PDFunction implements COSObjectable
     }
 
     /**
+     * @param input The array of input values for the function.
+     *
+     * @return The of outputs the function returns based on those inputs.
+     * @throws IOException if something went wrong.
+     *
      * @deprecated Replaced by {@link #eval(float[] input)}
      */
     @Deprecated
@@ -250,20 +255,20 @@ public abstract class PDFunction implements COSObjectable
      * Evaluates the function at the given input.
      * ReturnValue = f(input)
      *
-     * @param input The array of input values for the function. 
+     * @param input The array of input values for the function.
      * In many cases will be an array of a single value, but not always.
      *
-     * @return The of outputs the function returns based on those inputs. 
+     * @return The of outputs the function returns based on those inputs.
      * In many cases will be an array of a single value, but not always.
      *
-     * @throws IOException an IOExcpetion is thrown if something went wrong processing the function.  
+     * @throws IOException an IOExcpetion is thrown if something went wrong processing the function.
      */
     public abstract float[] eval(float[] input) throws IOException;
 
     /**
      * Returns all ranges for the output values as COSArray .
      * Required for type 0 and type 4 functions
-     * @return the ranges array. 
+     * @return the ranges array.
      */
     protected COSArray getRangeValues()
     {
@@ -277,7 +282,7 @@ public abstract class PDFunction implements COSObjectable
     /**
      * Returns all domains for the input values as COSArray.
      * Required for all function types.
-     * @return the domains array. 
+     * @return the domains array.
      */
     private COSArray getDomainValues()
     {
@@ -339,8 +344,8 @@ public abstract class PDFunction implements COSObjectable
     }
 
     /**
-     * For a given value of x, interpolate calculates the y value 
-     * on the line defined by the two points (xRangeMin , xRangeMax ) 
+     * For a given value of x, interpolate calculates the y value
+     * on the line defined by the two points (xRangeMin , xRangeMax )
      * and (yRangeMin , yRangeMax ).
      *
      * @param x the to be interpolated value.

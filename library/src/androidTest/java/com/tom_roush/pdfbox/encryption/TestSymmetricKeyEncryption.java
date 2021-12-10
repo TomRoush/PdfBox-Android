@@ -43,9 +43,12 @@ import com.tom_roush.pdfbox.pdmodel.PDEmbeddedFilesNameTreeNode;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDComplexFileSpecification;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDEmbeddedFile;
 import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
+import com.tom_roush.pdfbox.pdmodel.encryption.PDEncryption;
 import com.tom_roush.pdfbox.pdmodel.encryption.StandardProtectionPolicy;
+import com.tom_roush.pdfbox.pdmodel.encryption.StandardSecurityHandler;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
+import com.tom_roush.pdfbox.util.Charsets;
 
 import org.junit.Assert;
 
@@ -107,7 +110,7 @@ public class TestSymmetricKeyEncryption extends TestCase
      * Test that permissions work as intended: the user psw ("user") is enough
      * to open the PDF with possibly restricted rights, the owner psw ("owner")
      * gives full permissions. The 3 files of this test were created by Maruan
-     * Sayhoun, NOT with PDFBox, but with Adobe Acrobat to ensure "the gold
+     * Sahyoun, NOT with PDFBox, but with Adobe Acrobat to ensure "the gold
      * standard". The restricted permissions prevent printing and text
      * extraction. In the 128 and 256 bit encrypted files, AssembleDocument,
      * ExtractForAccessibility and PrintDegraded are also disabled.
@@ -321,9 +324,25 @@ public class TestSymmetricKeyEncryption extends TestCase
         encryptedDoc = PDDocument.load(pdfFile, ownerpassword);
         Assert.assertTrue(encryptedDoc.isEncrypted());
         Assert.assertTrue(encryptedDoc.getCurrentAccessPermission().isOwnerPermission());
+
+        // Older encryption allows to get the user password when the owner password is known
+        PDEncryption encryption = encryptedDoc.getEncryption();
+        int revision = encryption.getRevision();
+        if (revision < 5)
+        {
+            StandardSecurityHandler standardSecurityHandler = new StandardSecurityHandler();
+            int keyLengthInBytes = encryption.getVersion() == 1 ? 5 : encryption.getLength() / 8;
+            byte[] computedUserPassword = standardSecurityHandler.getUserPassword(
+                ownerpassword.getBytes(Charsets.ISO_8859_1),
+                encryption.getOwnerKey(),
+                revision,
+                keyLengthInBytes);
+            Assert.assertEquals(userpassword.substring(0, 32), new String(computedUserPassword, Charsets.ISO_8859_1));
+        }
+
         encryptedDoc.close();
 
-        // test with owner password => restricted permissions
+        // test with user password => restricted permissions
         encryptedDoc = PDDocument.load(pdfFile, userpassword);
         Assert.assertTrue(encryptedDoc.isEncrypted());
         Assert.assertFalse(encryptedDoc.getCurrentAccessPermission().isOwnerPermission());

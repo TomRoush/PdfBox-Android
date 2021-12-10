@@ -17,15 +17,15 @@
 
 package com.tom_roush.pdfbox.cos;
 
-import com.tom_roush.pdfbox.filter.Filter;
-import com.tom_roush.pdfbox.io.ScratchFile;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+
+import com.tom_roush.pdfbox.filter.Filter;
+import com.tom_roush.pdfbox.io.ScratchFile;
 
 /**
  * An OutputStream which writes to an encoded COS stream.
@@ -81,6 +81,10 @@ public final class COSOutputStream extends FilterOutputStream
     @Override
     public void close() throws IOException
     {
+        if (buffer == null)
+        {
+            return;
+        }
         // apply filters in reverse order
         for (int i = filters.size() - 1; i >= 0; i--)
         {
@@ -92,5 +96,6 @@ public final class COSOutputStream extends FilterOutputStream
         // flush the entire stream
         out.write(buffer.toByteArray());
         super.close();
+        buffer = null;
     }
 }

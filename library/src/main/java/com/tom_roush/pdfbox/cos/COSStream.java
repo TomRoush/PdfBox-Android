@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.tom_roush.pdfbox.android.PDFBoxConfig;
+import com.tom_roush.pdfbox.filter.DecodeOptions;
 import com.tom_roush.pdfbox.filter.Filter;
 import com.tom_roush.pdfbox.filter.FilterFactory;
 import com.tom_roush.pdfbox.io.IOUtils;
@@ -77,10 +78,12 @@ public class COSStream extends COSDictionary implements Closeable
      */
     private void checkClosed() throws IOException
     {
-        if ((randomAccess != null) && randomAccess.isClosed())
+        if (randomAccess != null && randomAccess.isClosed())
         {
             throw new IOException("COSStream has been closed and cannot be read. " +
                 "Perhaps its enclosing PDDocument has been closed?");
+            // Tip for debugging: look at the destination file with an editor, you'll see an 
+            // incomplete stream at the bottom.
         }
     }
 
@@ -157,6 +160,11 @@ public class COSStream extends COSDictionary implements Closeable
      */
     public COSInputStream createInputStream() throws IOException
     {
+        return createInputStream(DecodeOptions.DEFAULT);
+    }
+
+    public COSInputStream createInputStream(DecodeOptions options) throws IOException
+    {
         checkClosed();
         if (isWriting)
         {
@@ -164,7 +172,7 @@ public class COSStream extends COSDictionary implements Closeable
         }
         ensureRandomAccessExists(true);
         InputStream input = new RandomAccessInputStream(randomAccess);
-        return COSInputStream.create(getFilterList(), this, input, scratchFile);
+        return COSInputStream.create(getFilterList(), this, input, scratchFile, options);
     }
 
     /**
@@ -350,6 +358,8 @@ public class COSStream extends COSDictionary implements Closeable
     /**
      * Returns the contents of the stream as a text string.
      *
+     * @return the string representation of this string.
+     *
      * @deprecated Use {@link #toTextString()} instead.
      */
     @Deprecated
@@ -360,6 +370,8 @@ public class COSStream extends COSDictionary implements Closeable
 
     /**
      * Returns the contents of the stream as a PDF "text string".
+     *
+     * @return the text string representation of this stream.
      */
     public String toTextString()
     {

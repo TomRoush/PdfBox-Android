@@ -290,7 +290,7 @@ public abstract class BaseParser
 
         if (value == null)
         {
-            Log.w("PdfBox-Android", "Bad Dictionary Declaration " + seqSource);
+            Log.w("PdfBox-Android", "Bad dictionary declaration at offset " + seqSource.getPosition());
         }
         else
         {
@@ -393,7 +393,7 @@ public abstract class BaseParser
         else if (nextChar != '(')
         {
             throw new IOException( "parseCOSString string should start with '(' or '<' and not '" +
-                nextChar + "' " + seqSource);
+                nextChar + "' at offset " + seqSource.getPosition());
         }
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();

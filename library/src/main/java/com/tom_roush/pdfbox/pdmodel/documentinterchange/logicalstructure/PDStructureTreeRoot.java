@@ -70,22 +70,20 @@ public class PDStructureTreeRoot extends PDStructureNode
     public COSArray getKArray()
     {
         COSBase k = this.getCOSObject().getDictionaryObject(COSName.K);
-        if (k != null)
+        if (k instanceof COSDictionary)
         {
-            if (k instanceof COSDictionary)
-            {
-                COSDictionary kdict = (COSDictionary) k;
-                k = kdict.getDictionaryObject(COSName.K);
-                if (k instanceof COSArray)
-                {
-                    return (COSArray) k;
-                }
-            }
-            else
+            COSDictionary kdict = (COSDictionary) k;
+            k = kdict.getDictionaryObject(COSName.K);
+            if (k instanceof COSArray)
             {
                 return (COSArray) k;
             }
         }
+        else if (k instanceof COSArray)
+        {
+            return (COSArray) k;
+        }
+
         return null;
     }
 
@@ -116,10 +114,10 @@ public class PDStructureTreeRoot extends PDStructureNode
      */
     public PDNameTreeNode<PDStructureElement> getIDTree()
     {
-        COSDictionary idTreeDic = (COSDictionary) this.getCOSObject().getDictionaryObject(COSName.ID_TREE);
-        if (idTreeDic != null)
+        COSBase base = this.getCOSObject().getDictionaryObject(COSName.ID_TREE);
+        if (base instanceof COSDictionary)
         {
-            return new PDStructureElementNameTreeNode(idTreeDic);
+            return new PDStructureElementNameTreeNode((COSDictionary) base);
         }
         return null;
     }
@@ -141,10 +139,10 @@ public class PDStructureTreeRoot extends PDStructureNode
      */
     public PDNumberTreeNode getParentTree()
     {
-        COSDictionary parentTreeDic = (COSDictionary) this.getCOSObject().getDictionaryObject(COSName.PARENT_TREE);
-        if (parentTreeDic != null)
+        COSBase base = getCOSObject().getDictionaryObject(COSName.PARENT_TREE);
+        if (base instanceof COSDictionary)
         {
-            return new PDNumberTreeNode(parentTreeDic, COSBase.class);
+            return new PDNumberTreeNode((COSDictionary) base, COSBase.class);
         }
         return null;
     }
@@ -195,7 +193,7 @@ public class PDStructureTreeRoot extends PDStructureNode
             }
             catch (IOException e)
             {
-                Log.e("PdfBox-Android", e.getMessage(), e);
+                Log.e("PdfBox-Android", e.getMessage(),e);
             }
         }
         return new Hashtable<String, Object>();

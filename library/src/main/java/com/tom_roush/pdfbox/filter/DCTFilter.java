@@ -35,8 +35,8 @@ final class DCTFilter extends Filter
     private static final String ADOBE = "Adobe";
 
     @Override
-    public DecodeResult decode(InputStream encoded, OutputStream decoded,
-        COSDictionary parameters, int index) throws IOException
+    public DecodeResult decode(InputStream encoded, OutputStream decoded, COSDictionary
+        parameters, int index, DecodeOptions options) throws IOException
     {
         // Already ready, just read it back out
         IOUtils.copy(encoded, decoded);
@@ -44,11 +44,20 @@ final class DCTFilter extends Filter
         return new DecodeResult(parameters);
     }
 
+    @Override
+    public DecodeResult decode(InputStream encoded, OutputStream decoded,
+        COSDictionary parameters, int index) throws IOException
+    {
+        return decode(encoded, decoded, parameters, index, DecodeOptions.DEFAULT);
+    }
+
 //    private Integer getAdobeTransform(IIOMetadata metadata) TODO: PdfBox-Android
 
 //    private int getAdobeTransformByBruteForce(ImageInputStream iis) throws IOException TODO: PdfBox-Android
 
 //    private WritableRaster fromYCCKtoCMYK(Raster raster) TODO: PdfBox-Android
+
+//    private WritableRaster fromYCbCrtoCMYK(Raster raster) TODO: PdfBox-Android
 
 //    private WritableRaster fromBGRtoRGB(Raster raster) TODO: PdfBox-Android
 
