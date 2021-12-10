@@ -48,6 +48,7 @@ public class PDVisibleSignDesigner
     private Bitmap image;
     private String signatureFieldName = "sig";
     private byte[] formatterRectangleParams = { 0, 0, 100, 50 };
+    private int[] formatterRectangleParameters = { 0, 0, 100, 50 };
     private AffineTransform affineTransform = new AffineTransform();
     private float imageSizeInPercents;
     private int rotation = 0;
@@ -210,7 +211,7 @@ public class PDVisibleSignDesigner
 
     /**
      * Adjust signature for page rotation. This is optional, call this after all x and y coordinates
-     * have been set if you want the signature to be postioned regardless of page orientation.
+     * have been set if you want the signature to be positioned regardless of page orientation.
      *
      * @return Visible Signature Configuration Object
      */
@@ -219,6 +220,7 @@ public class PDVisibleSignDesigner
         switch (rotation)
         {
             case 90:
+                // https://stackoverflow.com/a/34359956/535646
                 float temp = yAxis;
                 yAxis = pageHeight - xAxis - imageWidth;
                 xAxis = temp;
@@ -283,13 +285,15 @@ public class PDVisibleSignDesigner
     /**
      * Zoom signature image with some percent.
      *
-     * @param percent increase image with x percent.
+     * @param percent increase (positive value) or decrease (negative value) image with x percent.
      * @return Visible Signature Configuration Object
      */
     public PDVisibleSignDesigner zoom(float percent)
     {
         imageHeight += (imageHeight * percent) / 100;
         imageWidth += (imageWidth * percent) / 100;
+        formatterRectangleParameters[2] = (int) imageWidth.floatValue();
+        formatterRectangleParameters[3] = (int) imageHeight.floatValue();
         return this;
     }
 
@@ -363,6 +367,7 @@ public class PDVisibleSignDesigner
     public PDVisibleSignDesigner width(float width)
     {
         this.imageWidth = width;
+        this.formatterRectangleParameters[2] = (int) width;
         return this;
     }
 
@@ -383,6 +388,7 @@ public class PDVisibleSignDesigner
     public PDVisibleSignDesigner height(float height)
     {
         this.imageHeight = height;
+        this.formatterRectangleParameters[3] = (int) height;
         return this;
     }
 
@@ -456,6 +462,8 @@ public class PDVisibleSignDesigner
         this.image = image;
         imageHeight = (float) image.getHeight();
         imageWidth = (float) image.getWidth();
+        formatterRectangleParameters[2] = image.getWidth();
+        formatterRectangleParameters[3] = image.getHeight();
     }
 
     /**
@@ -512,12 +520,22 @@ public class PDVisibleSignDesigner
     }
 
     /**
-     *
-     * @return formatter PDRectanle parameters
+     * @return formatter PDRectangle parameters
+     * @deprecated use {@link #getFormatterRectangleParameters() getFormatterRectangleParameters()}
      */
+    @Deprecated
     public byte[] getFormatterRectangleParams()
     {
         return formatterRectangleParams;
+    }
+
+    /**
+     *
+     * @return formatter PDRectangle parameters
+     */
+    public int[] getFormatterRectangleParameters()
+    {
+        return formatterRectangleParameters;
     }
 
     /**
@@ -525,10 +543,24 @@ public class PDVisibleSignDesigner
      *
      * @param formatterRectangleParams
      * @return Visible Signature Configuration Object
+     * @deprecated use {@link #formatterRectangleParameters(int[]) formatterRectangleParameters(int[])}
      */
+    @Deprecated
     public PDVisibleSignDesigner formatterRectangleParams(byte[] formatterRectangleParams)
     {
         this.formatterRectangleParams = formatterRectangleParams;
+        return this;
+    }
+
+    /**
+     * Sets formatter PDRectangle
+     *
+     * @param formatterRectangleParameters
+     * @return Visible Signature Configuration Object
+     */
+    public PDVisibleSignDesigner formatterRectangleParameters(int[] formatterRectangleParameters)
+    {
+        this.formatterRectangleParameters = formatterRectangleParameters;
         return this;
     }
 

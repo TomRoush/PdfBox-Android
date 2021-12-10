@@ -17,17 +17,30 @@ package com.tom_roush.pdfbox.multipdf;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSObject;
+import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.MemoryUsageSetting;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.PDPageTree;
+import com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement;
+import com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureTreeRoot;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitDestination;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
@@ -44,6 +57,7 @@ public class PDFMergerUtilityTest extends TestCase
 {
     final String SRCDIR = "pdfbox/input/merge";
     String TARGETTESTDIR;
+    private File TARGETPDFDIR;
     final int DPI = 96;
     private Context testContext;
 
@@ -55,6 +69,8 @@ public class PDFMergerUtilityTest extends TestCase
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
         TARGETTESTDIR = testContext.getCacheDir() + "/pdfbox-test-output/merge/";
+        TARGETPDFDIR = new File(testContext.getCacheDir(), "pdfs");
+        TARGETPDFDIR.mkdirs();
 
         new File(TARGETTESTDIR).mkdirs();
         if (!new File(TARGETTESTDIR).exists())
@@ -162,6 +178,94 @@ public class PDFMergerUtilityTest extends TestCase
         mergedDoc.close();
     }
 
+    /**
+     * PDFBOX-3999: check that page entries in the structure tree only reference pages from the page
+     * tree, i.e. that no orphan pages exist.
+     *
+     * @throws IOException
+     */
+    public void testStructureTreeMerge() throws IOException
+    {
+        File pdfFile = new File(TARGETPDFDIR, "PDFBOX-3999-GeneralForbearance.pdf");
+
+        if (!pdfFile.exists())
+        {
+            try
+            {
+                Log.i("PdfBox-Android", "PDF not cached, Downloading PDF for PDFMergerUtility.testStructureTreeMerge");
+                InputStream pdfUrlStream = new URL(
+                    "https://issues.apache.org/jira/secure/attachment/12896905/GeneralForbearance.pdf")
+                    .openStream();
+                IOUtils.copy(pdfUrlStream, new FileOutputStream(pdfFile));
+            }
+            catch (Exception e)
+            {
+                Log.w("PdfBox-Android", "Unable to download test PDF. Skipping test PDFMergerUtility.testStructureTreeMerge");
+                return;
+            }
+        }
+
+        PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
+        PDDocument src = PDDocument.load(pdfFile);
+        PDDocument dst = PDDocument.load(pdfFile);
+        pdfMergerUtility.appendDocument(dst, src);
+        src.close();
+        dst.save(new File(TARGETTESTDIR, "PDFBOX-3999-GovFormPreFlattened-merged.pdf"));
+        dst.close();
+
+        PDDocument doc = PDDocument.load(new File(TARGETTESTDIR, "PDFBOX-3999-GovFormPreFlattened-merged.pdf"));
+        PDPageTree pageTree = doc.getPages();
+
+        // check for orphan pages in the StructTreeRoot/K and StructTreeRoot/ParentTree trees.
+        PDStructureTreeRoot structureTreeRoot = doc.getDocumentCatalog().getStructureTreeRoot();
+        checkElement(pageTree, structureTreeRoot.getParentTree().getCOSObject());
+        checkElement(pageTree, structureTreeRoot.getK());
+    }
+
+    // Each element can be an array, a dictionary or a number.
+    // See PDF specification Table 37 â€“ Entries in a number tree node dictionary
+    // See PDF specification Table 322 â€“ Entries in the structure tree root
+    // example of file with /Kids: 000153.pdf 000208.pdf 000314.pdf 000359.pdf 000671.pdf
+    // from digitalcorpora site
+    private void checkElement(PDPageTree pageTree, COSBase base)
+    {
+        if (base instanceof COSArray)
+        {
+            for (COSBase base2 : (COSArray) base)
+            {
+                if (base2 instanceof COSObject)
+                {
+                    base2 = ((COSObject) base2).getObject();
+                }
+                checkElement(pageTree, base2);
+            }
+        }
+        else if (base instanceof COSDictionary)
+        {
+            COSDictionary kdict = (COSDictionary) base;
+            if (kdict.containsKey(COSName.PG))
+            {
+                PDStructureElement structureElement = new PDStructureElement(kdict);
+                checkForPage(pageTree, structureElement);
+            }
+            if (kdict.containsKey(COSName.K))
+            {
+                checkElement(pageTree, kdict.getDictionaryObject(COSName.K));
+                return;
+            }
+
+            // if we're in a number tree, check /Nums and /Kids
+            if (kdict.containsKey(COSName.KIDS))
+            {
+                checkElement(pageTree, kdict.getDictionaryObject(COSName.KIDS));
+            }
+            else if (kdict.containsKey(COSName.NUMS))
+            {
+                checkElement(pageTree, kdict.getDictionaryObject(COSName.NUMS));
+            }
+        }
+    }
+
     // checks that the result file of a merge has the same rendering as the two
     // source files
     private void checkMergeIdentical(String filename1, String filename2, String mergeFilename,
@@ -228,4 +332,12 @@ public class PDFMergerUtilityTest extends TestCase
         }
     }
 
+    private void checkForPage(PDPageTree pageTree, PDStructureElement structureElement)
+    {
+        PDPage page = structureElement.getPage();
+        if (page != null)
+        {
+            assertTrue("Page is not in the page tree", pageTree.indexOf(page) != -1);
+        }
+    }
 }

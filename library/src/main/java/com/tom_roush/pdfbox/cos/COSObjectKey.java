@@ -20,11 +20,12 @@ package com.tom_roush.pdfbox.cos;
  * Object representing the physical reference to an indirect pdf object.
  *
  * @author Michael Traut
+ *
  */
 public class COSObjectKey implements Comparable<COSObjectKey>
 {
     private final long number;
-    private final int generation;
+    private int generation;
 
     /**
      * PDFObjectKey constructor comment.
@@ -55,7 +56,8 @@ public class COSObjectKey implements Comparable<COSObjectKey>
     public boolean equals(Object obj)
     {
         COSObjectKey objToBeCompared = obj instanceof COSObjectKey ? (COSObjectKey)obj : null;
-        return objToBeCompared != null && objToBeCompared.getNumber() == getNumber() &&
+        return objToBeCompared != null &&
+            objToBeCompared.getNumber() == getNumber() &&
             objToBeCompared.getGeneration() == getGeneration();
     }
 
@@ -67,6 +69,16 @@ public class COSObjectKey implements Comparable<COSObjectKey>
     public int getGeneration()
     {
         return generation;
+    }
+
+    /**
+     * This will set the generation number. It is intended for fixes only.
+     *
+     * @param genNumber the new generation number.
+     */
+    public void fixGeneration(int genNumber)
+    {
+        generation = genNumber;
     }
 
     /**
@@ -85,13 +97,13 @@ public class COSObjectKey implements Comparable<COSObjectKey>
     @Override
     public int hashCode()
     {
-        return Long.valueOf(number + generation).hashCode();
+        return Long.valueOf(number+generation).hashCode();
     }
 
     @Override
     public String toString()
     {
-        return Long.toString(number) + " " + Integer.toString(generation) + " R";
+        return Long.toString(number) + " " +  Integer.toString(generation) + " R";
     }
 
     @Override
@@ -121,4 +133,5 @@ public class COSObjectKey implements Comparable<COSObjectKey>
             }
         }
     }
+
 }

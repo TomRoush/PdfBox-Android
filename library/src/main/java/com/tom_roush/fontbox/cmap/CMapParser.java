@@ -303,7 +303,15 @@ public class CMapParser
             int mappedCode = (Integer) parseNextToken(cmapStream);
             if (startCode.length <= 2 && endCode.length <= 2)
             {
-                result.addCIDRange((char) start, (char) end, mappedCode);
+                // some CMaps are using CID ranges to map single values
+                if (end == start)
+                {
+                    result.addCIDMapping(mappedCode, start);
+                }
+                else
+                {
+                    result.addCIDRange((char) start, (char) end, mappedCode);
+                }
             }
             else
             {
@@ -416,7 +424,8 @@ public class CMapParser
      */
     protected InputStream getExternalCMap(String name) throws IOException
     {
-        if (PDFBoxResourceLoader.isReady()) {
+        if (PDFBoxResourceLoader.isReady())
+        {
             return PDFBoxResourceLoader.getStream("com/tom_roush/fontbox/resources/cmap/" + name);
         }
 

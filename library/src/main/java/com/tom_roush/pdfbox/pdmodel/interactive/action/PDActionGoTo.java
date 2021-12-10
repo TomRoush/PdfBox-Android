@@ -43,7 +43,6 @@ public class PDActionGoTo extends PDAction
      */
     public PDActionGoTo()
     {
-        super();
         setSubType( SUB_TYPE );
     }
 
@@ -87,8 +86,8 @@ public class PDActionGoTo extends PDAction
                 COSBase page = destArray.getObject(0);
                 if (!(page instanceof COSDictionary))
                 {
-                    throw new IllegalArgumentException("Destination of a GoTo action must be " +
-                        "a page dictionary object");
+                    throw new IllegalArgumentException("Destination of a GoTo action must be "
+                        + "a page dictionary object");
                 }
             }
         }

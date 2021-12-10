@@ -32,7 +32,7 @@ import java.util.Map.Entry;
  *
  * @author Ben Litchfield
  */
-public class CmapSubtable
+public class CmapSubtable implements CmapLookup
 {
     private static final long LEAD_OFFSET = 0xD800 - (0x10000 >> 10);
     private static final long SURROGATE_OFFSET = 0x10000 - (0xD800 << 10) - 0xDC00;
@@ -592,6 +592,7 @@ public class CmapSubtable
      * @param characterCode the given character code to be mapped
      * @return glyphId the corresponding glyph id for the given character code
      */
+    @Override
     public int getGlyphId(int characterCode)
     {
         Integer glyphId = characterCodeToGlyphId.get(characterCode);
@@ -643,6 +644,7 @@ public class CmapSubtable
      * @return a list with all character codes the given gid maps to
      *
      */
+    @Override
     public List<Integer> getCharCodes(int gid)
     {
         int code = getCharCode(gid);

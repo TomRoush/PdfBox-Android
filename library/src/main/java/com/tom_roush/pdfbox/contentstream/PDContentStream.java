@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.contentstream;
 
 import java.io.IOException;
 import java.io.InputStream;
-
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.util.Matrix;
@@ -40,16 +40,22 @@ public interface PDContentStream
 
     /**
      * Returns this stream's resources, if any.
+     *
+     * @return the resources of this stream.
      */
     PDResources getResources();
 
     /**
      * Returns the bounding box of the contents.
+     *
+     * @return the bounding box of this stream.
      */
     PDRectangle getBBox();
 
     /**
      * Returns the matrix which transforms from the stream's space to user space.
+     *
+     * @return the matrix of this stream.
      */
     Matrix getMatrix();
 }

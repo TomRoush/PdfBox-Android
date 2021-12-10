@@ -20,7 +20,7 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * An Export Format attribute object.
- * 
+ *
  * @author Johannes Koch
  */
 public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
@@ -58,6 +58,8 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
 
     /**
      * Default constructor.
+     *
+     * @param owner the owner string.
      */
     public PDExportFormatAttributeObject(String owner)
     {
@@ -66,7 +68,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
 
     /**
      * Creates a new ExportFormat attribute object with a given dictionary.
-     * 
+     *
      * @param dictionary the dictionary
      */
     public PDExportFormatAttributeObject(COSDictionary dictionary)
@@ -78,7 +80,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
     /**
      * Gets the list numbering (ListNumbering). The default value is
      * {@link PDListAttributeObject#LIST_NUMBERING_NONE}.
-     * 
+     *
      * @return the list numbering
      */
     public String getListNumbering()
@@ -101,7 +103,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
      *   <li>{@link PDListAttributeObject#LIST_NUMBERING_UPPER_ALPHA},</li>
      *   <li>{@link PDListAttributeObject#LIST_NUMBERING_LOWER_ALPHA}.</li>
      * </ul>
-     * 
+     *
      * @param listNumbering the list numbering
      */
     public void setListNumbering(String listNumbering)
@@ -112,7 +114,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
     /**
      * Gets the number of rows in the enclosing table that shall be spanned by
      * the cell (RowSpan). The default value is 1.
-     * 
+     *
      * @return the row span
      */
     public int getRowSpan()
@@ -123,7 +125,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
     /**
      * Sets the number of rows in the enclosing table that shall be spanned by
      * the cell (RowSpan).
-     * 
+     *
      * @param rowSpan the row span
      */
     public void setRowSpan(int rowSpan)
@@ -134,7 +136,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
     /**
      * Gets the number of columns in the enclosing table that shall be spanned
      * by the cell (ColSpan). The default value is 1.
-     * 
+     *
      * @return the column span
      */
     public int getColSpan()
@@ -145,7 +147,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
     /**
      * Sets the number of columns in the enclosing table that shall be spanned
      * by the cell (ColSpan).
-     * 
+     *
      * @param colSpan the column span
      */
     public void setColSpan(int colSpan)
@@ -158,7 +160,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
      * shall be the element identifier (see the
      * {@link com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement#getElementIdentifier()}) for a TH structure
      * element that shall be used as a header associated with this cell.
-     * 
+     *
      * @return the headers.
      */
     public String[] getHeaders()
@@ -171,7 +173,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
      * shall be the element identifier (see the
      * {@link com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement#getElementIdentifier()}) for a TH structure
      * element that shall be used as a header associated with this cell.
-     * 
+     *
      * @param headers the headers
      */
     public void setHeaders(String[] headers)
@@ -183,7 +185,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
      * Gets the scope (Scope). It shall reflect whether the header cell applies
      * to the rest of the cells in the row that contains it, the column that
      * contains it, or both the row and the column that contain it.
-     * 
+     *
      * @return the scope
      */
     public String getScope()
@@ -201,7 +203,7 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
      *   <li>{@link PDTableAttributeObject#SCOPE_COLUMN}, or</li>
      *   <li>{@link PDTableAttributeObject#SCOPE_BOTH}.</li>
      * </ul>
-     * 
+     *
      * @param scope the scope
      */
     public void setScope(String scope)
@@ -210,8 +212,8 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
     }
 
     /**
-     * Gets the summary of the table's purpose and structure.
-     * 
+     * Gets the summary of the table’s purpose and structure.
+     *
      * @return the summary
      */
     public String getSummary()
@@ -220,8 +222,8 @@ public class PDExportFormatAttributeObject extends PDLayoutAttributeObject
     }
 
     /**
-     * Sets the summary of the table's purpose and structure.
-     * 
+     * Sets the summary of the table’s purpose and structure.
+     *
      * @param summary the summary
      */
     public void setSummary(String summary)

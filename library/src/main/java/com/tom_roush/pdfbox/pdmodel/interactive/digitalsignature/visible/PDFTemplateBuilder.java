@@ -41,7 +41,8 @@ public interface PDFTemplateBuilder
 {
     /**
      * In order to create Affine Transform, using parameters.
-     * @param params
+     *
+     * @param params parameter values
      * @deprecated use {@link #createAffineTransform(com.tom_roush.harmony.awt.geom.AffineTransform) }
      */
     @Deprecated
@@ -49,50 +50,50 @@ public interface PDFTemplateBuilder
 
     /**
      * In order to create Affine Transform, using parameters.
-     * @param affineTransform
+     *
+     * @param affineTransform the transformation
      */
     void createAffineTransform(AffineTransform affineTransform);
 
     /**
      * Creates specified size page.
      *
-     * @param properties
+     * @param properties property value
      */
     void createPage(PDVisibleSignDesigner properties);
 
     /**
      * Creates template using page.
      *
-     * @param page
-     * @throws IOException
+     * @param page the given page
+     * @throws IOException if something went wrong
      */
     void createTemplate(PDPage page) throws IOException;
 
     /**
      * Creates Acro forms in the template.
      *
-     * @param template
+     * @param template the template document
      */
     void createAcroForm(PDDocument template);
 
     /**
      * Creates signature fields.
      *
-     * @param acroForm
-     * @throws IOException
+     * @param acroForm the acroform
+     * @throws IOException if something went wrong
      */
     void createSignatureField(PDAcroForm acroForm) throws IOException;
 
     /**
-     * Creates the signature with the given name and assign it to the signature field parameter and
-     * assign the page parameter to the widget.
+     * Creates the signature with the given name and assign it to the signature field parameter and assign the page
+     * parameter to the widget.
      *
-     * @param pdSignatureField
-     * @param page
-     * @param signerName the name of the person or authority signing the document. According to the
-     * PDF specification, this value should be used only when it is not possible to extract the name
-     * from the signature.
-     * @throws IOException
+     * @param pdSignatureField signature filed
+     * @param page the given page
+     * @param signerName the name of the person or authority signing the document. According to the PDF specification,
+     * this value should be used only when it is not possible to extract the name from the signature.
+     * @throws IOException if something went wrong
      */
     void createSignature(PDSignatureField pdSignatureField, PDPage page, String signerName)
         throws IOException;
@@ -100,9 +101,9 @@ public interface PDFTemplateBuilder
     /**
      * Create AcroForm Dictionary.
      *
-     * @param acroForm
-     * @param signatureField
-     * @throws IOException
+     * @param acroForm the acroform
+     * @param signatureField the signature field
+     * @throws IOException if something went wrong
      */
     void createAcroFormDictionary(PDAcroForm acroForm, PDSignatureField signatureField)
         throws IOException;
@@ -110,9 +111,9 @@ public interface PDFTemplateBuilder
     /**
      * Creates SignatureRectangle.
      *
-     * @param signatureField
-     * @param properties
-     * @throws IOException
+     * @param signatureField the signature field
+     * @param properties properties
+     * @throws IOException if something went wrong
      */
     void createSignatureRectangle(PDSignatureField signatureField,
         PDVisibleSignDesigner properties) throws IOException;
@@ -124,21 +125,37 @@ public interface PDFTemplateBuilder
 
     /**
      * Creates signature image.
-     * @param template
-     * @param image
-     * @throws IOException
+     *
+     * @param template template document
+     * @param image signature image
+     * @throws IOException if something went wrong
      */
     void createSignatureImage(PDDocument template, Bitmap image) throws IOException;
 
     /**
+     * An array of four numbers in the form coordinate system, giving the coordinates of the left, bottom, right, and
+     * top edges, respectively, of the form XObject’s bounding box. These boundaries shall be used to clip the form
+     * XObject and to determine its size for caching.
      *
-     * @param params
+     * @param params parameters
+     *
+     * @deprecated use {@link #createFormatterRectangle(int[]) createFormatterRectangle(int[])}
      */
+    @Deprecated
     void createFormatterRectangle(byte[] params);
 
     /**
+     * An array of four numbers in the form coordinate system, giving the coordinates of the left, bottom, right, and
+     * top edges, respectively, of the form XObject’s bounding box. These boundaries shall be used to clip the form
+     * XObject and to determine its size for caching.
      *
-     * @param template
+     * @param params parameters
+     */
+    void createFormatterRectangle(int[] params);
+
+    /**
+     *
+     * @param template template document
      */
     void createHolderFormStream(PDDocument template);
 
@@ -150,26 +167,26 @@ public interface PDFTemplateBuilder
     /**
      * Creates Form
      *
-     * @param holderFormResources
-     * @param holderFormStream
-     * @param formrect
+     * @param holderFormResources holder form resources
+     * @param holderFormStream holder stream
+     * @param bbox bounding box
      */
     void createHolderForm(PDResources holderFormResources, PDStream holderFormStream,
-        PDRectangle formrect);
+        PDRectangle bbox);
 
     /**
      * Creates appearance dictionary
      *
-     * @param holderForml
-     * @param signatureField
-     * @throws IOException
+     * @param holderForml holder XObject
+     * @param signatureField the signature field
+     * @throws IOException if something went wrong
      */
     void createAppearanceDictionary(PDFormXObject holderForml,
         PDSignatureField signatureField) throws IOException;
 
     /**
      *
-     * @param template
+     * @param template template document
      */
     void createInnerFormStream(PDDocument template);
 
@@ -180,24 +197,23 @@ public interface PDFTemplateBuilder
 
     /**
      *
-     * @param innerFormResources
-     * @param innerFormStream
-     * @param formrect
+     * @param innerFormResources inner form resources
+     * @param innerFormStream inner form stream
+     * @param bbox bounding box
      */
-    void createInnerForm(PDResources innerFormResources, PDStream innerFormStream,
-        PDRectangle formrect);
+    void createInnerForm(PDResources innerFormResources, PDStream innerFormStream, PDRectangle bbox);
 
     /**
      *
-     * @param innerForm
-     * @param holderFormResources
+     * @param innerForm inner form XObject
+     * @param holderFormResources holder form resources
      */
     void insertInnerFormToHolderResources(PDFormXObject innerForm,
         PDResources holderFormResources);
 
     /**
      *
-     * @param template
+     * @param template template document
      */
     void createImageFormStream(PDDocument template);
 
@@ -209,24 +225,24 @@ public interface PDFTemplateBuilder
     /**
      * Creates Image form
      *
-     * @param imageFormResources
-     * @param innerFormResource
-     * @param imageFormStream
-     * @param formrect
-     * @param affineTransform
-     * @param img
-     * @throws IOException
+     * @param imageFormResources image form resources
+     * @param innerFormResource inner form resources
+     * @param imageFormStream image from stream
+     * @param bbox bounding box
+     * @param affineTransform transformation
+     * @param img ImageXObject
+     * @throws IOException if something went wrong
      */
     void createImageForm(PDResources imageFormResources, PDResources innerFormResource,
-        PDStream imageFormStream, PDRectangle formrect, AffineTransform affineTransform,
+        PDStream imageFormStream, PDRectangle bbox, AffineTransform affineTransform,
         PDImageXObject img) throws IOException;
 
     /**
      * Creates the background layer form (n0).
      *
-     * @param innerFormResource
-     * @param formatter
-     * @throws IOException
+     * @param innerFormResource inner acroform resources
+     * @param formatter rectangle of the formatter
+     * @throws IOException if something went wrong
      */
     void createBackgroundLayerForm(PDResources innerFormResource, PDRectangle formatter)
         throws IOException;
@@ -234,12 +250,12 @@ public interface PDFTemplateBuilder
     /**
      * Inject procSetArray
      *
-     * @param innerForm
-     * @param page
-     * @param innerFormResources
-     * @param imageFormResources
-     * @param holderFormResources
-     * @param procSet
+     * @param innerForm inner form
+     * @param page the given page
+     * @param innerFormResources inner form resources
+     * @param imageFormResources image form resources
+     * @param holderFormResources holder form resources
+     * @param procSet procset values
      */
     void injectProcSetArray(PDFormXObject innerForm, PDPage page,
         PDResources innerFormResources, PDResources imageFormResources,
@@ -248,14 +264,14 @@ public interface PDFTemplateBuilder
     /**
      * injects appearance streams
      *
-     * @param holderFormStream
-     * @param innerFormStream
-     * @param imageFormStream
-     * @param imageFormName
-     * @param imageName
-     * @param innerFormName
-     * @param properties
-     * @throws IOException
+     * @param holderFormStream holder form stream
+     * @param innerFormStream inner form stream
+     * @param imageFormStream image form stream
+     * @param imageFormName image form name
+     * @param imageName image name
+     * @param innerFormName inner form name
+     * @param properties property values
+     * @throws IOException if something went wrong
      */
     void injectAppearanceStreams(PDStream holderFormStream, PDStream innerFormStream,
         PDStream imageFormStream, COSName imageFormName, COSName imageName,
@@ -264,16 +280,16 @@ public interface PDFTemplateBuilder
     /**
      * just to create visible signature
      *
-     * @param template
+     * @param template template document
      */
     void createVisualSignature(PDDocument template);
 
     /**
      * adds Widget Dictionary
      *
-     * @param signatureField
-     * @param holderFormResources
-     * @throws IOException
+     * @param signatureField the signature field
+     * @param holderFormResources holder form resources
+     * @throws IOException if something went wrong
      */
     void createWidgetDictionary(PDSignatureField signatureField,
         PDResources holderFormResources) throws IOException;
@@ -287,8 +303,8 @@ public interface PDFTemplateBuilder
     /**
      * Closes template
      *
-     * @param template
-     * @throws IOException
+     * @param template template document
+     * @throws IOException if something went wrong
      */
     void closeTemplate(PDDocument template) throws IOException;
 }

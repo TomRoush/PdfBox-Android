@@ -20,23 +20,16 @@ import android.graphics.Path;
 import android.util.Log;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.tom_roush.fontbox.cff.Type2CharString;
 import com.tom_roush.fontbox.cmap.CMap;
-import com.tom_roush.fontbox.ttf.CmapSubtable;
+import com.tom_roush.fontbox.ttf.CmapLookup;
 import com.tom_roush.fontbox.ttf.GlyphData;
 import com.tom_roush.fontbox.ttf.OTFParser;
 import com.tom_roush.fontbox.ttf.OpenTypeFont;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.fontbox.util.BoundingBox;
-import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.cos.COSStream;
-import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.util.Matrix;
@@ -52,7 +45,7 @@ public class PDCIDFontType2 extends PDCIDFont
     private final int[] cid2gid;
     private final boolean isEmbedded;
     private final boolean isDamaged;
-    private final CmapSubtable cmap; // may be null
+    private final CmapLookup cmap; // may be null
     private Matrix fontMatrix;
     private BoundingBox fontBBox;
 
@@ -148,7 +141,7 @@ public class PDCIDFontType2 extends PDCIDFont
             }
             ttf = ttfFont;
         }
-        cmap = ttf.getUnicodeCmap(false);
+        cmap = ttf.getUnicodeCmapLookup(false);
         cid2gid = readCIDToGIDMap();
     }
 
@@ -197,55 +190,20 @@ public class PDCIDFontType2 extends PDCIDFont
 
     private BoundingBox generateBoundingBox() throws IOException
     {
-        if (getFontDescriptor() != null) {
+        if (getFontDescriptor() != null)
+        {
             PDRectangle bbox = getFontDescriptor().getFontBoundingBox();
             if (bbox != null &&
-                (bbox.getLowerLeftX() != 0 || bbox.getLowerLeftY() != 0
-                    || bbox.getUpperRightX() != 0 || bbox.getUpperRightY() != 0))
+                (Float.compare(bbox.getLowerLeftX(), 0) != 0 ||
+                    Float.compare(bbox.getLowerLeftY(), 0) != 0 ||
+                    Float.compare(bbox.getUpperRightX(), 0) != 0 ||
+                    Float.compare(bbox.getUpperRightY(), 0) != 0))
             {
                 return new BoundingBox(bbox.getLowerLeftX(), bbox.getLowerLeftY(),
                     bbox.getUpperRightX(), bbox.getUpperRightY());
             }
         }
         return ttf.getFontBBox();
-    }
-
-    private int[] readCIDToGIDMap() throws IOException
-    {
-        int[] cid2gid = null;
-        COSBase map = dict.getDictionaryObject(COSName.CID_TO_GID_MAP);
-        if (map instanceof COSStream)
-        {
-            COSStream stream = (COSStream) map;
-
-            InputStream is = stream.createInputStream();
-            byte[] mapAsBytes = IOUtils.toByteArray(is);
-            IOUtils.closeQuietly(is);
-            int numberOfInts = mapAsBytes.length / 2;
-            cid2gid = new int[numberOfInts];
-            int offset = 0;
-            for (int index = 0; index < numberOfInts; index++)
-            {
-                int gid = (mapAsBytes[offset] & 0xff) << 8 | mapAsBytes[offset + 1] & 0xff;
-                cid2gid[index] = gid;
-                offset += 2;
-            }
-        }
-        return cid2gid;
-    }
-
-    private Map<Integer, Integer> invert(int[] cid2gid)
-    {
-        if (cid2gid == null)
-        {
-            return null;
-        }
-        Map<Integer, Integer> inverse = new HashMap<Integer, Integer>(cid2gid.length);
-        for (int i = 0; i < cid2gid.length; i++)
-        {
-            inverse.put(cid2gid[i], i);
-        }
-        return inverse;
     }
 
     @Override

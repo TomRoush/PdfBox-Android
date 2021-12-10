@@ -29,6 +29,7 @@ import com.tom_roush.pdfbox.cos.COSNumber;
 
 /**
  * J: Set the line cap style.
+ *
  */
 public class SetLineCapStyle extends OperatorProcessor
 {

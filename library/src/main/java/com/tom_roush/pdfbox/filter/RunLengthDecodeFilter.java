@@ -36,7 +36,7 @@ final class RunLengthDecodeFilter extends Filter
 
     @Override
     public DecodeResult decode(InputStream encoded, OutputStream decoded,
-                                         COSDictionary parameters, int index) throws IOException
+        COSDictionary parameters, int index) throws IOException
     {
         int dupAmount;
         byte[] buffer = new byte[128];
@@ -46,9 +46,14 @@ final class RunLengthDecodeFilter extends Filter
             {
                 int amountToCopy = dupAmount + 1;
                 int compressedRead;
-                while(amountToCopy > 0)
+                while (amountToCopy > 0)
                 {
                     compressedRead = encoded.read(buffer, 0, amountToCopy);
+                    // EOF reached?
+                    if (compressedRead == -1)
+                    {
+                        break;
+                    }
                     decoded.write(buffer, 0, compressedRead);
                     amountToCopy -= compressedRead;
                 }
@@ -56,6 +61,11 @@ final class RunLengthDecodeFilter extends Filter
             else
             {
                 int dupByte = encoded.read();
+                // EOF reached?
+                if (dupByte == -1)
+                {
+                    break;
+                }
                 for (int i = 0; i < 257 - dupAmount; i++)
                 {
                     decoded.write(dupByte);
@@ -67,8 +77,8 @@ final class RunLengthDecodeFilter extends Filter
 
     @Override
     protected void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
-            throws IOException
+        throws IOException
     {
-    	Log.w("PdfBox-Android", "RunLengthDecodeFilter.encode is not implemented yet, skipping this stream.");
+        Log.w("PdfBox-Android", "RunLengthDecodeFilter.encode is not implemented yet, skipping this stream.");
     }
 }

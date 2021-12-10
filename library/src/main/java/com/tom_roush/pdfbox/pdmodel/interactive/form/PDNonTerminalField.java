@@ -16,10 +16,13 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -136,6 +139,11 @@ public class PDNonTerminalField extends PDField
             COSBase kid = kids.getObject(i);
             if (kid instanceof COSDictionary)
             {
+                if (kid.getCOSObject() == this.getCOSObject())
+                {
+                    Log.w("PdfBox-Android", "Child field is same object as parent");
+                    continue;
+                }
                 PDField field = PDField.fromDictionary(getAcroForm(), (COSDictionary) kid, this);
                 if (field != null)
                 {

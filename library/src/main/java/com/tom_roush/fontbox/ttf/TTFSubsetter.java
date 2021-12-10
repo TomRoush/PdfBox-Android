@@ -53,7 +53,7 @@ public final class TTFSubsetter
     private static final byte[] PAD_BUF = new byte[] { 0, 0, 0 };
 
     private final TrueTypeFont ttf;
-    private final CmapSubtable unicodeCmap;
+    private final CmapLookup unicodeCmap;
     private final SortedMap<Integer, Integer> uniToGID;
 
     private final List<String> keepTables;
@@ -86,7 +86,7 @@ public final class TTFSubsetter
         glyphIds = new TreeSet<Integer>();
 
         // find the best Unicode cmap
-        this.unicodeCmap = ttf.getUnicodeCmap();
+        this.unicodeCmap = ttf.getUnicodeCmapLookup();
 
         // always copy GID 0
         glyphIds.add(0);

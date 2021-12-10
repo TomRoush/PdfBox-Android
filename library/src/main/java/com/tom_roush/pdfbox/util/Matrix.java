@@ -22,6 +22,7 @@ import java.util.Arrays;
 
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSNumber;
 
@@ -58,12 +59,12 @@ public final class Matrix implements Cloneable
     public Matrix(COSArray array)
     {
         single = new float[DEFAULT_SINGLE.length];
-        single[0] = ((COSNumber)array.get(0)).floatValue();
-        single[1] = ((COSNumber)array.get(1)).floatValue();
-        single[3] = ((COSNumber)array.get(2)).floatValue();
-        single[4] = ((COSNumber)array.get(3)).floatValue();
-        single[6] = ((COSNumber)array.get(4)).floatValue();
-        single[7] = ((COSNumber)array.get(5)).floatValue();
+        single[0] = ((COSNumber)array.getObject(0)).floatValue();
+        single[1] = ((COSNumber)array.getObject(1)).floatValue();
+        single[3] = ((COSNumber)array.getObject(2)).floatValue();
+        single[4] = ((COSNumber)array.getObject(3)).floatValue();
+        single[6] = ((COSNumber)array.getObject(4)).floatValue();
+        single[7] = ((COSNumber)array.getObject(5)).floatValue();
         single[8] = 1;
     }
 
@@ -110,6 +111,36 @@ public final class Matrix implements Cloneable
         single[4] = (float)at.getScaleY();
         single[6] = (float)at.getTranslateX();
         single[7] = (float)at.getTranslateY();
+    }
+
+    /**
+     * Convenience method to be used when creating a matrix from unverified data. If the parameter
+     * is a COSArray with at least six numbers, a Matrix object is created from the first six
+     * numbers and returned. If not, then the identity Matrix is returned.
+     *
+     * @param base a COS object, preferably a COSArray with six numbers.
+     *
+     * @return a Matrix object.
+     */
+    public static Matrix createMatrix(COSBase base)
+    {
+        if (!(base instanceof COSArray))
+        {
+            return new Matrix();
+        }
+        COSArray array = (COSArray) base;
+        if (array.size() < 6)
+        {
+            return new Matrix();
+        }
+        for (int i = 0; i < 6; ++i)
+        {
+            if (!(array.getObject(i) instanceof COSNumber))
+            {
+                return new Matrix();
+            }
+        }
+        return new Matrix(array);
     }
 
     /**

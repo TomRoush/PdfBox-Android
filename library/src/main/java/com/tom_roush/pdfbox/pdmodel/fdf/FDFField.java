@@ -115,17 +115,20 @@ public class FDFField implements COSObjectable
     {
         output.write("<field name=\"" + getPartialFieldName() + "\">\n");
         Object value = getValue();
-        if (value != null)
+
+        if (value instanceof String)
         {
-            if (value instanceof COSString)
+            output.write("<value>" + escapeXML((String) value) + "</value>\n");
+        }
+        else if (value instanceof List)
+        {
+            List<String> items = (List<String>) value;
+            for (String item : items)
             {
-                output.write("<value>" + escapeXML(((COSString) value).getString()) + "</value>\n");
-            }
-            else if (value instanceof COSStream)
-            {
-                output.write("<value>" + escapeXML(((COSStream) value).toTextString()) + "</value>\n");
+                output.write("<value>" + escapeXML((String) item) + "</value>\n");
             }
         }
+
         String rt = getRichText();
         if (rt != null)
         {
@@ -584,7 +587,7 @@ public class FDFField implements COSObjectable
     /**
      * This will set the appearance dictionary.
      *
-     * @param ap The apperance dictionary.
+     * @param ap The appearance dictionary.
      */
     public void setAppearanceDictionary(PDAppearanceDictionary ap)
     {
@@ -790,30 +793,30 @@ public class FDFField implements COSObjectable
             char c = input.charAt(i);
             switch (c)
             {
-            case '<':
-                escapedXML.append("&lt;");
-                break;
-            case '>':
-                escapedXML.append("&gt;");
-                break;
-            case '\"':
-                escapedXML.append("&quot;");
-                break;
-            case '&':
-                escapedXML.append("&amp;");
-                break;
-            case '\'':
-                escapedXML.append("&apos;");
-                break;
-            default:
-                if (c > 0x7e)
-                {
-                    escapedXML.append("&#").append((int) c).append(";");
-                }
-                else
-                {
-                    escapedXML.append(c);
-                }
+                case '<':
+                    escapedXML.append("&lt;");
+                    break;
+                case '>':
+                    escapedXML.append("&gt;");
+                    break;
+                case '\"':
+                    escapedXML.append("&quot;");
+                    break;
+                case '&':
+                    escapedXML.append("&amp;");
+                    break;
+                case '\'':
+                    escapedXML.append("&apos;");
+                    break;
+                default:
+                    if (c > 0x7e)
+                    {
+                        escapedXML.append("&#").append((int) c).append(";");
+                    }
+                    else
+                    {
+                        escapedXML.append(c);
+                    }
             }
         }
         return escapedXML.toString();

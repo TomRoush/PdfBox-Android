@@ -23,9 +23,15 @@ import android.graphics.Paint;
 
 import java.io.IOException;
 
+import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
+import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.AnnotationFilter;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 
 /**
  * Renders a PDF document to a Bitmap.
@@ -39,12 +45,76 @@ public class PDFRenderer
     // TODO keep rendering state such as caches here
 
     /**
+     * Default annotations filter, returns all annotations
+     */
+    private AnnotationFilter annotationFilter = new AnnotationFilter()
+    {
+        @Override
+        public boolean accept(PDAnnotation annotation)
+        {
+            return true;
+        }
+    };
+
+    private boolean subsamplingAllowed = false;
+
+    /**
      * Creates a new PDFRenderer.
      * @param document the document to render
      */
     public PDFRenderer(PDDocument document)
     {
         this.document = document;
+    }
+
+    /**
+     * Return the AnnotationFilter.
+     *
+     * @return the AnnotationFilter
+     */
+    public AnnotationFilter getAnnotationsFilter()
+    {
+        return annotationFilter;
+    }
+
+    /**
+     * Set the AnnotationFilter.
+     *
+     * <p>Allows to only render annotation accepted by the filter.
+     *
+     * @param annotationsFilter the AnnotationFilter
+     */
+    public void setAnnotationsFilter(AnnotationFilter annotationsFilter)
+    {
+        this.annotationFilter = annotationsFilter;
+    }
+
+    /**
+     * Value indicating if the renderer is allowed to subsample images before drawing, according to
+     * image dimensions and requested scale.
+     *
+     * Subsampling may be faster and less memory-intensive in some cases, but it may also lead to
+     * loss of quality, especially in images with high spatial frequency.
+     *
+     * @return true if subsampling of images is allowed, false otherwise.
+     */
+    public boolean isSubsamplingAllowed()
+    {
+        return subsamplingAllowed;
+    }
+
+    /**
+     * Sets a value instructing the renderer whether it is allowed to subsample images before
+     * drawing. The subsampling frequency is determined according to image size and requested scale.
+     *
+     * Subsampling may be faster and less memory-intensive in some cases, but it may also lead to
+     * loss of quality, especially in images with high spatial frequency.
+     *
+     * @param subsamplingAllowed The new value indicating if subsampling is allowed.
+     */
+    public void setSubsamplingAllowed(boolean subsamplingAllowed)
+    {
+        this.subsamplingAllowed = subsamplingAllowed;
     }
 
     /**
@@ -117,18 +187,28 @@ public class PDFRenderer
         int heightPx = Math.round(heightPt * scale);
         int rotationAngle = page.getRotation();
 
+        Bitmap.Config bimType = imageType.toBitmapConfig();
+        if (imageType != ImageType.ARGB && hasBlendMode(page))
+        {
+            // PDFBOX-4095: if the PDF has blending on the top level, draw on transparent background
+            // Inpired from PDF.js: if a PDF page uses any blend modes other than Normal, 
+            // PDF.js renders everything on a fully transparent RGBA canvas. 
+            // Finally when the page has been rendered, PDF.js draws the RGBA canvas on a white canvas.
+            bimType = Bitmap.Config.ARGB_8888;
+        }
+
         // swap width and height
         Bitmap image;
         if (rotationAngle == 90 || rotationAngle == 270)
         {
-            image = Bitmap.createBitmap(heightPx, widthPx, imageType.toBitmapConfig());
+            image = Bitmap.createBitmap(heightPx, widthPx, bimType);
         }
         else
         {
-            image = Bitmap.createBitmap(widthPx, heightPx, imageType.toBitmapConfig());
+            image = Bitmap.createBitmap(widthPx, heightPx, bimType);
         }
 
-        // use a transparent background if the imageType supports alpha
+        // use a transparent background if the image type supports alpha
         Paint paint = new Paint();
         Canvas canvas = new Canvas(image);
         if (imageType == ImageType.ARGB)
@@ -146,9 +226,21 @@ public class PDFRenderer
         transform(canvas, page, scale);
 
         // the end-user may provide a custom PageDrawer
-        PageDrawerParameters parameters = new PageDrawerParameters(this, page);
+        PageDrawerParameters parameters = new PageDrawerParameters(this, page, subsamplingAllowed);
         PageDrawer drawer = createPageDrawer(parameters);
         drawer.drawPage(paint, canvas, page.getCropBox());
+
+        if (image.getConfig() != imageType.toBitmapConfig())
+        {
+            // PDFBOX-4095: draw temporary transparent image on white background
+            Bitmap newImage =
+                Bitmap.createBitmap(image.getWidth(), image.getHeight(), imageType.toBitmapConfig());
+            paint.setColor(Color.WHITE);
+            paint.setStyle(Paint.Style.FILL);
+            canvas.drawRect(0, 0, image.getWidth(), image.getHeight(), paint);
+            canvas.drawBitmap(image, 0.0f, 0.0f, paint);
+            image = newImage;
+        }
 
         return image;
     }
@@ -185,7 +277,7 @@ public class PDFRenderer
         canvas.drawRect(0, 0, cropBox.getWidth(), cropBox.getHeight(), paint);
 
         // the end-user may provide a custom PageDrawer
-        PageDrawerParameters parameters = new PageDrawerParameters(this, page);
+        PageDrawerParameters parameters = new PageDrawerParameters(this, page, subsamplingAllowed);
         PageDrawer drawer = createPageDrawer(parameters);
         drawer.drawPage(paint, canvas, cropBox);
     }
@@ -228,6 +320,34 @@ public class PDFRenderer
      */
     protected PageDrawer createPageDrawer(PageDrawerParameters parameters) throws IOException
     {
-        return new PageDrawer(parameters);
+        PageDrawer pageDrawer = new PageDrawer(parameters);
+        pageDrawer.setAnnotationFilter(annotationFilter);
+        return pageDrawer;
+    }
+
+    private boolean hasBlendMode(PDPage page)
+    {
+        // check the current resources for blend modes
+        PDResources resources = page.getResources();
+        if (resources == null)
+        {
+            return false;
+        }
+        for (COSName name : resources.getExtGStateNames())
+        {
+            PDExtendedGraphicsState extGState = resources.getExtGState(name);
+            if (extGState == null)
+            {
+                // can happen if key exists but no value 
+                // see PDFBOX-3950-23EGDHXSBBYQLKYOKGZUOVYVNE675PRD.pdf
+                continue;
+            }
+            BlendMode blendMode = extGState.getBlendMode();
+            if (blendMode != BlendMode.NORMAL)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

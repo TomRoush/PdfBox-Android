@@ -42,16 +42,14 @@ public class TestPDFParserInstrumentation
     {
         File TARGETPDFDIR = new File(testContext.getCacheDir(), "pdfs");
         TARGETPDFDIR.mkdirs();
-        File pdfFile = new File(testContext.getCacheDir(),
-            "PDFBOX-3950-23EGDHXSBBYQLKYOKGZUOVYVNE675PRD.pdf");
+        File pdfFile = new File(TARGETPDFDIR, "PDFBOX-3950-23EGDHXSBBYQLKYOKGZUOVYVNE675PRD.pdf");
 
         if (!pdfFile.exists())
         {
             try
             {
                 Log.i("PdfBox-Android", "PDF not cached, Downloading PDF for TestPDFParser.testPDFBox3950");
-                InputStream pdfUrlStream = new URL(
-                    "https://issues.apache.org/jira/secure/attachment/12890042/23EGDHXSBBYQLKYOKGZUOVYVNE675PRD.pdf")
+                InputStream pdfUrlStream = new URL("https://issues.apache.org/jira/secure/attachment/12890042/23EGDHXSBBYQLKYOKGZUOVYVNE675PRD.pdf")
                     .openStream();
                 IOUtils.copy(pdfUrlStream, new FileOutputStream(pdfFile));
             }

@@ -18,8 +18,10 @@ package com.tom_roush.pdfbox.pdmodel.interactive.action;
 
 import java.io.IOException;
 
+import com.tom_roush.pdfbox.cos.COSBoolean;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
 
 /**
@@ -41,7 +43,6 @@ public class PDActionLaunch extends PDAction
      */
     public PDActionLaunch()
     {
-        super();
         setSubType( SUB_TYPE );
     }
 
@@ -134,7 +135,7 @@ public class PDActionLaunch extends PDAction
      */
     public void setF( String f )
     {
-        action.setString(COSName.F, f);
+        action.setString(COSName.F, f );
     }
 
     /**
@@ -154,7 +155,7 @@ public class PDActionLaunch extends PDAction
      */
     public void setD( String d )
     {
-        action.setString(COSName.D, d);
+        action.setString(COSName.D, d );
     }
 
     /**
@@ -182,7 +183,7 @@ public class PDActionLaunch extends PDAction
      */
     public void setO( String o )
     {
-        action.setString(COSName.O, o);
+        action.setString(COSName.O, o );
     }
 
     /**
@@ -204,7 +205,7 @@ public class PDActionLaunch extends PDAction
      */
     public void setP( String p )
     {
-        action.setString(COSName.P, p);
+        action.setString(COSName.P, p );
     }
 
     /**
@@ -215,19 +216,70 @@ public class PDActionLaunch extends PDAction
      * ignored if the file designated by the F entry is not a PDF document.
      *
      * @return A flag specifying whether to open the destination document in a new window.
+     *
+     * @deprecated use {@link #getOpenInNewWindow()}
      */
+    @Deprecated
     public boolean shouldOpenInNewWindow()
     {
-        return action.getBoolean( "NewWindow", true );
+        return action.getBoolean(COSName.NEW_WINDOW, true);
     }
 
     /**
      * This will specify the destination document to open in a new window.
      *
      * @param value The flag value.
+     *
+     * @deprecated use {@link #setOpenInNewWindow(OpenMode)}
      */
+    @Deprecated
     public void setOpenInNewWindow( boolean value )
     {
-        action.setBoolean( "NewWindow", value );
+        action.setBoolean(COSName.NEW_WINDOW, value);
+    }
+
+    /**
+     * This will specify whether to open the destination document in a new window, in the same
+     * window, or behave in accordance with the current user preference.
+     *
+     * @return A flag specifying how to open the destination document.
+     */
+    public OpenMode getOpenInNewWindow()
+    {
+        if (getCOSObject().getDictionaryObject(COSName.NEW_WINDOW) instanceof COSBoolean)
+        {
+            COSBoolean b = (COSBoolean) getCOSObject().getDictionaryObject(COSName.NEW_WINDOW);
+            return b.getValue() ? OpenMode.NEW_WINDOW : OpenMode.SAME_WINDOW;
+        }
+        return OpenMode.USER_PREFERENCE;
+    }
+
+    /**
+     * This will specify whether to open the destination document in a new window.
+     *
+     * @param value The flag value.
+     */
+    public void setOpenInNewWindow(OpenMode value)
+    {
+        if (null == value)
+        {
+            getCOSObject().removeItem(COSName.NEW_WINDOW);
+            return;
+        }
+        switch (value)
+        {
+            case USER_PREFERENCE:
+                getCOSObject().removeItem(COSName.NEW_WINDOW);
+                break;
+            case SAME_WINDOW:
+                getCOSObject().setBoolean(COSName.NEW_WINDOW, false);
+                break;
+            case NEW_WINDOW:
+                getCOSObject().setBoolean(COSName.NEW_WINDOW, true);
+                break;
+            default:
+                // shouldn't happen unless the enum type is changed
+                break;
+        }
     }
 }

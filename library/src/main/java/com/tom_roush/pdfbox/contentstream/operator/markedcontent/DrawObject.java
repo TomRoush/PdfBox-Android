@@ -49,17 +49,17 @@ public class DrawObject extends OperatorProcessor
         {
             return;
         }
-        COSName name = (COSName)base0;
-        PDXObject xobject = context.getResources().getXObject(name);
-        ((PDFMarkedContentExtractor)context).xobject(xobject);
+        COSName name = (COSName) base0;
+        PDXObject xobject =  context.getResources().getXObject(name);
+        ((PDFMarkedContentExtractor) context).xobject(xobject);
 
         if (xobject instanceof PDTransparencyGroup)
         {
-            context.showTransparencyGroup((PDTransparencyGroup)xobject);
+            context.showTransparencyGroup((PDTransparencyGroup) xobject);
         }
         else if (xobject instanceof PDFormXObject)
         {
-            PDFormXObject form = (PDFormXObject)xobject;
+            PDFormXObject form = (PDFormXObject) xobject;
             context.showForm(form);
         }
     }

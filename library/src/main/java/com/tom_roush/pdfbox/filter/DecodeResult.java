@@ -30,7 +30,7 @@ public final class DecodeResult
     public static final DecodeResult DEFAULT = new DecodeResult(new COSDictionary());
 
     private final COSDictionary parameters;
-//    private PDJPXColorSpace colorSpace;TODO: PdfBox-Android
+//    private PDJPXColorSpace colorSpace; TODO: PdfBox-Android
 
     DecodeResult(COSDictionary parameters)
     {
@@ -41,7 +41,7 @@ public final class DecodeResult
 //    {
 //        this.parameters = parameters;
 //        this.colorSpace = colorSpace;
-//    }TODO: PdfBox-Android
+//    } TODO: PdfBox-Android
 
     /**
      * Returns the stream parameters, repaired using the embedded stream data.
@@ -54,16 +54,16 @@ public final class DecodeResult
 
     /**
      * Returns the embedded JPX color space, if any.
-     * @return the the embedded JPX color space, or null if there is none.
+     * @return the embedded JPX color space, or null if there is none.
      */
 //    public PDJPXColorSpace getJPXColorSpace()
 //    {
 //        return colorSpace;
-//    }TODO: PdfBox-Android
+//    } TODO: PdfBox-Android
 
     // Sets the JPX color space
 //    void setColorSpace(PDJPXColorSpace colorSpace)
 //    {
 //        this.colorSpace = colorSpace;
-//    }TODO: PdfBox-Android
+//    } TODO: PdfBox-Android
 }

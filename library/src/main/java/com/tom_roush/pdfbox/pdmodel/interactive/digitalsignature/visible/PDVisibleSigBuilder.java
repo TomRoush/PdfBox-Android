@@ -201,14 +201,33 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
         Log.i("PdfBox-Android", "Visible Signature Image has been created");
     }
 
+    /**
+     * {@inheritDoc }
+     *
+     * @deprecated use {@link #createFormatterRectangle(int[]) createFormatterRectangle(int[])}
+     */
     @Override
+    @Deprecated
     public void createFormatterRectangle(byte[] params)
     {
         PDRectangle formatterRectangle = new PDRectangle();
-        formatterRectangle.setUpperRightX(params[0]);
-        formatterRectangle.setUpperRightY(params[1]);
-        formatterRectangle.setLowerLeftX(params[2]);
-        formatterRectangle.setLowerLeftY(params[3]);
+        formatterRectangle.setLowerLeftX(Math.min(params[0],params[2]));
+        formatterRectangle.setLowerLeftY(Math.min(params[1],params[3]));
+        formatterRectangle.setUpperRightX(Math.max(params[0],params[2]));
+        formatterRectangle.setUpperRightY(Math.max(params[1],params[3]));
+
+        pdfStructure.setFormatterRectangle(formatterRectangle);
+        Log.i("PdfBox-Android", "Formatter rectangle has been created");
+    }
+
+    @Override
+    public void createFormatterRectangle(int[] params)
+    {
+        PDRectangle formatterRectangle = new PDRectangle();
+        formatterRectangle.setLowerLeftX(Math.min(params[0],params[2]));
+        formatterRectangle.setLowerLeftY(Math.min(params[1],params[3]));
+        formatterRectangle.setUpperRightX(Math.max(params[0],params[2]));
+        formatterRectangle.setUpperRightY(Math.max(params[1],params[3]));
 
         pdfStructure.setFormatterRectangle(formatterRectangle);
         Log.i("PdfBox-Android", "Formatter rectangle has been created");
@@ -233,11 +252,11 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
 
     @Override
     public void createHolderForm(PDResources holderFormResources, PDStream holderFormStream,
-        PDRectangle formrect)
+        PDRectangle bbox)
     {
         PDFormXObject holderForm = new PDFormXObject(holderFormStream);
         holderForm.setResources(holderFormResources);
-        holderForm.setBBox(formrect);
+        holderForm.setBBox(bbox);
         holderForm.setFormType(1);
         pdfStructure.setHolderForm(holderForm);
         Log.i("PdfBox-Android", "Holder form has been created");
@@ -279,12 +298,13 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
     }
 
     @Override
-    public void createInnerForm(PDResources innerFormResources, PDStream innerFormStream,
-        PDRectangle formrect)
+    public void createInnerForm(PDResources innerFormResources,
+        PDStream innerFormStream,
+        PDRectangle bbox)
     {
         PDFormXObject innerForm = new PDFormXObject(innerFormStream);
         innerForm.setResources(innerFormResources);
-        innerForm.setBBox(formrect);
+        innerForm.setBBox(bbox);
         innerForm.setFormType(1);
         pdfStructure.setInnerForm(innerForm);
         Log.i("PdfBox-Android", "Another form (inner form - it will be inside holder form) has been created");
@@ -317,11 +337,11 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
 
     @Override
     public void createImageForm(PDResources imageFormResources, PDResources innerFormResource,
-        PDStream imageFormStream, PDRectangle formrect, AffineTransform at,
+        PDStream imageFormStream, PDRectangle bbox, AffineTransform at,
         PDImageXObject img) throws IOException
     {
         PDFormXObject imageForm = new PDFormXObject(imageFormStream);
-        imageForm.setBBox(formrect);
+        imageForm.setBBox(bbox);
         imageForm.setMatrix(at);
         imageForm.setResources(imageFormResources);
         imageForm.setFormType(1);
@@ -338,12 +358,12 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
     }
 
     @Override
-    public void createBackgroundLayerForm(PDResources innerFormResource, PDRectangle formatter)
+    public void createBackgroundLayerForm(PDResources innerFormResource, PDRectangle bbox)
         throws IOException
     {
         // create blank n0 background layer form
         PDFormXObject n0Form = new PDFormXObject(pdfStructure.getTemplate().getDocument().createCOSStream());
-        n0Form.setBBox(formatter);
+        n0Form.setBBox(bbox);
         n0Form.setResources(new PDResources());
         n0Form.setFormType(1);
         innerFormResource.put(COSName.getPDFName("n0"), n0Form);
@@ -369,11 +389,11 @@ public class PDVisibleSigBuilder implements PDFTemplateBuilder
         COSName imageName, COSName innerFormName,
         PDVisibleSignDesigner properties) throws IOException
     {
-        // 100 means that document width is 100% via the rectangle. if rectangle
-        // is 500px, images 100% is 500px.
-        // String imgFormContent = "q "+imageWidthSize+ " 0 0 50 0 0 cm /" +
-        // imageName + " Do Q\n" + builder.toString();
-        String imgFormContent    = "q " + 100 + " 0 0 50 0 0 cm /" + imageName.getName() + " Do Q\n";
+        // Use width and height of BBox as values for transformation matrix.
+        int width = (int) this.getStructure().getFormatterRectangle().getWidth();
+        int height = (int) this.getStructure().getFormatterRectangle().getHeight();
+
+        String imgFormContent    = "q " + width + " 0 0 " + height + " 0 0 cm /" + imageName.getName() + " Do Q\n";
         String holderFormContent = "q 1 0 0 1 0 0 cm /" + innerFormName.getName() + " Do Q\n";
         String innerFormContent  = "q 1 0 0 1 0 0 cm /n0 Do Q q 1 0 0 1 0 0 cm /" + imageFormName.getName() + " Do Q\n";
 

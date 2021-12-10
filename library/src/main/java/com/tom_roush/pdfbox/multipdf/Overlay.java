@@ -33,6 +33,7 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
@@ -292,13 +293,9 @@ public class Overlay
         for (COSStream contentStream : contentStreams)
         {
             InputStream in = contentStream.createInputStream();
-            byte[] buf = new byte[2048];
-            int n;
-            while ((n = in.read(buf)) > 0)
-            {
-                out.write(buf, 0, n);
-            }
+            IOUtils.copy(in, out);
             out.flush();
+            in.close();
         }
         out.close();
         return concatStream;
@@ -603,7 +600,8 @@ public class Overlay
     /**
      * Sets the all pages overlay PDF.
      *
-     * @param allPagesOverlayPDF the all pages overlay PDF
+     * @param allPagesOverlayPDF the all pages overlay PDF. This should not be a PDDocument that you
+     * created on the fly, it should be saved first, if it contains any fonts that are subset.
      */
     public void setAllPagesOverlayPDF(PDDocument allPagesOverlayPDF)
     {

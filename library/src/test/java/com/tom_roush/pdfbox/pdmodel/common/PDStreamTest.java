@@ -19,15 +19,14 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
+ *
  * @author Tilman Hausherr
  */
 public class PDStreamTest
@@ -41,18 +40,18 @@ public class PDStreamTest
     {
         PDDocument doc = new PDDocument();
         InputStream is = new ByteArrayInputStream(new byte[] { 12, 34, 56, 78 });
-        PDStream pdStream = new PDStream(doc, is, (COSArray)null);
+        PDStream pdStream = new PDStream(doc, is, (COSArray) null);
         Assert.assertNull(pdStream.getFilters());
         List<String> stopFilters = new ArrayList<String>();
         stopFilters.add(COSName.DCT_DECODE.toString());
         stopFilters.add(COSName.DCT_DECODE_ABBREVIATION.toString());
 
         is = pdStream.createInputStream(stopFilters);
-        Assert.assertEquals(12, is.read());
-        Assert.assertEquals(34, is.read());
-        Assert.assertEquals(56, is.read());
-        Assert.assertEquals(78, is.read());
-        Assert.assertEquals(-1, is.read());
+        Assert.assertEquals(12,is.read());
+        Assert.assertEquals(34,is.read());
+        Assert.assertEquals(56,is.read());
+        Assert.assertEquals(78,is.read());
+        Assert.assertEquals(-1,is.read());
 
         doc.close();
     }
@@ -66,17 +65,17 @@ public class PDStreamTest
         PDDocument doc = new PDDocument();
         InputStream is = new ByteArrayInputStream(new byte[] { 12, 34, 56, 78 });
         PDStream pdStream = new PDStream(doc, is, new COSArray());
-        Assert.assertEquals(0, pdStream.getFilters().size());
+        Assert.assertEquals(0,pdStream.getFilters().size());
         List<String> stopFilters = new ArrayList<String>();
         stopFilters.add(COSName.DCT_DECODE.toString());
         stopFilters.add(COSName.DCT_DECODE_ABBREVIATION.toString());
 
         is = pdStream.createInputStream(stopFilters);
-        Assert.assertEquals(12, is.read());
-        Assert.assertEquals(34, is.read());
-        Assert.assertEquals(56, is.read());
-        Assert.assertEquals(78, is.read());
-        Assert.assertEquals(-1, is.read());
+        Assert.assertEquals(12,is.read());
+        Assert.assertEquals(34,is.read());
+        Assert.assertEquals(56,is.read());
+        Assert.assertEquals(78,is.read());
+        Assert.assertEquals(-1,is.read());
 
         doc.close();
     }
@@ -92,12 +91,12 @@ public class PDStreamTest
         PDStream pdStream = new PDStream(doc, is, new COSArray());
         Assert.assertEquals(0, pdStream.getFilters().size());
 
-        is = pdStream.createInputStream(null);
+        is = pdStream.createInputStream((List<String>) null);
         Assert.assertEquals(12, is.read());
         Assert.assertEquals(34, is.read());
         Assert.assertEquals(56, is.read());
-        Assert.assertEquals(78, is.read());
-        Assert.assertEquals(-1, is.read());
+        Assert.assertEquals(78,is.read());
+        Assert.assertEquals(-1,is.read());
 
         doc.close();
     }

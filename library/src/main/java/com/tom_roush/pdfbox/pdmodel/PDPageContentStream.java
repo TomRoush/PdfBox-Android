@@ -44,6 +44,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDInlineImage;
+import com.tom_roush.pdfbox.pdmodel.graphics.pattern.PDTilingPattern;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.RenderingMode;
@@ -304,6 +305,46 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
+     * Create a new appearance stream. Note that this is not actually a "page" content stream.
+     *
+     * @param doc The document the appearance is part of.
+     * @param form The XObject form to add to.
+     * @param outputStream The output stream to write to.
+     * @throws IOException If there is an error writing to the page contents.
+     */
+    public PDPageContentStream(PDDocument doc, PDFormXObject form, OutputStream outputStream)
+        throws IOException
+    {
+        this.document = doc;
+
+        output = outputStream;
+        this.resources = form.getResources();
+
+        formatDecimal.setMaximumFractionDigits(4);
+        formatDecimal.setGroupingUsed(false);
+    }
+
+    /**
+     * Create a new appearance stream. Note that this is not actually a "page" content stream.
+     *
+     * @param doc The document the appearance is part of.
+     * @param pattern The pattern to add to.
+     * @param outputStream The output stream to write to.
+     * @throws IOException If there is an error writing to the page contents.
+     */
+    public PDPageContentStream(PDDocument doc, PDTilingPattern pattern, OutputStream outputStream)
+        throws IOException
+    {
+        this.document = doc;
+
+        output = outputStream;
+        this.resources = pattern.getResources();
+
+        formatDecimal.setMaximumFractionDigits(4);
+        formatDecimal.setGroupingUsed(false);
+    }
+
+    /**
      * Begin some text operations.
      *
      * @throws IOException If there is an error writing to the stream or if you attempt to
@@ -379,12 +420,61 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
+     * Shows the given text at the location specified by the current text matrix with the given
+     * interspersed positioning. This allows the user to efficiently position each glyph or sequence
+     * of glyphs.
+     *
+     * @param textWithPositioningArray An array consisting of String and Float types. Each String is
+     * output to the page using the current text matrix. Using the default coordinate system, each
+     * interspersed number adjusts the current text matrix by translating to the left or down for
+     * horizontal and vertical text respectively. The number is expressed in thousands of a text
+     * space unit, and may be negative.
+     *
+     * @throws IOException if an io exception occurs.
+     */
+    public void showTextWithPositioning(Object[] textWithPositioningArray) throws IOException
+    {
+        write("[");
+        for (Object obj : textWithPositioningArray)
+        {
+            if (obj instanceof String)
+            {
+                showTextInternal((String) obj);
+            }
+            else if (obj instanceof Float)
+            {
+                writeOperand((Float) obj);
+            }
+            else
+            {
+                throw new IllegalArgumentException("Argument must consist of array of Float and String types");
+            }
+        }
+        write("] ");
+        writeOperator("TJ");
+    }
+
+    /**
      * Shows the given text at the location specified by the current text matrix.
      *
      * @param text The Unicode text to show.
      * @throws IOException If an io exception occurs.
      */
     public void showText(String text) throws IOException
+    {
+        showTextInternal(text);
+        write(" ");
+        writeOperator("Tj");
+    }
+
+    /**
+     * Outputs a string using the correct encoding and subsetting as required.
+     *
+     * @param text The Unicode text to show.
+     *
+     * @throws IOException If an io exception occurs.
+     */
+    protected void showTextInternal(String text) throws IOException
     {
         if (!inTextMode)
         {
@@ -410,9 +500,19 @@ public final class PDPageContentStream implements Closeable
         }
 
         COSWriter.writeString(font.encode(text), output);
-        write(" ");
+    }
 
-        writeOperator("Tj");
+    /**
+     * Sets the text leading.
+     *
+     * @param leading The leading in unscaled text units.
+     * @throws IOException If there is an error writing to the stream.
+     * @deprecated use {@link #setLeading(float) setLeading(float)}
+     */
+    @Deprecated
+    public void setLeading(double leading) throws IOException
+    {
+        setLeading((float) leading);
     }
 
     /**
@@ -421,9 +521,9 @@ public final class PDPageContentStream implements Closeable
      * @param leading The leading in unscaled text units.
      * @throws IOException If there is an error writing to the stream.
      */
-    public void setLeading(double leading) throws IOException
+    public void setLeading(float leading) throws IOException
     {
-        writeOperand((float) leading);
+        writeOperand(leading);
         writeOperator("TL");
     }
 
@@ -941,7 +1041,7 @@ public final class PDPageContentStream implements Closeable
      *
      * @param colorSpace The colorspace to write.
      * @throws IOException If there is an error writing the colorspace.
-     * @deprecated Use {@link #setNonStrokingColor} instead.
+     * @deprecated Use {@link #setNonStrokingColor(PDColor)} instead.
      */
     @Deprecated
     public void setNonStrokingColorSpace(PDColorSpace colorSpace) throws IOException
@@ -1128,7 +1228,7 @@ public final class PDPageContentStream implements Closeable
      * @param g The gray value.
      * @throws IOException If an IO error occurs while writing to the stream.
      * @throws IllegalArgumentException If the parameter is invalid.
-     * @deprecated Use {@link #setStrokingColor(double)} instead.
+     * @deprecated Use {@link #setStrokingColor(float)} instead.
      */
     @Deprecated
     public void setStrokingColor(int g) throws IOException
@@ -1146,14 +1246,28 @@ public final class PDPageContentStream implements Closeable
      * @param g The gray value.
      * @throws IOException If an IO error occurs while writing to the stream.
      * @throws IllegalArgumentException If the parameter is invalid.
+     * @deprecated use {@link #setStrokingColor(float) setStrokingColor(float)}
      */
+    @Deprecated
     public void setStrokingColor(double g) throws IOException
+    {
+        setStrokingColor((float) g);
+    }
+
+    /**
+     * Set the stroking color in the DeviceGray color space. Range is 0..1.
+     *
+     * @param g The gray value.
+     * @throws IOException If an IO error occurs while writing to the stream.
+     * @throws IllegalArgumentException If the parameter is invalid.
+     */
+    public void setStrokingColor(float g) throws IOException
     {
         if (isOutsideOneInterval(g))
         {
             throw new IllegalArgumentException("Parameter must be within 0..1, but is " + g);
         }
-        writeOperand((float) g);
+        writeOperand(g);
         writeOperator("G");
         setStrokingColorSpaceStack(PDDeviceGray.INSTANCE);
     }
@@ -1289,7 +1403,24 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * Set the non-stroking color in the DeviceRGB color space. Range is 0..1.
+     * Set the non-stroking color in the DeviceCMYK color space. Range is 0..1.
+     *
+     * @param c The cyan value.
+     * @param m The magenta value.
+     * @param y The yellow value.
+     * @param k The black value.
+     * @throws IOException If an IO error occurs while writing to the stream.
+     * @deprecated use
+     * {@link #setNonStrokingColor(float, float, float, float) setNonStrokingColor(float, float, float, float)}
+     */
+    @Deprecated
+    public void setNonStrokingColor(double c, double m, double y, double k) throws IOException
+    {
+        setNonStrokingColor((float) c, (float) m, (float) y, (float) k);
+    }
+
+    /**
+     * Set the non-stroking color in the DeviceCMYK color space. Range is 0..1.
      *
      * @param c The cyan value.
      * @param m The magenta value.
@@ -1297,17 +1428,17 @@ public final class PDPageContentStream implements Closeable
      * @param k The black value.
      * @throws IOException If an IO error occurs while writing to the stream.
      */
-    public void setNonStrokingColor(double c, double m, double y, double k) throws IOException
+    public void setNonStrokingColor(float c, float m, float y, float k) throws IOException
     {
         if (isOutsideOneInterval(c) || isOutsideOneInterval(m) || isOutsideOneInterval(y) || isOutsideOneInterval(k))
         {
             throw new IllegalArgumentException("Parameters must be within 0..1, but are "
                 + String.format("(%.2f,%.2f,%.2f,%.2f)", c, m, y, k));
         }
-        writeOperand((float) c);
-        writeOperand((float) m);
-        writeOperand((float) y);
-        writeOperand((float) k);
+        writeOperand(c);
+        writeOperand(m);
+        writeOperand(y);
+        writeOperand(k);
         writeOperator("k");
 //        setNonStrokingColorSpaceStack(PDDeviceCMYK.INSTANCE); TODO: PdfBox-Android
     }
@@ -1334,14 +1465,28 @@ public final class PDPageContentStream implements Closeable
      * @param g The gray value.
      * @throws IOException If an IO error occurs while writing to the stream.
      * @throws IllegalArgumentException If the parameter is invalid.
+     * @deprecated use {@link #setNonStrokingColor(float) setNonStrokingColor(float)}
      */
+    @Deprecated
     public void setNonStrokingColor(double g) throws IOException
+    {
+        setNonStrokingColor((float) g);
+    }
+
+    /**
+     * Set the non-stroking color in the DeviceGray color space. Range is 0..1.
+     *
+     * @param g The gray value.
+     * @throws IOException If an IO error occurs while writing to the stream.
+     * @throws IllegalArgumentException If the parameter is invalid.
+     */
+    public void setNonStrokingColor(float g) throws IOException
     {
         if (isOutsideOneInterval(g))
         {
             throw new IllegalArgumentException("Parameter must be within 0..1, but is " + g);
         }
-        writeOperand((float) g);
+        writeOperand(g);
         writeOperator("g");
         setNonStrokingColorSpaceStack(PDDeviceGray.INSTANCE);
     }
@@ -2223,10 +2368,11 @@ public final class PDPageContentStream implements Closeable
     /**
      * Write a comment line.
      *
-     * @param comment
+     * @param comment the comment to be added to the content stream.
+     *
      * @throws IOException If the content stream could not be written.
-     * @throws IllegalArgumentException If the comment contains a newline. This is not allowed,
-     * because the next line could be ordinary PDF content.
+     * @throws IllegalArgumentException If the comment contains a newline. This is not allowed, because the next line
+     * could be ordinary PDF content.
      */
     public void addComment(String comment) throws IOException
     {
@@ -2241,6 +2387,10 @@ public final class PDPageContentStream implements Closeable
 
     /**
      * Writes a real number to the content stream.
+     *
+     * @param real the float value to be added to the content stream.
+     *
+     * @throws IOException if something went wrong
      */
     protected void writeOperand(float real) throws IOException
     {
@@ -2330,7 +2480,11 @@ public final class PDPageContentStream implements Closeable
     @Override
     public void close() throws IOException
     {
-        output.close();
+        if (output != null)
+        {
+            output.close();
+            output = null;
+        }
     }
 
     private boolean isOutside255Interval(int val)
@@ -2396,6 +2550,12 @@ public final class PDPageContentStream implements Closeable
     /**
      * Set the word spacing. The value shall be added to the horizontal or vertical component of the
      * ASCII SPACE character, depending on the writing mode.
+     * <p>
+     * This will have an effect only with Type1 and TrueType fonts, not with Type0 fonts. The PDF
+     * specification tells why: "Word spacing shall be applied to every occurrence of the
+     * single-byte character code 32 in a string when using a simple font or a composite font that
+     * defines code 32 as a single-byte code. It shall not apply to occurrences of the byte value 32
+     * in multiple-byte codes."
      *
      * @param spacing word spacing
      * @throws IOException If the content stream could not be written.

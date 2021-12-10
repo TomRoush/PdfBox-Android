@@ -39,7 +39,6 @@ public class PDActionJavaScript extends PDAction
      */
     public PDActionJavaScript()
     {
-        super();
         setSubType( SUB_TYPE );
     }
 
@@ -51,7 +50,7 @@ public class PDActionJavaScript extends PDAction
     public PDActionJavaScript( String js )
     {
         this();
-        setAction( js );
+        setAction(js);
     }
 
     /**

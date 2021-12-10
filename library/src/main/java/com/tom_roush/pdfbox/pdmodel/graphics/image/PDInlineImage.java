@@ -18,6 +18,7 @@ package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
 import android.graphics.Bitmap;
 import android.graphics.Paint;
+import android.graphics.Rect;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,6 +30,7 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.filter.DecodeOptions;
 import com.tom_roush.pdfbox.filter.DecodeResult;
 import com.tom_roush.pdfbox.filter.Filter;
 import com.tom_roush.pdfbox.filter.FilterFactory;
@@ -299,6 +301,13 @@ public final class PDInlineImage implements PDImage
     }
 
     @Override
+    public InputStream createInputStream(DecodeOptions options) throws IOException
+    {
+        // Decode options are irrelevant for inline image, as the data is always buffered.
+        return createInputStream();
+    }
+
+    @Override
     public InputStream createInputStream(List<String> stopFilters) throws IOException
     {
         List<String> filters = getFilters();
@@ -340,6 +349,12 @@ public final class PDInlineImage implements PDImage
     public Bitmap getImage() throws IOException
     {
         return SampledImageReader.getRGBImage(this, getColorKeyMask());
+    }
+
+    @Override
+    public Bitmap getImage(Rect region, int subsampling) throws IOException
+    {
+        return SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask());
     }
 
     @Override

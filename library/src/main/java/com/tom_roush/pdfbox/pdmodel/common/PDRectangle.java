@@ -282,8 +282,12 @@ public class PDRectangle implements COSObjectable
     }
 
     /**
-     * Returns a path which represents this rectangle having been transformed by the given matrix.
-     * Note that the resulting path need not be rectangular.
+     * Returns a path which represents this rectangle having been transformed by the given matrix. Note that the
+     * resulting path need not be rectangular.
+     *
+     * @param matrix the matrix to be used for the transformation.
+     *
+     * @return the resulting path.
      */
     public Path transform(Matrix matrix)
     {
@@ -318,8 +322,10 @@ public class PDRectangle implements COSObjectable
     }
 
     /**
-     * Returns a general path equivalent to this rectangle. This method avoids the problems
-     * caused by Rectangle2D not working well with -ve rectangles.
+     * Returns a general path equivalent to this rectangle. This method avoids the problems caused by Rectangle2D not
+     * working well with -ve rectangles.
+     *
+     * @return the general path.
      */
     public Path toGeneralPath()
     {

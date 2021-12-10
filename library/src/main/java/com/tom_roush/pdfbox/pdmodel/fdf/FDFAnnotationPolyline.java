@@ -43,7 +43,7 @@ public class FDFAnnotationPolyline extends FDFAnnotation
     /**
      * COS Model value for SubType entry.
      */
-    public static final String SUBTYPE ="Polyline";
+    public static final String SUBTYPE = "Polyline";
 
     /**
      * Default constructor.
@@ -51,7 +51,7 @@ public class FDFAnnotationPolyline extends FDFAnnotation
     public FDFAnnotationPolyline()
     {
         super();
-        annot.setName( COSName.SUBTYPE, SUBTYPE );
+        annot.setName(COSName.SUBTYPE, SUBTYPE);
     }
 
     /**
@@ -59,9 +59,9 @@ public class FDFAnnotationPolyline extends FDFAnnotation
      *
      * @param a An existing FDF Annotation.
      */
-    public FDFAnnotationPolyline( COSDictionary a )
+    public FDFAnnotationPolyline(COSDictionary a)
     {
-        super( a );
+        super(a);
     }
 
     /**
@@ -71,7 +71,7 @@ public class FDFAnnotationPolyline extends FDFAnnotation
      *
      * @throws IOException If there is an error extracting information from the element.
      */
-    public FDFAnnotationPolyline( Element element ) throws IOException
+    public FDFAnnotationPolyline(Element element) throws IOException
     {
         super(element);
         annot.setName(COSName.SUBTYPE, SUBTYPE);
@@ -100,8 +100,7 @@ public class FDFAnnotationPolyline extends FDFAnnotation
         }
         catch (XPathExpressionException e)
         {
-            Log.d("PdfBox-Android",
-                "Error while evaluating XPath expression for polyline vertices");
+            Log.d("PdfBox-Android", "Error while evaluating XPath expression for polyline vertices");
         }
     }
 
@@ -127,7 +126,7 @@ public class FDFAnnotationPolyline extends FDFAnnotation
     }
 
     /**
-     * This will set the coordinates of the the vertices.
+     * This will set the coordinates of the vertices.
      *
      * @param vertices array of floats [x1, y1, x2, y2, ...] vertex coordinates in default user space.
      */
@@ -139,7 +138,7 @@ public class FDFAnnotationPolyline extends FDFAnnotation
     }
 
     /**
-     * This will get the coordinates of the the vertices.
+     * This will get the coordinates of the vertices.
      *
      * @return array of floats [x1, y1, x2, y2, ...] vertex coordinates in default user space.
      */

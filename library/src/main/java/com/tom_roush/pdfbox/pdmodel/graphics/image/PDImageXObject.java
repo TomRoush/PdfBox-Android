@@ -20,6 +20,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -36,7 +37,10 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSInputStream;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.filter.DecodeOptions;
+import com.tom_roush.pdfbox.filter.DecodeResult;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
@@ -58,6 +62,9 @@ public final class PDImageXObject extends PDXObject implements PDImage
 {
     private SoftReference<Bitmap> cachedImage;
     private PDColorSpace colorSpace;
+
+    // initialize to MAX_VALUE as we prefer lower subsampling when keeping/replacing cache.
+    private int cachedImageSubsampling = Integer.MAX_VALUE;
 
     /**
      * current resource dictionary (has color spaces)
@@ -116,15 +123,24 @@ public final class PDImageXObject extends PDXObject implements PDImage
      */
     public PDImageXObject(PDStream stream, PDResources resources) throws IOException
     {
-        this(stream, resources, stream.createInputStream());
-    }
-
-    // repairs parameters using decode result
-    private PDImageXObject(PDStream stream, PDResources resources, COSInputStream input)
-    {
-        super(repair(stream, input), COSName.IMAGE);
+        super(stream, COSName.IMAGE);
         this.resources = resources;
-//        this.colorSpace = input.getDecodeResult().getJPXColorSpace(); TODO: PdfBox-Android
+        List<COSName> filters = stream.getFilters();
+        if (filters != null && !filters.isEmpty() && COSName.JPX_DECODE.equals(filters.get(filters.size()-1)))
+        {
+            COSInputStream is = null;
+            try
+            {
+                is = stream.createInputStream();
+                DecodeResult decodeResult = is.getDecodeResult();
+                stream.getCOSObject().addAll(decodeResult.getParameters());
+//                this.colorSpace = decodeResult.getJPXColorSpace(); TODO: PdfBox-Android
+            }
+            finally
+            {
+                IOUtils.closeQuietly(is);
+            }
+        }
     }
 
     /**
@@ -225,7 +241,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * Create a PDImageXObject from an image file. The file format is determined by the file
      * content. The following file types are supported: jpg, jpeg, tif, tiff, gif, bmp and png. This
      * is a convenience method that calls {@link JPEGFactory#createFromStream},
-     * {@link CCITTFactory#createFromFile} or {@link BitmapFactory#decodeFile} combined with
+     * {@link CCITTFactory#createFromFile} or {@link  BitmapFactory#decodeFile} combined with
      * {@link LosslessFactory#createFromImage}. (The later can also be used to create a
      * PDImageXObject from a Bitmap).
      *
@@ -284,7 +300,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * Create a PDImageXObject from bytes of an image file. The file format is determined by the
      * file content. The following file types are supported: jpg, jpeg, tif, tiff, gif, bmp and png.
      * This is a convenience method that calls {@link JPEGFactory#createFromByteArray},
-     * {@link CCITTFactory#createFromFile} or
+     * {@link CCITTFactory#createFromFile} or {@link BitmapFactory#decodeFile} combined with
      * {@link LosslessFactory#createFromImage}. (The later can also be used to create a
      * PDImageXObject from a Bitmap).
      *
@@ -327,13 +343,6 @@ public final class PDImageXObject extends PDXObject implements PDImage
             return LosslessFactory.createFromImage(document, bim);
         }
         throw new IllegalArgumentException("Image type not supported: " + name);
-    }
-
-    // repairs parameters using decode result
-    private static PDStream repair(PDStream stream, COSInputStream input)
-    {
-        stream.getCOSObject().addAll(input.getDecodeResult().getParameters());
-        return stream;
     }
 
     /**
@@ -384,7 +393,16 @@ public final class PDImageXObject extends PDXObject implements PDImage
     @Override
     public Bitmap getImage() throws IOException
     {
-        if (cachedImage != null)
+        return getImage(null, 1);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Bitmap getImage(Rect region, int subsampling) throws IOException
+    {
+        if (region == null && subsampling == cachedImageSubsampling && cachedImage != null)
         {
             Bitmap cached = cachedImage.get();
             if (cached != null)
@@ -394,7 +412,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         }
 
         // get image as RGB
-        Bitmap image = SampledImageReader.getRGBImage(this, getColorKeyMask());
+        Bitmap image = SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask());
 
         // soft mask (overrides explicit mask)
         PDImageXObject softMask = getSoftMask();
@@ -412,7 +430,14 @@ public final class PDImageXObject extends PDXObject implements PDImage
             }
         }
 
-        cachedImage = new SoftReference<Bitmap>(image);
+        if (region == null && subsampling <= cachedImageSubsampling)
+        {
+            // only cache full-image renders, and prefer lower subsampling frequency, as lower
+            // subsampling means higher quality and longer render times.
+            cachedImageSubsampling = subsampling;
+            cachedImage = new SoftReference<Bitmap>(image);
+        }
+
         return image;
     }
 
@@ -585,10 +610,27 @@ public final class PDImageXObject extends PDXObject implements PDImage
     {
         if (colorSpace == null)
         {
-            COSBase cosBase = getCOSObject().getDictionaryObject(COSName.COLORSPACE, COSName.CS);
+            COSBase cosBase = getCOSObject().getItem(COSName.COLORSPACE, COSName.CS);
             if (cosBase != null)
             {
+                COSObject indirect = null;
+                if (cosBase instanceof COSObject &&
+                    resources != null && resources.getResourceCache() != null)
+                {
+                    // PDFBOX-4022: use the resource cache because several images
+                    // might have the same colorspace indirect object.
+                    indirect = (COSObject) cosBase;
+                    colorSpace = resources.getResourceCache().getColorSpace(indirect);
+                    if (colorSpace != null)
+                    {
+                        return colorSpace;
+                    }
+                }
                 colorSpace = PDColorSpace.create(cosBase, resources);
+                if (indirect != null)
+                {
+                    resources.getResourceCache().put(indirect, colorSpace);
+                }
             }
             else if (isStencil())
             {
@@ -608,6 +650,12 @@ public final class PDImageXObject extends PDXObject implements PDImage
     public InputStream createInputStream() throws IOException
     {
         return getStream().createInputStream();
+    }
+
+    @Override
+    public InputStream createInputStream(DecodeOptions options) throws IOException
+    {
+        return getStream().createInputStream(options);
     }
 
     @Override

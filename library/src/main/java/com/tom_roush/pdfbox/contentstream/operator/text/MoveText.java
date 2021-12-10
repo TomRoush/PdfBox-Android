@@ -58,8 +58,8 @@ public class MoveText extends OperatorProcessor
         {
             return;
         }
-        COSNumber x = (COSNumber)base0;
-        COSNumber y = (COSNumber)base1;
+        COSNumber x = (COSNumber) base0;
+        COSNumber y = (COSNumber) base1;
 
         Matrix matrix = new Matrix(1, 0, 0, 1, x.floatValue(), y.floatValue());
         textLineMatrix.concatenate(matrix);

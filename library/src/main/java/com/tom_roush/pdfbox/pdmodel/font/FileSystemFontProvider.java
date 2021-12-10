@@ -109,6 +109,12 @@ final class FileSystemFontProvider extends FontProvider
             return cidSystemInfo;
         }
 
+        /**
+         * {@inheritDoc}
+         * <p>
+         * The method returns null if there is there was an error opening the font.
+         *
+         */
         @Override
         public FontBoxFont getFont()
         {
@@ -127,7 +133,10 @@ final class FileSystemFontProvider extends FontProvider
                     case OTF: font = parent.getOTFFont(postScriptName, file); break;
                     default: throw new RuntimeException("can't happen");
                 }
-                parent.cache.addFont(this, font);
+                if (font != null)
+                {
+                    parent.cache.addFont(this, font);
+                }
                 return font;
             }
         }
@@ -306,11 +315,12 @@ final class FileSystemFontProvider extends FontProvider
     private void saveDiskCache()
     {
         BufferedWriter writer = null;
+        File file = null;
         try
         {
-            File file = getDiskCacheFile();
             try
             {
+                file = getDiskCacheFile();
                 writer = new BufferedWriter(new FileWriter(file));
             }
             catch (SecurityException e)
@@ -392,15 +402,19 @@ final class FileSystemFontProvider extends FontProvider
         }
 
         List<FSFontInfo> results = new ArrayList<FSFontInfo>();
-        File file = getDiskCacheFile();
+
+        // Get the disk cache
+        File file = null;
         boolean fileExists = false;
         try
         {
+            file = getDiskCacheFile();
             fileExists = file.exists();
         }
         catch (SecurityException e)
         {
         }
+
         if (fileExists)
         {
             BufferedReader reader = null;
@@ -460,11 +474,17 @@ final class FileSystemFontProvider extends FontProvider
                         }
                     }
                     fontFile = new File(parts[9]);
-
-                    FSFontInfo info = new FSFontInfo(fontFile, format, postScriptName,
-                        cidSystemInfo, usWeightClass, sFamilyClass, ulCodePageRange1,
-                        ulCodePageRange2, macStyle, panose, this);
-                    results.add(info);
+                    if (fontFile.exists())
+                    {
+                        FSFontInfo info = new FSFontInfo(fontFile, format, postScriptName,
+                            cidSystemInfo, usWeightClass, sFamilyClass, ulCodePageRange1,
+                            ulCodePageRange2, macStyle, panose, this);
+                        results.add(info);
+                    }
+                    else
+                    {
+                        Log.d("PdfBox-Android", "Font file " + fontFile.getAbsolutePath() + " not found, skipped");
+                    }
                     pending.remove(fontFile.getAbsolutePath());
                 }
             }

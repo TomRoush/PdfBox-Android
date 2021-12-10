@@ -27,6 +27,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.pdmodel.MissingResourceException;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
+import com.tom_roush.pdfbox.pdmodel.ResourceCache;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
@@ -84,7 +85,7 @@ public abstract class PDColorSpace implements COSObjectable
     {
         if (colorSpace instanceof COSObject)
         {
-            return create(((COSObject) colorSpace).getObject(), resources);
+            return createFromCOSObject((COSObject) colorSpace, resources);
         }
         else if (colorSpace instanceof COSName)
         {
@@ -237,6 +238,28 @@ public abstract class PDColorSpace implements COSObjectable
         {
             throw new IOException("Expected a name or array but got: " + colorSpace);
         }
+    }
+
+    private static PDColorSpace createFromCOSObject(COSObject colorSpace, PDResources resources)
+        throws IOException
+    {
+        PDColorSpace cs;
+        if (resources != null && resources.getResourceCache() != null)
+        {
+            ResourceCache resourceCache = resources.getResourceCache();
+            cs = resourceCache.getColorSpace(colorSpace);
+            if (cs != null)
+            {
+                return cs;
+            }
+        }
+        cs = create(colorSpace.getObject(), resources);
+        if (resources != null && resources.getResourceCache() != null && cs != null)
+        {
+            ResourceCache resourceCache = resources.getResourceCache();
+            resourceCache.put(colorSpace, cs);
+        }
+        return cs;
     }
 
     // array for the given parameters

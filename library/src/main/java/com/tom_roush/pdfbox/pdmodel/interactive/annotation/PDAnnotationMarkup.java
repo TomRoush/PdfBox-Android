@@ -18,7 +18,6 @@ package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
 import java.io.IOException;
 import java.util.Calendar;
-
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -26,7 +25,7 @@ import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.cos.COSString;
 
 /**
- * This class represents the additonal fields of a Markup type Annotation. See section 12.5.6 of ISO32000-1:2008
+ * This class represents the additional fields of a Markup type Annotation. See section 12.5.6 of ISO32000-1:2008
  * (starting with page 390) for details on annotation types.
  *
  * @author Paul King

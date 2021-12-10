@@ -21,6 +21,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * This is the implementation of an URI dictionary.
+ *
  */
 public class PDURIDictionary implements COSObjectable
 {
@@ -29,7 +30,7 @@ public class PDURIDictionary implements COSObjectable
 
     /**
      * Constructor.
-     * 
+     *
      */
     public PDURIDictionary()
     {
@@ -38,7 +39,7 @@ public class PDURIDictionary implements COSObjectable
 
     /**
      * Constructor.
-     * 
+     *
      * @param dictionary the corresponding dictionary
      */
     public PDURIDictionary(COSDictionary dictionary)
@@ -79,7 +80,7 @@ public class PDURIDictionary implements COSObjectable
      * The use of this entry is parallel to that of the body element &lt;BASE&gt;, as described
      * in the HTML 4.01 Specification.
      *
-     * @param base The the base URI to be used.
+     * @param base The base URI to be used.
      */
     public void setBase(String base)
     {

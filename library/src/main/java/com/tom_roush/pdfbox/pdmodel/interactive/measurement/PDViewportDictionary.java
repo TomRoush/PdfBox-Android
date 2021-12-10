@@ -17,6 +17,7 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.measurement;
 
 import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
@@ -24,16 +25,17 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 
 /**
  * This class represents a viewport dictionary.
+ *
  */
 public class PDViewportDictionary implements COSObjectable
 {
 
     /**
-     * The type of this annotation.
+     * The type of this object.
      */
     public static final String TYPE = "Viewport";
-    
-    private COSDictionary viewportDictionary;
+
+    private final COSDictionary viewportDictionary;
 
     /**
      * Constructor.
@@ -45,7 +47,7 @@ public class PDViewportDictionary implements COSObjectable
 
     /**
      * Constructor.
-     * 
+     *
      * @param dictionary the dictionary
      */
     public PDViewportDictionary(COSDictionary dictionary)
@@ -55,7 +57,7 @@ public class PDViewportDictionary implements COSObjectable
 
     /**
      * This will return the corresponding dictionary.
-     * 
+     *
      * @return the viewport dictionary
      */
     @Override
@@ -77,32 +79,32 @@ public class PDViewportDictionary implements COSObjectable
 
     /**
      * This will retrieve the rectangle specifying the location of the viewport.
-     * 
+     *
      * @return the location
      */
     public PDRectangle getBBox()
     {
-        COSArray bbox = (COSArray)this.getCOSObject().getDictionaryObject("BBox");
-        if (bbox != null)
+        COSBase bbox = this.getCOSObject().getDictionaryObject(COSName.BBOX);
+        if (bbox instanceof COSArray)
         {
-            return new PDRectangle(bbox);
+            return new PDRectangle((COSArray) bbox);
         }
         return null;
     }
 
     /**
      * This will set the rectangle specifying the location of the viewport.
-     * 
+     *
      * @param rectangle the rectangle specifying the location.
      */
     public void setBBox(PDRectangle rectangle)
     {
-        this.getCOSObject().setItem("BBox", rectangle);
+        this.getCOSObject().setItem(COSName.BBOX, rectangle);
     }
 
     /**
      * This will retrieve the name of the viewport.
-     * 
+     *
      * @return the name of the viewport
      */
     public String getName()
@@ -110,11 +112,11 @@ public class PDViewportDictionary implements COSObjectable
         return this.getCOSObject().getNameAsString(COSName.NAME);
     }
 
-   /**
-    * This will set the name of the viewport.
-    *  
-    * @param name the name of the viewport
-    */
+    /**
+     * This will set the name of the viewport.
+     *
+     * @param name the name of the viewport
+     */
     public void setName(String name)
     {
         this.getCOSObject().setName(COSName.NAME, name);
@@ -122,27 +124,27 @@ public class PDViewportDictionary implements COSObjectable
 
     /**
      * This will retrieve the measure dictionary.
-     * 
+     *
      * @return the measure dictionary
      */
     public PDMeasureDictionary getMeasure()
     {
-        COSDictionary measure = (COSDictionary)this.getCOSObject().getDictionaryObject("Measure");
-        if (measure != null)
+        COSBase base = this.getCOSObject().getDictionaryObject(COSName.MEASURE);
+        if (base instanceof COSDictionary)
         {
-            return new PDMeasureDictionary(measure);
+            return new PDMeasureDictionary((COSDictionary) base);
         }
         return null;
     }
 
     /**
      * This will set the measure dictionary.
-     * 
+     *
      * @param measure the measure dictionary
      */
     public void setMeasure(PDMeasureDictionary measure)
     {
-        this.getCOSObject().setItem("Measure", measure);
+        this.getCOSObject().setItem(COSName.MEASURE, measure);
     }
 
 }

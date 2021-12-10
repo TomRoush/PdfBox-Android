@@ -16,6 +16,8 @@
  */
 package com.tom_roush.pdfbox.multipdf;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -123,6 +125,10 @@ public class LayerUtility
     /**
      * Imports a page from some PDF file as a Form XObject so it can be placed on another page
      * in the target document.
+     * <p>
+     * You may want to call {@link #wrapInSaveRestore(PDPage) wrapInSaveRestore(PDPage)} before invoking the Form XObject to
+     * make sure that the graphics state is reset.
+     *
      * @param sourceDoc the source PDF document that contains the page to be copied
      * @param pageNumber the page number of the page to be copied
      * @return a Form XObject containing the original page's content
@@ -140,6 +146,10 @@ public class LayerUtility
     /**
      * Imports a page from some PDF file as a Form XObject so it can be placed on another page
      * in the target document.
+     * <p>
+     * You may want to call {@link #wrapInSaveRestore(PDPage) wrapInSaveRestore(PDPage)} before invoking the Form XObject to
+     * make sure that the graphics state is reset.
+     *
      * @param sourceDoc the source PDF document that contains the page to be copied
      * @param page the page in the source PDF document to be copied
      * @return a Form XObject containing the original page's content
@@ -215,9 +225,15 @@ public class LayerUtility
      * The form is enveloped in a marked content section to indicate that it's part of an
      * optional content group (OCG), here used as a layer. This optional group is returned and
      * can be enabled and disabled through methods on {@link PDOptionalContentProperties}.
+     * <p>
+     * You may want to call {@link #wrapInSaveRestore(PDPage) wrapInSaveRestore(PDPage)} before calling this method to make
+     * sure that the graphics state is reset.
+     *
      * @param targetPage the target page
      * @param form the form to place
-     * @param transform the transformation matrix that controls the placement
+     * @param transform the transformation matrix that controls the placement of your form. You'll
+     * need this if your page has a crop box different than the media box, or if these have negative
+     * coordinates, or if you want to scale or adjust your form.
      * @param layerName the name for the layer/OCG to produce
      * @return the optional content group that was generated for the form usage
      * @throws IOException if an I/O error occurs
@@ -236,6 +252,14 @@ public class LayerUtility
         if (ocprops.hasGroup(layerName))
         {
             throw new IllegalArgumentException("Optional group (layer) already exists: " + layerName);
+        }
+
+        PDRectangle cropBox = targetPage.getCropBox();
+        if ((cropBox.getLowerLeftX() < 0 || cropBox.getLowerLeftY() < 0) && transform.isIdentity())
+        {
+            // PDFBOX-4044 
+            Log.w("PdfBox-Android", "Negative cropBox " + cropBox +
+                " and identity transform may make your form invisible");
         }
 
         PDOptionalContentGroup layer = new PDOptionalContentGroup(layerName);

@@ -174,12 +174,17 @@ public abstract class PDFStreamEngine
             throw new IllegalStateException("No current page, call " +
                 "#processChildStream(PDContentStream, PDPage) instead");
         }
-        processStream(form);
+        if (form.getCOSObject().getLength() > 0)
+        {
+            processStream(form);
+        }
     }
 
     /**
      * Processes a soft mask transparency group stream.
-     * @param group
+     *
+     * @param group the transparency group.
+     *
      * @throws IOException
      */
     protected void processSoftMask(PDTransparencyGroup group) throws IOException
@@ -193,7 +198,9 @@ public abstract class PDFStreamEngine
 
     /**
      * Processes a transparency group stream.
-     * @param group
+     *
+     * @param group the transparency group.
+     *
      * @throws IOException
      */
     protected void processTransparencyGroup(PDTransparencyGroup group) throws IOException
@@ -429,7 +436,8 @@ public abstract class PDFStreamEngine
      * Process a child stream of the given page. Cannot be used with {@link #processPage(PDPage)}.
      *
      * @param contentStream the child content stream
-     * @param page
+     * @param page the current page
+     *
      * @throws IOException if there is an exception while processing the stream
      */
     protected void processChildStream(PDContentStream contentStream, PDPage page) throws IOException
@@ -643,6 +651,8 @@ public abstract class PDFStreamEngine
      *
      * @param tx x-translation
      * @param ty y-translation
+     *
+     * @throws IOException if something went wrong
      */
     protected void applyTextAdjustment(float tx, float ty) throws IOException
     {
@@ -853,6 +863,8 @@ public abstract class PDFStreamEngine
      *
      * @param operator The unknown operator.
      * @param operands The list of operands.
+     *
+     * @throws IOException if something went wrong
      */
     protected void unsupportedOperator(Operator operator, List<COSBase> operands) throws IOException
     {
@@ -864,6 +876,9 @@ public abstract class PDFStreamEngine
      *
      * @param operator The unknown operator.
      * @param operands The list of operands.
+     * @param e the thrown exception.
+     *
+     * @throws IOException if something went wrong
      */
     protected void operatorException(Operator operator, List<COSBase> operands, IOException e)
         throws IOException
@@ -908,6 +923,8 @@ public abstract class PDFStreamEngine
 
     /**
      * Saves the entire graphics stack.
+     *
+     * @return the saved graphics state stack.
      */
     protected final Stack<PDGraphicsState> saveGraphicsStack()
     {
@@ -919,6 +936,8 @@ public abstract class PDFStreamEngine
 
     /**
      * Restores the entire graphics stack.
+     *
+     * @param snapshot the graphics state stack to be restored.
      */
     protected final void restoreGraphicsStack(Stack<PDGraphicsState> snapshot)
     {
@@ -989,7 +1008,7 @@ public abstract class PDFStreamEngine
     }
 
     /**
-     * Returns the stream' resources.
+     * @return the stream' resources.
      */
     public PDResources getResources()
     {
@@ -997,7 +1016,7 @@ public abstract class PDFStreamEngine
     }
 
     /**
-     * Returns the current page.
+     * @return the current page.
      */
     public PDPage getCurrentPage()
     {
@@ -1006,6 +1025,8 @@ public abstract class PDFStreamEngine
 
     /**
      * Gets the stream's initial matrix.
+     *
+     * @return the initial matrix.
      */
     public Matrix getInitialMatrix()
     {
@@ -1014,6 +1035,11 @@ public abstract class PDFStreamEngine
 
     /**
      * Transforms a point using the CTM.
+     *
+     * @param x x-coordinate of the point to be transformed.
+     * @param y y-coordinate of the point to be transformed.
+     *
+     * @return the transformed point.
      */
     public PointF transformedPoint(float x, float y)
     {
@@ -1025,6 +1051,10 @@ public abstract class PDFStreamEngine
 
     /**
      * Transforms a width using the CTM.
+     *
+     * @param width the width value to be transformed.
+     *
+     * @return the transformed width value.
      */
     protected float transformWidth(float width)
     {

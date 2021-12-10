@@ -37,7 +37,7 @@ public class PDAppearanceDictionary implements COSObjectable
     {
         dictionary = new COSDictionary();
         // the N entry is required.
-        dictionary.setItem( COSName.N, new COSDictionary() );
+        dictionary.setItem(COSName.N, new COSDictionary());
     }
 
     /**
@@ -45,7 +45,7 @@ public class PDAppearanceDictionary implements COSObjectable
      *
      * @param dictionary The annotations dictionary.
      */
-    public PDAppearanceDictionary( COSDictionary dictionary )
+    public PDAppearanceDictionary(COSDictionary dictionary)
     {
         this.dictionary = dictionary;
     }
@@ -57,133 +57,121 @@ public class PDAppearanceDictionary implements COSObjectable
     }
 
     /**
-     * This will return a list of appearances. In the case where there is
-     * only one appearance the map will contain one entry whose key is the string
-     * "default".
+     * This will return a list of appearances. In the case where there is only one appearance the map will contain one
+     * entry whose key is the string "default".
      *
      * @return A list of key(java.lang.String) value(PDAppearanceStream) pairs
      */
     public PDAppearanceEntry getNormalAppearance()
     {
-        COSBase entry = dictionary.getDictionaryObject( COSName.N );
-        if ( entry == null )
-        { 
-            return null; 
-        }
-        else
+        COSBase entry = dictionary.getDictionaryObject(COSName.N);
+        if (entry instanceof COSDictionary)
         {
             return new PDAppearanceEntry(entry);
         }
+        return null;
     }
 
     /**
-     * This will set a list of appearances. If you would like to set the single
-     * appearance then you should use the key "default", and when the PDF is written
-     * back to the filesystem then there will only be one stream.
+     * This will set a list of appearances. If you would like to set the single appearance then you should use the key
+     * "default", and when the PDF is written back to the filesystem then there will only be one stream.
      *
      * @param entry appearance stream or subdictionary
      */
-    public void setNormalAppearance( PDAppearanceEntry entry )
+    public void setNormalAppearance(PDAppearanceEntry entry)
     {
-        dictionary.setItem( COSName.N, entry );
+        dictionary.setItem(COSName.N, entry);
     }
 
     /**
-     * This will set the normal appearance when there is only one appearance
-     * to be shown.
+     * This will set the normal appearance when there is only one appearance to be shown.
      *
      * @param ap The appearance stream to show.
      */
-    public void setNormalAppearance( PDAppearanceStream ap )
+    public void setNormalAppearance(PDAppearanceStream ap)
     {
-        dictionary.setItem( COSName.N, ap );
+        dictionary.setItem(COSName.N, ap);
     }
 
     /**
-     * This will return a list of appearances. In the case where there is
-     * only one appearance the map will contain one entry whose key is the string
-     * "default". If there is no rollover appearance then the normal appearance
-     * will be returned.  Which means that this method will never return null.
+     * This will return a list of appearances. In the case where there is only one appearance the map will contain one
+     * entry whose key is the string "default". If there is no rollover appearance then the normal appearance will be
+     * returned. Which means that this method will never return null.
      *
      * @return A list of key(java.lang.String) value(PDAppearanceStream) pairs
      */
     public PDAppearanceEntry getRolloverAppearance()
     {
-        COSBase entry = dictionary.getDictionaryObject( COSName.R );
-        if( entry == null )
-        {
-            return getNormalAppearance();
-        }
-        else
+        COSBase entry = dictionary.getDictionaryObject(COSName.R);
+        if (entry instanceof COSDictionary)
         {
             return new PDAppearanceEntry(entry);
         }
+        else
+        {
+            return getNormalAppearance();
+        }
     }
 
     /**
-     * This will set a list of appearances. If you would like to set the single
-     * appearance then you should use the key "default", and when the PDF is written
-     * back to the filesystem then there will only be one stream.
+     * This will set a list of appearances. If you would like to set the single appearance then you should use the key
+     * "default", and when the PDF is written back to the filesystem then there will only be one stream.
      *
      * @param entry appearance stream or subdictionary
      */
-    public void setRolloverAppearance( PDAppearanceEntry entry )
+    public void setRolloverAppearance(PDAppearanceEntry entry)
     {
-        dictionary.setItem( COSName.R, entry );
+        dictionary.setItem(COSName.R, entry);
     }
 
     /**
-     * This will set the rollover appearance when there is rollover appearance
-     * to be shown.
+     * This will set the rollover appearance when there is rollover appearance to be shown.
      *
      * @param ap The appearance stream to show.
      */
-    public void setRolloverAppearance( PDAppearanceStream ap )
+    public void setRolloverAppearance(PDAppearanceStream ap)
     {
-        dictionary.setItem( COSName.R, ap );
+        dictionary.setItem(COSName.R, ap);
     }
 
     /**
-     * This will return a list of appearances. In the case where there is
-     * only one appearance the map will contain one entry whose key is the string
-     * "default". If there is no rollover appearance then the normal appearance
-     * will be returned.  Which means that this method will never return null.
+     * This will return a list of appearances. In the case where there is only one appearance the map will contain one
+     * entry whose key is the string "default". If there is no rollover appearance then the normal appearance will be
+     * returned. Which means that this method will never return null.
      *
      * @return A list of key(java.lang.String) value(PDAppearanceStream) pairs
      */
     public PDAppearanceEntry getDownAppearance()
     {
-        COSBase entry = dictionary.getDictionaryObject( COSName.D );
-        if( entry == null )
-        {
-            return getNormalAppearance();
-        }
-        else
+        COSBase entry = dictionary.getDictionaryObject(COSName.D);
+        if (entry instanceof COSDictionary)
         {
             return new PDAppearanceEntry(entry);
         }
+        else
+        {
+            return getNormalAppearance();
+        }
     }
 
     /**
-     * This will set a list of appearances. If you would like to set the single
-     * appearance then you should use the key "default", and when the PDF is written
-     * back to the filesystem then there will only be one stream.
+     * This will set a list of appearances. If you would like to set the single appearance then you should use the key
+     * "default", and when the PDF is written back to the filesystem then there will only be one stream.
      *
      * @param entry appearance stream or subdictionary
      */
-    public void setDownAppearance( PDAppearanceEntry entry )
+    public void setDownAppearance(PDAppearanceEntry entry)
     {
-        dictionary.setItem( COSName.D, entry );
+        dictionary.setItem(COSName.D, entry);
     }
 
     /**
-     * This will set the down appearance when there is down appearance
-     * to be shown.
+     * This will set the down appearance when there is down appearance to be shown.
      *
      * @param ap The appearance stream to show.
      */
-    public void setDownAppearance( PDAppearanceStream ap )
+    public void setDownAppearance(PDAppearanceStream ap)
     {
-        dictionary.setItem( COSName.D, ap );
+        dictionary.setItem(COSName.D, ap);
     }
 }

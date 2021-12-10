@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.contentstream.operator.text;
 
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class SetFontAndSize extends OperatorProcessor
         {
             throw new MissingOperandException(operator, arguments);
         }
-        // set font and size
+
         COSBase base0 = arguments.get(0);
         COSBase base1 = arguments.get(1);
         if (!(base0 instanceof COSName))
@@ -52,8 +53,8 @@ public class SetFontAndSize extends OperatorProcessor
         {
             return;
         }
-        COSName fontName = (COSName)base0;
-        float fontSize = ((COSNumber)base1).floatValue();
+        COSName fontName = (COSName) base0;
+        float fontSize = ((COSNumber) base1).floatValue();
         context.getGraphicsState().getTextState().setFontSize(fontSize);
         PDFont font = context.getResources().getFont(fontName);
         context.getGraphicsState().getTextState().setFont(font);
