@@ -26,7 +26,7 @@ A clear and concise description of what happened instead.
 
 **Environment details:**
  - PdfBox-Android version: [e.g. 2.0.8.0]
- - Android API version: [e.g. API 30]
+ - Android API version: [e.g. API 31]
 
 **Additional context**
 Add any other context about the problem here.
