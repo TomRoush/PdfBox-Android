@@ -32,6 +32,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeTrue;
 
 /**
  *
@@ -192,10 +193,13 @@ public class TTFSubsetterTest
      *
      * @throws java.io.IOException
      */
-//    @Test TODO: PdfBox-Android - provide test file
+    @Test
+//    TODO: PdfBox-Android - provide test file
     public void testPDFBox3379() throws IOException
     {
-        TrueTypeFont full = new TTFParser().parse("target/pdfs/DejaVuSansMono.ttf");
+        String fontPath = "target/pdfs/DejaVuSansMono.ttf";
+        assumeTrue(new File(fontPath).exists());
+        TrueTypeFont full = new TTFParser().parse(fontPath);
         TTFSubsetter ttfSubsetter = new TTFSubsetter(full);
         ttfSubsetter.add('A');
         ttfSubsetter.add(' ');

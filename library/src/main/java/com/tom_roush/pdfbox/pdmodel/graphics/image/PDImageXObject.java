@@ -286,14 +286,25 @@ public final class PDImageXObject extends PDXObject implements PDImage
         }
         if (fileType.equals(FileType.TIFF))
         {
-            return CCITTFactory.createFromFile(doc, file);
+            try
+            {
+                return CCITTFactory.createFromFile(doc, file);
+            }
+            catch (IOException ex)
+            {
+                Log.d("PdfBox-Android", "Reading as TIFF failed, setting fileType to PNG", ex);
+                // Plan B: try reading with ImageIO
+                // common exception:
+                // First image in tiff is not CCITT T4 or T6 compressed
+                fileType = FileType.PNG;
+            }
         }
         if (fileType.equals(FileType.BMP) || fileType.equals(FileType.GIF) || fileType.equals(FileType.PNG))
         {
             Bitmap bim = BitmapFactory.decodeFile(file.getPath());
             return LosslessFactory.createFromImage(doc, bim);
         }
-        throw new IllegalArgumentException("Image type not supported: " + file.getName());
+        throw new IllegalArgumentException("Image type " + fileType + " not supported: " + file.getName());
     }
 
     /**
@@ -334,7 +345,18 @@ public final class PDImageXObject extends PDXObject implements PDImage
         }
         if (fileType.equals(FileType.TIFF))
         {
-            return CCITTFactory.createFromByteArray(document, byteArray);
+            try
+            {
+                return CCITTFactory.createFromByteArray(document, byteArray);
+            }
+            catch (IOException ex)
+            {
+                Log.d("PdfBox-Android", "Reading as TIFF failed, setting fileType to PNG", ex);
+                // Plan B: try reading with ImageIO
+                // common exception:
+                // First image in tiff is not CCITT T4 or T6 compressed
+                fileType = FileType.PNG;
+            }
         }
         if (fileType.equals(FileType.BMP) || fileType.equals(FileType.GIF) || fileType.equals(FileType.PNG))
         {
@@ -342,7 +364,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
             Bitmap bim = BitmapFactory.decodeStream(bais);
             return LosslessFactory.createFromImage(document, bim);
         }
-        throw new IllegalArgumentException("Image type not supported: " + name);
+        throw new IllegalArgumentException("Image type " + fileType + " not supported: " + name);
     }
 
     /**
@@ -494,31 +516,31 @@ public final class PDImageXObject extends PDXObject implements PDImage
         // compose to ARGB
         Bitmap masked = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
-        int[] src = new int[width * height];
-        image.getPixels(src, 0, width, 0, 0, width, height);
-
-        int[] dest = new int[width * height];
-        mask.getPixels(dest, 0, width, 0, 0, width, height);
-
+        int rgb;
+        int rgba;
         int alphaPixel;
-        for (int pixelIdx = 0; pixelIdx < width * height; pixelIdx++)
+        int alpha;
+        for (int y = 0; y < height; y++)
         {
-            int rgb = src[pixelIdx];
-
-            // Greyscale, any rgb component should do
-            if (isSoft)
+            for (int x = 0; x < width; x++)
             {
-                alphaPixel = Color.red(dest[pixelIdx]);
-            }
-            else
-            {
-                alphaPixel = 255 - Color.red(dest[pixelIdx]);
-            }
+                rgb = image.getPixel(x, y);
 
-            dest[pixelIdx] = Color.argb(alphaPixel, Color.red(rgb), Color.green(rgb),
-                Color.blue(rgb));
+                alphaPixel = mask.getPixel(x, y);
+                if (isSoft)
+                {
+                    alpha = Color.alpha(alphaPixel);
+                }
+                else
+                {
+                    alpha = 255 - Color.alpha(alphaPixel);
+                }
+                rgba = Color.argb(alpha, Color.red(rgb), Color.green(rgb),
+                    Color.blue(rgb));
+
+                masked.setPixel(x, y, rgba);
+            }
         }
-        masked.setPixels(dest, 0, width, 0, 0, width, height);
 
         return masked;
     }

@@ -19,6 +19,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -26,6 +27,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import java.io.File;
 import java.io.IOException;
 
+import com.tom_roush.pdfbox.android.TestResourceGenerator;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
@@ -44,6 +46,7 @@ import static com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage.validat
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
+import static org.junit.Assume.assumeNotNull;
 
 /**
  * Unit tests for LosslessFactory
@@ -88,6 +91,7 @@ public class LosslessFactoryTest
         Canvas canvas = new Canvas();
         canvas.setBitmap(grayImage);
         Paint paint = new Paint();
+        paint.setColor(Color.TRANSPARENT);
         canvas.drawBitmap(image, 0, 0, paint);
         PDImageXObject ximage2 = LosslessFactory.createFromImage(document, grayImage);
         validate(ximage2, 8, grayImage.getWidth(), grayImage.getHeight(), "png",
@@ -227,6 +231,26 @@ public class LosslessFactoryTest
     }
 
     // TODO: PdfBox-Android : testCreateLosslessFromTransparentGIF: GIF images not currently supported
+
+    /**
+     * Test file that had a predictor encoding bug in PDFBOX-4184.
+     *
+     * @throws java.io.IOException
+     */
+    @Test
+    public void testCreateLosslessFromGovdocs032163() throws IOException
+    {
+        File inDir = new File(testContext.getCacheDir(), "imgs");
+        inDir.mkdirs();
+        File imageFile = TestResourceGenerator.downloadTestResource(inDir, "PDFBOX-4184-032163.jpg",
+            "https://issues.apache.org/jira/secure/attachment/12949710/032163.jpg");
+        assumeNotNull(imageFile);
+        PDDocument document = new PDDocument();
+        Bitmap image = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
+        PDImageXObject ximage = LosslessFactory.createFromImage(document, image);
+        validate(ximage, 8, image.getWidth(), image.getHeight(), "png", PDDeviceRGB.INSTANCE.getName());
+        checkIdent(image, ximage.getImage());
+    }
 
     /**
      * Check whether the RGB part of images are identical.

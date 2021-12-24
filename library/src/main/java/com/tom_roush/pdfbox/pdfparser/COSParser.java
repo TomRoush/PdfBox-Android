@@ -19,7 +19,9 @@ package com.tom_roush.pdfbox.pdfparser;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,9 +48,16 @@ import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSObjectKey;
 import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.pdfparser.XrefTrailerResolver.XRefType;
+import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
+import com.tom_roush.pdfbox.pdmodel.encryption.DecryptionMaterial;
+import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException;
+import com.tom_roush.pdfbox.pdmodel.encryption.PDEncryption;
+import com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyDecryptionMaterial;
 import com.tom_roush.pdfbox.pdmodel.encryption.SecurityHandler;
+import com.tom_roush.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
 
 import static com.tom_roush.pdfbox.util.Charsets.ISO_8859_1;
 
@@ -85,6 +94,11 @@ public class COSParser extends BaseParser
     private final byte[] strmBuf    = new byte[ STRMBUFLEN ];
 
     protected final RandomAccessRead source;
+
+    private AccessPermission accessPermission;
+    private InputStream keyStoreInputStream = null;
+    private String password = "";
+    private String keyAlias = null;
 
     /**
      * Only parse the PDF file minimally allowing access to basic information.
@@ -144,6 +158,7 @@ public class COSParser extends BaseParser
     private Long lastEOFMarker = null;
     private List<Long> bfSearchXRefTablesOffsets = null;
     private List<Long> bfSearchXRefStreamsOffsets = null;
+    private PDEncryption encryption = null;
 
     /**
      * The security handler.
@@ -174,6 +189,25 @@ public class COSParser extends BaseParser
     {
         super(new RandomAccessSource(source));
         this.source = source;
+    }
+
+    /**
+     * Constructor for encrypted pdfs.
+     *
+     * @param source input representing the pdf.
+     * @param password password to be used for decryption.
+     * @param keyStore key store to be used for decryption when using public key security
+     * @param keyAlias alias to be used for decryption when using public key security
+     *
+     */
+    public COSParser(RandomAccessRead source, String password, InputStream keyStore,
+        String keyAlias)
+    {
+        super(new RandomAccessSource(source));
+        this.source = source;
+        this.password = password;
+        this.keyAlias = keyAlias;
+        keyStoreInputStream = keyStore;
     }
 
     /**
@@ -242,6 +276,15 @@ public class COSParser extends BaseParser
         if (rebuildTrailer)
         {
             trailer = rebuildTrailer();
+        }
+        else
+        {
+            // prepare decryption if necessary
+            prepareDecryption();
+            if (bfSearchCOSObjectKeyOffsets != null && !bfSearchCOSObjectKeyOffsets.isEmpty())
+            {
+                bfSearchForObjStreams();
+            }
         }
         return trailer;
     }
@@ -384,7 +427,12 @@ public class COSParser extends BaseParser
     private long parseXrefObjStream(long objByteOffset, boolean isStandalone) throws IOException
     {
         // ---- parse indirect object head
-        readObjectNumber();
+        long objectNumber = readObjectNumber();
+
+        // remember the highest XRef object number to avoid it being reused in incremental saving
+        long currentHighestXRefObjectNumber = document.getHighestXRefObjectNumber();
+        document.setHighestXRefObjectNumber(Math.max(currentHighestXRefObjectNumber, objectNumber));
+
         readGenerationNumber();
         readExpectedString(OBJ_MARKER, true);
 
@@ -1573,7 +1621,6 @@ public class COSParser extends BaseParser
                 bfSearchCOSObjectKeyOffsets.put(new COSObjectKey(lastObjectId, lastGenID),
                     lastObjOffset);
             }
-            bfSearchForObjStreams();
             // reestablish origin position
             source.seek(originOffset);
         }
@@ -1934,7 +1981,7 @@ public class COSParser extends BaseParser
             {
                 source.seek(offset);
                 long stmObjNumber = readObjectNumber();
-                readGenerationNumber();
+                int stmGenNumber = readGenerationNumber();
                 readExpectedString(OBJ_MARKER, true);
                 int nrOfObjects = 0;
                 byte[] numbersBytes = null;
@@ -1951,6 +1998,10 @@ public class COSParser extends BaseParser
                         continue;
                     }
                     stream = parseCOSStream(dict);
+                    if (securityHandler != null)
+                    {
+                        securityHandler.decryptStream(stream, stmObjNumber, stmGenNumber);
+                    }
                     is = stream.createInputStream();
                     numbersBytes = new byte[offsetFirstStream];
                     is.read(numbersBytes);
@@ -1986,6 +2037,7 @@ public class COSParser extends BaseParser
                     Log.d("PdfBox-Android", "Skipped corrupt stream: (" + stmObjNumber + " 0 at offset " + offset);
                     continue;
                 }
+                Map<COSObjectKey, Long> xrefOffset = xrefTrailerResolver.getXrefTable();
                 for (int i = 0; i < nrOfObjects; i++)
                 {
                     long objNumber = Long.parseLong(numbers[i * 2]);
@@ -1994,6 +2046,7 @@ public class COSParser extends BaseParser
                     if (existingOffset == null || offset > existingOffset)
                     {
                         bfSearchCOSObjectKeyOffsets.put(objKey, -stmObjNumber);
+                        xrefOffset.put(objKey, -stmObjNumber);
                     }
                 }
             }
@@ -2141,34 +2194,55 @@ public class COSParser extends BaseParser
             xrefTrailerResolver.setStartxref(0);
             trailer = xrefTrailerResolver.getTrailer();
             getDocument().setTrailer(trailer);
+            boolean searchForObjStreamsDone = false;
             if (!bfSearchForTrailer(trailer))
             {
                 // search for the different parts of the trailer dictionary
-                for (Entry<COSObjectKey, Long> entry : bfSearchCOSObjectKeyOffsets.entrySet())
+                if (!searchForTrailerItems(trailer))
                 {
-                    COSDictionary dictionary = retrieveCOSDictionary(entry.getKey(),
-                        entry.getValue());
-                    if (dictionary == null)
-                    {
-                        continue;
-                    }
-                    // document catalog
-                    if (isCatalog(dictionary))
-                    {
-                        trailer.setItem(COSName.ROOT, document.getObjectFromPool(entry.getKey()));
-                    }
-                    // info dictionary
-                    else if (isInfo(dictionary))
-                    {
-                        trailer.setItem(COSName.INFO, document.getObjectFromPool(entry.getKey()));
-                    }
-                    // encryption dictionary, if existing, is lost
-                    // We can't run "Algorithm 2" from PDF specification because of missing ID
+                    // root entry wasn't found, maybe it is part of an object stream
+                    bfSearchForObjStreams();
+                    searchForObjStreamsDone = true;
+                    // search again for the root entry
+                    searchForTrailerItems(trailer);
                 }
+            }
+            // prepare decryption if necessary
+            prepareDecryption();
+            if (!searchForObjStreamsDone)
+            {
+                bfSearchForObjStreams();
             }
         }
         trailerWasRebuild = true;
         return trailer;
+    }
+
+    private boolean searchForTrailerItems(COSDictionary trailer) throws IOException
+    {
+        boolean rootFound = false;
+        for (Entry<COSObjectKey, Long> entry : bfSearchCOSObjectKeyOffsets.entrySet())
+        {
+            COSDictionary dictionary = retrieveCOSDictionary(entry.getKey(), entry.getValue());
+            if (dictionary == null)
+            {
+                continue;
+            }
+            // document catalog
+            if (isCatalog(dictionary))
+            {
+                trailer.setItem(COSName.ROOT, document.getObjectFromPool(entry.getKey()));
+                rootFound = true;
+            }
+            // info dictionary
+            else if (isInfo(dictionary))
+            {
+                trailer.setItem(COSName.INFO, document.getObjectFromPool(entry.getKey()));
+            }
+            // encryption dictionary, if existing, is lost
+            // We can't run "Algorithm 2" from PDF specification because of missing ID
+        }
+        return rootFound;
     }
 
     private COSDictionary retrieveCOSDictionary(COSObject object) throws IOException
@@ -2679,9 +2753,8 @@ public class COSParser extends BaseParser
     }
 
     /**
-     * This will get the document that was parsed.  parse() must be called before this is called.
-     * When you are done with this document you must call close() on it to release
-     * resources.
+     * This will get the document that was parsed. The document must be parsed before this is called. When you are done
+     * with this document you must call close() on it to release resources.
      *
      * @return The document that was parsed.
      *
@@ -2691,9 +2764,43 @@ public class COSParser extends BaseParser
     {
         if( document == null )
         {
-            throw new IOException( "You must call parse() before calling getDocument()" );
+            throw new IOException("You must parse the document first before calling getDocument()");
         }
         return document;
+    }
+
+    /**
+     * This will get the encryption dictionary. The document must be parsed before this is called.
+     *
+     * @return The encryption dictionary of the document that was parsed.
+     *
+     * @throws IOException If there is an error getting the document.
+     */
+    public PDEncryption getEncryption() throws IOException
+    {
+        if (document == null)
+        {
+            throw new IOException(
+                "You must parse the document first before calling getEncryption()");
+        }
+        return encryption;
+    }
+
+    /**
+     * This will get the AccessPermission. The document must be parsed before this is called.
+     *
+     * @return The access permission of document that was parsed.
+     *
+     * @throws IOException If there is an error getting the document.
+     */
+    public AccessPermission getAccessPermission() throws IOException
+    {
+        if (document == null)
+        {
+            throw new IOException(
+                "You must parse the document first before calling getAccessPermission()");
+        }
+        return accessPermission;
     }
 
     /**
@@ -2701,8 +2808,7 @@ public class COSParser extends BaseParser
      *
      * @param trailer The trailer dictionary.
      * @return The parsed root object.
-     * @throws IOException If an IO error occurs or if the root object is
-     * missing in the trailer dictionary.
+     * @throws IOException If an IO error occurs or if the root object is missing in the trailer dictionary.
      */
     protected COSBase parseTrailerValuesDynamically(COSDictionary trailer) throws IOException
     {
@@ -2723,6 +2829,90 @@ public class COSParser extends BaseParser
             throw new IOException("Missing root object specification in trailer.");
         }
         return root.getObject();
+    }
+
+    /**
+     * Prepare for decryption.
+     *
+     * @throws InvalidPasswordException If the password is incorrect.
+     * @throws IOException if something went wrong
+     */
+    private void prepareDecryption() throws InvalidPasswordException, IOException
+    {
+        if (encryption == null)
+        {
+            COSBase trailerEncryptItem = document.getTrailer().getItem(COSName.ENCRYPT);
+            if (trailerEncryptItem != null && !(trailerEncryptItem instanceof COSNull))
+            {
+                if (trailerEncryptItem instanceof COSObject)
+                {
+                    COSObject trailerEncryptObj = (COSObject) trailerEncryptItem;
+                    parseDictionaryRecursive(trailerEncryptObj);
+                }
+                try
+                {
+                    encryption = new PDEncryption(document.getEncryptionDictionary());
+                    DecryptionMaterial decryptionMaterial;
+                    if (keyStoreInputStream != null)
+                    {
+                        KeyStore ks = KeyStore.getInstance("PKCS12");
+                        ks.load(keyStoreInputStream, password.toCharArray());
+
+                        decryptionMaterial = new PublicKeyDecryptionMaterial(ks, keyAlias,
+                            password);
+                    }
+                    else
+                    {
+                        decryptionMaterial = new StandardDecryptionMaterial(password);
+                    }
+
+                    securityHandler = encryption.getSecurityHandler();
+                    securityHandler.prepareForDecryption(encryption, document.getDocumentID(),
+                        decryptionMaterial);
+                    accessPermission = securityHandler.getCurrentAccessPermission();
+                }
+                catch (IOException e)
+                {
+                    throw e;
+                }
+                catch (Exception e)
+                {
+                    throw new IOException("Error (" + e.getClass().getSimpleName()
+                        + ") while creating security handler for decryption", e);
+                }
+                finally
+                {
+                    if (keyStoreInputStream != null)
+                    {
+                        IOUtils.closeQuietly(keyStoreInputStream);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Resolves all not already parsed objects of a dictionary recursively.
+     *
+     * @param dictionaryObject dictionary to be parsed
+     * @throws IOException if something went wrong
+     *
+     */
+    private void parseDictionaryRecursive(COSObject dictionaryObject) throws IOException
+    {
+        parseObjectDynamically(dictionaryObject, true);
+        COSDictionary dictionary = (COSDictionary) dictionaryObject.getObject();
+        for (COSBase value : dictionary.getValues())
+        {
+            if (value instanceof COSObject)
+            {
+                COSObject object = (COSObject) value;
+                if (object.getObject() == null)
+                {
+                    parseDictionaryRecursive(object);
+                }
+            }
+        }
     }
 
 }

@@ -20,34 +20,19 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.KeyStore;
 
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSDocument;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.cos.COSNull;
-import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.io.ScratchFile;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
-import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
-import com.tom_roush.pdfbox.pdmodel.encryption.DecryptionMaterial;
 import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException;
-import com.tom_roush.pdfbox.pdmodel.encryption.PDEncryption;
-import com.tom_roush.pdfbox.pdmodel.encryption.PublicKeyDecryptionMaterial;
-import com.tom_roush.pdfbox.pdmodel.encryption.StandardDecryptionMaterial;
 
 public class PDFParser extends COSParser
 {
-    private String password = "";
-    private InputStream keyStoreInputStream = null;
-    private String keyAlias = null;
-
-    private PDEncryption encryption = null;
-    private AccessPermission accessPermission;
-
     /**
      * Constructor.
      * Unrestricted main memory will be used for buffering PDF streams.
@@ -133,11 +118,8 @@ public class PDFParser extends COSParser
     public PDFParser(RandomAccessRead source, String decryptionPassword, InputStream keyStore,
         String alias, ScratchFile scratchFile) throws IOException
     {
-        super(source);
+        super(source, decryptionPassword, keyStore, alias);
         fileLen = source.length();
-        password = decryptionPassword;
-        keyStoreInputStream = keyStore;
-        keyAlias = alias;
         init(scratchFile);
     }
 
@@ -169,8 +151,8 @@ public class PDFParser extends COSParser
      */
     public PDDocument getPDDocument() throws IOException
     {
-        PDDocument doc = new PDDocument(getDocument(), source, accessPermission);
-        doc.setEncryptionDictionary(encryption);
+        PDDocument doc = new PDDocument(getDocument(), source, getAccessPermission());
+        doc.setEncryptionDictionary(getEncryption());
         return doc;
     }
 
@@ -185,8 +167,6 @@ public class PDFParser extends COSParser
     protected void initialParse() throws InvalidPasswordException, IOException
     {
         COSDictionary trailer = retrieveTrailer();
-        // prepare decryption if necessary
-        prepareDecryption();
 
         COSBase base = parseTrailerValuesDynamically(trailer);
         if (!(base instanceof COSDictionary))
@@ -241,85 +221,10 @@ public class PDFParser extends COSParser
         }
         finally
         {
-            IOUtils.closeQuietly(keyStoreInputStream);
-
             if (exceptionOccurred && document != null)
             {
                 IOUtils.closeQuietly(document);
                 document = null;
-            }
-        }
-    }
-
-    /**
-     * Prepare for decryption.
-     *
-     * @throws InvalidPasswordException If the password is incorrect.
-     * @throws IOException if something went wrong
-     */
-    private void prepareDecryption() throws InvalidPasswordException, IOException
-    {
-        COSBase trailerEncryptItem = document.getTrailer().getItem(COSName.ENCRYPT);
-        if (trailerEncryptItem != null && !(trailerEncryptItem instanceof COSNull))
-        {
-            if (trailerEncryptItem instanceof COSObject)
-            {
-                COSObject trailerEncryptObj = (COSObject) trailerEncryptItem;
-                parseDictionaryRecursive(trailerEncryptObj);
-            }
-            try
-            {
-                encryption = new PDEncryption(document.getEncryptionDictionary());
-                DecryptionMaterial decryptionMaterial;
-                if (keyStoreInputStream != null)
-                {
-                    KeyStore ks = KeyStore.getInstance("PKCS12");
-                    ks.load(keyStoreInputStream, password.toCharArray());
-
-                    decryptionMaterial = new PublicKeyDecryptionMaterial(ks, keyAlias, password);
-                }
-                else
-                {
-                    decryptionMaterial = new StandardDecryptionMaterial(password);
-                }
-
-                securityHandler = encryption.getSecurityHandler();
-                securityHandler.prepareForDecryption(encryption, document.getDocumentID(),
-                    decryptionMaterial);
-                accessPermission = securityHandler.getCurrentAccessPermission();
-            }
-            catch (IOException e)
-            {
-                throw e;
-            }
-            catch (Exception e)
-            {
-                throw new IOException("Error (" + e.getClass().getSimpleName()
-                    + ") while creating security handler for decryption", e);
-            }
-        }
-    }
-
-    /**
-     * Resolves all not already parsed objects of a dictionary recursively.
-     *
-     * @param dictionaryObject dictionary to be parsed
-     * @throws IOException if something went wrong
-     *
-     */
-    private void parseDictionaryRecursive(COSObject dictionaryObject) throws IOException
-    {
-        parseObjectDynamically(dictionaryObject, true);
-        COSDictionary dictionary = (COSDictionary)dictionaryObject.getObject();
-        for(COSBase value : dictionary.getValues())
-        {
-            if (value instanceof COSObject)
-            {
-                COSObject object = (COSObject)value;
-                if (object.getObject() == null)
-                {
-                    parseDictionaryRecursive(object);
-                }
             }
         }
     }

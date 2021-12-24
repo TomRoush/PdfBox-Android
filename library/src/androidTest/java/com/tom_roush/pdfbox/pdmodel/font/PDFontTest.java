@@ -18,7 +18,6 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import android.content.Context;
-import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -27,14 +26,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import com.tom_roush.fontbox.ttf.TTFParser;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.android.TestResourceGenerator;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
@@ -47,6 +45,8 @@ import com.tom_roush.pdfbox.text.PDFTextStripper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assume.assumeNotNull;
 
 /**
  *
@@ -135,24 +135,8 @@ public class PDFontTest
     @Test
     public void testPDFBOX4115() throws IOException
     {
-        File fontFile = new File(IN_DIR, "n019003l.pfb");
-
-        if (!fontFile.exists())
-        {
-            try
-            {
-                Log.i("PdfBox-Android", "Font not cached, Downloading font for PDFontTest.testPDFBOX4115");
-                InputStream fontUrlStream = new URL(
-                    "https://issues.apache.org/jira/secure/attachment/12911053/n019003l.pfb")
-                    .openStream();
-                IOUtils.copy(fontUrlStream, new FileOutputStream(fontFile));
-            }
-            catch (Exception e)
-            {
-                Log.w("PdfBox-Android", "Unable to download test font. Skipping test PDFontTest.testPDFBOX4115");
-                return;
-            }
-        }
+        File fontFile = TestResourceGenerator.downloadTestResource(IN_DIR, "n019003l.pfb", "https://issues.apache.org/jira/secure/attachment/12911053/n019003l.pfb");
+        assumeNotNull(fontFile);
 
         File outputFile = new File(OUT_DIR, "FontType1.pdf");
         String text = "äöüÄÖÜ";

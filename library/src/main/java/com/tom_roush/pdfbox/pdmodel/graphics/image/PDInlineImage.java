@@ -348,13 +348,13 @@ public final class PDInlineImage implements PDImage
     @Override
     public Bitmap getImage() throws IOException
     {
-        return SampledImageReader.getRGBImage(this, getColorKeyMask());
+        return SampledImageReader.getRGBImage(this, null);
     }
 
     @Override
     public Bitmap getImage(Rect region, int subsampling) throws IOException
     {
-        return SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask());
+        return SampledImageReader.getRGBImage(this, region, subsampling, null);
     }
 
     @Override
@@ -372,7 +372,9 @@ public final class PDInlineImage implements PDImage
      * there is none.
      *
      * @return Mask Image XObject
+     * @deprecated inline images don't have a color key mask.
      */
+    @Deprecated
     public COSArray getColorKeyMask()
     {
         COSBase mask = parameters.getDictionaryObject(COSName.IM, COSName.MASK);

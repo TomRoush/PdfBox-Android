@@ -56,16 +56,17 @@ public class FontFileFinder
             {
                 return new WindowsFontDirFinder();
             }
+            else if (osName.startsWith("Mac"))
+            {
+                return new MacFontDirFinder();
+            }
+            else if (osName.startsWith("OS/400"))
+            {
+                return new OS400FontDirFinder();
+            }
             else
             {
-                if (osName.startsWith("Mac"))
-                {
-                    return new MacFontDirFinder();
-                }
-                else
-                {
-                    return new UnixFontDirFinder();
-                }
+                return new UnixFontDirFinder();
             }
         }
     }

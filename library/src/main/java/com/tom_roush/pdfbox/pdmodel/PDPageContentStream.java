@@ -491,7 +491,8 @@ public final class PDPageContentStream implements Closeable
         // Unicode code points to keep when subsetting
         if (font.willBeSubset())
         {
-            for (int offset = 0; offset < text.length(); )
+            int offset = 0;
+            while (offset < text.length())
             {
                 int codePoint = text.codePointAt(offset);
                 font.addToSubset(codePoint);
@@ -973,6 +974,11 @@ public final class PDPageContentStream implements Closeable
      */
     public void transform(Matrix matrix) throws IOException
     {
+        if (inTextMode)
+        {
+            Log.w("PdfBox-Android", "Modifying the current transformation matrix is not allowed within text objects.");
+        }
+
         writeAffineTransform(matrix.createAffineTransform());
         writeOperator("cm");
     }
@@ -983,6 +989,11 @@ public final class PDPageContentStream implements Closeable
      */
     public void saveGraphicsState() throws IOException
     {
+        if (inTextMode)
+        {
+            Log.w("PdfBox-Android", "Saving the graphics state is not allowed within text objects.");
+        }
+
         if (!fontStack.isEmpty())
         {
             fontStack.push(fontStack.peek());
@@ -1004,6 +1015,11 @@ public final class PDPageContentStream implements Closeable
      */
     public void restoreGraphicsState() throws IOException
     {
+        if (inTextMode)
+        {
+            Log.w("PdfBox-Android", "Restoring the graphics state is not allowed within text objects.");
+        }
+
         if (!fontStack.isEmpty())
         {
             fontStack.pop();
@@ -2088,7 +2104,7 @@ public final class PDPageContentStream implements Closeable
     /**
      * Set line width to the given value.
      *
-     * @param lineWidth The width which is used for drwaing.
+     * @param lineWidth The width which is used for drawing.
      * @throws IOException If the content stream could not be written
      * @throws IllegalStateException If the method was called within a text block.
      */
@@ -2577,5 +2593,19 @@ public final class PDPageContentStream implements Closeable
     {
         writeOperand(scale);
         writeOperator("Tz");
+    }
+
+    /**
+     * Set the text rise value, i.e. move the baseline up or down. This is useful for drawing
+     * superscripts or subscripts.
+     *
+     * @param rise Specifies the distance, in unscaled text space units, to move the baseline up or
+     * down from its default location. 0 restores the default location.
+     * @throws IOException
+     */
+    public void setTextRise(float rise) throws IOException
+    {
+        writeOperand(rise);
+        writeOperator("Ts");
     }
 }

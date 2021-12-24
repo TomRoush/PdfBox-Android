@@ -212,7 +212,7 @@ public class PDType0Font extends PDFont implements PDVectorFont
             }
             else
             {
-                // the TTF is fully loaded and it is save to close the underlying data source
+                // the TTF is fully loaded and it is safe to close the underlying data source
                 ttf.close();
             }
         }
@@ -549,7 +549,7 @@ public class PDType0Font extends PDFont implements PDVectorFont
         {
             descendant = getDescendantFont().getClass().getSimpleName();
         }
-        return getClass().getSimpleName() + "/" + descendant + " " + getBaseFont();
+        return getClass().getSimpleName() + "/" + descendant + ", PostScript name: " + getBaseFont();
     }
 
     @Override

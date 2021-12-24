@@ -75,7 +75,6 @@ public abstract class OperatorProcessor
      *
      * @param operands The operands list.
      * @param clazz The expected class.
-     *
      * @return the boolean
      */
     public boolean checkArrayTypesClass(List<COSBase> operands, Class clazz)

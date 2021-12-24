@@ -16,25 +16,30 @@
  */
 package com.tom_roush.fontbox.cmap;
 
+import java.io.File;
 import java.io.IOException;
 
 import com.tom_roush.fontbox.ttf.CmapLookup;
 import com.tom_roush.fontbox.ttf.TTFParser;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Test;
+
+import static org.junit.Assume.assumeTrue;
 
 /**
  * This will test the CMap implementation.
  *
  */
-public class TestCMap extends TestCase
+public class TestCMap
 {
 
     /**
      * Check whether the mapping is working correct.
      * @throws IOException If something went wrong during adding a mapping
      */
+    @Test
     public void testLookup() throws IOException
     {
         byte[] bs = new byte[1];
@@ -42,7 +47,7 @@ public class TestCMap extends TestCase
 
         CMap cMap = new CMap();
         cMap.addCharMapping(bs, "a");
-        assertTrue("a".equals(cMap.toUnicode(200)));
+        Assert.assertTrue("a".equals(cMap.toUnicode(200)));
     }
 
     /**
@@ -51,12 +56,15 @@ public class TestCMap extends TestCase
      *
      * @throws IOException
      */
+    @Test
 //    TODO: PdfBox-Android - provide test file
-    public void _testPDFBox3997() throws IOException
+    public void testPDFBox3997() throws IOException
     {
-        TrueTypeFont ttf = new TTFParser().parse("target/pdfs/NotoEmoji-Regular.ttf");
+        String fontPath = "target/pdfs/NotoEmoji-Regular.ttf";
+        assumeTrue(new File(fontPath).exists());
+        TrueTypeFont ttf = new TTFParser().parse(fontPath);
         CmapLookup cmap = ttf.getUnicodeCmapLookup(false);
-        assertEquals(886, cmap.getGlyphId(0x1F681));
+        Assert.assertEquals(886, cmap.getGlyphId(0x1F681));
         ttf.close();
     }
 }

@@ -46,7 +46,7 @@ public final class Operator
         theOperator = aOperator;
         if( aOperator.startsWith( "/" ) )
         {
-            throw new IllegalArgumentException("Operators are not allowed to start with / '" + aOperator + "'");
+            throw new IllegalArgumentException( "Operators are not allowed to start with / '" + aOperator + "'" );
         }
     }
 
