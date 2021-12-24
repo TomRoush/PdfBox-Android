@@ -19,6 +19,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -90,6 +91,7 @@ public class LosslessFactoryTest
         Canvas canvas = new Canvas();
         canvas.setBitmap(grayImage);
         Paint paint = new Paint();
+        paint.setColor(Color.TRANSPARENT);
         canvas.drawBitmap(image, 0, 0, paint);
         PDImageXObject ximage2 = LosslessFactory.createFromImage(document, grayImage);
         validate(ximage2, 8, grayImage.getWidth(), grayImage.getHeight(), "png",
