@@ -43,7 +43,7 @@ public class SetTextRise extends OperatorProcessor
         {
             return;
         }
-        COSNumber rise = (COSNumber)base;
+        COSNumber rise = (COSNumber) base;
         context.getGraphicsState().getTextState().setRise( rise.floatValue() );
     }
 

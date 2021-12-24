@@ -50,7 +50,7 @@ public class ShowText extends OperatorProcessor
             // ignore: outside of BT...ET
             return;
         }
-        COSString string = (COSString)base;
+        COSString string = (COSString) base;
         context.showTextString(string.getBytes());
     }
 

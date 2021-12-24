@@ -48,7 +48,7 @@ public class ShowTextAdjusted extends OperatorProcessor
             // ignore: outside of BT...ET
             return;
         }
-        COSArray array = (COSArray)base;
+        COSArray array = (COSArray) base;
         context.showTextStrings(array);
     }
 

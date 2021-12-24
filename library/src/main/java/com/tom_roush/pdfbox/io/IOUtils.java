@@ -14,7 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/* $Id: IOUtils.java 1827975 2018-03-29 10:52:15Z msahyoun $ */
+
 package com.tom_roush.pdfbox.io;
+
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -111,5 +116,32 @@ public final class IOUtils
         {
             // ignore
         }
+    }
+
+    /**
+     * Try to close an IO resource and log and return if there was an exception.
+     *
+     * <p>An exception is only returned if the IOException passed in is null.
+     *
+     * @param closeable to be closed
+     * @param resourceName the name to appear in the log output
+     * @param initialException to be closed
+     * @return the IOException is there was any but only if initialException is null
+     */
+    public static IOException closeAndLogException(Closeable closeable, String resourceName, IOException initialException)
+    {
+        try
+        {
+            closeable.close();
+        }
+        catch (IOException ioe)
+        {
+            Log.w("PdfBox-Android", "Error closing " + resourceName, ioe);
+            if (initialException == null)
+            {
+                return ioe;
+            }
+        }
+        return null;
     }
 }

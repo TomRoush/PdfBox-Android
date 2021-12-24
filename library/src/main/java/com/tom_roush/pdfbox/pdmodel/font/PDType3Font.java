@@ -17,6 +17,7 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import android.graphics.Path;
+import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -68,8 +69,20 @@ public class PDType3Font extends PDSimpleFont
     @Override
     protected final void readEncoding() throws IOException
     {
-        COSDictionary encodingDict = (COSDictionary)dict.getDictionaryObject(COSName.ENCODING);
-        encoding = new DictionaryEncoding(encodingDict);
+        COSBase encodingBase = dict.getDictionaryObject(COSName.ENCODING);
+        if (encodingBase instanceof COSName)
+        {
+            COSName encodingName = (COSName) encodingBase;
+            encoding = Encoding.getInstance(encodingName);
+            if (encoding == null)
+            {
+                Log.w("PdfBox-Android", "Unknown encoding: " + encodingName.getName());
+            }
+        }
+        else if (encodingBase instanceof COSDictionary)
+        {
+            encoding = new DictionaryEncoding((COSDictionary) encodingBase);
+        }
         glyphList = GlyphList.getAdobeGlyphList();
     }
 

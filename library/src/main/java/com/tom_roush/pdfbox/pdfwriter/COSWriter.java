@@ -257,7 +257,7 @@ public class COSWriter implements ICOSVisitor, Closeable
 
                 Map<COSObjectKey, Long> xrefTable = cosDoc.getXrefTable();
                 Set<COSObjectKey> keySet = xrefTable.keySet();
-                long highestNumber=0;
+                long highestNumber = doc.getDocument().getHighestXRefObjectNumber();
                 for ( COSObjectKey cosObjectKey : keySet )
                 {
                     COSBase object = cosDoc.getObjectFromPool(cosObjectKey).getObject();
@@ -306,10 +306,6 @@ public class COSWriter implements ICOSVisitor, Closeable
         if (getStandardOutput() != null)
         {
             getStandardOutput().close();
-        }
-        if (getOutput() != null)
-        {
-            getOutput().close();
         }
         if (incrementalOutput != null)
         {

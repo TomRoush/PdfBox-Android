@@ -223,7 +223,7 @@ public class PDFRenderer
         canvas.drawRect(0, 0, image.getWidth(), image.getHeight(), paint);
         paint.reset();
 
-        transform(canvas, page, scale);
+        transform(canvas, page, scale, scale);
 
         // the end-user may provide a custom PageDrawer
         PageDrawerParameters parameters = new PageDrawerParameters(this, page, subsamplingAllowed);
@@ -235,10 +235,11 @@ public class PDFRenderer
             // PDFBOX-4095: draw temporary transparent image on white background
             Bitmap newImage =
                 Bitmap.createBitmap(image.getWidth(), image.getHeight(), imageType.toBitmapConfig());
+            Canvas dstCanvas = new Canvas(newImage);
             paint.setColor(Color.WHITE);
             paint.setStyle(Paint.Style.FILL);
-            canvas.drawRect(0, 0, image.getWidth(), image.getHeight(), paint);
-            canvas.drawBitmap(image, 0.0f, 0.0f, paint);
+            dstCanvas.drawRect(0, 0, image.getWidth(), image.getHeight(), paint);
+            dstCanvas.drawBitmap(image, 0.0f, 0.0f, paint);
             image = newImage;
         }
 
@@ -246,7 +247,7 @@ public class PDFRenderer
     }
 
     /**
-     * Renders a given page to an AWT Graphics2D instance.
+     * Renders a given page to a Canvas instance.
      * @param pageIndex the zero-based index of the page to be converted
      * @param paint the Paint that will be used to draw the page
      * @param canvas the Canvas on which to draw the page
@@ -258,7 +259,7 @@ public class PDFRenderer
     }
 
     /**
-     * Renders a given page to an AWT Graphics2D instance.
+     * Renders a given page to a Canvas instance.
      * @param pageIndex the zero-based index of the page to be converted
      * @param paint the Paint that will be used to draw the page
      * @param canvas the Canvas on which to draw the page
@@ -268,10 +269,26 @@ public class PDFRenderer
     public void renderPageToGraphics(int pageIndex, Paint paint, Canvas canvas, float scale)
         throws IOException
     {
+        renderPageToGraphics(pageIndex, paint, canvas, scale, scale);
+    }
+
+    /**
+     * Renders a given page to a Canvas instance.
+     *
+     * @param pageIndex the zero-based index of the page to be converted
+     * @param paint the Paint that will be used to draw the page
+     * @param canvas the Canvas on which to draw the page
+     * @param scaleX the scale to draw the page at for the x-axis
+     * @param scaleY the scale to draw the page at for the y-axis
+     * @throws IOException if the PDF cannot be read
+     */
+    public void renderPageToGraphics(int pageIndex, Paint paint, Canvas canvas, float scaleX, float scaleY)
+        throws IOException
+    {
         PDPage page = document.getPage(pageIndex);
         // TODO need width/wight calculations? should these be in PageDrawer?
 
-        transform(canvas, page, scale);
+        transform(canvas, page, scaleX, scaleY);
 
         PDRectangle cropBox = page.getCropBox();
         canvas.drawRect(0, 0, cropBox.getWidth(), cropBox.getHeight(), paint);
@@ -283,9 +300,9 @@ public class PDFRenderer
     }
 
     // scale rotate translate
-    private void transform(Canvas canvas, PDPage page, float scale)
+    private void transform(Canvas canvas, PDPage page, float scaleX, float scaleY)
     {
-        canvas.scale(scale, scale);
+        canvas.scale(scaleX, scaleY);
 
         // TODO should we be passing the scale to PageDrawer rather than messing with Graphics?
         int rotationAngle = page.getRotation();

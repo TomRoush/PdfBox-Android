@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.ScratchFile;
 import com.tom_roush.pdfbox.pdfparser.PDFObjectStreamParser;
 
@@ -77,6 +78,11 @@ public class COSDocument extends COSBase implements Closeable
     private boolean isXRefStream;
 
     private ScratchFile scratchFile;
+
+    /**
+     * Used for incremental saving, to avoid XRef object numbers from being reused.
+     */
+    private long highestXRefObjectNumber;
 
     /**
      * Constructor. Uses main memory to buffer PDF streams.
@@ -400,6 +406,28 @@ public class COSDocument extends COSBase implements Closeable
     }
 
     /**
+     * Internal PDFBox use only. Get the object number of the highest XRef stream. This is needed to
+     * avoid reusing such a number in incremental saving.
+     *
+     * @return The object number of the highest XRef stream, or 0 if there was no XRef stream.
+     */
+    public long getHighestXRefObjectNumber()
+    {
+        return highestXRefObjectNumber;
+    }
+
+    /**
+     * Internal PDFBox use only. Sets the object number of the highest XRef stream. This is needed
+     * to avoid reusing such a number in incremental saving.
+     *
+     * @param highestXRefObjectNumber The object number of the highest XRef stream.
+     */
+    public void setHighestXRefObjectNumber(long highestXRefObjectNumber)
+    {
+        this.highestXRefObjectNumber = highestXRefObjectNumber;
+    }
+
+    /**
      * visitor pattern double dispatch method.
      *
      * @param visitor The object to notify when visiting this object.
@@ -422,24 +450,38 @@ public class COSDocument extends COSBase implements Closeable
     {
         if (!closed)
         {
+            // Make sure that:
+            // - first Exception is kept
+            // - all COSStreams are closed
+            // - ScratchFile is closed
+            // - there's a way to see which errors occured
+
+            IOException firstException = null;
+
             // close all open I/O streams
             for (COSObject object : getObjects())
             {
                 COSBase cosObject = object.getObject();
                 if (cosObject instanceof COSStream)
                 {
-                    ((COSStream) cosObject).close();
+                    firstException = IOUtils.closeAndLogException((COSStream) cosObject, "COSStream", firstException);
                 }
             }
             for (COSStream stream : streams)
             {
-                stream.close();
+                firstException = IOUtils.closeAndLogException(stream, "COSStream", firstException);
             }
             if (scratchFile != null)
             {
-                scratchFile.close();
+                firstException = IOUtils.closeAndLogException(scratchFile, "ScratchFile", firstException);
             }
             closed = true;
+
+            // rethrow first exception to keep method contract
+            if (firstException != null)
+            {
+                throw firstException;
+            }
         }
     }
 

@@ -17,23 +17,21 @@ package com.tom_roush.pdfbox.multipdf;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.android.TestResourceGenerator;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSObject;
-import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.MemoryUsageSetting;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
@@ -45,7 +43,12 @@ import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.P
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitDestination;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeNotNull;
 
 /**
  * Test suite for PDFMergerUtility.
@@ -53,19 +56,17 @@ import junit.framework.TestCase;
  * @author Maruan Sahyoun (PDF files)
  * @author Tilman Hausherr (code)
  */
-public class PDFMergerUtilityTest extends TestCase
+public class PDFMergerUtilityTest
 {
     final String SRCDIR = "pdfbox/input/merge";
     String TARGETTESTDIR;
-    private File TARGETPDFDIR;
+    private static File TARGETPDFDIR;
     final int DPI = 96;
     private Context testContext;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
-        super.setUp();
-
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
         TARGETTESTDIR = testContext.getCacheDir() + "/pdfbox-test-output/merge/";
@@ -91,6 +92,7 @@ public class PDFMergerUtilityTest extends TestCase
      *
      * @throws IOException if something goes wrong.
      */
+    @Test
     public void testPDFMergerUtility() throws IOException
     {
         checkMergeIdentical("PDFBox.GlobalResourceMergeTest.Doc01.decoded.pdf",
@@ -112,6 +114,7 @@ public class PDFMergerUtilityTest extends TestCase
      *
      * @throws IOException if something goes wrong.
      */
+    @Test
     public void testJpegCcitt() throws IOException
     {
         checkMergeIdentical("jpegrgb.pdf",
@@ -127,6 +130,7 @@ public class PDFMergerUtilityTest extends TestCase
     }
 
     // see PDFBOX-2893
+    @Test
     public void testPDFMergerUtility2() throws IOException
     {
         checkMergeIdentical("PDFBox.GlobalResourceMergeTest.Doc01.pdf",
@@ -146,6 +150,7 @@ public class PDFMergerUtilityTest extends TestCase
      *
      * @throws IOException
      */
+    @Test
     public void testPDFMergerOpenAction() throws IOException
     {
         PDDocument doc1 = new PDDocument();
@@ -184,36 +189,21 @@ public class PDFMergerUtilityTest extends TestCase
      *
      * @throws IOException
      */
+    @Test
     public void testStructureTreeMerge() throws IOException
     {
-        File pdfFile = new File(TARGETPDFDIR, "PDFBOX-3999-GeneralForbearance.pdf");
-
-        if (!pdfFile.exists())
-        {
-            try
-            {
-                Log.i("PdfBox-Android", "PDF not cached, Downloading PDF for PDFMergerUtility.testStructureTreeMerge");
-                InputStream pdfUrlStream = new URL(
-                    "https://issues.apache.org/jira/secure/attachment/12896905/GeneralForbearance.pdf")
-                    .openStream();
-                IOUtils.copy(pdfUrlStream, new FileOutputStream(pdfFile));
-            }
-            catch (Exception e)
-            {
-                Log.w("PdfBox-Android", "Unable to download test PDF. Skipping test PDFMergerUtility.testStructureTreeMerge");
-                return;
-            }
-        }
+        File inputPdf = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-3999-GeneralForbearance.pdf", "https://issues.apache.org/jira/secure/attachment/12896905/GeneralForbearance.pdf");
+        assumeNotNull(inputPdf);
 
         PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
-        PDDocument src = PDDocument.load(pdfFile);
-        PDDocument dst = PDDocument.load(pdfFile);
+        PDDocument src = PDDocument.load(inputPdf);
+        PDDocument dst = PDDocument.load(inputPdf);
         pdfMergerUtility.appendDocument(dst, src);
         src.close();
-        dst.save(new File(TARGETTESTDIR, "PDFBOX-3999-GovFormPreFlattened-merged.pdf"));
+        dst.save(new File(TARGETTESTDIR, "PDFBOX-3999-GeneralForbearance-merged.pdf"));
         dst.close();
 
-        PDDocument doc = PDDocument.load(new File(TARGETTESTDIR, "PDFBOX-3999-GovFormPreFlattened-merged.pdf"));
+        PDDocument doc = PDDocument.load(new File(TARGETTESTDIR, "PDFBOX-3999-GeneralForbearance-merged.pdf"));
         PDPageTree pageTree = doc.getPages();
 
         // check for orphan pages in the StructTreeRoot/K and StructTreeRoot/ParentTree trees.
@@ -222,9 +212,94 @@ public class PDFMergerUtilityTest extends TestCase
         checkElement(pageTree, structureTreeRoot.getK());
     }
 
+    /**
+     * PDFBOX-3999: check that no streams are kept from the source document by the destination
+     * document, despite orphan annotations remaining in the structure tree.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testStructureTreeMerge2() throws IOException
+    {
+        File inputPdf = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-3999-GeneralForbearance.pdf", "https://issues.apache.org/jira/secure/attachment/12896905/GeneralForbearance.pdf");
+        assumeNotNull(inputPdf);
+
+        PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
+        PDDocument doc = PDDocument.load(inputPdf);
+        doc.getDocumentCatalog().getAcroForm().flatten();
+        doc.save(new File(TARGETTESTDIR, "PDFBOX-3999-GeneralForbearance-flattened.pdf"));
+
+        ElementCounter elementCounter = new ElementCounter();
+        elementCounter.walk(doc.getDocumentCatalog().getStructureTreeRoot().getK());
+        int singleCnt = elementCounter.cnt;
+        int singleSetSize = elementCounter.set.size();
+
+        doc.close();
+
+        PDDocument src = PDDocument.load(new File(TARGETTESTDIR, "PDFBOX-3999-GeneralForbearance-flattened.pdf"));
+        PDDocument dst = PDDocument.load(new File(TARGETTESTDIR, "PDFBOX-3999-GeneralForbearance-flattened.pdf"));
+        pdfMergerUtility.appendDocument(dst, src);
+        // before solving PDFBOX-3999, the close() below brought
+        // IOException: COSStream has been closed and cannot be read.
+        src.close();
+        dst.save(new File(TARGETTESTDIR, "PDFBOX-3999-GeneralForbearance-flattened-merged.pdf"));
+        dst.close();
+
+        doc = PDDocument.load(new File(TARGETTESTDIR, "PDFBOX-3999-GeneralForbearance-flattened-merged.pdf"));
+        PDPageTree pageTree = doc.getPages();
+
+        // check for orphan pages in the StructTreeRoot/K and StructTreeRoot/ParentTree trees.
+        PDStructureTreeRoot structureTreeRoot = doc.getDocumentCatalog().getStructureTreeRoot();
+        checkElement(pageTree, structureTreeRoot.getParentTree().getCOSObject());
+        checkElement(pageTree, structureTreeRoot.getK());
+
+        // Assume that the merged tree has double element count
+        elementCounter = new ElementCounter();
+        elementCounter.walk(structureTreeRoot.getK());
+        assertEquals(singleCnt * 2, elementCounter.cnt);
+        assertEquals(singleSetSize * 2, elementCounter.set.size());
+
+        doc.close();
+    }
+
+    private class ElementCounter
+    {
+        int cnt = 0;
+        Set<COSBase> set = new HashSet<COSBase>();
+
+        void walk(COSBase base)
+        {
+            if (base instanceof COSArray)
+            {
+                for (COSBase base2 : (COSArray) base)
+                {
+                    if (base2 instanceof COSObject)
+                    {
+                        base2 = ((COSObject) base2).getObject();
+                    }
+                    walk(base2);
+                }
+            }
+            else if (base instanceof COSDictionary)
+            {
+                COSDictionary kdict = (COSDictionary) base;
+                if (kdict.containsKey(COSName.PG))
+                {
+                    ++cnt;
+                    set.add(kdict);
+                }
+                if (kdict.containsKey(COSName.K))
+                {
+                    walk(kdict.getDictionaryObject(COSName.K));
+                }
+            }
+        }
+    }
+
     // Each element can be an array, a dictionary or a number.
-    // See PDF specification Table 37 â€“ Entries in a number tree node dictionary
-    // See PDF specification Table 322 â€“ Entries in the structure tree root
+    // See PDF specification Table 37 - Entries in a number tree node dictionary
+    // See PDF specification Table 322 - Entries in the structure tree root
+    // See PDF specification Table 323 - Entries in a structure element dictionary
     // example of file with /Kids: 000153.pdf 000208.pdf 000314.pdf 000359.pdf 000671.pdf
     // from digitalcorpora site
     private void checkElement(PDPageTree pageTree, COSBase base)

@@ -16,12 +16,16 @@
 package com.tom_roush.fontbox.cff;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 /**
  *
@@ -35,10 +39,13 @@ public class CFFParserTest
      *
      * @throws IOException
      */
-//    @Test TODO: PdfBox-Android - provide test file
+    @Test
+//    TODO: PdfBox-Android - provide test file
     public void testDeltaLists() throws IOException
     {
-        List<CFFFont> fonts = readFont(new FileInputStream("target/pdfs/SourceSansProBold.otf"));
+        String fontPath = "target/pdfs/SourceSansProBold.otf";
+        assumeTrue(new File(fontPath).exists());
+        List<CFFFont> fonts = readFont(new FileInputStream(fontPath));
         CFFType1Font font = (CFFType1Font) fonts.get(0);
         List<Number> blues = (List<Number>)font.getPrivateDict().get("BlueValues");
 

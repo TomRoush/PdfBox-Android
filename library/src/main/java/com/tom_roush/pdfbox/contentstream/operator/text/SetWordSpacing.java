@@ -18,10 +18,10 @@ package com.tom_roush.pdfbox.contentstream.operator.text;
 
 import java.util.List;
 
-import com.tom_roush.pdfbox.contentstream.operator.Operator;
-import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 
 /**
  * Tw: Set word spacing.
@@ -42,7 +42,7 @@ public class SetWordSpacing extends OperatorProcessor
         {
             return;
         }
-        COSNumber wordSpacing = (COSNumber)base;
+        COSNumber wordSpacing = (COSNumber) base;
         context.getGraphicsState().getTextState().setWordSpacing( wordSpacing.floatValue() );
     }
 

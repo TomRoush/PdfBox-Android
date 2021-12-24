@@ -17,6 +17,7 @@
 package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
+
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
@@ -28,8 +29,7 @@ public class PDBorderEffectDictionary implements COSObjectable
 {
 
     /*
-     * The various values of the effect applied to the border as defined in the
-     * PDF 1.6 reference Table 8.14
+     * The various values of the effect applied to the border as defined in the PDF 1.6 reference Table 8.14
      */
 
     /**
@@ -55,10 +55,9 @@ public class PDBorderEffectDictionary implements COSObjectable
     /**
      * Constructor.
      *
-     * @param dict
-     *            a border style dictionary.
+     * @param dict a border style dictionary.
      */
-    public PDBorderEffectDictionary( COSDictionary dict )
+    public PDBorderEffectDictionary(COSDictionary dict)
     {
         dictionary = dict;
     }
@@ -77,10 +76,9 @@ public class PDBorderEffectDictionary implements COSObjectable
     /**
      * This will set the intensity of the applied effect.
      *
-     * @param i
-     *            the intensity of the effect values 0 to 2
+     * @param i the intensity of the effect values 0 to 2
      */
-    public void setIntensity( float i )
+    public void setIntensity(float i)
     {
         getCOSObject().setFloat("I", i);
     }
@@ -98,22 +96,21 @@ public class PDBorderEffectDictionary implements COSObjectable
     /**
      * This will set the border effect, see the STYLE_* constants for valid values.
      *
-     * @param s
-     *            the border effect to use
+     * @param s the border effect to use
      */
-    public void setStyle( String s )
+    public void setStyle(String s)
     {
         getCOSObject().setName("S", s);
     }
 
     /**
-     * This will retrieve the border effect, see the STYLE_* constants for valid
-     * values.
+     * This will retrieve the border effect, see the STYLE_* constants for valid values.
      *
-     * @return the effect of the border
+     * @return the effect of the border or {@link #STYLE_SOLID} if none is found.
      */
     public String getStyle()
     {
         return getCOSObject().getNameAsString("S", STYLE_SOLID);
     }
+
 }

@@ -18,8 +18,6 @@ package com.tom_roush.pdfbox.filter;
 
 import android.util.Log;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,7 +27,6 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * Decompresses data encoded using the zlib/deflate compression method,
@@ -46,33 +43,11 @@ final class FlateFilter extends Filter
     public DecodeResult decode(InputStream encoded, OutputStream decoded,
         COSDictionary parameters, int index) throws IOException
     {
-        int predictor = -1;
-
         final COSDictionary decodeParams = getDecodeParams(parameters, index);
-        if (decodeParams != null)
-        {
-            predictor = decodeParams.getInt(COSName.PREDICTOR);
-        }
 
         try
         {
-            if (predictor > 1)
-            {
-                int colors = Math.min(decodeParams.getInt(COSName.COLORS, 1), 32);
-                int bitsPerPixel = decodeParams.getInt(COSName.BITS_PER_COMPONENT, 8);
-                int columns = decodeParams.getInt(COSName.COLUMNS, 1);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                decompress(encoded, baos);
-                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                Predictor.decodePredictor(predictor, colors, bitsPerPixel, columns, bais, decoded);
-                decoded.flush();
-                baos.reset();
-                bais.reset();
-            }
-            else
-            {
-                decompress(encoded, decoded);
-            }
+            decompress(encoded, Predictor.wrapPredictor(decoded, decodeParams));
         }
         catch (DataFormatException e)
         {
@@ -167,5 +142,6 @@ final class FlateFilter extends Filter
         }
         out.close();
         encoded.flush();
+        deflater.end();
     }
 }

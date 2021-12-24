@@ -47,25 +47,25 @@ public final class COSInteger extends COSNumber
      * Constant for the number zero.
      * @since Apache PDFBox 1.1.0
      */
-    public static final COSInteger ZERO = get(0); 
+    public static final COSInteger ZERO = get(0);
 
     /**
      * Constant for the number one.
      * @since Apache PDFBox 1.1.0
      */
-    public static final COSInteger ONE = get(1); 
+    public static final COSInteger ONE = get(1);
 
     /**
      * Constant for the number two.
      * @since Apache PDFBox 1.1.0
      */
-    public static final COSInteger TWO = get(2); 
+    public static final COSInteger TWO = get(2);
 
     /**
      * Constant for the number three.
      * @since Apache PDFBox 1.1.0
      */
-    public static final COSInteger THREE = get(3); 
+    public static final COSInteger THREE = get(3);
 
     /**
      * Returns a COSInteger instance with the given value.
