@@ -22,6 +22,7 @@ import java.io.IOException;
  * This class represents a PDF object.
  *
  * @author Ben Litchfield
+ *
  */
 public class COSObject extends COSBase implements COSUpdateInfo
 {
@@ -105,8 +106,7 @@ public class COSObject extends COSBase implements COSUpdateInfo
     @Override
     public String toString()
     {
-        return "COSObject{" + Long.toString(objectNumber) + ", " + Integer.toString(
-            generationNumber) + "}";
+        return "COSObject{" + Long.toString(objectNumber) + ", " + Integer.toString(generationNumber) + "}";
     }
 
     /**
@@ -179,4 +179,5 @@ public class COSObject extends COSBase implements COSUpdateInfo
     {
         needToBeUpdated = flag;
     }
+
 }

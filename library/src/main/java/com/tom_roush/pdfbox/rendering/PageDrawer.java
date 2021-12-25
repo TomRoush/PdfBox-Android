@@ -916,12 +916,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         lastClip = null;
         //TODO support more annotation flags (Invisible, NoZoom, NoRotate)
         // Example for NoZoom can be found in p5 of PDFBOX-2348
-//        int deviceType = graphics.getDeviceConfiguration().getDevice().getType();
-//        if (deviceType == GraphicsDevice.TYPE_PRINTER && !annotation.isPrinted())
-//        {
-//            return;
-//        } Shouldn't be needed
-        if (/*deviceType == GraphicsDevice.TYPE_RASTER_SCREEN && */annotation.isNoView())
+        // Device checks shouldn't be needed
+        if (annotation.isNoView())
         {
             return;
         }

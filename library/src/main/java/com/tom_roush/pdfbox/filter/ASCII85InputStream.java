@@ -24,6 +24,7 @@ import java.io.InputStream;
  * This class represents an ASCII85 stream.
  *
  * @author Ben Litchfield
+ *
  */
 final class ASCII85InputStream extends FilterInputStream
 {

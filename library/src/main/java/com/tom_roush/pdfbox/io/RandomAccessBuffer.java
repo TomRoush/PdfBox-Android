@@ -24,7 +24,6 @@ import java.util.List;
 /**
  * An implementation of the RandomAccess interface to store data in memory.
  * The data will be stored in chunks organized in an ArrayList.
- *
  */
 public class RandomAccessBuffer implements RandomAccess, Cloneable
 {
@@ -119,7 +118,7 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
         for (byte [] buffer : bufferList)
         {
             byte [] newBuffer = new byte [buffer.length];
-            System.arraycopy(buffer, 0, newBuffer, 0, buffer.length);
+            System.arraycopy(buffer,0,newBuffer,0,buffer.length);
             copy.bufferList.add(newBuffer);
         }
         if (currentBuffer!=null)
@@ -178,14 +177,14 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
         checkClosed();
         if (position < 0)
         {
-            throw new IOException("Invalid position " + position);
+            throw new IOException("Invalid position "+position);
         }
         pointer = position;
         if (pointer < size)
         {
             // calculate the chunk list index
-            bufferListIndex = (int) (pointer / chunkSize);
-            currentBufferPointer = (int) (pointer % chunkSize);
+            bufferListIndex = (int)(pointer / chunkSize);
+            currentBufferPointer = (int)(pointer % chunkSize);
             currentBuffer = bufferList.get(bufferListIndex);
         }
         else
@@ -194,7 +193,7 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
             // jump to the end of the buffer
             bufferListIndex = bufferListMaxIndex;
             currentBuffer = bufferList.get(bufferListIndex);
-            currentBufferPointer = (int) (size % chunkSize);
+            currentBufferPointer = (int)(size % chunkSize);
         }
     }
 
@@ -204,8 +203,8 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
     @Override
     public long getPosition() throws IOException
     {
-       checkClosed();
-       return pointer;
+        checkClosed();
+        return pointer;
     }
 
     /**
@@ -264,7 +263,7 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
         {
             return 0;
         }
-        int maxLength = (int) Math.min(length, size - pointer);
+        int maxLength = (int) Math.min(length, size-pointer);
         int remainingBytes = chunkSize - currentBufferPointer;
         // no more bytes left
         if (remainingBytes == 0)
@@ -317,7 +316,7 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
             }
             expandBuffer();
         }
-        currentBuffer[currentBufferPointer++] = (byte) b;
+        currentBuffer[currentBufferPointer++] = (byte)b;
         pointer++;
         if (pointer > this.size)
         {
@@ -333,6 +332,7 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
             expandBuffer();
         }
     }
+
 
     /**
      * {@inheritDoc}
@@ -363,7 +363,7 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
             int newOffset = offset + remainingBytes;
             long remainingBytes2Write = length - remainingBytes;
             // determine how many buffers are needed for the remaining bytes
-            int numberOfNewArrays = (int) remainingBytes2Write / chunkSize;
+            int numberOfNewArrays = (int)remainingBytes2Write / chunkSize;
             for (int i=0;i<numberOfNewArrays;i++)
             {
                 expandBuffer();
@@ -377,10 +377,9 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
                 expandBuffer();
                 if (remainingBytes2Write > 0)
                 {
-                    System.arraycopy(b, newOffset, currentBuffer, currentBufferPointer,
-                        (int) remainingBytes2Write);
+                    System.arraycopy(b, newOffset, currentBuffer, currentBufferPointer, (int)remainingBytes2Write);
                 }
-                currentBufferPointer = (int) remainingBytes2Write;
+                currentBufferPointer = (int)remainingBytes2Write;
             }
         }
         else
@@ -433,7 +432,7 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
      * Ensure that the RandomAccessBuffer is not closed
      * @throws IOException
      */
-    private void checkClosed () throws IOException
+    private void checkClosed() throws IOException
     {
         if (currentBuffer==null)
         {

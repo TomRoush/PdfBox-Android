@@ -52,7 +52,7 @@ public final class COSNull extends COSBase
      * @throws IOException If an error occurs while visiting this object.
      */
     @Override
-    public Object accept( ICOSVisitor  visitor ) throws IOException
+    public Object accept( ICOSVisitor visitor ) throws IOException
     {
         return visitor.visitFromNull( this );
     }

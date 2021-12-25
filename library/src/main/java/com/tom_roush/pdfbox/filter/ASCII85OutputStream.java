@@ -24,6 +24,7 @@ import java.io.OutputStream;
  * This class represents an ASCII85 output stream.
  *
  * @author Ben Litchfield
+ *
  */
 final class ASCII85OutputStream extends FilterOutputStream
 {
