@@ -14,25 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tom_roush.pdfbox.exceptions;
+package com.tom_roush.fontbox.ttf;
+
+import java.io.IOException;
+import org.junit.Test;
 
 /**
- * An exception that that holds a sub exception.
  *
- * @author <a href="mailto:ben@benlitchfield.com">Ben Litchfield</a>
- * @version $Revision: 1.2 $
- * 
- * @deprecated  java.lang.Exception itself has wrapper capabilities since Java 1.4
+ * @author Tilman Hausherr
  */
-public class WrappedException extends Exception
+public class RAFDataStreamTest
 {
     /**
-     * constructor comment.
+     * Test of PDFBOX-4242: make sure that the Closeable.close() contract is fulfilled.
      *
-     * @param e The root exception that caused this exception.
+     * @throws IOException
      */
-    public WrappedException( Exception e )
+    @Test
+    public void testDoubleClose() throws IOException
     {
-        super( e );
+        RAFDataStream raf = new RAFDataStream("src/test/resources/fontbox/ttf/LiberationSans-Regular.ttf", "r");
+        raf.close();
+        raf.close();
     }
 }

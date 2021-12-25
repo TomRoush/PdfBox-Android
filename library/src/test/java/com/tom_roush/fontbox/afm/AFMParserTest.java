@@ -14,24 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tom_roush.pdfbox.filter;
 
+package com.tom_roush.fontbox.afm;
+
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-/**
- * Thrown when a required JAI ImageReader is missing.
- *
- * @author John Hewson
- */
-public class MissingImageReaderException extends IOException
-{
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+import com.tom_roush.fontbox.util.Charsets;
 
-    public MissingImageReaderException(String message)
+import org.junit.Assert;
+import org.junit.Test;
+
+/**
+ *
+ * @author Tilman Hausherr
+ */
+public class AFMParserTest
+{
+    @Test
+    public void testEof() throws IOException
     {
-        super(message);
+        try
+        {
+            new AFMParser(new ByteArrayInputStream("huhu".getBytes(Charsets.US_ASCII))).parse();
+        }
+        catch (IOException ex)
+        {
+            Assert.assertEquals("Error: The AFM file should start with StartFontMetrics and not 'huhu'", ex.getMessage());
+        }
     }
 }

@@ -104,7 +104,7 @@ public abstract class COSNumber extends COSBase
                 }
                 return COSInteger.get(Long.parseLong(number));
             }
-            catch (NumberFormatException e)
+            catch( NumberFormatException e )
             {
                 // might be a huge number, see PDFBOX-3116
                 return new COSFloat(number);

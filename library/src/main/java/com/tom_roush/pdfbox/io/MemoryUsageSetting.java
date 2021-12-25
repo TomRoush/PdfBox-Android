@@ -27,46 +27,40 @@ public final class MemoryUsageSetting
     private final boolean useMainMemory;
     private final boolean useTempFile;
 
-    /**
-     * maximum number of main-memory bytes allowed to be used;
-     * <code>-1</code> means 'unrestricted'
-     */
+    /** maximum number of main-memory bytes allowed to be used;
+     *  <code>-1</code> means 'unrestricted' */
     private final long maxMainMemoryBytes;
 
-    /**
-     * maximum number of bytes allowed for storage at all (main-memory+file);
-     * <code>-1</code> means 'unrestricted'
-     */
+    /** maximum number of bytes allowed for storage at all (main-memory+file);
+     *  <code>-1</code> means 'unrestricted' */
     private final long maxStorageBytes;
 
-    /**
-     * directory to be used for scratch file
-     */
+    /** directory to be used for scratch file */
     private File tempDir;
 
     /**
      * Private constructor for setup buffering memory usage called by one of the setup methods.
      *
      * @param useMainMemory if <code>true</code> main memory usage is enabled; in case of
-     * <code>false</code> and <code>useTempFile</code> is <code>false</code> too
-     * we set this to <code>true</code>
+     *                      <code>false</code> and <code>useTempFile</code> is <code>false</code> too
+     *                      we set this to <code>true</code>
      * @param useTempFile if <code>true</code> using of temporary file(s) is enabled
      * @param maxMainMemoryBytes maximum number of main-memory to be used;
-     * if <code>-1</code> means 'unrestricted';
-     * if <code>0</code> we only use temporary file if <code>useTempFile</code>
-     * is <code>true</code> otherwise main-memory usage will have restriction
-     * defined by maxStorageBytes
+     *                           if <code>-1</code> means 'unrestricted';
+     *                           if <code>0</code> we only use temporary file if <code>useTempFile</code>
+     *                           is <code>true</code> otherwise main-memory usage will have restriction
+     *                           defined by maxStorageBytes
      * @param maxStorageBytes maximum size the main-memory and temporary file(s) may have all together;
-     * <code>0</code>  or less will be ignored; if it is less than
-     * maxMainMemoryBytes we use maxMainMemoryBytes value instead
+     *                        <code>0</code>  or less will be ignored; if it is less than
+     *                        maxMainMemoryBytes we use maxMainMemoryBytes value instead 
      */
     private MemoryUsageSetting(boolean useMainMemory, boolean useTempFile,
         long maxMainMemoryBytes, long maxStorageBytes)
     {
         // do some checks; adjust values as needed to get consistent setting
         boolean locUseMainMemory = useTempFile ? useMainMemory : true;
-        long locMaxMainMemoryBytes = useMainMemory ? maxMainMemoryBytes : -1;
-        long locMaxStorageBytes = maxStorageBytes > 0 ? maxStorageBytes : -1;
+        long    locMaxMainMemoryBytes = useMainMemory ? maxMainMemoryBytes : -1;
+        long    locMaxStorageBytes = maxStorageBytes > 0 ? maxStorageBytes : -1;
 
         if (locMaxMainMemoryBytes < -1)
         {
@@ -75,8 +69,7 @@ public final class MemoryUsageSetting
 
         if (locUseMainMemory && (locMaxMainMemoryBytes == 0))
         {
-            if (useTempFile)
-            {
+            if (useTempFile) {
                 locUseMainMemory = false;
             }
             else
@@ -90,6 +83,7 @@ public final class MemoryUsageSetting
         {
             locMaxStorageBytes = locMaxMainMemoryBytes;
         }
+
 
         this.useMainMemory = locUseMainMemory;
         this.useTempFile = useTempFile;
@@ -110,8 +104,8 @@ public final class MemoryUsageSetting
      * Setups buffering memory usage to only use main-memory with the defined maximum.
      *
      * @param maxMainMemoryBytes maximum number of main-memory to be used;
-     * <code>-1</code> for no restriction;
-     * <code>0</code> will also be interpreted here as no restriction
+     *                           <code>-1</code> for no restriction;
+     *                           <code>0</code> will also be interpreted here as no restriction
      */
     public static MemoryUsageSetting setupMainMemoryOnly(long maxMainMemoryBytes)
     {
@@ -132,8 +126,8 @@ public final class MemoryUsageSetting
      * with the specified maximum size.
      *
      * @param maxStorageBytes maximum size the temporary file(s) may have all together;
-     * <code>-1</code> for no restriction;
-     * <code>0</code> will also be interpreted here as no restriction
+     *                        <code>-1</code> for no restriction;
+     *                        <code>0</code> will also be interpreted here as no restriction
      */
     public static MemoryUsageSetting setupTempFileOnly(long maxStorageBytes)
     {
@@ -145,8 +139,8 @@ public final class MemoryUsageSetting
      * temporary file(s) in case the specified portion is exceeded.
      *
      * @param maxMainMemoryBytes maximum number of main-memory to be used;
-     * if <code>-1</code> this is the same as {@link #setupMainMemoryOnly()};
-     * if <code>0</code> this is the same as {@link #setupTempFileOnly()}
+     *                           if <code>-1</code> this is the same as {@link #setupMainMemoryOnly()};
+     *                           if <code>0</code> this is the same as {@link #setupTempFileOnly()}
      */
     public static MemoryUsageSetting setupMixed(long maxMainMemoryBytes)
     {
@@ -154,38 +148,15 @@ public final class MemoryUsageSetting
     }
 
     /**
-     * Returns a copy of this instance with the maximum memory/storage restriction
-     * divided by the provided number of parallel uses.
-     *
-     * @param parallelUseCount specifies the number of parallel usages for the setting to
-     * be returned
-     * @return a copy from this instance with the maximum memory/storage restrictions
-     * adjusted to the multiple usage
-     */
-    public MemoryUsageSetting getPartitionedCopy(int parallelUseCount)
-    {
-        long newMaxMainMemoryBytes =
-            maxMainMemoryBytes <= 0 ? maxMainMemoryBytes : maxMainMemoryBytes / parallelUseCount;
-        long newMaxStorageBytes =
-            maxStorageBytes <= 0 ? maxStorageBytes : maxStorageBytes / parallelUseCount;
-
-        MemoryUsageSetting copy = new MemoryUsageSetting(useMainMemory, useTempFile,
-            newMaxMainMemoryBytes, newMaxStorageBytes);
-        copy.tempDir = tempDir;
-
-        return copy;
-    }
-
-    /**
      * Setups buffering memory usage to use a portion of main-memory and additionally
      * temporary file(s) in case the specified portion is exceeded.
      *
      * @param maxMainMemoryBytes maximum number of main-memory to be used;
-     * if <code>-1</code> this is the same as {@link #setupMainMemoryOnly()};
-     * if <code>0</code> this is the same as {@link #setupTempFileOnly()}
+     *                           if <code>-1</code> this is the same as {@link #setupMainMemoryOnly()};
+     *                           if <code>0</code> this is the same as {@link #setupTempFileOnly()}
      * @param maxStorageBytes maximum size the main-memory and temporary file(s) may have all together;
-     * <code>0</code>  or less will be ignored; if it is less than
-     * maxMainMemoryBytes we use maxMainMemoryBytes value instead
+     *                        <code>0</code>  or less will be ignored; if it is less than
+     *                        maxMainMemoryBytes we use maxMainMemoryBytes value instead 
      */
     public static MemoryUsageSetting setupMixed(long maxMainMemoryBytes, long maxStorageBytes)
     {
@@ -193,9 +164,34 @@ public final class MemoryUsageSetting
     }
 
     /**
+     * Returns a copy of this instance with the maximum memory/storage restriction
+     * divided by the provided number of parallel uses.
+     *
+     * @param parallelUseCount specifies the number of parallel usages for the setting to
+     *                         be returned
+     *
+     * @return a copy from this instance with the maximum memory/storage restrictions
+     *         adjusted to the multiple usage
+     */
+    public MemoryUsageSetting getPartitionedCopy(int parallelUseCount)
+    {
+        long newMaxMainMemoryBytes = maxMainMemoryBytes <= 0 ? maxMainMemoryBytes :
+            maxMainMemoryBytes / parallelUseCount;
+        long newMaxStorageBytes = maxStorageBytes <= 0 ? maxStorageBytes :
+            maxStorageBytes / parallelUseCount;
+
+        MemoryUsageSetting copy = new MemoryUsageSetting( useMainMemory, useTempFile,
+            newMaxMainMemoryBytes, newMaxStorageBytes );
+        copy.tempDir = tempDir;
+
+        return copy;
+    }
+
+    /**
      * Sets directory to be used for temporary files.
      *
      * @param tempDir directory for temporary files
+     *
      * @return this instance
      */
     public MemoryUsageSetting setTempDir(File tempDir)
@@ -277,11 +273,9 @@ public final class MemoryUsageSetting
             (useTempFile ? "Mixed mode with max. of " + maxMainMemoryBytes + " main memory bytes" +
                 (isStorageRestricted() ? " and max. of " + maxStorageBytes + " storage bytes" :
                     " and unrestricted scratch file size") :
-                (isMainMemoryRestricted() ?
-                    "Main memory only with max. of " + maxMainMemoryBytes + " bytes" :
-                    "Main memory only with no size restriction")) :
-            (isStorageRestricted() ?
-                "Scratch file only with max. of " + maxStorageBytes + " bytes" :
+                (isMainMemoryRestricted() ? "Main memory only with max. of " + maxMainMemoryBytes + " bytes" :
+                    "Main memory only with no size restriction")):
+            (isStorageRestricted() ? "Scratch file only with max. of " + maxStorageBytes + " bytes" :
                 "Scratch file only with no size restriction");
     }
 }

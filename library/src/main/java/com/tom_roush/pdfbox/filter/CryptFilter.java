@@ -16,12 +16,12 @@
  */
 package com.tom_roush.pdfbox.filter;
 
-import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.cos.COSName;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * Decrypts data encrypted by a security handler, reproducing the data as it was before encryption.
@@ -31,10 +31,10 @@ final class CryptFilter extends Filter
 {
     @Override
     public DecodeResult decode(InputStream encoded, OutputStream decoded,
-                                         COSDictionary parameters, int index) throws IOException
+        COSDictionary parameters, int index) throws IOException
     {
         COSName encryptionName = (COSName) parameters.getDictionaryObject(COSName.NAME);
-        if(encryptionName == null || encryptionName.equals(COSName.IDENTITY)) 
+        if(encryptionName == null || encryptionName.equals(COSName.IDENTITY))
         {
             // currently the only supported implementation is the Identity crypt filter
             Filter identityFilter = new IdentityFilter();
@@ -46,7 +46,7 @@ final class CryptFilter extends Filter
 
     @Override
     protected void encode(InputStream input, OutputStream encoded, COSDictionary parameters)
-            throws IOException
+        throws IOException
     {
         COSName encryptionName = (COSName) parameters.getDictionaryObject(COSName.NAME);
         if(encryptionName == null || encryptionName.equals(COSName.IDENTITY))
