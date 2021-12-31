@@ -20,6 +20,8 @@ package com.tom_roush.pdfbox.pdmodel.font;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -31,10 +33,9 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests font embedding.
@@ -76,7 +77,6 @@ public class TestFontEmbedding
      * @throws IOException
      */
     @Test
-//    TODO: PdfBox-Android - provide test file
     public void testCIDFontType2VerticalSubsetMonospace() throws IOException
     {
         String text = "「ABC」";
@@ -88,7 +88,7 @@ public class TestFontEmbedding
         document.addPage(page);
 
         File ipafont = new File("target/fonts/ipag00303", "ipag.ttf");
-        assumeTrue(ipafont.exists());
+        Assume.assumeTrue(ipafont.exists());
         PDType0Font vfont = PDType0Font.loadVertical(document, ipafont);
 
         PDPageContentStream contentStream = new PDPageContentStream(document, page);
@@ -130,7 +130,6 @@ public class TestFontEmbedding
      * @throws IOException
      */
     @Test
-//    TODO: PdfBox-Android - provide test file
     public void testCIDFontType2VerticalSubsetProportional() throws IOException
     {
         String text = "「ABC」";
@@ -142,7 +141,7 @@ public class TestFontEmbedding
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
         File ipafont = new File("target/fonts/ipagp00303", "ipagp.ttf");
-        assumeTrue(ipafont.exists());
+        Assume.assumeTrue(ipafont.exists());
         PDType0Font vfont = PDType0Font.loadVertical(document, ipafont);
         PDPageContentStream contentStream = new PDPageContentStream(document, page);
 
@@ -182,6 +181,50 @@ public class TestFontEmbedding
         // Check text extraction
         String extracted = getUnicodeText(pdf);
         Assert.assertEquals(expectedExtractedtext, extracted.replaceAll("\r", "").trim());
+    }
+
+    /**
+     * Test corner case of PDFBOX-4302.
+     *
+     * @throws java.io.IOException
+     */
+    @Test
+    public void testMaxEntries() throws IOException
+    {
+        File file;
+        String text;
+        text = "あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん" +
+            "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン" +
+            "１２３４５６７８";
+
+        // The test must have MAX_ENTRIES_PER_OPERATOR unique characters
+        Set<Character> set = new HashSet<Character>(ToUnicodeWriter.MAX_ENTRIES_PER_OPERATOR);
+        for (int i = 0; i < text.length(); ++i)
+        {
+            set.add(text.charAt(i));
+        }
+        Assert.assertEquals(ToUnicodeWriter.MAX_ENTRIES_PER_OPERATOR, set.size());
+
+        PDDocument document = new PDDocument();
+        PDPage page = new PDPage(PDRectangle.A0);
+        document.addPage(page);
+        File ipafont = new File("target/fonts/ipag00303", "ipag.ttf");
+        Assume.assumeTrue(ipafont.exists());
+        PDType0Font font = PDType0Font.load(document, ipafont);
+        PDPageContentStream contentStream = new PDPageContentStream(document, page);
+        contentStream.beginText();
+        contentStream.setFont(font, 20);
+        contentStream.newLineAtOffset(50, 3000);
+        contentStream.showText(text);
+        contentStream.endText();
+        contentStream.close();
+        file = new File(OUT_DIR, "PDFBOX-4302-test.pdf");
+        document.save(file);
+        document.close();
+
+        // check that the extracted text matches what we wrote
+        String extracted = getUnicodeText(file);
+        Assert.assertEquals(text, extracted.trim());
     }
 
     private void validateCIDFontType2(boolean useSubset) throws Exception

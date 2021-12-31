@@ -75,6 +75,7 @@ public class RandomAccessFile implements RandomAccess
     @Override
     public int read() throws IOException
     {
+        checkClosed();
         return ras.read();
     }
 
@@ -110,6 +111,7 @@ public class RandomAccessFile implements RandomAccess
         {
             throw new IOException("RandomAccessFile already closed");
         }
+
     }
 
     @Override

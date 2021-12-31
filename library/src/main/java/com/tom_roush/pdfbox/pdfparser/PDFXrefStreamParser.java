@@ -17,6 +17,7 @@
 package com.tom_roush.pdfbox.pdfparser;
 
 import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -26,8 +27,8 @@ import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDocument;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.cos.COSObjectKey;
 import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.cos.COSObjectKey;
 
 /**
  * This will parse a PDF 1.5 (or better) Xref stream and
@@ -53,8 +54,8 @@ public class PDFXrefStreamParser extends BaseParser
         throws IOException
     {
         super(new InputStreamSource(stream.createInputStream()));
-        this.document = document;
         this.stream = stream;
+        this.document = document;
         this.xrefTrailerResolver = resolver;
     }
 
@@ -106,7 +107,7 @@ public class PDFXrefStreamParser extends BaseParser
         int w2 = xrefFormat.getInt(2);
         int lineSize = w0 + w1 + w2;
 
-        while (!seqSource.isEOF() && objIter.hasNext())
+        while(!seqSource.isEOF() && objIter.hasNext())
         {
             byte[] currLine = new byte[lineSize];
             seqSource.read(currLine);
@@ -114,7 +115,7 @@ public class PDFXrefStreamParser extends BaseParser
             int type;
             if (w0 == 0)
             {
-                // "If the first element is zero,
+                // "If the first element is zero, 
                 // the type field shall not be present, and shall default to type 1"
                 type = 1;
             }

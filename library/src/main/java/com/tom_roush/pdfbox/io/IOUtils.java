@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id: IOUtils.java 1827975 2018-03-29 10:52:15Z msahyoun $ */
+/* $Id: IOUtils.java 1834594 2018-06-28 10:29:51Z msahyoun $ */
 
 package com.tom_roush.pdfbox.io;
 
@@ -142,6 +142,6 @@ public final class IOUtils
                 return ioe;
             }
         }
-        return null;
+        return initialException;
     }
 }

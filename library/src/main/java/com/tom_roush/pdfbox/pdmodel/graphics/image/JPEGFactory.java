@@ -122,7 +122,9 @@ public final class JPEGFactory
      * The image will be created with a dpi value of 72 to be stored in metadata.
      * @param document the document where the image will be created
      * @param image the Bitmap to embed
-     * @param quality the desired JPEG compression quality
+     * @param quality The desired JPEG compression quality; between 0 (best
+     * compression) and 1 (best image quality). See
+     * {@link Bitmap#compress(Bitmap.CompressFormat, int, OutputStream)} for more details.
      * @return a new Image XObject
      * @throws IOException if the JPEG data cannot be written
      */
@@ -141,7 +143,9 @@ public final class JPEGFactory
      *
      * @param document the document where the image will be created
      * @param image the Bitmap to embed
-     * @param quality the desired JPEG compression quality
+     * @param quality The desired JPEG compression quality; between 0 (best
+     * compression) and 1 (best image quality). See
+     * {@link Bitmap#compress(Bitmap.CompressFormat, int, OutputStream)} for more details.
      * @param dpi the desired dpi (resolution) value of the JPEG to be stored in metadata. This
      * value has no influence on image content or size.
      * @return a new Image XObject

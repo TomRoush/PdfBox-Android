@@ -291,4 +291,48 @@ public class LosslessFactoryTest
     }
 
     // doBitmaskTransparencyTest: Android does not have bitmask transparency
+
+    /**
+     * Test lossless encoding of CMYK images
+     */
+//    public void testCreateLosslessFromImageCMYK() throws IOException TODO: PdfBox-Android
+
+//    public void testCreateLosslessFrom16Bit() throws IOException TODO: PdfBox-Android
+
+//    public void testCreateLosslessFromImageINT_BGR() throws IOException TODO: PdfBox-Android
+
+//    public void testCreateLosslessFromImageINT_RGB() throws IOException TODO: PdfBox-Android
+
+//    public void testCreateLosslessFromImageBYTE_3BGR() throws IOException TODO: PdfBox-Android
+
+    @Test
+    public void testCreateLosslessFrom16BitPNG() throws IOException
+    {
+        // TODO: PdfBox-Android PNG is reduced to 8 bit, this causes changes in test values
+        PDDocument document = new PDDocument();
+        File TARGETDIR = new File(testContext.getCacheDir(), "imgs");
+        TARGETDIR.mkdirs();
+        File imgFile = TestResourceGenerator.downloadTestResource(TARGETDIR, "PDFBOX-4184-16bit.png", "https://issues.apache.org/jira/secure/attachment/12929821/16bit.png");
+        assumeNotNull(imgFile);
+        Bitmap image = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+
+//        assertEquals(64, image.getColorModel().getPixelSize());
+//        assertEquals(Transparency.TRANSLUCENT, image.getColorModel().getTransparency());
+//        assertEquals(4, image.getRaster().getNumDataElements());
+//        assertEquals(java.awt.image.DataBuffer.TYPE_USHORT, image.getRaster().getDataBuffer().getDataType());
+
+        PDImageXObject ximage = LosslessFactory.createFromImage(document, image);
+
+        int w = image.getWidth();
+        int h = image.getHeight();
+        validate(ximage, 8, w, h, "png", PDDeviceRGB.INSTANCE.getName());
+        checkIdent(image, ximage.getImage());
+        checkIdentRGB(image, ximage.getOpaqueImage());
+
+        assertNotNull(ximage.getSoftMask());
+        validate(ximage.getSoftMask(), 8, w, h, "png", PDDeviceGray.INSTANCE.getName());
+//        assertEquals(35, colorCount(ximage.getSoftMask().getImage())); TODO: PdfBox-Android
+
+        doWritePDF(document, ximage, testResultsDir, "png16bit.pdf");
+    }
 }

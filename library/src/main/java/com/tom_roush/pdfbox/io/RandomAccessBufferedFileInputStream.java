@@ -28,17 +28,17 @@ import java.util.Map;
  * Provides {@link InputStream} access to portions of a file combined with
  * buffered reading of content. Start of next bytes to read can be set via seek
  * method.
- * 
+ *
  * File is accessed via {@link RandomAccessFile} and is read in byte chunks
  * which are cached.
- * 
+ *
  * @author Timo Boehme
  */
 public class RandomAccessBufferedFileInputStream
-extends InputStream implements RandomAccessRead
+    extends InputStream implements RandomAccessRead
 {
     /**
-     * The prefix for the temp file being used.
+     * The prefix for the temp file being used. 
      */
     private static final String TMP_FILE_PREFIX = "tmpPDFBox";
 
@@ -53,20 +53,20 @@ extends InputStream implements RandomAccessRead
     /** Create a LRU page cache. */
     private final Map<Long, byte[]> pageCache =
         new LinkedHashMap<Long, byte[]>( maxCachedPages, 0.75f, true )
-    {
-        private static final long serialVersionUID = -6302488539257741101L;
-
-        @Override
-        protected boolean removeEldestEntry( Map.Entry<Long, byte[]> eldest )
         {
-            final boolean doRemove = size() > maxCachedPages;
-            if (doRemove)
+            private static final long serialVersionUID = -6302488539257741101L;
+
+            @Override
+            protected boolean removeEldestEntry( Map.Entry<Long, byte[]> eldest )
             {
-                lastRemovedCachePage = eldest.getValue();
+                final boolean doRemove = size() > maxCachedPages;
+                if (doRemove)
+                {
+                    lastRemovedCachePage = eldest.getValue();
+                }
+                return doRemove;
             }
-            return doRemove;
-        }
-    };
+        };
 
     private long curPageOffset = -1;
     private byte[] curPage = new byte[pageSize];
@@ -83,7 +83,7 @@ extends InputStream implements RandomAccessRead
      * @param filename the filename of the file to be read.
      * @throws IOException if something went wrong while accessing the given file.
      */
-    public RandomAccessBufferedFileInputStream(String filename) throws IOException
+    public RandomAccessBufferedFileInputStream( String filename ) throws IOException
     {
         this(new File(filename));
     }
@@ -94,7 +94,7 @@ extends InputStream implements RandomAccessRead
      * @param file the file to be read.
      * @throws IOException if something went wrong while accessing the given file.
      */
-    public RandomAccessBufferedFileInputStream(File file) throws IOException
+    public RandomAccessBufferedFileInputStream( File file ) throws IOException
     {
         raFile = new RandomAccessFile(file, "r");
         fileLength = file.length();
@@ -108,7 +108,7 @@ extends InputStream implements RandomAccessRead
      * @param input the input stream to be read. It will be closed by this method.
      * @throws IOException if something went wrong while creating the temporary file.
      */
-    public RandomAccessBufferedFileInputStream(InputStream input) throws IOException
+    public RandomAccessBufferedFileInputStream( InputStream input ) throws IOException
     {
         tempFile = createTmpFile(input);
         fileLength = tempFile.length();
@@ -338,9 +338,9 @@ extends InputStream implements RandomAccessRead
     {
         byte[] b = new byte[length];
         int bytesRead = read(b);
-        while (bytesRead < length)
+        while(bytesRead < length)
         {
-            bytesRead += read(b, bytesRead, length - bytesRead);
+            bytesRead += read(b, bytesRead, length-bytesRead);
         }
         return b;
     }

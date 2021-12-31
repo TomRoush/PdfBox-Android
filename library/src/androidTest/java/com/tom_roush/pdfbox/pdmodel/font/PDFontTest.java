@@ -43,10 +43,9 @@ import com.tom_roush.pdfbox.rendering.PDFRenderer;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assume.assumeNotNull;
 
 /**
  *
@@ -136,7 +135,7 @@ public class PDFontTest
     public void testPDFBOX4115() throws IOException
     {
         File fontFile = TestResourceGenerator.downloadTestResource(IN_DIR, "n019003l.pfb", "https://issues.apache.org/jira/secure/attachment/12911053/n019003l.pfb");
-        assumeNotNull(fontFile);
+        Assume.assumeNotNull(fontFile);
 
         File outputFile = new File(OUT_DIR, "FontType1.pdf");
         String text = "äöüÄÖÜ";
@@ -176,6 +175,32 @@ public class PDFontTest
         Assert.assertEquals(text, stripper.getText(doc).trim());
 
         doc.close();
+    }
+
+    /**
+     * Test whether bug from PDFBOX-4318 is fixed, which had the wrong cache key.
+     * @throws java.io.IOException
+     */
+    @Test
+    public void testPDFox4318() throws IOException
+    {
+        try
+        {
+            PDType1Font.HELVETICA_BOLD.encode("\u0080");
+            Assert.fail("should have thrown IllegalArgumentException");
+        }
+        catch (IllegalArgumentException ex)
+        {
+        }
+        PDType1Font.HELVETICA_BOLD.encode("€");
+        try
+        {
+            PDType1Font.HELVETICA_BOLD.encode("\u0080");
+            Assert.fail("should have thrown IllegalArgumentException");
+        }
+        catch (IllegalArgumentException ex)
+        {
+        }
     }
 
     private void testPDFBox3826checkFonts(byte[] byteArray, File fontFile) throws IOException

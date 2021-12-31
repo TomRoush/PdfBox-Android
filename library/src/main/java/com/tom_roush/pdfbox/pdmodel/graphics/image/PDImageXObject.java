@@ -241,7 +241,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * Create a PDImageXObject from an image file. The file format is determined by the file
      * content. The following file types are supported: jpg, jpeg, tif, tiff, gif, bmp and png. This
      * is a convenience method that calls {@link JPEGFactory#createFromStream},
-     * {@link CCITTFactory#createFromFile} or {@link  BitmapFactory#decodeFile} combined with
+     * {@link CCITTFactory#createFromFile} or {@link BitmapFactory#decodeFile} combined with
      * {@link LosslessFactory#createFromImage}. (The later can also be used to create a
      * PDImageXObject from a Bitmap).
      *
@@ -440,7 +440,8 @@ public final class PDImageXObject extends PDXObject implements PDImage
         PDImageXObject softMask = getSoftMask();
         if (softMask != null)
         {
-            image = applyMask(image, softMask.getOpaqueImage(), true);
+            float[] matte = extractMatte(softMask);
+            image = applyMask(image, softMask.getOpaqueImage(), true, matte);
         }
         else
         {
@@ -448,7 +449,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
             PDImageXObject mask = getMask();
             if (mask != null && mask.isStencil())
             {
-                image = applyMask(image, mask.getOpaqueImage(), false);
+                image = applyMask(image, mask.getOpaqueImage(), false, null);
             }
         }
 
@@ -461,6 +462,21 @@ public final class PDImageXObject extends PDXObject implements PDImage
         }
 
         return image;
+    }
+
+    private float[] extractMatte(PDImageXObject softMask) throws IOException
+    {
+        COSBase base = softMask.getCOSObject().getItem(COSName.MATTE);
+        float[] matte = null;
+        if (base instanceof COSArray)
+        {
+            // PDFBOX-4267: process /Matte
+            // see PDF specification 1.7, 11.6.5.3 Soft-Mask Images
+            matte = ((COSArray) base).toFloatArray();
+            // convert to RGB
+            matte = getColorSpace().toRGB(matte);
+        }
+        return matte;
     }
 
     /**
@@ -490,7 +506,8 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
     // explicit mask: RGB + Binary -> ARGB
     // soft mask: RGB + Gray -> ARGB
-    private Bitmap applyMask(Bitmap image, Bitmap mask, boolean isSoft)
+    private Bitmap applyMask(Bitmap image, Bitmap mask,
+        boolean isSoft, float[] matte)
         throws IOException
     {
         if (mask == null)
@@ -530,6 +547,14 @@ public final class PDImageXObject extends PDXObject implements PDImage
                 if (isSoft)
                 {
                     alpha = Color.alpha(alphaPixel);
+                    if (matte != null && Float.compare(alphaPixel, 0) != 0)
+                    {
+                        rgb = Color.rgb(
+                            clampColor(((Color.red(rgb) / 255 - matte[0]) / (alphaPixel / 255) + matte[0]) * 255),
+                            clampColor(((Color.green(rgb) / 255 - matte[1]) / (alphaPixel / 255) + matte[1]) * 255),
+                            clampColor(((Color.blue(rgb) / 255 - matte[2]) / (alphaPixel / 255) + matte[2]) * 255)
+                        );
+                    }
                 }
                 else
                 {
@@ -543,6 +568,11 @@ public final class PDImageXObject extends PDXObject implements PDImage
         }
 
         return masked;
+    }
+
+    private int clampColor(float color)
+    {
+        return Float.valueOf(color < 0 ? 0 : (color > 255 ? 255 : color)).intValue();
     }
 
     /**

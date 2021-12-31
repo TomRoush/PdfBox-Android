@@ -176,7 +176,7 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
         boolean retval = false;
         if( o instanceof COSDictionaryMap )
         {
-            COSDictionaryMap<K,V> other = (COSDictionaryMap)o;
+            COSDictionaryMap<K, V> other = (COSDictionaryMap<K, V>) o;
             retval = other.map.equals( this.map );
         }
         return retval;
@@ -238,11 +238,11 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
             {
                 COSBase cosObj = map.getDictionaryObject( key );
                 Object actualObject = null;
-                if( cosObj instanceof COSString)
+                if( cosObj instanceof COSString )
                 {
                     actualObject = ((COSString)cosObj).getString();
                 }
-                else if( cosObj instanceof COSInteger)
+                else if( cosObj instanceof COSInteger )
                 {
                     actualObject = ((COSInteger)cosObj).intValue();
                 }
@@ -250,11 +250,11 @@ public class COSDictionaryMap<K,V> implements Map<K,V>
                 {
                     actualObject = ((COSName)cosObj).getName();
                 }
-                else if( cosObj instanceof COSFloat)
+                else if( cosObj instanceof COSFloat )
                 {
                     actualObject = ((COSFloat)cosObj).floatValue();
                 }
-                else if( cosObj instanceof COSBoolean)
+                else if( cosObj instanceof COSBoolean )
                 {
                     actualObject = ((COSBoolean)cosObj).getValue() ? Boolean.TRUE : Boolean.FALSE;
                 }

@@ -24,7 +24,6 @@ import java.net.URL;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -216,7 +215,7 @@ public class PDButtonTest
     public void testAcrobatCheckBoxProperties() throws IOException
     {
         PDCheckBox checkbox = (PDCheckBox) acrobatAcroForm.getField("Checkbox");
-        assertEquals(checkbox.getValue(), "");
+        assertEquals(checkbox.getValue(), "Off");
         assertEquals(checkbox.isChecked(), false);
 
         checkbox.check();
@@ -260,7 +259,7 @@ public class PDButtonTest
     public void testAcrobatCheckBoxGroupProperties() throws IOException
     {
         PDCheckBox checkbox = (PDCheckBox) acrobatAcroForm.getField("CheckboxGroup");
-        assertEquals(checkbox.getValue(), "");
+        assertEquals(checkbox.getValue(), "Off");
         assertEquals(checkbox.isChecked(), false);
 
         checkbox.check();

@@ -134,4 +134,20 @@ public abstract class Filter
 
 //    protected static ImageReader findImageReader(String formatName, String errorCause) throws MissingImageReaderException TODO: PdfBox-Android
 
+    /**
+     * @return the ZIP compression level configured for PDFBox
+     */
+    public static int getCompressionLevel()
+    {
+        int compressionLevel = Deflater.DEFAULT_COMPRESSION;
+        try
+        {
+            compressionLevel = Integer.parseInt(System.getProperty(Filter.SYSPROP_DEFLATELEVEL, "-1"));
+        }
+        catch (NumberFormatException ex)
+        {
+            Log.w("PdfBox-Android", ex.getMessage(), ex);
+        }
+        return Math.max(-1, Math.min(Deflater.BEST_COMPRESSION, compressionLevel));
+    }
 }

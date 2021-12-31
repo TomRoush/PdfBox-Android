@@ -193,8 +193,20 @@ public class PDType0Font extends PDFont implements PDVectorFont
         fetchCMapUCS2();
     }
 
+    /**
+     * Private. Creates a new PDType0Font font for embedding.
+     *
+     * @param document
+     * @param ttf
+     * @param embedSubset
+     * @param closeTTF whether to close the ttf parameter after embedding. Must be true when the ttf
+     * parameter was created in the load() method, false when the ttf parameter was passed to the
+     * load() method.
+     * @param vertical
+     * @throws IOException
+     */
     private PDType0Font(PDDocument document, TrueTypeFont ttf, boolean embedSubset,
-        boolean closeOnSubset, boolean vertical) throws IOException
+        boolean closeTTF, boolean vertical) throws IOException
     {
         if (vertical)
         {
@@ -204,11 +216,12 @@ public class PDType0Font extends PDFont implements PDVectorFont
         descendantFont = embedder.getCIDFont();
         readEncoding();
         fetchCMapUCS2();
-        if (closeOnSubset)
+        if (closeTTF)
         {
             if (embedSubset)
             {
                 this.ttf = ttf;
+                document.registerTrueTypeFontForClosing(ttf);
             }
             else
             {

@@ -599,7 +599,9 @@ public class COSParser extends BaseParser
 
     /**
      * Adds newObject to toBeParsedList if it is not an COSObject or we didn't
-     * add this COSObject already (checked via addedObjects).
+     * add this COSObject already (checked via addedObjects). Simple objects are
+     * not added because nothing is done with them when toBeParsedList is
+     * processed.
      */
     private void addNewToList(final Queue<COSBase> toBeParsedList, final COSBase newObject,
         final Set<Long> addedObjects)
@@ -611,8 +613,12 @@ public class COSParser extends BaseParser
             {
                 return;
             }
+            toBeParsedList.add(newObject);
         }
-        toBeParsedList.add(newObject);
+        else if (newObject instanceof COSDictionary || newObject instanceof COSArray)
+        {
+            toBeParsedList.add(newObject);
+        }
     }
 
     /**
@@ -2309,12 +2315,12 @@ public class COSParser extends BaseParser
             COSBase pages = root.getDictionaryObject(COSName.PAGES);
             if (pages instanceof COSDictionary)
             {
-                checkPagesDictionary((COSDictionary) pages);
+                checkPagesDictionary((COSDictionary) pages, new HashSet<COSObject>());
             }
         }
     }
 
-    private int checkPagesDictionary(COSDictionary pagesDict)
+    private int checkPagesDictionary(COSDictionary pagesDict, Set<COSObject> set)
     {
         // check for kids
         COSBase kids = pagesDict.getDictionaryObject(COSName.KIDS);
@@ -2326,6 +2332,11 @@ public class COSParser extends BaseParser
             for (COSBase kid : kidsList)
             {
                 COSObject kidObject = (COSObject) kid;
+                if (set.contains(kidObject))
+                {
+                    kidsArray.remove(kid);
+                    continue;
+                }
                 COSBase kidBaseobject = kidObject.getObject();
                 // object wasn't dereferenced -> remove it
                 if (kidBaseobject.equals(COSNull.NULL))
@@ -2340,7 +2351,8 @@ public class COSParser extends BaseParser
                     if (COSName.PAGES.equals(type))
                     {
                         // process nested pages dictionaries
-                        numberOfPages += checkPagesDictionary(kidDictionary);
+                        set.add(kidObject);
+                        numberOfPages += checkPagesDictionary(kidDictionary, set);
                     }
                     else if (COSName.PAGE.equals(type))
                     {

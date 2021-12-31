@@ -36,6 +36,8 @@ import com.tom_roush.pdfbox.cos.COSString;
  * This class represents a node in a name tree.
  *
  * @author Ben Litchfield
+ *
+ * @param <T> The type of the values in this name tree.
  */
 public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObjectable
 {
@@ -242,12 +244,14 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
     }
 
     /**
-     * This will return a map of names. The key will be a string, and the
-     * value will depend on where this class is being used.
+     * This will return a map of names on this level. The key will be a string,
+     * and the value will depend on where this class is being used.
      *
-     * @return ordered map of cos objects or <code>null</code> if dictionary
-     *         contains no 'Names' entry
+     * @return ordered map of COS objects or <code>null</code> if the dictionary
+     * contains no 'Names' entry on this level.
+     *
      * @throws IOException If there is an error while creating the sub types.
+     * @see #getKids()
      */
     public Map<String, T> getNames() throws IOException
     {

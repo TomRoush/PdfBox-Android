@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -131,6 +132,9 @@ public class PDDocument implements Closeable
 
     // fonts to subset before saving
     private final Set<PDFont> fontsToSubset = new HashSet<PDFont>();
+
+    // fonts to close when closing document
+    private final Set<TrueTypeFont> fontsToClose = new HashSet<TrueTypeFont>();
 
     // Signature interface
     private SignatureInterface signInterface;
@@ -880,6 +884,18 @@ public class PDDocument implements Closeable
     }
 
     /**
+     * For internal PDFBox use when creating PDF documents: register a TrueTypeFont to make sure it
+     * is closed when the PDDocument is closed to avoid memory leaks. Users don't have to call this
+     * method, it is done by the appropriate PDFont classes.
+     *
+     * @param ttf
+     */
+    public void registerTrueTypeFontForClosing(TrueTypeFont ttf)
+    {
+        fontsToClose.add(ttf);
+    }
+
+    /**
      * Returns the list of fonts which will be subset before the document is saved.
      */
     Set<PDFont> getFontsToSubset()
@@ -1368,9 +1384,13 @@ public class PDDocument implements Closeable
     }
 
     /**
-     * Returns the page at the given index.
+     * Returns the page at the given 0-based index.
+     * <p>
+     * This method is too slow to get all the pages from a large PDF document
+     * (1000 pages or more). For such documents, use the iterator of
+     * {@link PDDocument#getPages()} instead.
      *
-     * @param pageIndex the page index
+     * @param pageIndex the 0-based page index
      * @return the page at the given index.
      */
     public PDPage getPage(int pageIndex) // todo: REPLACE most calls to this method with BELOW method
@@ -1428,6 +1448,12 @@ public class PDDocument implements Closeable
             if (pdfSource != null)
             {
                 firstException = IOUtils.closeAndLogException(pdfSource, "RandomAccessRead pdfSource", firstException);
+            }
+
+            // close fonts
+            for (TrueTypeFont ttf : fontsToClose)
+            {
+                firstException = IOUtils.closeAndLogException(ttf, "TrueTypeFont", firstException);
             }
 
             // rethrow first exception to keep method contract

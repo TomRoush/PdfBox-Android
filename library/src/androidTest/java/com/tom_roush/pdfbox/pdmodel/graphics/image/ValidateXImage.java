@@ -28,11 +28,12 @@ import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertNotNull;
+import static junit.framework.TestCase.assertTrue;
 
 /**
  * Helper class to do some validations for PDImageXObject.
@@ -41,8 +42,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ValidateXImage
 {
-    public static void validate(PDImageXObject ximage, int bpc, int width, int height,
-        String format, String colorSpaceName) throws IOException
+    public static void validate(PDImageXObject ximage, int bpc, int width, int height, String format, String colorSpaceName) throws IOException
     {
         // check the dictionary
         assertNotNull(ximage);
@@ -55,10 +55,7 @@ public class ValidateXImage
         assertEquals(width, ximage.getWidth());
         assertEquals(height, ximage.getHeight());
         assertEquals(format, ximage.getSuffix());
-        if (!format.equals("jpg")) // TODO: PdfBox-Android
-        {
-            assertEquals(colorSpaceName, ximage.getColorSpace().getName());
-        }
+        assertEquals(colorSpaceName, ximage.getColorSpace().getName());
 
         // check the image
         assertNotNull(ximage.getImage());
@@ -93,12 +90,12 @@ public class ValidateXImage
         Set<Integer> colors = new HashSet<Integer>();
         int w = bim.getWidth();
         int h = bim.getHeight();
-
-        int[] bimPixels = new int[w * h];
-        bim.getPixels(bimPixels, 0, w, 0, 0, w, h);
-        for (int pixel : bimPixels)
+        for (int y = 0; y < h; y++)
         {
-            colors.add(pixel);
+            for (int x = 0; x < w; x++)
+            {
+                colors.add(bim.getPixel(x, y));
+            }
         }
         return colors.size();
     }
@@ -115,8 +112,7 @@ public class ValidateXImage
 
         PDPage page = new PDPage();
         document.addPage(page);
-        PDPageContentStream contentStream = new PDPageContentStream(document, page,
-            PDPageContentStream.AppendMode.APPEND, false);
+        PDPageContentStream contentStream = new PDPageContentStream(document, page, AppendMode.APPEND, false);
         contentStream.drawImage(ximage, 150, 300);
         contentStream.drawImage(ximage, 200, 350);
         contentStream.close();
@@ -127,7 +123,7 @@ public class ValidateXImage
         document.save(pdfFile);
         document.close();
 
-        document = PDDocument.load(pdfFile, (String) null);
+        document = PDDocument.load(pdfFile, (String)null);
         assertEquals(1, count(document.getPage(0).getResources().getXObjectNames()));
         new PDFRenderer(document).renderImage(0);
         document.close();
@@ -157,21 +153,19 @@ public class ValidateXImage
         int h = expectedImage.getHeight();
         assertEquals(w, actualImage.getWidth());
         assertEquals(h, actualImage.getHeight());
-
-        int[] expectedPixels = new int[w * h];
-        expectedImage.getPixels(expectedPixels, 0, w, 0, 0, w, h);
-        int[] actualPixels = new int[w * h];
-        actualImage.getPixels(actualPixels, 0, w, 0, 0, w, h);
         for (int y = 0; y < h; ++y)
         {
             for (int x = 0; x < w; ++x)
             {
-                if (expectedPixels[x + w * y] != actualPixels[x + w * y])
+                if (expectedImage.getPixel(x, y) != actualImage.getPixel(x, y))
                 {
-                    errMsg = String.format("(%d,%d) %08X != %08X", x, y, expectedPixels[x + w * y], actualPixels[x + w * y]);
+                    errMsg = String.format("(%d,%d) expected: <%08X> but was: <%08X>; ", x, y, expectedImage.getPixel(x, y), actualImage.getPixel(x, y));
                 }
-                assertEquals(errMsg, expectedPixels[x + w * y], actualPixels[x + w * y]);
+                assertEquals(errMsg, expectedImage.getPixel(x, y), actualImage.getPixel(x, y));
             }
         }
     }
+
+
+
 }
