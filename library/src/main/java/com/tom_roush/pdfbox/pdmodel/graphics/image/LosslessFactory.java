@@ -226,8 +226,6 @@ public final class LosslessFactory
     {
         private final PDDocument document;
         private final Bitmap image;
-//        private final int componentsPerPixel;
-//        private final int transferType;
         private final int bytesPerComponent;
         private final int bytesPerPixel;
 
@@ -259,10 +257,7 @@ public final class LosslessFactory
             this.image = image;
 
             // The raw count of components per pixel including optional alpha
-//            this.componentsPerPixel = image.hasAlpha() ? 4 : 3;
-//            this.transferType = image.getRaster().getTransferType();
-            this.bytesPerComponent = /*(transferType == DataBuffer.TYPE_SHORT
-                || transferType == DataBuffer.TYPE_USHORT) ? 2 :*/ 1;
+            this.bytesPerComponent = 1;
 
             // Only the bytes we need in the output (excluding alpha)
             this.bytesPerPixel = 3 * bytesPerComponent;
@@ -308,7 +303,6 @@ public final class LosslessFactory
          */
         PDImageXObject encode() throws IOException
         {
-//            Raster imageRaster = image.getRaster();
             final int elementsInRowPerPixel;
 
             // These variables store a row of the image each, the exact type depends
@@ -351,42 +345,23 @@ public final class LosslessFactory
                 Arrays.fill(aValues, (byte) 0);
                 Arrays.fill(cValues, (byte) 0);
 
-                final byte[] transferRowByte;
-                final byte[] prevRowByte;
                 final int[] transferRowInt;
                 final int[] prevRowInt;
-                final short[] transferRowShort;
-                final short[] prevRowShort;
 
                 {
                     transferRowInt = (int[]) transferRow;
                     prevRowInt = (int[]) prevRow;
-                    transferRowShort = prevRowShort = null;
-                    transferRowByte = prevRowByte = null;
                 }
 
                 for (int indexInTransferRow = 0; indexInTransferRow < elementsInTransferRow;
                      indexInTransferRow += elementsInRowPerPixel, alphaPtr += bytesPerComponent)
                 {
                     // Copy the pixel values into the byte array
-//                    if (transferRowByte != null)
-//                    {
-//                        copyImageBytes(transferRowByte, indexInTransferRow, xValues, alphaImageData,
-//                            alphaPtr);
-//                        copyImageBytes(prevRowByte, indexInTransferRow, bValues, null, 0);
-//                    }
-//                    else if (transferRowInt != null)
                     {
                         copyIntToBytes(transferRowInt, indexInTransferRow, xValues, alphaImageData,
                             alphaPtr);
                         copyIntToBytes(prevRowInt, indexInTransferRow, bValues, null, 0);
                     }
-//                    else
-//                    {
-//                        // This must be short[]
-//                        copyShortsToBytes(transferRowShort, indexInTransferRow, xValues, alphaImageData, alphaPtr);
-//                        copyShortsToBytes(prevRowShort, indexInTransferRow, bValues, null, 0);
-//                    }
 
                     // Encode the pixel values in the different encodings
                     int length = xValues.length;
@@ -429,9 +404,6 @@ public final class LosslessFactory
             byte[] alphaImageData, int alphaPtr)
         {
             int val = transferRow[indexInTranferRow];
-//            byte b0 = (byte) (val & 0xFF);
-//            byte b1 = (byte) ((val >> 8) & 0xFF);
-//            byte b2 = (byte) ((val >> 16) & 0xFF);
             byte b0 = (byte) Color.blue(val);
             byte b1 = (byte) Color.green(val);
             byte b2 = (byte) Color.red(val);
@@ -444,7 +416,6 @@ public final class LosslessFactory
                     targetValues[2] = b0;
                     if (alphaImageData != null)
                     {
-//                        byte b3 = (byte) ((val >> 24) & 0xFF);
                         byte b3 = (byte) Color.alpha(val);
                         alphaImageData[alphaPtr] = b3;
                     }
@@ -457,33 +428,11 @@ public final class LosslessFactory
             }
         }
 
-        private void copyImageBytes(byte[] transferRow, int indexInTranferRow, byte[] targetValues,
-            byte[] alphaImageData, int alphaPtr)
-        {
-            System.arraycopy(transferRow, indexInTranferRow, targetValues, 0, targetValues.length);
-            if (alphaImageData != null)
-            {
-                alphaImageData[alphaPtr] = transferRow[indexInTranferRow + targetValues.length];
-            }
-        }
+//        private void copyImageBytes(byte[] transferRow, int indexInTranferRow, byte[] targetValues,
+//            byte[] alphaImageData, int alphaPtr)
 
-        private static void copyShortsToBytes(short[] transferRow, int indexInTranferRow,
-            byte[] targetValues, byte[] alphaImageData, int alphaPtr)
-        {
-            int itr = indexInTranferRow;
-            for (int i = 0; i < targetValues.length; i += 2)
-            {
-                short val = transferRow[itr++];
-                targetValues[i] = (byte) ((val >> 8) & 0xFF);
-                targetValues[i + 1] = (byte) (val & 0xFF);
-            }
-            if (alphaImageData != null)
-            {
-                short alpha = transferRow[itr];
-                alphaImageData[alphaPtr] = (byte) ((alpha >> 8) & 0xFF);
-                alphaImageData[alphaPtr + 1] = (byte) (alpha & 0xFF);
-            }
-        }
+//        private static void copyShortsToBytes(short[] transferRow, int indexInTranferRow,
+//            byte[] targetValues, byte[] alphaImageData, int alphaPtr)
 
         private PDImageXObject preparePredictorPDImage(ByteArrayOutputStream stream,
             int bitsPerComponent) throws IOException
