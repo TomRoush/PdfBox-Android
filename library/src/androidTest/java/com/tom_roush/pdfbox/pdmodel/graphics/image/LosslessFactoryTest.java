@@ -23,7 +23,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Build;
 
+import androidx.test.filters.FlakyTest;
 import androidx.test.platform.app.InstrumentationRegistry;
+
+import java.io.File;
+import java.io.IOException;
 
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.android.TestResourceGenerator;
@@ -36,9 +40,6 @@ import com.tom_roush.pdfbox.rendering.PDFRenderer;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
 
 import static com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage.checkIdent;
 import static com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage.colorCount;
@@ -306,6 +307,7 @@ public class LosslessFactoryTest
 
 //    public void testCreateLosslessFromImageBYTE_3BGR() throws IOException TODO: PdfBox-Android
 
+    @FlakyTest(detail = "Behavior depends heavily on API level / device")
     @Test
     public void testCreateLosslessFrom16BitPNG() throws IOException
     {
