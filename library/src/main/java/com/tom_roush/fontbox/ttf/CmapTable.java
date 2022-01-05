@@ -68,8 +68,10 @@ public class CmapTable extends TTFTable
      * @param data The stream to read the data from.
      * @throws IOException If there is an error reading the data.
      */
+    @Override
     public void read(TrueTypeFont ttf, TTFDataStream data) throws IOException
     {
+        @SuppressWarnings({"unused", "squid:S1854", "squid:S1481"})
         int version = data.readUnsignedShort();
         int numberOfTables = data.readUnsignedShort();
         cmaps = new CmapSubtable[numberOfTables];

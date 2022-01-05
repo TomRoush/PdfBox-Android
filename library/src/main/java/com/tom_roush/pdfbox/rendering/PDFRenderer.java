@@ -58,6 +58,8 @@ public class PDFRenderer
 
     private boolean subsamplingAllowed = false;
 
+    private Bitmap pageImage;
+
     /**
      * Creates a new PDFRenderer.
      * @param document the document to render
@@ -183,8 +185,11 @@ public class PDFRenderer
         PDRectangle cropbBox = page.getCropBox();
         float widthPt = cropbBox.getWidth();
         float heightPt = cropbBox.getHeight();
-        int widthPx = Math.round(widthPt * scale);
-        int heightPx = Math.round(heightPt * scale);
+
+        // PDFBOX-4306 avoid single blank pixel line on the right or on the bottom
+        int widthPx = (int) Math.max(Math.floor(widthPt * scale), 1);
+        int heightPx = (int) Math.max(Math.floor(heightPt * scale), 1);
+
         int rotationAngle = page.getRotation();
 
         Bitmap.Config bimType = imageType.toBitmapConfig();
@@ -207,6 +212,8 @@ public class PDFRenderer
         {
             image = Bitmap.createBitmap(widthPx, heightPx, bimType);
         }
+
+        pageImage = image;
 
         // use a transparent background if the image type supports alpha
         Paint paint = new Paint();
@@ -366,5 +373,15 @@ public class PDFRenderer
             }
         }
         return false;
+    }
+
+    /**
+     * Returns the image to which the current page is being rendered.
+     * May be null if the page is rendered to a Graphics2D object
+     * instead of a Bitmap.
+     */
+    Bitmap getPageImage()
+    {
+        return pageImage;
     }
 }

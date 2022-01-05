@@ -16,6 +16,11 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
@@ -24,24 +29,20 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 /**
  * This will test the functionality of choice fields in PDFBox.
  */
 public class TestListBox extends TestCase
 {
+
     /**
      * Constructor.
      *
      * @param name The name of the test to run.
      */
-    public TestListBox(String name)
+    public TestListBox( String name )
     {
-        super(name);
+        super( name );
     }
 
     /**
@@ -51,7 +52,7 @@ public class TestListBox extends TestCase
      */
     public static Test suite()
     {
-        return new TestSuite(TestListBox.class);
+        return new TestSuite( TestListBox.class );
     }
 
     /**
@@ -59,22 +60,22 @@ public class TestListBox extends TestCase
      *
      * @param args The command line arguments.
      */
-    public static void main(String[] args)
+    public static void main( String[] args )
     {
-        String[] arg = {TestListBox.class.getName()};
-        junit.textui.TestRunner.main(arg);
+        String[] arg = {TestListBox.class.getName() };
+        junit.textui.TestRunner.main( arg );
     }
 
     /**
-     * This will test the radio button PDModel.
+     * This will test the list box PDModel.
      *
      * @throws IOException If there is an error creating the field.
      */
-    public void testChoicePDModel() throws IOException
+    public void testListboxPDModel() throws IOException
     {
 
         /*
-         * Set up two data list which will be used for the tests
+         * Set up two data lists which will be used for the tests
          */
 
         // export values
@@ -94,8 +95,8 @@ public class TestListBox extends TestCase
         try
         {
             doc = new PDDocument();
-            PDAcroForm form = new PDAcroForm(doc);
-            PDChoice choice = new PDListBox(form);
+            PDAcroForm form = new PDAcroForm( doc );
+            PDListBox choice = new PDListBox(form);
 
             // appearance construction is not implemented, so turn on NeedAppearances
             form.setNeedAppearances(true);
@@ -104,25 +105,31 @@ public class TestListBox extends TestCase
             // only specific methods are tested here
             assertNotNull(choice.getOptions());
             assertNotNull(choice.getValue());
-            
+
             /*
              * Tests for setting the export values
              */
 
             // setting/getting option values - the dictionaries Opt entry
             choice.setOptions(exportValues);
-            assertEquals(exportValues, choice.getOptionsDisplayValues());
-            assertEquals(exportValues, choice.getOptionsExportValues());
+            assertEquals(exportValues,choice.getOptionsDisplayValues());
+            assertEquals(exportValues,choice.getOptionsExportValues());
+
+            // Test bug 1 of PDFBOX-4252 when top index is not null
+            choice.setTopIndex(1);
+            choice.setValue(exportValues.get(2));
+            assertEquals(exportValues.get(2), choice.getValue().get(0));
+            choice.setTopIndex(null); // reset
 
             // assert that the option values have been correctly set
             COSArray optItem = (COSArray) choice.getCOSObject().getItem(COSName.OPT);
             assertNotNull(choice.getCOSObject().getItem(COSName.OPT));
-            assertEquals(optItem.size(), exportValues.size());
+            assertEquals(optItem.size(),exportValues.size());
             assertEquals(exportValues.get(0), optItem.getString(0));
 
             // assert that the option values can be retrieved correctly
             List<String> retrievedOptions = choice.getOptions();
-            assertEquals(retrievedOptions.size(), exportValues.size());
+            assertEquals(retrievedOptions.size(),exportValues.size());
             assertEquals(retrievedOptions, exportValues);
 
             /*
@@ -131,7 +138,7 @@ public class TestListBox extends TestCase
 
             // assert that the field value can be set
             choice.setValue("export01");
-            assertEquals(choice.getValue().get(0), "export01");
+            assertEquals(choice.getValue().get(0),"export01");
 
             // ensure that the choice field doesn't allow multiple selections
             choice.setMultiSelect(false);
@@ -140,11 +147,11 @@ public class TestListBox extends TestCase
             try
             {
                 choice.setValue(exportValues);
-                fail("Missing IllegalArgumentException");
+                fail( "Missing IllegalArgumentException" );
             }
-            catch (IllegalArgumentException e)
+            catch( IllegalArgumentException e )
             {
-                assertEquals("The list box does not allow multiple selections.", e.getMessage());
+                assertEquals("The list box does not allow multiple selections.",e.getMessage() );
             }
 
             // ensure that the choice field does allow multiple selections
@@ -155,13 +162,13 @@ public class TestListBox extends TestCase
             // assert that the option values have been correctly set
             COSArray valueItems = (COSArray) choice.getCOSObject().getItem(COSName.V);
             assertNotNull(valueItems);
-            assertEquals(valueItems.size(), exportValues.size());
+            assertEquals(valueItems.size(),exportValues.size());
             assertEquals(exportValues.get(0), valueItems.getString(0));
 
             // assert that the index values have been correctly set
             COSArray indexItems = (COSArray) choice.getCOSObject().getItem(COSName.I);
             assertNotNull(indexItems);
-            assertEquals(indexItems.size(), exportValues.size());
+            assertEquals(indexItems.size(),exportValues.size());
 
             // setting a single value shall remove the indices
             choice.setValue("export01");
@@ -173,24 +180,24 @@ public class TestListBox extends TestCase
             assertNull(choice.getCOSObject().getItem(COSName.OPT));
             // if there is no Opt entry an empty List shall be returned
             assertEquals(choice.getOptions(), Collections.<String>emptyList());
-            
+
             /*
              * Test for setting export and display values
              */
 
             // setting display and export value
             choice.setOptions(exportValues, displayValues);
-            assertEquals(displayValues, choice.getOptionsDisplayValues());
-            assertEquals(exportValues, choice.getOptionsExportValues());
-            
+            assertEquals(displayValues,choice.getOptionsDisplayValues());
+            assertEquals(exportValues,choice.getOptionsExportValues());
+
             /*
              * Testing the sort option
              */
-            assertEquals(choice.getOptionsDisplayValues().get(0), "display02");
+            assertEquals(choice.getOptionsDisplayValues().get(0),"display02");
             choice.setSort(true);
             choice.setOptions(exportValues, displayValues);
-            assertEquals(choice.getOptionsDisplayValues().get(0), "display01");
-            
+            assertEquals(choice.getOptionsDisplayValues().get(0),"display01");
+
             /*
              * Setting options with an empty list
              */
@@ -210,18 +217,18 @@ public class TestListBox extends TestCase
             try
             {
                 choice.setOptions(exportValues, displayValues);
-                fail("Missing exception");
+                fail( "Missing exception" );
             }
-            catch (IllegalArgumentException e)
+            catch( IllegalArgumentException e )
             {
                 assertEquals(
                     "The number of entries for exportValue and displayValue shall be the same.",
-                    e.getMessage());
+                    e.getMessage() );
             }
         }
         finally
         {
-            if (doc != null)
+            if( doc != null )
             {
                 doc.close();
             }

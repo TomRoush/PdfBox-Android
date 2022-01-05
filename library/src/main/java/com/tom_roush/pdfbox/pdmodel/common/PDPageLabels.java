@@ -21,10 +21,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.NavigableSet;
+import java.util.NoSuchElementException;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -248,7 +248,7 @@ public class PDPageLabels implements COSObjectable
      */
     public NavigableSet<Integer> getPageIndices()
     {
-        return new TreeSet(labels.keySet());
+        return new TreeSet<Integer>(labels.keySet());
     }
 
     /**

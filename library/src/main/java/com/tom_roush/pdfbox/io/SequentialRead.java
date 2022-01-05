@@ -24,6 +24,7 @@ import java.io.IOException;
  */
 public interface SequentialRead extends Closeable
 {
+
     /**
      * Read a single byte of data.
      *
@@ -52,4 +53,5 @@ public interface SequentialRead extends Closeable
      * @throws IOException If there was an error while reading the data.
      */
     int read(byte[] b, int offset, int length) throws IOException;
+
 }

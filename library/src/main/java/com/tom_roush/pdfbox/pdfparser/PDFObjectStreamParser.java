@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tom_roush.pdfbox.android.PDFBoxConfig;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDocument;
 import com.tom_roush.pdfbox.cos.COSObject;
@@ -31,6 +32,7 @@ import com.tom_roush.pdfbox.cos.COSStream;
  * This will parse a PDF 1.5 object stream and extract all of the objects from the stream.
  *
  * @author Ben Litchfield
+ *
  */
 public class PDFObjectStreamParser extends BaseParser
 {
@@ -81,15 +83,17 @@ public class PDFObjectStreamParser extends BaseParser
                 object.setGenerationNumber(0);
                 if (objectCounter >= objectNumbers.size())
                 {
-                    Log.e("PdfBox-Android",
-                        "/ObjStm (object stream) has more objects than /N " + numberOfObjects);
+                    Log.e("PdfBox-Android", "/ObjStm (object stream) has more objects than /N " + numberOfObjects);
                     break;
                 }
                 object.setObjectNumber( objectNumbers.get( objectCounter) );
                 streamObjects.add( object );
-                Log.d("PdfBox-Android", "parsed=" + object );
+                if(PDFBoxConfig.isDebugEnabled())
+                {
+                    Log.d("PdfBox-Android", "parsed=" + object );
+                }
                 // According to the spec objects within an object stream shall not be enclosed 
-                // by obj/endobj tags, but there are some pdfs in the wild using those tags
+                // by obj/endobj tags, but there are some pdfs in the wild using those tags 
                 // skip endobject marker if present
                 if (!seqSource.isEOF() && seqSource.peek() == 'e')
                 {

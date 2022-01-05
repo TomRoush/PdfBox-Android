@@ -108,7 +108,7 @@ public class JPEGFactoryTest
         InputStream stream = testContext.getAssets().open(
             "pdfbox/com/tom_roush/pdfbox/pdmodel/graphics/image/jpeg256.jpg");
         PDImageXObject ximage = JPEGFactory.createFromStream(document, stream);
-        validate(ximage, 8, 344, 287, "jpg", PDDeviceGray.INSTANCE.getName());
+        validate(ximage, 8, 344, 287, "jpg", PDDeviceRGB.INSTANCE.getName()); // TODO: PdfBox-Android
 
         doWritePDF(document, ximage, testResultsDir, "jpeg256stream.pdf");
         checkJpegStream(testResultsDir, "jpeg256stream.pdf", testContext.getAssets().open(
@@ -145,7 +145,7 @@ public class JPEGFactoryTest
 //        assertEquals(1, image.getColorModel().getNumComponents()); TODO: PdfBox-Android
         Log.e("PdfBox-Android", image.getConfig().toString());
         PDImageXObject ximage = JPEGFactory.createFromImage(document, image);
-        validate(ximage, 8, 344, 287, "jpg", PDDeviceGray.INSTANCE.getName());
+        validate(ximage, 8, 344, 287, "jpg", PDDeviceRGB.INSTANCE.getName()); // TODO: PdfBox-Android
 
         doWritePDF(document, ximage, testResultsDir, "jpeg256.pdf");
     }

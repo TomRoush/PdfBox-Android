@@ -72,7 +72,7 @@ public class PDExtendedGraphicsState implements COSObjectable
         {
             if( key.equals( COSName.LW ) )
             {
-                gs.setLineWidth( getLineWidth() );
+                gs.setLineWidth( defaultIfNull( getLineWidth(), 1 ) );
             }
             else if( key.equals( COSName.LC ) )
             {
@@ -84,7 +84,7 @@ public class PDExtendedGraphicsState implements COSObjectable
             }
             else if( key.equals( COSName.ML ) )
             {
-                gs.setMiterLimit( getMiterLimit() );
+                gs.setMiterLimit( defaultIfNull( getMiterLimit(), 10 ) );
             }
             else if( key.equals( COSName.D ) )
             {
@@ -96,7 +96,7 @@ public class PDExtendedGraphicsState implements COSObjectable
             }
             else if( key.equals( COSName.OPM ) )
             {
-                gs.setOverprintMode( getOverprintMode().doubleValue() );
+                gs.setOverprintMode( defaultIfNull( getOverprintMode(), 0 ) );
             }
             else if( key.equals( COSName.OP ) )
             {
@@ -117,11 +117,11 @@ public class PDExtendedGraphicsState implements COSObjectable
             }
             else if( key.equals( COSName.FL ) )
             {
-                gs.setFlatness( getFlatnessTolerance() );
+                gs.setFlatness( defaultIfNull( getFlatnessTolerance(), 1.0f ) );
             }
             else if( key.equals( COSName.SM ) )
             {
-                gs.setSmoothness( getSmoothnessTolerance() );
+                gs.setSmoothness( defaultIfNull( getSmoothnessTolerance(), 0 ) );
             }
             else if( key.equals( COSName.SA ) )
             {
@@ -129,11 +129,11 @@ public class PDExtendedGraphicsState implements COSObjectable
             }
             else if( key.equals( COSName.CA ) )
             {
-                gs.setAlphaConstant(getStrokingAlphaConstant());
+                gs.setAlphaConstant( defaultIfNull( getStrokingAlphaConstant(), 1.0f ) );
             }
             else if( key.equals( COSName.CA_NS ) )
             {
-                gs.setNonStrokeAlphaConstant(getNonStrokingAlphaConstant() );
+                gs.setNonStrokeAlphaConstant( defaultIfNull( getNonStrokingAlphaConstant(), 1.0f ) );
             }
             else if( key.equals( COSName.AIS ) )
             {
@@ -173,6 +173,22 @@ public class PDExtendedGraphicsState implements COSObjectable
                 gs.setTransfer(getTransfer2());
             }
         }
+    }
+
+    /**
+     * Returns the provided default value in case 'standard' valu
+     * is <code>null</code>. To be used in cases unboxing may
+     * lead to a NPE.
+     *
+     * @param _value  'standard' value
+     * @param _default  default value 
+     *
+     * @return 'standard' value if not <code>null</code>
+     *         otherwise default value
+     */
+    private float defaultIfNull( Float _value, float _default )
+    {
+        return _value != null ? _value : _default;
     }
 
     /**
@@ -610,9 +626,10 @@ public class PDExtendedGraphicsState implements COSObjectable
     private Float getFloatItem( COSName key )
     {
         Float retval = null;
-        COSNumber value = (COSNumber) dict.getDictionaryObject( key );
-        if( value != null )
+        COSBase base = dict.getDictionaryObject(key);
+        if (base instanceof COSNumber)
         {
+            COSNumber value = (COSNumber) base;
             retval = value.floatValue();
         }
         return retval;

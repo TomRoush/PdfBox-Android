@@ -1,10 +1,9 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2014 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -14,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdfparser;
 
 import java.io.BufferedOutputStream;
@@ -33,7 +33,7 @@ import java.io.OutputStream;
 class EndstreamOutputStream extends BufferedOutputStream
 {
     //TODO: replace this class with a PullBackOutputStream class if there ever is one
-    
+
     private boolean hasCR = false;
     private boolean hasLF = false;
     private int pos = 0;
@@ -52,7 +52,7 @@ class EndstreamOutputStream extends BufferedOutputStream
      * @param b byte array.
      * @param off offset.
      * @param len length of segment to write.
-     * @throws IOException 
+     * @throws IOException
      */
     @Override
     public void write(byte[] b, int off, int len) throws IOException
@@ -120,8 +120,8 @@ class EndstreamOutputStream extends BufferedOutputStream
     /**
      * write out a single CR if one was kept. Don't write kept CR LF or LF, 
      * and then call the base method to flush.
-     * 
-     * @throws IOException 
+     *
+     * @throws IOException
      */
     @Override
     public void flush() throws IOException

@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.multipdf;
 
 import java.io.IOException;
-
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 
@@ -31,11 +31,11 @@ public class PageExtractor
 
     // first page to extract is page 1 (by default)
     private int startPage = 1;
+
     private int endPage = 0;
 
     /**
      * Creates a new instance of PageExtractor
-     *
      * @param sourceDocument The document to split.
      */
     public PageExtractor(PDDocument sourceDocument)
@@ -46,7 +46,6 @@ public class PageExtractor
 
     /**
      * Creates a new instance of PageExtractor
-     *
      * @param sourceDocument The document to split.
      * @param startPage The first page you want extracted (inclusive)
      * @param endPage The last page you want extracted (inclusive)
@@ -59,12 +58,12 @@ public class PageExtractor
     }
 
     /**
-     * This will take a document and extract the desired pages into a new
-     * document.  Both startPage and endPage are included in the extracted
-     * document.  If the endPage is greater than the number of pages in the
+     * This will take a document and extract the desired pages into a new 
+     * document.  Both startPage and endPage are included in the extracted 
+     * document.  If the endPage is greater than the number of pages in the 
      * source document, it will go to the end of the document.  If startPage is
-     * less than 1, it'll start with page 1.  If startPage is greater than
-     * endPage or greater than the number of pages in the source document, a
+     * less than 1, it'll start with page 1.  If startPage is greater than 
+     * endPage or greater than the number of pages in the source document, a 
      * blank document will be returned.
      *
      * @return The extracted document
@@ -92,7 +91,6 @@ public class PageExtractor
 
     /**
      * Gets the first page number to be extracted.
-     *
      * @return the first page number which should be extracted
      */
     public int getStartPage()
@@ -102,7 +100,6 @@ public class PageExtractor
 
     /**
      * Sets the first page number to be extracted.
-     *
      * @param startPage the first page number which should be extracted
      */
     public void setStartPage(int startPage)
@@ -112,7 +109,6 @@ public class PageExtractor
 
     /**
      * Gets the last page number (inclusive) to be extracted.
-     *
      * @return the last page number which should be extracted
      */
     public int getEndPage()
@@ -122,7 +118,6 @@ public class PageExtractor
 
     /**
      * Sets the last page number to be extracted.
-     *
      * @param endPage the last page number which should be extracted
      */
     public void setEndPage(int endPage)

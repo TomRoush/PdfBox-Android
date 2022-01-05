@@ -21,12 +21,15 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Build;
 
+import androidx.test.filters.FlakyTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.File;
 import java.io.IOException;
 
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.android.TestResourceGenerator;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
@@ -34,7 +37,6 @@ import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
-import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -291,4 +293,59 @@ public class LosslessFactoryTest
     }
 
     // doBitmaskTransparencyTest: Android does not have bitmask transparency
+
+    /**
+     * Test lossless encoding of CMYK images
+     */
+//    public void testCreateLosslessFromImageCMYK() throws IOException TODO: PdfBox-Android
+
+//    public void testCreateLosslessFrom16Bit() throws IOException TODO: PdfBox-Android
+
+//    public void testCreateLosslessFromImageINT_BGR() throws IOException TODO: PdfBox-Android
+
+//    public void testCreateLosslessFromImageINT_RGB() throws IOException TODO: PdfBox-Android
+
+//    public void testCreateLosslessFromImageBYTE_3BGR() throws IOException TODO: PdfBox-Android
+
+    @FlakyTest(detail = "Behavior depends heavily on API level / device")
+    @Test
+    public void testCreateLosslessFrom16BitPNG() throws IOException
+    {
+        // TODO: PdfBox-Android PNG is reduced to 8 bit, this causes changes in test values
+        PDDocument document = new PDDocument();
+        File TARGETDIR = new File(testContext.getCacheDir(), "imgs");
+        TARGETDIR.mkdirs();
+        File imgFile = TestResourceGenerator.downloadTestResource(TARGETDIR, "PDFBOX-4184-16bit.png", "https://issues.apache.org/jira/secure/attachment/12929821/16bit.png");
+        assumeNotNull(imgFile);
+        Bitmap image = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+        Bitmap compareImage;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        {
+            // TODO: PdfBox-Android This is a workaround for RGBA_16 failing the checkIdent calls
+            compareImage = image.copy(Bitmap.Config.ARGB_8888, false);
+        }
+        else
+        {
+            compareImage = image;
+        }
+
+//        assertEquals(64, image.getColorModel().getPixelSize());
+//        assertEquals(Transparency.TRANSLUCENT, image.getColorModel().getTransparency());
+//        assertEquals(4, image.getRaster().getNumDataElements());
+//        assertEquals(java.awt.image.DataBuffer.TYPE_USHORT, image.getRaster().getDataBuffer().getDataType());
+
+        PDImageXObject ximage = LosslessFactory.createFromImage(document, image);
+
+        int w = image.getWidth();
+        int h = image.getHeight();
+        validate(ximage, 8, w, h, "png", PDDeviceRGB.INSTANCE.getName());
+        checkIdent(compareImage, ximage.getImage());
+        checkIdentRGB(compareImage, ximage.getOpaqueImage());
+
+        assertNotNull(ximage.getSoftMask());
+        validate(ximage.getSoftMask(), 8, w, h, "png", PDDeviceGray.INSTANCE.getName());
+//        assertEquals(35, colorCount(ximage.getSoftMask().getImage())); TODO: PdfBox-Android
+
+        doWritePDF(document, ximage, testResultsDir, "png16bit.pdf");
+    }
 }

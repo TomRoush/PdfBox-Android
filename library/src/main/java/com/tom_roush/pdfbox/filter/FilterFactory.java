@@ -16,12 +16,12 @@
  */
 package com.tom_roush.pdfbox.filter;
 
-import com.tom_roush.pdfbox.cos.COSName;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * Factory for Filter classes.

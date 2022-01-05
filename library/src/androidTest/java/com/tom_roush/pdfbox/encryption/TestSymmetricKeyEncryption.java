@@ -35,6 +35,7 @@ import java.util.Map;
 import javax.crypto.Cipher;
 
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.android.TestResourceGenerator;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
@@ -53,6 +54,8 @@ import com.tom_roush.pdfbox.util.Charsets;
 import org.junit.Assert;
 
 import junit.framework.TestCase;
+
+import static org.junit.Assume.assumeNotNull;
 
 /**
  * Tests for symmetric key encryption.
@@ -214,6 +217,33 @@ public class TestSymmetricKeyEncryption extends TestCase
             USERPASSWORD, OWNERPASSWORD, permission);
 
         testSymmEncrForKeySize(256, true, sizePriorToEncryption, inputFileAsByteArray,
+            USERPASSWORD, OWNERPASSWORD, permission);
+    }
+
+    /**
+     * PDFBOX-4308: test that index colorspace table string doesn't get
+     * corrupted when encrypting. This happened because the colorspace was
+     * referenced twice, once in the resources dictionary and once in an image
+     * in the resources dictionary, and when saving the PDF the string was saved
+     * twice, once as a direct object and once as an indirect object (both from
+     * the same java object). Encryption used the wrong object number and/or the
+     * object was encrypted twice.
+     *
+     * @throws IOException
+     */
+    public void testPDFBox4308() throws IOException
+    {
+        File TARGETPDFDIR = new File(testContext.getCacheDir(), "pdfs");
+        TARGETPDFDIR.mkdirs();
+        File pdfFile = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-4308.pdf", "https://issues.apache.org/jira/secure/attachment/12938094/Quelldatei.pdf");
+        assumeNotNull(pdfFile);
+
+        InputStream is = new FileInputStream(pdfFile);
+        byte[] inputFileAsByteArray = IOUtils.toByteArray(is);
+        is.close();
+        int sizePriorToEncryption = inputFileAsByteArray.length;
+
+        testSymmEncrForKeySize(40, false, sizePriorToEncryption, inputFileAsByteArray,
             USERPASSWORD, OWNERPASSWORD, permission);
     }
 

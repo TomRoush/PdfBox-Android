@@ -16,8 +16,8 @@
  */
 package com.tom_roush.pdfbox.io;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 
 /**
  * An InputStream which reads from a RandomAccessRead.
@@ -56,7 +56,7 @@ public class RandomAccessInputStream extends InputStream
         {
             return Integer.MAX_VALUE;
         }
-        return (int) available;
+        return (int)available;
     }
 
     @Override

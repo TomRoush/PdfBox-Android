@@ -16,16 +16,15 @@
  */
 package com.tom_roush.pdfbox.pdmodel.common;
 
-import com.tom_roush.pdfbox.cos.COSInteger;
-
-import junit.framework.TestCase;
-
-import org.junit.Assert;
-
 import java.io.IOException;
 import java.util.List;
-import java.util.SortedMap;
+import java.util.Map;
 import java.util.TreeMap;
+
+import com.tom_roush.pdfbox.cos.COSInteger;
+import org.junit.Assert;
+
+import junit.framework.TestCase;
 
 /**
  * A test case for PDNameTreeNode.
@@ -34,17 +33,17 @@ import java.util.TreeMap;
  */
 public class TestPDNameTreeNode extends TestCase
 {
-    private PDNameTreeNode node1;
-    private PDNameTreeNode node2;
-    private PDNameTreeNode node4;
-    private PDNameTreeNode node5;
-    private PDNameTreeNode node24;
+    private PDNameTreeNode<COSInteger> node1;
+    private PDNameTreeNode<COSInteger> node2;
+    private PDNameTreeNode<COSInteger> node4;
+    private PDNameTreeNode<COSInteger> node5;
+    private PDNameTreeNode<COSInteger> node24;
 
     @Override
     protected void setUp() throws Exception
     {
         this.node5 = new PDIntegerNameTreeNode();
-        SortedMap<String, COSObjectable> names = new TreeMap<String, COSObjectable>();
+        Map<String, COSInteger> names = new TreeMap<String, COSInteger>();
         names.put("Actinium", COSInteger.get(89));
         names.put("Aluminum", COSInteger.get(13));
         names.put("Americium", COSInteger.get(95));
@@ -55,7 +54,7 @@ public class TestPDNameTreeNode extends TestCase
         this.node5.setNames(names);
 
         this.node24 = new PDIntegerNameTreeNode();
-        names = new TreeMap<String, COSObjectable>();
+        names = new TreeMap<String, COSInteger>();
         names.put("Xenon", COSInteger.get(54));
         names.put("Ytterbium", COSInteger.get(70));
         names.put("Yttrium", COSInteger.get(39));
@@ -64,10 +63,10 @@ public class TestPDNameTreeNode extends TestCase
         this.node24.setNames(names);
 
         this.node2 = new PDIntegerNameTreeNode();
-        List<PDNameTreeNode> kids = this.node2.getKids();
+        List<PDNameTreeNode<COSInteger>> kids = this.node2.getKids();
         if (kids == null)
         {
-            kids = new COSArrayList<PDNameTreeNode>();
+            kids = new COSArrayList<PDNameTreeNode<COSInteger>>();
         }
         kids.add(this.node5);
         this.node2.setKids(kids);
@@ -76,7 +75,7 @@ public class TestPDNameTreeNode extends TestCase
         kids = this.node4.getKids();
         if (kids == null)
         {
-            kids = new COSArrayList<PDNameTreeNode>();
+            kids = new COSArrayList<PDNameTreeNode<COSInteger>>();
         }
         kids.add(this.node24);
         this.node4.setKids(kids);
@@ -85,7 +84,7 @@ public class TestPDNameTreeNode extends TestCase
         kids = this.node1.getKids();
         if (kids == null)
         {
-            kids = new COSArrayList<PDNameTreeNode>();
+            kids = new COSArrayList<PDNameTreeNode<COSInteger>>();
         }
         kids.add(this.node2);
         kids.add(this.node4);

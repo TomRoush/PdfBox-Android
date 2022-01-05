@@ -16,21 +16,20 @@
  */
 package com.tom_roush.pdfbox.pdmodel.common;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.Map;
+
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentNameDictionary;
 import com.tom_roush.pdfbox.pdmodel.PDEmbeddedFilesNameTreeNode;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDComplexFileSpecification;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDEmbeddedFile;
-
-import junit.framework.TestCase;
-
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.List;
-import java.util.Map;
+import junit.framework.TestCase;
 
 public class TestEmbeddedFiles extends TestCase
 {
@@ -85,7 +84,7 @@ public class TestEmbeddedFiles extends TestCase
         PDDocumentNameDictionary names = catalog.getNames();
         PDEmbeddedFilesNameTreeNode treeNode = names.getEmbeddedFiles();
         List<PDNameTreeNode<PDComplexFileSpecification>> kids = treeNode.getKids();
-        for (PDNameTreeNode kid : kids)
+        for (PDNameTreeNode<PDComplexFileSpecification> kid : kids)
         {
             Map<String, PDComplexFileSpecification> tmpNames = kid.getNames();
             COSObjectable obj = tmpNames.get("My first attachment");
