@@ -55,6 +55,8 @@ import org.junit.Assert;
 
 import junit.framework.TestCase;
 
+import static org.junit.Assume.assumeNotNull;
+
 /**
  * Tests for symmetric key encryption.
  *
@@ -234,6 +236,8 @@ public class TestSymmetricKeyEncryption extends TestCase
         File TARGETPDFDIR = new File(testContext.getCacheDir(), "pdfs");
         TARGETPDFDIR.mkdirs();
         File pdfFile = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-4308.pdf", "https://issues.apache.org/jira/secure/attachment/12938094/Quelldatei.pdf");
+        assumeNotNull(pdfFile);
+
         InputStream is = new FileInputStream(pdfFile);
         byte[] inputFileAsByteArray = IOUtils.toByteArray(is);
         is.close();
