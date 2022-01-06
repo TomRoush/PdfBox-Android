@@ -33,7 +33,7 @@ jobs:
       fail-fast: false
       matrix:
         api-level:
-          - 19
+          - 21
           - 31
 
     steps:
@@ -51,7 +51,7 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           target: google_apis
-          arch: x86
+          arch: x86_64
           script: adb logcat *:S TestRunner:V & ./gradlew connectedCheck --no-build-cache --no-daemon --stacktrace
 
   instrumentation-test-summary:
