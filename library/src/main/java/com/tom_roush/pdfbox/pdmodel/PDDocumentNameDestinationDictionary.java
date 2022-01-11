@@ -16,7 +16,6 @@
 package com.tom_roush.pdfbox.pdmodel;
 
 import java.io.IOException;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -25,7 +24,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
 
 /**
- * This encapsulates the "dictionary of names and corresponding destinations" for the /Dest entry
+ * This encapsulates the "dictionary of names and corresponding destinations" for the /Dests entry
  * in the document catalog.
  *
  * @author Tilman Hausherr
@@ -60,6 +59,7 @@ public class PDDocumentNameDestinationDictionary implements COSObjectable
      *
      * @param name The destination name.
      * @return The destination for that name, or null if there isn't any.
+     *
      * @throws IOException if something goes wrong when creating the destination object.
      */
     public PDDestination getDestination(String name) throws IOException
@@ -67,15 +67,15 @@ public class PDDocumentNameDestinationDictionary implements COSObjectable
         COSBase item = nameDictionary.getDictionaryObject(name);
 
         // "The value of this entry shall be a dictionary in which each key is a destination name
-        // and the corresponding value is either an array defining the destination (...)
-        // or a dictionary with a D entry whose value is such an array."
+        // and the corresponding value is either an array defining the destination (...) 
+        // or a dictionary with a D entry whose value is such an array."                
         if (item instanceof COSArray)
         {
             return PDDestination.create(item);
         }
         else if (item instanceof COSDictionary)
         {
-            COSDictionary dict = (COSDictionary)item;
+            COSDictionary dict = (COSDictionary) item;
             if (dict.containsKey(COSName.D))
             {
                 return PDDestination.create(dict.getDictionaryObject(COSName.D));
@@ -83,4 +83,5 @@ public class PDDocumentNameDestinationDictionary implements COSObjectable
         }
         return null;
     }
+
 }

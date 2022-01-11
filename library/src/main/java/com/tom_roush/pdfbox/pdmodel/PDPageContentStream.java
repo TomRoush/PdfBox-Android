@@ -459,6 +459,7 @@ public final class PDPageContentStream implements Closeable
      *
      * @param text The Unicode text to show.
      * @throws IOException If an io exception occurs.
+     * @throws IllegalArgumentException if a character isn't supported by the current font
      */
     public void showText(String text) throws IOException
     {
@@ -2496,6 +2497,10 @@ public final class PDPageContentStream implements Closeable
     @Override
     public void close() throws IOException
     {
+        if (inTextMode)
+        {
+            Log.w("PdfBox-Android", "You did not call endText(), some viewers won't display your text");
+        }
         if (output != null)
         {
             output.close();

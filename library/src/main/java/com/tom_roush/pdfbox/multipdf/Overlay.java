@@ -16,6 +16,7 @@
  */
 package com.tom_roush.pdfbox.multipdf;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,8 +24,10 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -46,7 +49,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
  * Based on code contributed by Balazs Jerk.
  *
  */
-public class Overlay
+public class Overlay implements Closeable
 {
     /**
      * Possible location of the overlayed pages: foreground or background.
@@ -62,7 +65,7 @@ public class Overlay
     private LayoutPage oddPageOverlayPage;
     private LayoutPage evenPageOverlayPage;
 
-    private final Map<Integer, PDDocument> specificPageOverlay = new HashMap<Integer, PDDocument>();
+    private final Set<PDDocument> openDocuments = new HashSet<PDDocument>();
     private Map<Integer, LayoutPage> specificPageOverlayPage = new HashMap<Integer, LayoutPage>();
 
     private Position position = Position.BACKGROUND;
@@ -117,7 +120,7 @@ public class Overlay
                 loadedDocuments.put(e.getValue(), doc);
                 layouts.put(doc, getLayoutPage(doc));
             }
-            specificPageOverlay.put(e.getKey(), doc);
+            openDocuments.add(doc);
             specificPageOverlayPage.put(e.getKey(), layouts.get(doc));
         }
         processPages(inputPDFDocument);
@@ -125,10 +128,38 @@ public class Overlay
     }
 
     /**
-     * Close all input pdfs which were used for the overlay.
+     * This will add overlays documents to a document.
+     *
+     * @param specificPageOverlayDocuments map of overlay documents for specific pages. The page
+     * numbers are 1-based.
+     *
+     * @return The modified input PDF document, which has to be saved and closed by the caller. If
+     * the input document was passed by {@link #setInputPDF(PDDocument) setInputPDF(PDDocument)}
+     * then it is that object that is returned.
      *
      * @throws IOException if something went wrong
      */
+    public PDDocument overlayDocuments(Map<Integer, PDDocument> specificPageOverlayDocuments) throws IOException
+    {
+        loadPDFs();
+        for (Map.Entry<Integer, PDDocument> e : specificPageOverlayDocuments.entrySet())
+        {
+            PDDocument doc = e.getValue();
+            if (doc != null)
+            {
+                specificPageOverlayPage.put(e.getKey(), getLayoutPage(doc));
+            }
+        }
+        processPages(inputPDFDocument);
+        return inputPDFDocument;
+    }
+
+    /**
+     * Close all input documents which were used for the overlay and opened by this class.
+     *
+     * @throws IOException if something went wrong
+     */
+    @Override
     public void close() throws IOException
     {
         if (defaultOverlay != null)
@@ -155,15 +186,12 @@ public class Overlay
         {
             evenPageOverlay.close();
         }
-        if (specificPageOverlay != null)
+        for (PDDocument doc : openDocuments)
         {
-            for (Map.Entry<Integer, PDDocument> e : specificPageOverlay.entrySet())
-            {
-                e.getValue().close();
-            }
-            specificPageOverlay.clear();
-            specificPageOverlayPage.clear();
+            doc.close();
         }
+        openDocuments.clear();
+        specificPageOverlayPage.clear();
     }
 
     private void loadPDFs() throws IOException

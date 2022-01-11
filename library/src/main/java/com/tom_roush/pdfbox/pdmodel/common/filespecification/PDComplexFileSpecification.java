@@ -25,6 +25,7 @@ import com.tom_roush.pdfbox.cos.COSStream;
  * This represents a file specification.
  *
  * @author Ben Litchfield
+ *
  */
 public class PDComplexFileSpecification extends PDFileSpecification
 {
@@ -438,3 +439,4 @@ public class PDComplexFileSpecification extends PDFileSpecification
     }
 
 }
+

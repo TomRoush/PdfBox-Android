@@ -22,6 +22,7 @@ import java.util.TreeSet;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
@@ -31,6 +32,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
  *
  * @author Ben Litchfield
  * @author Gerardo Ortiz
+ *
  */
 public class PDDocumentInformation implements COSObjectable
 {
@@ -64,13 +66,13 @@ public class PDDocumentInformation implements COSObjectable
     {
         return info;
     }
-    
+
     /**
      * Return the properties String value.
      * <p>
      * Allows to retrieve the
      * low level date for validation purposes.
-     * </p>
+     * </p> 
      *
      * @param propertyKey the dictionaries key
      * @return the properties value
@@ -305,7 +307,7 @@ public class PDDocumentInformation implements COSObjectable
             !value.equals( "Unknown" ) )
         {
             throw new RuntimeException( "Valid values for trapped are " +
-                                        "'True', 'False', or 'Unknown'" );
+                "'True', 'False', or 'Unknown'" );
         }
 
         info.setName( COSName.TRAPPED, value );
