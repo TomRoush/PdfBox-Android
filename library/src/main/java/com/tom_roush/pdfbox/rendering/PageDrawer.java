@@ -1094,7 +1094,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         p.setStrokeCap(cap);
         p.setStrokeJoin(join);
         p.setStrokeMiter(miterLimit);
-        p.setPathEffect(new DashPathEffect(dash, dash_phase));
+        if(dash != null)
+        {
+            p.setPathEffect(new DashPathEffect(dash, dash_phase));
+        }
     }
 
     @Override

@@ -52,9 +52,11 @@ import com.tom_roush.pdfbox.rendering.PDFRenderer;
 import com.tom_roush.pdfbox.util.Charsets;
 
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-import junit.framework.TestCase;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeNotNull;
 
 /**
@@ -69,7 +71,7 @@ import static org.junit.Assume.assumeNotNull;
  * @author Tilman Hausherr
  *
  */
-public class TestSymmetricKeyEncryption extends TestCase
+public class TestSymmetricKeyEncryption
 {
     private File testResultsDir;
 
@@ -83,8 +85,8 @@ public class TestSymmetricKeyEncryption extends TestCase
     /**
      * {@inheritDoc}
      */
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
@@ -118,6 +120,7 @@ public class TestSymmetricKeyEncryption extends TestCase
      * extraction. In the 128 and 256 bit encrypted files, AssembleDocument,
      * ExtractForAccessibility and PrintDegraded are also disabled.
      */
+    @Test
     public void testPermissions() throws Exception
     {
         AccessPermission fullAP = new AccessPermission();
@@ -202,6 +205,7 @@ public class TestSymmetricKeyEncryption extends TestCase
      *
      * @throws Exception If there is an unexpected error during the test.
      */
+    @Test
     public void testProtection() throws Exception
     {
         byte[] inputFileAsByteArray = getFileResourceAsByteArray("Acroform-PDFBOX-2333.pdf");
@@ -231,6 +235,7 @@ public class TestSymmetricKeyEncryption extends TestCase
      *
      * @throws IOException
      */
+    @Test
     public void testPDFBox4308() throws IOException
     {
         File TARGETPDFDIR = new File(testContext.getCacheDir(), "pdfs");
@@ -253,6 +258,7 @@ public class TestSymmetricKeyEncryption extends TestCase
      *
      * @throws Exception If there is an unexpected error during the test.
      */
+    @Test
     public void testProtectionInnerAttachment() throws Exception
     {
         String testFileName = "preEnc_20141025_105451.pdf";
