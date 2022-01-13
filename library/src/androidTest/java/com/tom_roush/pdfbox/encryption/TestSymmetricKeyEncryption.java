@@ -173,7 +173,6 @@ public class TestSymmetricKeyEncryption
         }
     }
 
-    @Test
     private void checkPerms(byte[] inputFileAsByteArray, String password,
         AccessPermission expectedPermissions) throws IOException
     {
