@@ -16,6 +16,8 @@
  */
 package com.tom_roush.fontbox.cff;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -336,6 +338,7 @@ public class CFFParser
         StringBuilder sb = new StringBuilder();
         boolean done = false;
         boolean exponentMissing = false;
+        boolean hasExponent = false;
         while (!done)
         {
             int b = input.readUnsignedByte();
@@ -361,12 +364,24 @@ public class CFFParser
                         sb.append(".");
                         break;
                     case 0xb:
+                        if (hasExponent)
+                        {
+                            Log.w("PdfBox-Android", "duplicate 'E' ignored after " + sb);
+                            break;
+                        }
                         sb.append("E");
                         exponentMissing = true;
+                        hasExponent = true;
                         break;
                     case 0xc:
+                        if (hasExponent)
+                        {
+                            Log.w("PdfBox-Android", "duplicate 'E-' ignored after " + sb);
+                            break;
+                        }
                         sb.append("E-");
                         exponentMissing = true;
+                        hasExponent = true;
                         break;
                     case 0xd:
                         break;

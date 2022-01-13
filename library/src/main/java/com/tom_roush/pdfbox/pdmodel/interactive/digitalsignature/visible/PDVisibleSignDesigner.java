@@ -225,11 +225,12 @@ public class PDVisibleSignDesigner
                 yAxis = pageHeight - xAxis - imageWidth;
                 xAxis = temp;
 
+                affineTransform = new AffineTransform(
+                    0, imageHeight / imageWidth, -imageWidth / imageHeight, 0, imageWidth, 0);
+
                 temp = imageHeight;
                 imageHeight = imageWidth;
                 imageWidth = temp;
-
-                affineTransform = new AffineTransform(0, 0.5, -2, 0, 100, 0);
                 break;
 
             case 180:
@@ -238,7 +239,7 @@ public class PDVisibleSignDesigner
                 xAxis = newX;
                 yAxis = newY;
 
-                affineTransform = new AffineTransform(-1, 0, 0, -1, 100, 50);
+                affineTransform = new AffineTransform(-1, 0, 0, -1, imageWidth, imageHeight);
                 break;
 
             case 270:
@@ -246,11 +247,12 @@ public class PDVisibleSignDesigner
                 xAxis = pageWidth - yAxis - imageHeight;
                 yAxis = temp;
 
+                affineTransform = new AffineTransform(
+                    0, -imageHeight / imageWidth, imageWidth / imageHeight, 0, 0, imageHeight);
+
                 temp = imageHeight;
                 imageHeight = imageWidth;
                 imageWidth = temp;
-
-                affineTransform = new AffineTransform(0, -0.5, 2, 0, 0, 50);
                 break;
 
             case 0:

@@ -19,16 +19,17 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * @author Tilman Hausherr
- */
 public class PageLayoutTest
 {
     /**
+     * @author Tilman Hausherr
+     *
      * Test for completeness (PDFBOX-3362).
      */
     @Test
@@ -44,5 +45,24 @@ public class PageLayoutTest
         }
         assertEquals(PageLayout.values().length, pageLayoutSet.size());
         assertEquals(PageLayout.values().length, stringSet.size());
+    }
+
+    /**
+     * @author John Bergqvist
+     */
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
+
+    @Test
+    public void fromStringInputNotNullOutputIllegalArgumentException()
+    {
+        // Arrange
+        final String value = "SinglePag";
+
+        // Act
+        thrown.expect(IllegalArgumentException.class);
+        PageLayout.fromString(value);
+
+        // Method is not expected to return due to exception thrown
     }
 }

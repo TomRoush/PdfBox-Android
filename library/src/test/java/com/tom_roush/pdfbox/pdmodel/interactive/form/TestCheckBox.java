@@ -16,31 +16,40 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceCharacteristicsDictionary;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * This will test the functionality of Radio Buttons in PDFBox.
+ * This will test the functionality of checkboxes in PDFBox.
  */
 public class TestCheckBox extends TestCase
 {
+
     /**
      * Constructor.
      *
      * @param name The name of the test to run.
      */
-    public TestCheckBox(String name)
+    public TestCheckBox( String name )
     {
-        super(name);
+        super( name );
     }
 
     /**
@@ -50,7 +59,7 @@ public class TestCheckBox extends TestCase
      */
     public static Test suite()
     {
-        return new TestSuite(TestCheckBox.class);
+        return new TestSuite( TestCheckBox.class );
     }
 
     /**
@@ -58,14 +67,14 @@ public class TestCheckBox extends TestCase
      *
      * @param args The command line arguments.
      */
-    public static void main(String[] args)
+    public static void main( String[] args )
     {
-        String[] arg = {TestCheckBox.class.getName()};
-        junit.textui.TestRunner.main(arg);
+        String[] arg = {TestCheckBox.class.getName() };
+        junit.textui.TestRunner.main( arg );
     }
 
     /**
-     * This will test the radio button PDModel.
+     * This will test the checkbox PDModel.
      *
      * @throws IOException If there is an error creating the field.
      */
@@ -75,7 +84,7 @@ public class TestCheckBox extends TestCase
         try
         {
             doc = new PDDocument();
-            PDAcroForm form = new PDAcroForm(doc);
+            PDAcroForm form = new PDAcroForm( doc );
             PDCheckBox checkBox = new PDCheckBox(form);
 
             // test that there are no nulls returned for an empty field
@@ -93,26 +102,62 @@ public class TestCheckBox extends TestCase
 
             // assert that the values have been correctly set
             assertNotNull(checkBox.getCOSObject().getItem(COSName.OPT));
-            assertEquals(optItem.size(), 2);
+            assertEquals(optItem.size(),2);
             assertEquals(options.get(0), optItem.getString(0));
 
             // assert that the values can be retrieved correctly
             List<String> retrievedOptions = checkBox.getExportValues();
-            assertEquals(retrievedOptions.size(), 2);
+            assertEquals(retrievedOptions.size(),2);
             assertEquals(retrievedOptions, options);
 
             // assert that the Opt entry is removed
             checkBox.setExportValues(null);
             assertNull(checkBox.getCOSObject().getItem(COSName.OPT));
             // if there is no Opt entry an empty List shall be returned
-            assertEquals(checkBox.getExportValues(), new ArrayList<String>());
+            assertTrue(checkBox.getExportValues().isEmpty());
         }
         finally
         {
-            if (doc != null)
+            if( doc != null )
             {
                 doc.close();
             }
         }
+    }
+
+    /**
+     * PDFBOX-4366: Create and test a checkbox with no /AP. The created file works with Adobe Reader!
+     *
+     * @throws IOException
+     */
+    public void testCheckBoxNoAppearance() throws IOException
+    {
+        PDDocument doc = new PDDocument();
+        PDPage page = new PDPage();
+        doc.addPage(page);
+        PDAcroForm acroForm = new PDAcroForm(doc);
+        acroForm.setNeedAppearances(true); // need this or it won't appear on Adobe Reader
+        doc.getDocumentCatalog().setAcroForm(acroForm);
+        List<PDField> fields = new ArrayList<PDField>();
+        PDCheckBox checkBox = new PDCheckBox(acroForm);
+        checkBox.setPartialName("checkbox");
+        PDAnnotationWidget widget = checkBox.getWidgets().get(0);
+        widget.setRectangle(new PDRectangle(50, 600, 100, 100));
+        PDBorderStyleDictionary bs = new PDBorderStyleDictionary();
+        bs.setStyle(PDBorderStyleDictionary.STYLE_SOLID);
+        bs.setWidth(1);
+        COSDictionary acd = new COSDictionary();
+        PDAppearanceCharacteristicsDictionary ac = new PDAppearanceCharacteristicsDictionary(acd);
+        ac.setBackground(new PDColor(new float[] { 1, 1, 0 }, PDDeviceRGB.INSTANCE));
+        ac.setBorderColour(new PDColor(new float[] { 1, 0, 0 }, PDDeviceRGB.INSTANCE));
+        ac.setNormalCaption("4"); // 4 is checkmark, 8 is cross
+        widget.setAppearanceCharacteristics(ac);
+        widget.setBorderStyle(bs);
+        checkBox.setValue("Off");
+        fields.add(checkBox);
+        page.getAnnotations().add(widget);
+        acroForm.setFields(fields);
+        assertEquals("Off", checkBox.getValue());
+        doc.close();
     }
 }

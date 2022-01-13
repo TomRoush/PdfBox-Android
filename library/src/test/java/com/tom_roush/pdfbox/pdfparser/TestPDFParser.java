@@ -41,6 +41,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
 
 public class TestPDFParser
 {
@@ -125,10 +126,13 @@ public class TestPDFParser
      *
      * @throws IOException
      */
-//    @Test TODO: PdfBox-Android - provide test PDF
+//    TODO: PdfBox-Android - provide test file
+    @Test
     public void testPDFBox3208() throws IOException
     {
-        PDDocument doc = PDDocument.load(new File(TARGETPDFDIR,"PDFBOX-3208-L33MUTT2SVCWGCS6UIYL5TH3PNPXHIS6.pdf"));
+        File testPdf = new File(TARGETPDFDIR,"PDFBOX-3208-L33MUTT2SVCWGCS6UIYL5TH3PNPXHIS6.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument doc = PDDocument.load(testPdf);
 
         PDDocumentInformation di = doc.getDocumentInformation();
         assertEquals("Liquent Enterprise Services", di.getAuthor());
@@ -149,10 +153,13 @@ public class TestPDFParser
      *
      * @throws IOException
      */
-//    @Test TODO: PdfBox-Android - provide test PDF
+//    TODO: PdfBox-Android - provide test file
+    @Test
     public void testPDFBox3940() throws IOException
     {
-        PDDocument doc = PDDocument.load(new File(TARGETPDFDIR,"PDFBOX-3940-079977.pdf"));
+        File testPdf = new File(TARGETPDFDIR,"PDFBOX-3940-079977.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument doc = PDDocument.load(testPdf);
         PDDocumentInformation di = doc.getDocumentInformation();
         assertEquals("Unknown", di.getAuthor());
         assertEquals("C:REGULA~1IREGSFR_EQ_EM.WP", di.getCreator());
@@ -170,10 +177,13 @@ public class TestPDFParser
      *
      * @throws IOException
      */
-//    @Test TODO: PdfBox-Android - provide test PDF
+//    TODO: PdfBox-Android - provide test file
+    @Test
     public void testPDFBox3783() throws IOException
     {
-        PDDocument.load(new File(TARGETPDFDIR,"PDFBOX-3783-72GLBIGUC6LB46ELZFBARRJTLN4RBSQM.pdf")).close();
+        File testPdf = new File(TARGETPDFDIR,"PDFBOX-3783-72GLBIGUC6LB46ELZFBARRJTLN4RBSQM.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument.load(testPdf).close();
     }
 
     /**
@@ -182,10 +192,13 @@ public class TestPDFParser
      *
      * @throws IOException
      */
-//    @Test TODO: PdfBox-Android - provide test PDF
+//    TODO: PdfBox-Android - provide test file
+    @Test
     public void testPDFBox3785() throws IOException
     {
-        PDDocument doc = PDDocument.load(new File(TARGETPDFDIR,"PDFBOX-3785-202097.pdf"));
+        File testPdf = new File(TARGETPDFDIR,"PDFBOX-3785-202097.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument doc = PDDocument.load(testPdf);
         assertEquals(11, doc.getNumberOfPages());
         doc.close();
     }
@@ -195,10 +208,13 @@ public class TestPDFParser
      *
      * @throws IOException
      */
-//    @Test TODO: PdfBox-Android - provide test PDF
+//    TODO: PdfBox-Android - provide test file
+    @Test
     public void testPDFBox3947() throws IOException
     {
-        PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-3947-670064.pdf")).close();
+        File testPdf = new File(TARGETPDFDIR, "PDFBOX-3947-670064.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument.load(testPdf).close();
     }
 
     /**
@@ -206,10 +222,13 @@ public class TestPDFParser
      *
      * @throws IOException
      */
-//    @Test TODO: PdfBox-Android - provide test PDF
+//    TODO: PdfBox-Android - provide test file
+    @Test
     public void testPDFBox3948() throws IOException
     {
-        PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-3948-EUWO6SQS5TM4VGOMRD3FLXZHU35V2CP2.pdf")).close();
+        File testPdf = new File(TARGETPDFDIR, "PDFBOX-3948-EUWO6SQS5TM4VGOMRD3FLXZHU35V2CP2.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument.load(testPdf).close();
     }
 
     /**
@@ -217,10 +236,13 @@ public class TestPDFParser
      *
      * @throws IOException
      */
-//    @Test TODO: PdfBox-Android - provide test PDF
+//    TODO: PdfBox-Android - provide test file
+    @Test
     public void testPDFBox3949() throws IOException
     {
-        PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-3949-MKFYUGZWS3OPXLLVU2Z4LWCTVA5WNOGF.pdf")).close();
+        File testPdf = new File(TARGETPDFDIR, "PDFBOX-3949-MKFYUGZWS3OPXLLVU2Z4LWCTVA5WNOGF.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument.load(testPdf).close();
     }
 
     // testPDFBox3950 is an instrumentation test
@@ -230,10 +252,13 @@ public class TestPDFParser
      *
      * @throws IOException
      */
-//    @Test TODO: PdfBox-Android - provide test PDF
+//    TODO: PdfBox-Android - provide test file
+    @Test
     public void testPDFBox3951() throws IOException
     {
-        PDDocument doc = PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-3951-FIHUZWDDL2VGPOE34N6YHWSIGSH5LVGZ.pdf"));
+        File testPdf = new File(TARGETPDFDIR, "PDFBOX-3951-FIHUZWDDL2VGPOE34N6YHWSIGSH5LVGZ.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument doc = PDDocument.load(testPdf);
         assertEquals(143, doc.getNumberOfPages());
         doc.close();
     }
@@ -243,10 +268,13 @@ public class TestPDFParser
      *
      * @throws IOException
      */
-//    @Test TODO: PdfBox-Android - provide test PDF
+//    TODO: PdfBox-Android - provide test file
+    @Test
     public void testPDFBox3964() throws IOException
     {
-        PDDocument doc = PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-3964-c687766d68ac766be3f02aaec5e0d713_2.pdf"));
+        File testPdf = new File(TARGETPDFDIR, "PDFBOX-3964-c687766d68ac766be3f02aaec5e0d713_2.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument doc = PDDocument.load(testPdf);
         assertEquals(10, doc.getNumberOfPages());
         doc.close();
     }
@@ -257,10 +285,13 @@ public class TestPDFParser
      *
      * @throws IOException
      */
-//    @Test TODO: PdfBox-Android - provide test PDF
+//    TODO: PdfBox-Android - provide test file
+    @Test
     public void testPDFBox3977() throws IOException
     {
-        PDDocument doc = PDDocument.load(new File(TARGETPDFDIR,"PDFBOX-3977-63NGFQRI44HQNPIPEJH5W2TBM6DJZWMI.pdf"));
+        File testPdf = new File(TARGETPDFDIR,"PDFBOX-3977-63NGFQRI44HQNPIPEJH5W2TBM6DJZWMI.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument doc = PDDocument.load(testPdf);
         PDDocumentInformation di = doc.getDocumentInformation();
         assertEquals("QuarkXPress(tm) 6.52", di.getCreator());
         assertEquals("Acrobat Distiller 7.0 pour Macintosh", di.getProducer());
@@ -275,10 +306,43 @@ public class TestPDFParser
      *
      * @throws IOException
      */
-//    @Test TODO: PdfBox-Android - provide test PDF
+//    TODO: PdfBox-Android - provide test file
+    @Test
     public void testParseGenko() throws IOException
     {
-        PDDocument.load(new File(TARGETPDFDIR, "genko_oc_shiryo1.pdf")).close();
+        File testPdf = new File(TARGETPDFDIR, "genko_oc_shiryo1.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument.load(testPdf).close();
+    }
+
+    /**
+     * Test parsing the file from PDFBOX-4338, which brought an
+     * ArrayIndexOutOfBoundsException before the bug was fixed.
+     *
+     * @throws IOException
+     */
+//    TODO: PdfBox-Android - provide test file
+    @Test
+    public void testPDFBox4338() throws IOException
+    {
+        File testPdf = new File(TARGETPDFDIR, "PDFBOX-4338.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument.load(testPdf).close();
+    }
+
+    /**
+     * Test parsing the file from PDFBOX-4339, which brought a
+     * NullPointerException before the bug was fixed.
+     *
+     * @throws IOException
+     */
+//    TODO: PdfBox-Android - provide test file
+    @Test
+    public void testPDFBox4339() throws IOException
+    {
+        File testPdf = new File(TARGETPDFDIR, "PDFBOX-4339.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument.load(testPdf).close();
     }
 
     private void executeParserTest(RandomAccessRead source, MemoryUsageSetting memUsageSetting) throws IOException

@@ -23,6 +23,7 @@ import com.tom_roush.pdfbox.cos.COSName;
  * A wrapper for a COS dictionary including Type information.
  *
  * @author Johannes Koch
+ *
  */
 public class PDTypedDictionaryWrapper extends PDDictionaryWrapper
 {

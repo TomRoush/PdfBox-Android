@@ -72,15 +72,18 @@ public class PDFXrefStreamParser extends BaseParser
         }
         COSArray xrefFormat = (COSArray) w;
 
-        COSArray indexArray = (COSArray)stream.getDictionaryObject(COSName.INDEX);
-        /*
-         * If Index doesn't exist, we will use the default values.
-         */
-        if(indexArray == null)
+        COSBase base = stream.getDictionaryObject(COSName.INDEX);
+        COSArray indexArray;
+        if (base instanceof COSArray)
         {
+            indexArray = (COSArray) base;
+        }
+        else
+        {
+            // If /Index doesn't exist, we will use the default values.
             indexArray = new COSArray();
             indexArray.add(COSInteger.ZERO);
-            indexArray.add(stream.getDictionaryObject(COSName.SIZE));
+            indexArray.add(COSInteger.get(stream.getInt(COSName.SIZE, 0)));
         }
 
         List<Long> objNums = new ArrayList<Long>();
@@ -89,11 +92,25 @@ public class PDFXrefStreamParser extends BaseParser
          * Populates objNums with all object numbers available
          */
         Iterator<COSBase> indexIter = indexArray.iterator();
-        while(indexIter.hasNext())
+        while (indexIter.hasNext())
         {
-            long objID = ((COSInteger)indexIter.next()).longValue();
-            int size = ((COSInteger)indexIter.next()).intValue();
-            for(int i = 0; i < size; i++)
+            base = indexIter.next();
+            if (!(base instanceof COSInteger))
+            {
+                throw new IOException("Xref stream must have integer in /Index array");
+            }
+            long objID = ((COSInteger) base).longValue();
+            if (!indexIter.hasNext())
+            {
+                break;
+            }
+            base = indexIter.next();
+            if (!(base instanceof COSInteger))
+            {
+                throw new IOException("Xref stream must have integer in /Index array");
+            }
+            int size = ((COSInteger) base).intValue();
+            for (int i = 0; i < size; i++)
             {
                 objNums.add(objID + i);
             }
@@ -102,9 +119,9 @@ public class PDFXrefStreamParser extends BaseParser
         /*
          * Calculating the size of the line in bytes
          */
-        int w0 = xrefFormat.getInt(0);
-        int w1 = xrefFormat.getInt(1);
-        int w2 = xrefFormat.getInt(2);
+        int w0 = xrefFormat.getInt(0, 0);
+        int w1 = xrefFormat.getInt(1, 0);
+        int w2 = xrefFormat.getInt(2, 0);
         int lineSize = w0 + w1 + w2;
 
         while(!seqSource.isEOF() && objIter.hasNext())

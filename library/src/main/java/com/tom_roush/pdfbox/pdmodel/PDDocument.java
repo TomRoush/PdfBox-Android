@@ -145,6 +145,9 @@ public class PDDocument implements Closeable
     // document-wide cached resources
     private ResourceCache resourceCache = new DefaultResourceCache();
 
+    // to make sure only one signature is added
+    private boolean signatureAdded = false;
+
     /**
      * Creates an empty PDF document.
      * You need to add at least one page for the document to be valid.
@@ -215,9 +218,14 @@ public class PDDocument implements Closeable
      * Add parameters of signature to be created externally using default signature options. See
      * {@link #saveIncrementalForExternalSigning(OutputStream)} method description on external
      * signature creation scenario details.
+     * <p>
+     * Only one signature may be added in a document. To sign several times,
+     * load document, add signature, save incremental and close again.
      *
      * @param sigObject is the PDSignatureField model
      * @throws IOException if there is an error creating required fields
+     * @throws IllegalStateException if one attempts to add several signature
+     * fields.
      */
     public void addSignature(PDSignature sigObject) throws IOException
     {
@@ -228,10 +236,15 @@ public class PDDocument implements Closeable
      * Add parameters of signature to be created externally. See
      * {@link #saveIncrementalForExternalSigning(OutputStream)} method description on external
      * signature creation scenario details.
+     * <p>
+     * Only one signature may be added in a document. To sign several times,
+     * load document, add signature, save incremental and close again.
      *
      * @param sigObject is the PDSignatureField model
      * @param options signature options
      * @throws IOException if there is an error creating required fields
+     * @throws IllegalStateException if one attempts to add several signature
+     * fields.
      */
     public void addSignature(PDSignature sigObject, SignatureOptions options) throws IOException
     {
@@ -240,10 +253,16 @@ public class PDDocument implements Closeable
 
     /**
      * Add a signature to be created using the instance of given interface.
+     * <p>
+     * Only one signature may be added in a document. To sign several times,
+     * load document, add signature, save incremental and close again.
      *
      * @param sigObject is the PDSignatureField model
-     * @param signatureInterface is an interface which provides signing capabilities
+     * @param signatureInterface is an interface whose implementation provides
+     * signing capabilities. Can be null if external signing if used.
      * @throws IOException if there is an error creating required fields
+     * @throws IllegalStateException if one attempts to add several signature
+     * fields.
      */
     public void addSignature(PDSignature sigObject, SignatureInterface signatureInterface) throws IOException
     {
@@ -254,15 +273,27 @@ public class PDDocument implements Closeable
      * This will add a signature to the document. If the 0-based page number in the options
      * parameter is smaller than 0 or larger than max, the nearest valid page number will be used
      * (i.e. 0 or max) and no exception will be thrown.
+     * <p>
+     * Only one signature may be added in a document. To sign several times,
+     * load document, add signature, save incremental and close again.
      *
      * @param sigObject is the PDSignatureField model
-     * @param signatureInterface is an interface which provides signing capabilities
+     * @param signatureInterface is an interface whose implementation provides
+     * signing capabilities. Can be null if external signing if used.
      * @param options signature options
      * @throws IOException if there is an error creating required fields
+     * @throws IllegalStateException if one attempts to add several signature
+     * fields.
      */
     public void addSignature(PDSignature sigObject, SignatureInterface signatureInterface,
         SignatureOptions options) throws IOException
     {
+        if (signatureAdded)
+        {
+            throw new IllegalStateException("Only one signature may be added in a document");
+        }
+        signatureAdded = true;
+
         // Reserve content
         // We need to reserve some space for the signature. Some signatures including
         // big certificate chain and we need enough space to store it.
@@ -570,10 +601,14 @@ public class PDDocument implements Closeable
      * This will add a list of signature fields to the document.
      *
      * @param sigFields are the PDSignatureFields that should be added to the document
-     * @param signatureInterface is a interface which provides signing capabilities
+     * @param signatureInterface is an interface whose implementation provides
+     * signing capabilities. Can be null if external signing if used.
      * @param options signature options
      * @throws IOException if there is an error creating required fields
+     * @deprecated The method is misleading, because only one signature may be
+     * added in a document. The method will be removed in the future.
      */
+    @Deprecated
     public void addSignatureField(List<PDSignatureField> sigFields, SignatureInterface signatureInterface,
         SignatureOptions options) throws IOException
     {
@@ -646,19 +681,24 @@ public class PDDocument implements Closeable
     }
 
     /**
-     * This will import and copy the contents from another location. Currently the content stream is stored in a scratch
-     * file. The scratch file is associated with the document. If you are adding a page to this document from another
-     * document and want to copy the contents to this
-     * document's scratch file then use this method otherwise just use the {@link #addPage addPage}
+     * This will import and copy the contents from another location. Currently the content stream is
+     * stored in a scratch file. The scratch file is associated with the document. If you are adding
+     * a page to this document from another document and want to copy the contents to this
+     * document's scratch file then use this method otherwise just use the {@link #addPage addPage()}
      * method.
      * <p>
-     * Unlike {@link #addPage addPage}, this method creates a new PDPage object. If your page has
+     * Unlike {@link #addPage addPage()}, this method creates a new PDPage object. If your page has
      * annotations, and if these link to pages not in the target document, then the target document
      * might become huge. What you need to do is to delete page references of such annotations. See
      * <a href="http://stackoverflow.com/a/35477351/535646">here</a> for how to do this.
      * <p>
-     * Inherited (global) resources are ignored. If you need them, call
-     * <code>importedPage.setRotation(page.getRotation());</code>
+     * Inherited (global) resources are ignored because these can contain resources not needed for
+     * this page which could bloat your document, see
+     * <a href="https://issues.apache.org/jira/browse/PDFBOX-28">PDFBOX-28</a> and related issues.
+     * If you need them, call <code>importedPage.setResources(page.getResources());</code>
+     * <p>
+     * This method should only be used to import a page from a loaded document, not from a generated
+     * document because these can contain unfinished parts, e.g. font subsetting information.
      *
      * @param page The page to import.
      * @return The page that was imported.
@@ -1290,8 +1330,9 @@ public class PDDocument implements Closeable
      * Save the PDF as an incremental update. This is only possible if the PDF was loaded from a
      * file or a stream, not if the document was created in PDFBox itself.
      *
-     * @param output stream to write to. It will be closed when done. It should <i><b>not</b></i>
-     * point to the source file.
+     * @param output stream to write to. It will be closed when done. It
+     * <i><b>must never</b></i> point to the source file or that one will be
+     * harmed!
      * @throws IOException if the output could not be written
      * @throws IllegalStateException if the document was not loaded from a file or a stream.
      */
@@ -1347,8 +1388,9 @@ public class PDDocument implements Closeable
      * {@code PDDocument} instance and only AFTER {@link ExternalSigningSupport} instance is used.
      * </p>
      *
-     * @param output stream to write the final PDF. It should <i><b>not</b></i> point to the source
-     * file. It will be closed when the document is closed.
+     * @param output stream to write the final PDF. It will be closed when the
+     * document is closed. It <i><b>must never</b></i> point to the source file
+     * or that one will be harmed!
      * @return instance to be used for external signing and setting CMS signature
      * @throws IOException if the output could not be written
      * @throws IllegalStateException if the document was not loaded from a file or a stream or

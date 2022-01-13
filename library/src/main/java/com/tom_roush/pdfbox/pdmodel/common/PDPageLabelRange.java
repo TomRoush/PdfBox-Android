@@ -25,6 +25,7 @@ import com.tom_roush.pdfbox.cos.COSName;
  * @author Igor Podolskiy
  *
  * @see PDPageLabels
+ *
  */
 public class PDPageLabelRange implements COSObjectable
 {
@@ -147,7 +148,7 @@ public class PDPageLabelRange implements COSObjectable
         if (start <= 0)
         {
             throw new IllegalArgumentException(
-                    "The page numbering start value must be a positive integer");
+                "The page numbering start value must be a positive integer");
         }
         root.setInt(KEY_START, start);
     }
