@@ -17,9 +17,9 @@ package com.tom_roush.pdfbox.pdmodel.graphics.image;
 
 import android.graphics.Bitmap;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -62,27 +62,35 @@ public class ValidateXImage
         assertEquals(ximage.getWidth(), ximage.getImage().getWidth());
         assertEquals(ximage.getHeight(), ximage.getImage().getHeight());
 
+        boolean writeOk;
         Bitmap.CompressFormat compressFormat = null;
-        if (format.equals("png"))
-        {
-            compressFormat = Bitmap.CompressFormat.PNG;
-        }
-        else if (format.equals("jpg"))
+        if ("jpg".equals(format) &&
+            ximage.getImage().getConfig() == Bitmap.Config.ARGB_8888)
         {
             compressFormat = Bitmap.CompressFormat.JPEG;
         }
-
+        else if ("png".equals(format))
+        {
+            compressFormat = Bitmap.CompressFormat.PNG;
+        }
         if (compressFormat == null)
         {
             return; // Format is not understood by Bitmap (TIFF) will ignore for now and needs custom file writing
         }
-
-        boolean writeOk = ximage.getImage().compress(compressFormat, 100,
-            new ByteArrayOutputStream());
-        assertTrue(writeOk);
+        writeOk = ximage.getImage().compress(compressFormat, 100,
+            new NullOutputStream());
+            assertTrue(writeOk);
         writeOk = ximage.getOpaqueImage().compress(compressFormat, 100,
-            new ByteArrayOutputStream());
+            new NullOutputStream());
         assertTrue(writeOk);
+    }
+
+    private static class NullOutputStream extends OutputStream
+    {
+        @Override
+        public void write(int b) throws IOException
+        {
+        }
     }
 
     static int colorCount(Bitmap bim)

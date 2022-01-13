@@ -39,7 +39,7 @@ public class PDDictionaryWrapper implements COSObjectable
 
     /**
      * Creates a new instance with a given COS dictionary.
-     * 
+     *
      * @param dictionary the dictionary
      */
     public PDDictionaryWrapper(COSDictionary dictionary)

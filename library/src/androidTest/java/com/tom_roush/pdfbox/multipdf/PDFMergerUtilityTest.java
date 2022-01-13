@@ -21,7 +21,9 @@ import android.graphics.Bitmap;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -259,6 +261,43 @@ public class PDFMergerUtilityTest
         assertEquals(singleCnt * 2, elementCounter.cnt);
         assertEquals(singleSetSize * 2, elementCounter.set.size());
 
+        doc.close();
+    }
+
+    /**
+     * PDFBOX-4383: Test that file can be deleted after merge.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testFileDeletion() throws IOException
+    {
+        File outFile = new File(TARGETTESTDIR, "PDFBOX-4383-result.pdf");
+
+        File inFile1 = new File(TARGETTESTDIR, "PDFBOX-4383-src1.pdf");
+        File inFile2 = new File(TARGETTESTDIR, "PDFBOX-4383-src2.pdf");
+
+        createSimpleFile(inFile1);
+        createSimpleFile(inFile2);
+
+        OutputStream out = new FileOutputStream(outFile);
+        PDFMergerUtility merger = new PDFMergerUtility();
+        merger.setDestinationStream(out);
+        merger.addSource(inFile1);
+        merger.addSource(inFile2);
+        merger.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+        out.close();
+
+        assertTrue(inFile1.delete());
+        assertTrue(inFile2.delete());
+        assertTrue(outFile.delete());
+    }
+
+    private void createSimpleFile(File file) throws IOException
+    {
+        PDDocument doc = new PDDocument();
+        doc.addPage(new PDPage());
+        doc.save(file);
         doc.close();
     }
 

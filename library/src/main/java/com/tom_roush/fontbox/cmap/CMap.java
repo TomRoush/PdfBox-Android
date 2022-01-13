@@ -16,6 +16,8 @@
  */
 package com.tom_roush.fontbox.cmap;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -120,7 +122,13 @@ public class CMap
                 bytes[byteCount] = (byte)in.read();
             }
         }
-        throw new IOException("CMap is invalid");
+        String seq = "";
+        for (int i = 0; i < maxCodeLength; ++i)
+        {
+            seq += String.format("0x%02X (%04o) ", bytes[i], bytes[i]);
+        }
+        Log.w("PdfBox-Android", "Invalid character code sequence " + seq + "in CMap " + cmapName);
+        return 0;
     }
 
     /**

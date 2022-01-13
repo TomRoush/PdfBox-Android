@@ -19,7 +19,6 @@ package com.tom_roush.pdfbox.multipdf;
 import android.util.Log;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,9 +84,9 @@ public class PDFMergerUtility
     private DocumentMergeMode documentMergeMode = DocumentMergeMode.PDFBOX_LEGACY_MODE;
 
     /**
-     * The mode to use when merging documents.
+     * The mode to use when merging documents:
      *
-     * <p><ul>
+     * <ul>
      * <li>{@link DocumentMergeMode#OPTIMIZE_RESOURCES_MODE} Optimizes resource handling such as
      *      closing documents early. <strong>Not all document elements are merged</strong> compared to
      *      the PDFBOX_LEGACY_MODE. Currently supported are:
@@ -218,8 +217,7 @@ public class PDFMergerUtility
      */
     public void addSource(File source) throws FileNotFoundException
     {
-        FileInputStream stream = new FileInputStream(source);
-        sources.add(stream);
+        sources.add(source);
     }
 
     /**
