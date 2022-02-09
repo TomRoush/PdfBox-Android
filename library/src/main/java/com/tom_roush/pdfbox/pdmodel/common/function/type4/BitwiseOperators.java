@@ -20,6 +20,7 @@ import java.util.Stack;
 
 /**
  * Provides the bitwise operators such as "and" and "xor".
+ *
  */
 class BitwiseOperators
 {

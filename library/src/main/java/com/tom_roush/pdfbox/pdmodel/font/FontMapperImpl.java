@@ -18,7 +18,6 @@ package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -122,14 +121,13 @@ final class FontMapperImpl implements FontMapper
             if (ttfStream == null)
             {
                 // Fallback
-                URL url = FontMapper.class.getClassLoader().getResource(ttfName);
-                if (url == null)
-                {
-                    throw new IOException("Error loading resource: " + ttfName);
-                }
-                ttfStream = url.openStream();
+                ttfStream = FontMapper.class.getResourceAsStream("/" + ttfName);
             }
 
+            if (ttfStream == null)
+            {
+                throw new IOException("Error loading resource: " + ttfName);
+            }
             TTFParser ttfParser = new TTFParser();
             lastResortFont = ttfParser.parse(ttfStream);
         }

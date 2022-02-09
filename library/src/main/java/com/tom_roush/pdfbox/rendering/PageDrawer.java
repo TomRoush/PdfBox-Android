@@ -46,6 +46,7 @@ import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.function.PDFunction;
+import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
 import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType0;
 import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType2;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
@@ -59,8 +60,11 @@ import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
+import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDTransparencyGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage;
+import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
+import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup.RenderState;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDGraphicsState;
@@ -70,6 +74,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.AnnotationFilter;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationMarkup;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationUnknown;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
@@ -123,6 +128,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
     private final Stack<TransparencyGroup> transparencyGroupStack = new Stack<TransparencyGroup>();
 
+    // if greater zero the content is hidden and wil not be rendered
+    private int nestedHiddenOCGCount;
+
+    private final RenderDestination destination;
+
     /**
      * Default annotations filter, returns all annotations
      */
@@ -146,6 +156,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         super(parameters.getPage());
         this.renderer = parameters.getRenderer();
         this.subsamplingAllowed = parameters.isSubsamplingAllowed();
+        this.destination = parameters.getDestination();
     }
 
     /**
@@ -374,9 +385,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //                graphics.setPaint(getNonStrokingPaint());
                 paint.setColor(getNonStrokingColor());
                 setClip();
-//                graphics.fill(glyph);
-                paint.setStyle(Paint.Style.FILL);
-                canvas.drawPath(path, paint);
+                if (isContentRendered())
+                {
+                    paint.setStyle(Paint.Style.FILL);
+                    canvas.drawPath(path, paint);
+                }
             }
 
             if (renderingMode.isStroke())
@@ -386,9 +399,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 paint.setColor(getStrokingColor());
 //                graphics.setStroke(getStroke());
                 setClip();
-//                graphics.draw(glyph);
-                paint.setStyle(Paint.Style.STROKE);
-                canvas.drawPath(path, paint);
+                if (isContentRendered())
+                {
+                    paint.setStyle(Paint.Style.STROKE);
+                    canvas.drawPath(path, paint);
+                }
             }
 
             if (renderingMode.isClip())
@@ -561,7 +576,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         paint.setColor(getStrokingColor());
         setClip();
         //TODO bbox of shading pattern should be used here? (see fillPath)
-        canvas.drawPath(linePath, paint);
+        if (isContentRendered())
+        {
+            canvas.drawPath(linePath, paint);
+        }
         linePath.reset();
     }
 
@@ -586,8 +604,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             paint.setAntiAlias(false);
         }
 
-        paint.setStyle(Paint.Style.FILL);
-        canvas.drawPath(linePath, paint);
+        if (isContentRendered())
+        {
+            paint.setStyle(Paint.Style.FILL);
+            canvas.drawPath(linePath, paint);
+        }
 
         linePath.reset();
 
@@ -781,7 +802,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            awtPaint = applySoftMaskToPaint(awtPaint, softMask);
 //            graphics.setPaint(awtPaint);
             RectF unitRect = new RectF(0, 0, 1, 1);
+            if (isContentRendered())
+            {
 //            graphics.fill(at.createTransformedShape(unitRect));
+            }
         }
         else
         {
@@ -795,7 +819,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             int height = image.getHeight();
             imageTransform.scale(1.0 / width, -1.0 / height);
             imageTransform.translate(0, -height);
-            canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
+            if (isContentRendered())
+            {
+                canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
+            }
         }
     }
 
@@ -912,8 +939,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public void showAnnotation(PDAnnotation annotation) throws IOException
     {
         lastClip = null;
-        //TODO support more annotation flags (Invisible, NoZoom, NoRotate)
-        // Example for NoZoom can be found in p5 of PDFBOX-2348
         // Device checks shouldn't be needed
         if (annotation.isNoView())
         {
@@ -923,6 +948,19 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         {
             return;
         }
+        if (annotation.isInvisible() && annotation instanceof PDAnnotationUnknown)
+        {
+            // "If set, do not display the annotation if it does not belong to one
+            // of the standard annotation types and no annotation handler is available."
+            return;
+        }
+        //TODO support NoZoom, example can be found in p5 of PDFBOX-2348
+
+        if (isHiddenOCG(annotation.getOptionalContent()))
+        {
+            return;
+        }
+
         super.showAnnotation(annotation);
 
         if (annotation.getAppearance() == null)
@@ -1088,6 +1126,18 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void showForm(PDFormXObject form) throws IOException
+    {
+        if (isContentRendered())
+        {
+            super.showForm(form);
+        }
+    }
+
     public void setStroke(Paint p, float width, Paint.Cap cap, Paint.Join join, float miterLimit, float[] dash, float dash_phase)
     {
         p.setStrokeWidth(width);
@@ -1103,6 +1153,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public void showTransparencyGroup(PDTransparencyGroup form) throws IOException
     {
+        if (!isContentRendered())
+        {
+            return;
+        }
         TransparencyGroup group =
             new TransparencyGroup(form, false, getGraphicsState().getCurrentTransformationMatrix(), null);
 //        Bitmap image = group.getImage();
@@ -1149,12 +1203,19 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //                new Rectangle2D.Float(0, 0, image.getWidth(), image.getHeight()));
 //            awtPaint = applySoftMaskToPaint(awtPaint, softMask);
 //            graphics.setPaint(awtPaint);
-//            graphics.fill(
-//                new Rectangle2D.Float(0, 0, bbox.getWidth() * xScale, bbox.getHeight() * yScale));
+            if (isContentRendered())
+            {
+//                graphics.fill(
+//                    new Rectangle2D.Float(0, 0, bbox.getWidth() * xScale, bbox.getHeight() * yScale));
+            }
         }
         else
         {
-//            graphics.drawImage(image, null, null);
+            if (isContentRendered())
+            {
+//                graphics.drawImage(image, null, null);
+            }
+
         }
 
 //        graphics.setTransform(prev);
@@ -1174,6 +1235,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //        private final int maxY;
 //        private final int width;
 //        private final int height;
+        private final float scaleX;
+        private final float scaleY;
 
         /**
          * Creates a buffered image for a transparency group result.
@@ -1203,6 +1266,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            Area clip = (Area)getGraphicsState().getCurrentClippingPath().clone();
 //            clip.intersect(new Area(transformedBox));
 //            Rectangle2D clipRect = clip.getBounds2D();
+            Matrix m = new Matrix(xform);
+            scaleX = Math.abs(m.getScalingFactorX());
+            scaleY = Math.abs(m.getScalingFactorY());
 //            if (clipRect.isEmpty())
 //            {
 //                image = null;
@@ -1219,8 +1285,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //                (float)clipRect.getWidth(), (float)clipRect.getHeight());
 
             // apply the underlying Graphics2D device's DPI transform
-            Matrix m = new Matrix(xform);
-            AffineTransform dpiTransform = AffineTransform.getScaleInstance(Math.abs(m.getScalingFactorX()), Math.abs(m.getScalingFactorY()));
+            AffineTransform dpiTransform = AffineTransform.getScaleInstance(scaleX, scaleY);
 //            Rectangle2D bounds = dpiTransform.createTransformedShape(clip.getBounds2D()).getBounds2D();
 
 //            minX = (int) Math.floor(bounds.getMinX());
@@ -1296,12 +1361,12 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            g.transform(dpiTransform);
 
             AffineTransform xformOriginal = xform;
-            xform = AffineTransform.getScaleInstance(m.getScalingFactorX(), m.getScalingFactorY());
+            xform = AffineTransform.getScaleInstance(scaleX, scaleY);
             PDRectangle pageSizeOriginal = pageSize;
-//            pageSize = new PDRectangle(minX / Math.abs(m.getScalingFactorX()),
-//                minY / Math.abs(m.getScalingFactorY()),
-//                (float) bounds.getWidth() / Math.abs(m.getScalingFactorX()),
-//                (float) bounds.getHeight() / Math.abs(m.getScalingFactorY()));
+//            pageSize = new PDRectangle(minX / scaleX,
+//                minY / scaleY,
+//                (float) bounds.getWidth() / scaleX,
+//                (float) bounds.getHeight() / scaleY);
             Path.FillType clipWindingRuleOriginal = clipWindingRule;
             clipWindingRule = null;
             Path linePathOriginal = linePath;
@@ -1383,12 +1448,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //        {
 //            PointF size = new PointF(pageSize.getWidth(), pageSize.getHeight());
 //            // apply the underlying Graphics2D device's DPI transform and y-axis flip
-//            Matrix m = new Matrix(xform);
-//            AffineTransform dpiTransform = AffineTransform.getScaleInstance(Math.abs(m.getScalingFactorX()), Math.abs(m.getScalingFactorY()));
+//            AffineTransform dpiTransform = AffineTransform.getScaleInstance(scaleX, scaleY);
 //            size = dpiTransform.transform(size, size);
 //            // Flip y
-//            return new RectF(minX - pageSize.getLowerLeftX() * m.getScalingFactorX(),
-//                size.y - minY - height + pageSize.getLowerLeftY() * m.getScalingFactorY(),
+//            return new RectF(minX - pageSize.getLowerLeftX() * scaleX,
+//                size.y - minY - height + pageSize.getLowerLeftY() * scaleY,
 //                width, height);
 //        }
     }
@@ -1440,6 +1504,65 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             }
         }
 
+        return false;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void beginMarkedContentSequence(COSName tag, COSDictionary properties)
+    {
+        if (nestedHiddenOCGCount > 0)
+        {
+            nestedHiddenOCGCount++;
+            return;
+        }
+        if (tag == null || getPage().getResources() == null)
+        {
+            return;
+        }
+        if (isHiddenOCG(getPage().getResources().getProperties(tag)))
+        {
+            nestedHiddenOCGCount = 1;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void endMarkedContentSequence()
+    {
+        if (nestedHiddenOCGCount > 0)
+        {
+            nestedHiddenOCGCount--;
+        }
+    }
+
+    private boolean isContentRendered()
+    {
+        return nestedHiddenOCGCount <= 0;
+    }
+
+    private boolean isHiddenOCG(PDPropertyList propertyList)
+    {
+        if (propertyList instanceof PDOptionalContentGroup)
+        {
+            PDOptionalContentGroup group = (PDOptionalContentGroup) propertyList;
+            RenderState printState = group.getRenderState(destination);
+            if (printState == null)
+            {
+                if (!getRenderer().isGroupEnabled(group))
+                {
+                    return true;
+                }
+            }
+            else if (RenderState.OFF.equals(printState))
+            {
+                return true;
+            }
+        }
         return false;
     }
 }

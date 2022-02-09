@@ -18,12 +18,11 @@ package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +32,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Test for the PDButton class.
@@ -41,9 +41,9 @@ import static org.junit.Assert.fail;
 public class PDButtonTest
 {
 
-
     private static final File IN_DIR = new File("src/test/resources/pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/form");
     private static final String NAME_OF_PDF = "AcroFormsBasicFields.pdf";
+    private static final File TARGET_PDF_DIR = new File("target/pdfs");
 
     private PDDocument document;
     private PDAcroForm acroForm;
@@ -107,15 +107,15 @@ public class PDButtonTest
      */
     public void testRadioButtonWithOptions()
     {
-        URL url;
+        File file;
         PDDocument pdfDocument = null;
 
         try
         {
-            url = new URL("https://issues.apache.org/jira/secure/attachment/12848122/SF1199AEG%20%28Complete%29.pdf");
-            InputStream is = url.openStream();
+            file = new File(TARGET_PDF_DIR, "PDFBOX-3656.pdf");
+            assumeTrue(file.exists());
 
-            pdfDocument = PDDocument.load(is);
+            pdfDocument = PDDocument.load(file);
 
             PDRadioButton radioButton = (PDRadioButton) pdfDocument.getDocumentCatalog().getAcroForm().getField("Checking/Savings");
             radioButton.setValue("Off");
@@ -157,15 +157,15 @@ public class PDButtonTest
      */
     public void testOptionsAndNamesNotNumbers()
     {
-        URL url;
+        File file;
         PDDocument pdfDocument = null;
 
         try
         {
-            url = new URL("https://issues.apache.org/jira/secure/attachment/12852207/test.pdf");
-            InputStream is = url.openStream();
+            file = new File(TARGET_PDF_DIR, "PDFBOX-3682.pdf");
+            assumeTrue(file.exists());
 
-            pdfDocument = PDDocument.load(is);
+            pdfDocument = PDDocument.load(file);
 
             pdfDocument.getDocumentCatalog().getAcroForm().getField("RadioButton").setValue("c");
             PDRadioButton radioButton = (PDRadioButton) pdfDocument.getDocumentCatalog().getAcroForm().getField("RadioButton");

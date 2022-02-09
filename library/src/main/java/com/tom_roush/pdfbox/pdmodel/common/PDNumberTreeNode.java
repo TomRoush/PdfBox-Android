@@ -30,6 +30,7 @@ import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSNull;
 
 /**
  * This class represents a PDF Number tree. See the PDF Reference 1.7 section
@@ -57,7 +58,7 @@ public class PDNumberTreeNode implements COSObjectable
     /**
      * Constructor.
      *
-     * @param dict The dictionary that holds the name information.
+     * @param dict The dictionary that holds the number information.
      * @param valueClass The PD Model type of object that is the value.
      */
     public PDNumberTreeNode( COSDictionary dict, Class<? extends COSObjectable> valueClass )
@@ -134,10 +135,10 @@ public class PDNumberTreeNode implements COSObjectable
      */
     public Object getValue(Integer index) throws IOException
     {
-        Map<Integer, COSObjectable> names = getNumbers();
-        if (names != null)
+        Map<Integer, COSObjectable> numbers = getNumbers();
+        if (numbers != null)
         {
-            return names.get(index);
+            return numbers.get(index);
         }
         Object retval = null;
         List<PDNumberTreeNode> kids = getKids();
@@ -175,20 +176,19 @@ public class PDNumberTreeNode implements COSObjectable
         COSBase numBase = node.getDictionaryObject(COSName.NUMS);
         if (numBase instanceof COSArray)
         {
-            COSArray namesArray = (COSArray) numBase;
-            indices = new HashMap<Integer,COSObjectable>();
-            for( int i=0; i<namesArray.size(); i+=2 )
+            COSArray numbersArray = (COSArray) numBase;
+            indices = new HashMap<Integer, COSObjectable>();
+            for (int i = 0; i < numbersArray.size(); i += 2)
             {
-                COSBase base = namesArray.getObject(i);
+                COSBase base = numbersArray.getObject(i);
                 if (!(base instanceof COSInteger))
                 {
                     Log.e("PdfBox-Android", "page labels ignored, index " + i + " should be a number, but is " + base);
                     return null;
                 }
                 COSInteger key = (COSInteger) base;
-                COSBase cosValue = namesArray.getObject( i+1 );
-                COSObjectable pdValue = convertCOSToPD( cosValue );
-                indices.put( key.intValue(), pdValue );
+                COSBase cosValue = numbersArray.getObject(i + 1);
+                indices.put(key.intValue(), cosValue == null ? null : convertCOSToPD(cosValue));
             }
             indices = Collections.unmodifiableMap(indices);
         }
@@ -196,16 +196,17 @@ public class PDNumberTreeNode implements COSObjectable
     }
 
     /**
-     * Method to convert the COS value in the name tree to the PD Model object.  The
-     * default implementation will simply use reflection to create the correct object
-     * type.  Subclasses can do whatever they want.
+     * Method to convert the COS value in the number tree to the PD Model object. The default
+     * implementation will simply use reflection to create the correct object type. Subclasses can
+     * do whatever they want.
      *
      * @param base The COS object to convert.
      * @return The converted PD Model object.
      * @throws IOException If there is an error during creation.
      */
-    protected COSObjectable convertCOSToPD( COSBase base ) throws IOException
+    protected COSObjectable convertCOSToPD(COSBase base) throws IOException
     {
+        // valueType (passed in constructor here) must have a constructor of type of COSBase as parameter
         try
         {
             return valueType.getDeclaredConstructor(base.getClass()).newInstance(base);
@@ -228,11 +229,10 @@ public class PDNumberTreeNode implements COSObjectable
     }
 
     /**
-     * Set the names of for this node.  The keys should be java.lang.String and the
-     * values must be a COSObjectable.  This method will set the appropriate upper and lower
-     * limits based on the keys in the map.
+     * Set the numbers for this node. This method will set the appropriate upper and lower limits
+     * based on the keys in the map.
      *
-     * @param numbers The map of names to objects.
+     * @param numbers The map of numbers to objects, or <code>null</code> for nothing.
      */
     public void setNumbers( Map<Integer, ? extends COSObjectable> numbers )
     {
@@ -250,7 +250,7 @@ public class PDNumberTreeNode implements COSObjectable
             {
                 array.add( COSInteger.get( key ) );
                 COSObjectable obj = numbers.get( key );
-                array.add( obj );
+                array.add(obj == null ? COSNull.NULL : obj);
             }
             Integer lower = null;
             Integer upper = null;
@@ -266,7 +266,7 @@ public class PDNumberTreeNode implements COSObjectable
     }
 
     /**
-     * Get the highest value for a key in the name map.
+     * Get the highest value for a key in the number map.
      *
      * @return The highest value for a key in the map.
      */
@@ -307,7 +307,7 @@ public class PDNumberTreeNode implements COSObjectable
     }
 
     /**
-     * Get the lowest value for a key in the name map.
+     * Get the lowest value for a key in the number map.
      *
      * @return The lowest value for a key in the map.
      */

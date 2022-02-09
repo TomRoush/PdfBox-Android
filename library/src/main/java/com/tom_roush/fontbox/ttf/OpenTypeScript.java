@@ -217,7 +217,7 @@ public final class OpenTypeScript
 
     static
     {
-        String path = "com/tom_roush/fontbox/resources/unicode/Scripts.txt";
+        String path = "/com/tom_roush/fontbox/resources/unicode/Scripts.txt";
         InputStream input = null;
         try
         {
@@ -228,8 +228,7 @@ public final class OpenTypeScript
             else
             {
                 // Fallback
-                System.out.println("Fallback");
-                input = OpenTypeScript.class.getResourceAsStream("/" + path);
+                input = OpenTypeScript.class.getResourceAsStream(path);
             }
             if (input != null)
             {

@@ -66,7 +66,12 @@ public class PDStructureTreeRoot extends PDStructureNode
      * Returns the K array entry.
      *
      * @return the K array entry
+     *
+     * @deprecated use {@link #getK()} only. /K can be a dictionary or an array, and the next level
+     * can also be a dictionary. See file 054080.pdf in PDFBOX-4417 and read "Entries in the
+     * structure tree root" in the PDF specification.
      */
+    @Deprecated
     public COSArray getKArray()
     {
         COSBase k = this.getCOSObject().getDictionaryObject(COSName.K);
@@ -143,7 +148,7 @@ public class PDStructureTreeRoot extends PDStructureNode
         COSBase base = getCOSObject().getDictionaryObject(COSName.PARENT_TREE);
         if (base instanceof COSDictionary)
         {
-            return new PDNumberTreeNode((COSDictionary) base, COSBase.class);
+            return new PDNumberTreeNode((COSDictionary) base, PDParentTreeValue.class);
         }
         return null;
     }

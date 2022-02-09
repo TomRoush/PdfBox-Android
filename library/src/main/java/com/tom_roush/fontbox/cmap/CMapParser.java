@@ -21,7 +21,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -430,12 +429,12 @@ public class CMapParser
         }
 
         // Fallback
-        URL url = getClass().getResource("/com/tom_roush/fontbox/resources/cmap/" + name);
-        if (url == null)
+        InputStream is = getClass().getResourceAsStream("/com/tom_roush/fontbox/resources/cmap/" + name);
+        if (is == null)
         {
             throw new IOException("Error: Could not find referenced cmap stream " + name);
         }
-        return url.openStream();
+        return is;
     }
 
     private Object parseNextToken(PushbackInputStream is) throws IOException

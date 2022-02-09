@@ -21,6 +21,7 @@ import java.util.Stack;
 
 /**
  * Represents an instruction sequence, a combination of values, operands and nested procedures.
+ *
  */
 public class InstructionSequence
 {

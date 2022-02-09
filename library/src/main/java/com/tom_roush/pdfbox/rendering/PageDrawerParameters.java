@@ -31,15 +31,18 @@ public final class PageDrawerParameters
     private final PDFRenderer renderer;
     private final PDPage page;
     private final boolean subsamplingAllowed;
+    private final RenderDestination destination;
 
     /**
      * Package-private constructor.
      */
-    PageDrawerParameters(PDFRenderer renderer, PDPage page, boolean subsamplingAllowed)
+    PageDrawerParameters(PDFRenderer renderer, PDPage page, boolean subsamplingAllowed,
+        RenderDestination destination)
     {
         this.renderer = renderer;
         this.page = page;
         this.subsamplingAllowed = subsamplingAllowed;
+        this.destination = destination;
     }
 
     /**
@@ -64,5 +67,13 @@ public final class PageDrawerParameters
     public boolean isSubsamplingAllowed()
     {
         return subsamplingAllowed;
+    }
+
+    /**
+     * @return the destination
+     */
+    public RenderDestination getDestination()
+    {
+        return this.destination;
     }
 }

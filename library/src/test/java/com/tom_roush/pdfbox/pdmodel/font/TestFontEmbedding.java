@@ -32,10 +32,12 @@ import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
 
-import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests font embedding.
@@ -88,7 +90,7 @@ public class TestFontEmbedding
         document.addPage(page);
 
         File ipafont = new File("target/fonts/ipag00303", "ipag.ttf");
-        Assume.assumeTrue(ipafont.exists());
+        assumeTrue(ipafont.exists());
         PDType0Font vfont = PDType0Font.loadVertical(document, ipafont);
 
         PDPageContentStream contentStream = new PDPageContentStream(document, page);
@@ -102,26 +104,26 @@ public class TestFontEmbedding
         // Check the font substitution
         byte[] encode = vfont.encode(text);
         int cid = ((encode[0] & 0xFF) << 8) + (encode[1] & 0xFF);
-        Assert.assertEquals(7392, cid); // it's 441 without substitution
+        assertEquals(7392, cid); // it's 441 without substitution
 
         // Check the dictionaries
         COSDictionary fontDict = vfont.getCOSObject();
-        Assert.assertEquals(COSName.IDENTITY_V, fontDict.getDictionaryObject(COSName.ENCODING));
+        assertEquals(COSName.IDENTITY_V, fontDict.getDictionaryObject(COSName.ENCODING));
 
         document.save(pdf);
 
         // Vertical metrics are fixed during subsetting, so do this after calling save()
         COSDictionary descFontDict = vfont.getDescendantFont().getCOSObject();
         COSArray dw2 = (COSArray) descFontDict.getDictionaryObject(COSName.DW2);
-        Assert.assertNull(dw2); // This font uses default values for DW2
+        assertNull(dw2); // This font uses default values for DW2
         COSArray w2 = (COSArray) descFontDict.getDictionaryObject(COSName.W2);
-        Assert.assertEquals(0, w2.size()); // Monospaced font has no entries
+        assertEquals(0, w2.size()); // Monospaced font has no entries
 
         document.close();
 
         // Check text extraction
         String extracted = getUnicodeText(pdf);
-        Assert.assertEquals(expectedExtractedtext, extracted.replaceAll("\r", "").trim());
+        assertEquals(expectedExtractedtext, extracted.replaceAll("\r", "").trim());
     }
 
     /**
@@ -141,7 +143,7 @@ public class TestFontEmbedding
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
         File ipafont = new File("target/fonts/ipagp00303", "ipagp.ttf");
-        Assume.assumeTrue(ipafont.exists());
+        assumeTrue(ipafont.exists());
         PDType0Font vfont = PDType0Font.loadVertical(document, ipafont);
         PDPageContentStream contentStream = new PDPageContentStream(document, page);
 
@@ -155,32 +157,32 @@ public class TestFontEmbedding
         // Check the font substitution
         byte[] encode = vfont.encode(text);
         int cid = ((encode[0] & 0xFF) << 8) + (encode[1] & 0xFF);
-        Assert.assertEquals(12607, cid); // it's 12461 without substitution
+        assertEquals(12607, cid); // it's 12461 without substitution
         // Check the dictionaries
         COSDictionary fontDict = vfont.getCOSObject();
-        Assert.assertEquals(COSName.IDENTITY_V, fontDict.getDictionaryObject(COSName.ENCODING));
+        assertEquals(COSName.IDENTITY_V, fontDict.getDictionaryObject(COSName.ENCODING));
 
         document.save(pdf);
 
         // Vertical metrics are fixed during subsetting, so do this after calling save()
         COSDictionary descFontDict = vfont.getDescendantFont().getCOSObject();
         COSArray dw2 = (COSArray) descFontDict.getDictionaryObject(COSName.DW2);
-        Assert.assertNull(dw2); // This font uses default values for DW2
+        assertNull(dw2); // This font uses default values for DW2
         // c [ w1_1y v_1x v_1y ... w1_ny v_nx v_ny ]
         COSArray w2 = (COSArray) descFontDict.getDictionaryObject(COSName.W2);
-        Assert.assertEquals(2, w2.size());
-        Assert.assertEquals(12607, w2.getInt(0)); // Start CID
+        assertEquals(2, w2.size());
+        assertEquals(12607, w2.getInt(0)); // Start CID
         COSArray metrics = (COSArray) w2.getObject(1);
         int i = 0;
         for (int n : new int[] {-570, 500, 450, -570, 500, 880})
         {
-            Assert.assertEquals(n, metrics.getInt(i++));
+            assertEquals(n, metrics.getInt(i++));
         }
         document.close();
 
         // Check text extraction
         String extracted = getUnicodeText(pdf);
-        Assert.assertEquals(expectedExtractedtext, extracted.replaceAll("\r", "").trim());
+        assertEquals(expectedExtractedtext, extracted.replaceAll("\r", "").trim());
     }
 
     /**
@@ -203,13 +205,13 @@ public class TestFontEmbedding
         {
             set.add(text.charAt(i));
         }
-        Assert.assertEquals(ToUnicodeWriter.MAX_ENTRIES_PER_OPERATOR, set.size());
+        assertEquals(ToUnicodeWriter.MAX_ENTRIES_PER_OPERATOR, set.size());
 
         PDDocument document = new PDDocument();
         PDPage page = new PDPage(PDRectangle.A0);
         document.addPage(page);
         File ipafont = new File("target/fonts/ipag00303", "ipag.ttf");
-        Assume.assumeTrue(ipafont.exists());
+        assumeTrue(ipafont.exists());
         PDType0Font font = PDType0Font.load(document, ipafont);
         PDPageContentStream contentStream = new PDPageContentStream(document, page);
         contentStream.beginText();
@@ -224,7 +226,7 @@ public class TestFontEmbedding
 
         // check that the extracted text matches what we wrote
         String extracted = getUnicodeText(file);
-        Assert.assertEquals(text, extracted.trim());
+        assertEquals(text, extracted.trim());
     }
 
     private void validateCIDFontType2(boolean useSubset) throws Exception
@@ -233,7 +235,7 @@ public class TestFontEmbedding
         PDPage page = new PDPage(PDRectangle.A4);
         document.addPage(page);
 
-        InputStream input = getClass().getResourceAsStream(
+        InputStream input = PDFont.class.getResourceAsStream(
             "/com/tom_roush/pdfbox/resources/ttf/LiberationSans-Regular.ttf");
         PDType0Font font = PDType0Font.load(document, input, useSubset);
 
@@ -255,7 +257,7 @@ public class TestFontEmbedding
 
         // check that the extracted text matches what we wrote
         String extracted = getUnicodeText(file);
-        Assert.assertEquals(text, extracted.trim());
+        assertEquals(text, extracted.trim());
     }
 
     private String getUnicodeText(File file) throws IOException

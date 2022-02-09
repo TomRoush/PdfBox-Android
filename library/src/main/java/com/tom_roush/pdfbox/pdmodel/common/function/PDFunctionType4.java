@@ -29,6 +29,7 @@ import com.tom_roush.pdfbox.pdmodel.common.function.type4.Operators;
  * This class represents a Type 4 (PostScript calculator) function in a PDF document.
  * <p>
  * See section 3.9.4 of the PDF 1.4 Reference.
+ *
  */
 public class PDFunctionType4 extends PDFunction
 {
@@ -47,7 +48,7 @@ public class PDFunctionType4 extends PDFunction
     {
         super( functionStream );
         byte[] bytes = getPDStream().toByteArray();
-        String string = new String(bytes, "ISO-8859-1");
+        String string =  new String(bytes, "ISO-8859-1");
         this.instructions = InstructionSequenceBuilder.parse(string);
     }
 
@@ -60,8 +61,8 @@ public class PDFunctionType4 extends PDFunction
     }
 
     /**
-    * {@inheritDoc}
-    */
+     * {@inheritDoc}
+     */
     public float[] eval(float[] input) throws IOException
     {
         //Setup the input values
@@ -82,9 +83,9 @@ public class PDFunctionType4 extends PDFunction
         if (numberOfActualOutputValues < numberOfOutputValues)
         {
             throw new IllegalStateException("The type 4 function returned "
-                    + numberOfActualOutputValues
-                    + " values but the Range entry indicates that "
-                    + numberOfOutputValues + " values be returned.");
+                + numberOfActualOutputValues
+                + " values but the Range entry indicates that "
+                + numberOfOutputValues + " values be returned.");
         }
         float[] outputValues = new float[numberOfOutputValues];
         for (int i = numberOfOutputValues - 1; i >= 0; i--)

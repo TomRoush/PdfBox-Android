@@ -33,23 +33,25 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRange;
  *
  * @author Ben Litchfield
  * @author Tilman Hausherr
+ *
  */
 public class PDFunctionType0 extends PDFunction
 {
+
     /**
-     * An array of 2 x m numbers specifying the linear mapping of input values
+     * An array of 2 x m numbers specifying the linear mapping of input values 
      * into the domain of the function's sample table. Default value: [ 0 (Size0
      * - 1) 0 (Size1 - 1) ...].
      */
     private COSArray encode = null;
     /**
-     * An array of 2 x n numbers specifying the linear mapping of sample values
+     * An array of 2 x n numbers specifying the linear mapping of sample values 
      * into the range appropriate for the function's output values. Default
      * value: same as the value of Range
      */
     private COSArray decode = null;
     /**
-     * An array of m positive integers specifying the number of samples in each
+     * An array of m positive integers specifying the number of samples in each 
      * input dimension of the sample table.
      */
     private COSArray size = null;
@@ -87,7 +89,7 @@ public class PDFunctionType0 extends PDFunction
     {
         if (size == null)
         {
-            size = (COSArray)getCOSObject().getDictionaryObject(COSName.SIZE);
+            size = (COSArray) getCOSObject().getDictionaryObject(COSName.SIZE);
         }
         return size;
     }
@@ -115,16 +117,15 @@ public class PDFunctionType0 extends PDFunction
             try
             {
                 // PDF spec 1.7 p.171:
-                // Each sample value is represented as a sequence of BitsPerSample bits.
+                // Each sample value is represented as a sequence of BitsPerSample bits. 
                 // Successive values are adjacent in the bit stream; there is no padding at byte boundaries.
-                ImageInputStream mciis = new MemoryCacheImageInputStream(
-                    getPDStream().createInputStream());
+                ImageInputStream mciis = new MemoryCacheImageInputStream(getPDStream().createInputStream());
                 for (int i = 0; i < arraySize; i++)
                 {
                     for (int k = 0; k < numberOfOutputValues; k++)
                     {
                         // TODO will this cast work properly for 32 bitsPerSample or should we use long[]?
-                        samples[index][k] = (int)mciis.readBits(bitsPerSample);
+                        samples[index][k] = (int) mciis.readBits(bitsPerSample);
                     }
                     index++;
                 }
@@ -132,15 +133,14 @@ public class PDFunctionType0 extends PDFunction
             }
             catch (IOException exception)
             {
-                Log.e("PdfBox-Android",
-                    "IOException while reading the sample values of this function.", exception);
+                Log.e("PdfBox-Android", "IOException while reading the sample values of this function.", exception);
             }
         }
         return samples;
     }
 
     /**
-     * Get the number of bits that the output value will take up.
+     * Get the number of bits that the output value will take up.  
      *
      * Valid values are 1,2,4,8,12,16,24,32.
      *
@@ -177,13 +177,13 @@ public class PDFunctionType0 extends PDFunction
     /**
      * Returns all encode values as COSArray.
      *
-     * @return the encode array.
+     * @return the encode array. 
      */
     private COSArray getEncodeValues()
     {
         if (encode == null)
         {
-            encode = (COSArray)getCOSObject().getDictionaryObject(COSName.ENCODE);
+            encode = (COSArray) getCOSObject().getDictionaryObject(COSName.ENCODE);
             // the default value is [0 (size[0]-1) 0 (size[1]-1) ...]
             if (encode == null)
             {
@@ -203,13 +203,13 @@ public class PDFunctionType0 extends PDFunction
     /**
      * Returns all decode values as COSArray.
      *
-     * @return the decode array.
+     * @return the decode array. 
      */
     private COSArray getDecodeValues()
     {
         if (decode == null)
         {
-            decode = (COSArray)getCOSObject().getDictionaryObject(COSName.DECODE);
+            decode = (COSArray) getCOSObject().getDictionaryObject(COSName.DECODE);
             // if decode is null, the default values are the range values
             if (decode == null)
             {
@@ -282,7 +282,6 @@ public class PDFunctionType0 extends PDFunction
      * multiple dimensions.
      *
      * @param vector with coordinates
-     *
      * @return index in flat array
      */
     private int calcSampleIndex(int[] vector)
@@ -335,6 +334,7 @@ public class PDFunctionType0 extends PDFunction
          * @param input the input coordinates
          * @param inputPrev coordinate of the "ceil" point
          * @param inputNext coordinate of the "floor" point
+         *
          */
         Rinterpol(float[] input, int[] inputPrev, int[] inputNext)
         {
@@ -362,7 +362,6 @@ public class PDFunctionType0 extends PDFunction
          * upwards); gets fully filled in the last call ("leaf"), where it is
          * used to get the correct sample
          * @param step between 0 (first call) and dimension - 1
-         *
          * @return interpolated result sample
          */
         private float[] rinterpol(int[] coord, int step)
@@ -387,8 +386,7 @@ public class PDFunctionType0 extends PDFunction
                 int[] sample2 = getSamples()[calcSampleIndex(coord)];
                 for (int i = 0; i < numberOfOutputValues; ++i)
                 {
-                    resultSample[i] = interpolate(in[step], inPrev[step], inNext[step], sample1[i],
-                        sample2[i]);
+                    resultSample[i] = interpolate(in[step], inPrev[step], inNext[step], sample1[i], sample2[i]);
                 }
                 return resultSample;
             }
@@ -406,8 +404,7 @@ public class PDFunctionType0 extends PDFunction
                 float[] sample2 = rinterpol(coord, step + 1);
                 for (int i = 0; i < numberOfOutputValues; ++i)
                 {
-                    resultSample[i] = interpolate(in[step], inPrev[step], inNext[step], sample1[i],
-                        sample2[i]);
+                    resultSample[i] = interpolate(in[step], inPrev[step], inNext[step], sample1[i], sample2[i]);
                 }
                 return resultSample;
             }
@@ -425,12 +422,13 @@ public class PDFunctionType0 extends PDFunction
 
         float[] sizeValues = getSize().toFloatArray();
         int bitsPerSample = getBitsPerSample();
-        float maxSample = (float)(Math.pow(2, bitsPerSample) - 1.0);
+        float maxSample = (float) (Math.pow(2, bitsPerSample) - 1.0);
         int numberOfInputValues = input.length;
         int numberOfOutputValues = getNumberOfOutputParameters();
 
         int[] inputPrev = new int[numberOfInputValues];
         int[] inputNext = new int[numberOfInputValues];
+        input = input.clone(); // PDFBOX-4461
 
         for (int i = 0; i < numberOfInputValues; i++)
         {
@@ -440,8 +438,8 @@ public class PDFunctionType0 extends PDFunction
             input[i] = interpolate(input[i], domain.getMin(), domain.getMax(),
                 encodeValues.getMin(), encodeValues.getMax());
             input[i] = clipToRange(input[i], 0, sizeValues[i] - 1);
-            inputPrev[i] = (int)Math.floor(input[i]);
-            inputNext[i] = (int)Math.ceil(input[i]);
+            inputPrev[i] = (int) Math.floor(input[i]);
+            inputNext[i] = (int) Math.ceil(input[i]);
         }
 
         float[] outputValues = new Rinterpol(input, inputPrev, inputNext).rinterpolate();
@@ -450,8 +448,7 @@ public class PDFunctionType0 extends PDFunction
         {
             PDRange range = getRangeForOutput(i);
             PDRange decodeValues = getDecodeForParameter(i);
-            outputValues[i] = interpolate(outputValues[i], 0, maxSample, decodeValues.getMin(),
-                decodeValues.getMax());
+            outputValues[i] = interpolate(outputValues[i], 0, maxSample, decodeValues.getMin(), decodeValues.getMax());
             outputValues[i] = clipToRange(outputValues[i], range.getMin(), range.getMax());
         }
 
