@@ -45,7 +45,6 @@ public final class GlyphList
      */
     private static GlyphList load(String filename, int numberOfEntries)
     {
-        ClassLoader loader = GlyphList.class.getClassLoader();
         String path = "com/tom_roush/pdfbox/resources/glyphlist/";
         try
         {
@@ -58,7 +57,7 @@ public final class GlyphList
             else
             {
                 // Fallback
-                resourceStream = loader.getResourceAsStream(resourcePath);
+                resourceStream = GlyphList.class.getResourceAsStream("/" + resourcePath);
             }
             return new GlyphList(resourceStream, numberOfEntries);
         }

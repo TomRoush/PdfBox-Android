@@ -116,8 +116,7 @@ class LegacyPDFStreamEngine extends PDFStreamEngine
         }
         else
         {
-            // Fallback
-            input = GlyphList.class.getClassLoader().getResourceAsStream(path);
+            input = GlyphList.class.getResourceAsStream("/" + path);
         }
         glyphList = new GlyphList(GlyphList.getAdobeGlyphList(), input);
     }

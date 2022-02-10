@@ -20,6 +20,7 @@ import java.util.Stack;
 
 /**
  * Provides the relational operators such as "eq" and "le".
+ *
  */
 class RelationalOperators
 {

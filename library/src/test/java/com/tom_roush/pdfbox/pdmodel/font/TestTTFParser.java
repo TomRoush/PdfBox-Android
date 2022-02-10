@@ -16,18 +16,16 @@
  */
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import java.io.IOException;
+import java.io.InputStream;
 import com.tom_roush.fontbox.ttf.CmapSubtable;
 import com.tom_roush.fontbox.ttf.CmapTable;
 import com.tom_roush.fontbox.ttf.NameRecord;
 import com.tom_roush.fontbox.ttf.PostScriptTable;
 import com.tom_roush.fontbox.ttf.TTFParser;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
-
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * A test for correctly parsing TTF files.
@@ -43,7 +41,7 @@ public class TestTTFParser
     @Test
     public void testPostTable() throws IOException
     {
-        InputStream input = getClass().getResourceAsStream(
+        InputStream input = PDFont.class.getResourceAsStream(
             "/com/tom_roush/pdfbox/resources/ttf/LiberationSans-Regular.ttf");
         Assert.assertNotNull(input);
 

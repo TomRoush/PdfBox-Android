@@ -36,11 +36,14 @@ import javax.crypto.Cipher;
 
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.android.TestResourceGenerator;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentNameDictionary;
 import com.tom_roush.pdfbox.pdmodel.PDEmbeddedFilesNameTreeNode;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDComplexFileSpecification;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDEmbeddedFile;
 import com.tom_roush.pdfbox.pdmodel.encryption.AccessPermission;
@@ -282,6 +285,49 @@ public class TestSymmetricKeyEncryption
             inputFileWithEmbeddedFileAsByteArray, extractedEmbeddedFile, USERPASSWORD, OWNERPASSWORD);
     }
 
+    /**
+     * PDFBOX-4453: verify that identical encrypted strings are really decrypted each.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testPDFBox4453() throws IOException
+    {
+        final int TESTCOUNT = 1000;
+        File file = new File(testResultsDir,"PDFBOX-4453.pdf");
+        PDDocument doc = new PDDocument();
+        doc.addPage(new PDPage());
+        for (int i = 0; i < TESTCOUNT; ++i)
+        {
+            // strings must be in different dictionaries so that the actual
+            // encryption key changes
+            COSDictionary dict = new COSDictionary();
+            doc.getPage(0).getCOSObject().setItem(COSName.getPDFName("_Test-" + i), dict);
+            // need two different keys so that there are both encrypted and decrypted COSStrings
+            // with value "0"
+            dict.setString("key1", "3");
+            dict.setString("key2", "0");
+        }
+
+        //RC4-40
+        StandardProtectionPolicy spp = new StandardProtectionPolicy("12345", "",new AccessPermission());
+        spp.setEncryptionKeyLength(40);
+        spp.setPreferAES(false);
+        doc.protect(spp);
+        doc.save(file);
+        doc.close();
+
+        doc = PDDocument.load(file);
+        Assert.assertTrue(doc.isEncrypted());
+        for (int i = 0; i < TESTCOUNT; ++i)
+        {
+            COSDictionary dict = doc.getPage(0).getCOSObject().getCOSDictionary(COSName.getPDFName("_Test-" + i));
+            assertEquals("3", dict.getString("key1"));
+            assertEquals("0", dict.getString("key2"));
+        }
+        doc.close();
+    }
+
     private void testSymmEncrForKeySize(int keyLength, boolean preferAES,
         int sizePriorToEncr, byte[] inputFileAsByteArray,
         String userpassword, String ownerpassword,
@@ -305,7 +351,7 @@ public class TestSymmetricKeyEncryption
         PDDocument encryptedDoc = encrypt(keyLength, preferAES, sizePriorToEncr, document,
             prefix, permission, userpassword, ownerpassword);
 
-        Assert.assertEquals(numSrcPages, encryptedDoc.getNumberOfPages());
+        assertEquals(numSrcPages, encryptedDoc.getNumberOfPages());
         pdfRenderer = new PDFRenderer(encryptedDoc);
         for (int i = 0; i < encryptedDoc.getNumberOfPages(); ++i)
         {
@@ -334,11 +380,10 @@ public class TestSymmetricKeyEncryption
         PDDocument doc, String prefix, AccessPermission permission,
         String userpassword, String ownerpassword) throws IOException
     {
-        AccessPermission ap = new AccessPermission();
-        StandardProtectionPolicy spp = new StandardProtectionPolicy(ownerpassword, userpassword, ap);
+        StandardProtectionPolicy spp = new StandardProtectionPolicy(ownerpassword, userpassword,
+            permission);
         spp.setEncryptionKeyLength(keyLength);
         spp.setPreferAES(preferAES);
-        spp.setPermissions(permission);
 
         // This must have no effect and should only log a warning.
         doc.setAllSecurityToBeRemoved(true);
@@ -354,10 +399,8 @@ public class TestSymmetricKeyEncryption
                 + "-bit " + (preferAES ? "AES" : "RC4") + " encrypted pdf should not have same size as plain one",
             sizeEncrypted != sizePriorToEncr);
 
-        PDDocument encryptedDoc;
-
         // test with owner password => full permissions
-        encryptedDoc = PDDocument.load(pdfFile, ownerpassword);
+        PDDocument encryptedDoc = PDDocument.load(pdfFile, ownerpassword);
         Assert.assertTrue(encryptedDoc.isEncrypted());
         Assert.assertTrue(encryptedDoc.getCurrentAccessPermission().isOwnerPermission());
 
@@ -373,7 +416,7 @@ public class TestSymmetricKeyEncryption
                 encryption.getOwnerKey(),
                 revision,
                 keyLengthInBytes);
-            Assert.assertEquals(userpassword.substring(0, 32), new String(computedUserPassword, Charsets.ISO_8859_1));
+            assertEquals(userpassword.substring(0, 32), new String(computedUserPassword, Charsets.ISO_8859_1));
         }
 
         encryptedDoc.close();
@@ -397,7 +440,7 @@ public class TestSymmetricKeyEncryption
         PDDocumentNameDictionary names = catalog.getNames();
         PDEmbeddedFilesNameTreeNode embeddedFiles = names.getEmbeddedFiles();
         Map<String, PDComplexFileSpecification> embeddedFileNames = embeddedFiles.getNames();
-        Assert.assertEquals(1, embeddedFileNames.size());
+        assertEquals(1, embeddedFileNames.size());
         Map.Entry<String, PDComplexFileSpecification> entry = embeddedFileNames.entrySet().iterator().next();
         Log.i("PdfBox-Android", "Processing embedded file " + entry.getKey() + ":");
         PDComplexFileSpecification complexFileSpec = entry.getValue();
@@ -430,7 +473,7 @@ public class TestSymmetricKeyEncryption
 
         File extractedEmbeddedFile = extractEmbeddedFile(new FileInputStream(decryptedFile), "decryptedInnerFile-" + keyLength + "-bit-" + (preferAES ? "AES" : "RC4") + ".pdf");
 
-        Assert.assertEquals(keyLength + "-bit " + (preferAES ? "AES" : "RC4") + " decrypted inner attachment pdf should have same size as plain one",
+        assertEquals(keyLength + "-bit " + (preferAES ? "AES" : "RC4") + " decrypted inner attachment pdf should have same size as plain one",
             embeddedFilePriorToEncryption.length(), extractedEmbeddedFile.length());
 
         // compare the two embedded files

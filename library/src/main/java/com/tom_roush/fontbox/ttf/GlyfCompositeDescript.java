@@ -206,7 +206,7 @@ public class GlyfCompositeDescript extends GlyfDescript
             GlyphDescription gd = descriptions.get(c.getGlyphIndex());
             if (gd == null)
             {
-                Log.e("PdfBox-Android", "getGlypDescription(" + c.getGlyphIndex() + ") is null, returning 0");
+                Log.e("PdfBox-Android", "GlyphDescription for index " + c.getGlyphIndex() + " is null, returning 0");
                 pointCount = 0;
             }
             else

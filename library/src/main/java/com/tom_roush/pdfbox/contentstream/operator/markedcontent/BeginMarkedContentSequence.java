@@ -19,11 +19,10 @@ package com.tom_roush.pdfbox.contentstream.operator.markedcontent;
 import java.io.IOException;
 import java.util.List;
 
-import com.tom_roush.pdfbox.contentstream.operator.Operator;
-import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.text.PDFMarkedContentExtractor;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 
 /**
  * BMC : Begins a marked-content sequence.
@@ -43,10 +42,7 @@ public class BeginMarkedContentSequence extends OperatorProcessor
                 tag = (COSName) argument;
             }
         }
-        if (this.context instanceof PDFMarkedContentExtractor)
-        {
-            ((PDFMarkedContentExtractor) this.context).beginMarkedContentSequence(tag, null);
-        }
+        this.context.beginMarkedContentSequence(tag, null);
     }
 
     @Override

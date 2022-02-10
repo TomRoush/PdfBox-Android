@@ -22,6 +22,7 @@ import java.util.Stack;
 
 /**
  * Provides the stack operators such as "pop" and "dup".
+ *
  */
 class StackOperators
 {
@@ -39,7 +40,7 @@ class StackOperators
                 int size = stack.size();
                 //Need to copy to a new list to avoid ConcurrentModificationException
                 List<Object> copy = new java.util.ArrayList<Object>(
-                        stack.subList(size - n, size));
+                    stack.subList(size - n, size));
                 stack.addAll(copy);
             }
         }

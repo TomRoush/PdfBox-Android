@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -27,8 +27,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSDictionaryMap;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
- * An entry in an appearance dictionary. May contain either a single appearance stream or an
- * appearance subdictionary.
+ * An entry in an appearance dictionary. May contain either a single appearance stream or an appearance subdictionary.
  *
  * @author John Hewson
  */
@@ -81,9 +80,9 @@ public class PDAppearanceEntry implements COSObjectable
     {
         if (!isStream())
         {
-            throw new IllegalStateException();
+            throw new IllegalStateException("This entry is not an appearance stream");
         }
-        return new PDAppearanceStream((COSStream)entry);
+        return new PDAppearanceStream((COSStream) entry);
     }
 
     /**
@@ -95,10 +94,10 @@ public class PDAppearanceEntry implements COSObjectable
     {
         if (!isSubDictionary())
         {
-            throw new IllegalStateException();
+            throw new IllegalStateException("This entry is not an appearance subdictionary");
         }
 
-        COSDictionary dict = (COSDictionary)entry;
+        COSDictionary dict = (COSDictionary) entry;
         Map<COSName, PDAppearanceStream> map = new HashMap<COSName, PDAppearanceStream>();
 
         for (COSName name : dict.keySet())
@@ -106,12 +105,12 @@ public class PDAppearanceEntry implements COSObjectable
             COSBase value = dict.getDictionaryObject(name);
 
             // the file from PDFBOX-1599 contains /null as its entry, so we skip non-stream entries
-            if(value instanceof COSStream)
+            if (value instanceof COSStream)
             {
-                map.put(name, new PDAppearanceStream((COSStream)value));
+                map.put(name, new PDAppearanceStream((COSStream) value));
             }
         }
 
-        return new COSDictionaryMap<COSName, PDAppearanceStream>( map, dict );
+        return new COSDictionaryMap<COSName, PDAppearanceStream>(map, dict);
     }
 }
