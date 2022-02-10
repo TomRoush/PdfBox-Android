@@ -48,7 +48,7 @@ import static com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage.validat
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
-import static org.junit.Assume.assumeNotNull;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Unit tests for LosslessFactory
@@ -246,7 +246,7 @@ public class LosslessFactoryTest
         inDir.mkdirs();
         File imageFile = TestResourceGenerator.downloadTestResource(inDir, "PDFBOX-4184-032163.jpg",
             "https://issues.apache.org/jira/secure/attachment/12949710/032163.jpg");
-        assumeNotNull(imageFile);
+        assumeTrue(imageFile.exists());
         PDDocument document = new PDDocument();
         Bitmap image = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
         PDImageXObject ximage = LosslessFactory.createFromImage(document, image);
@@ -316,7 +316,7 @@ public class LosslessFactoryTest
         File TARGETDIR = new File(testContext.getCacheDir(), "imgs");
         TARGETDIR.mkdirs();
         File imgFile = TestResourceGenerator.downloadTestResource(TARGETDIR, "PDFBOX-4184-16bit.png", "https://issues.apache.org/jira/secure/attachment/12929821/16bit.png");
-        assumeNotNull(imgFile);
+        assumeTrue(imgFile.exists());
         Bitmap image = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
         Bitmap compareImage;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)

@@ -16,7 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeNotNull;
+import static org.junit.Assume.assumeTrue;
 
 public class TestPDFParserInstrumentation
 {
@@ -40,7 +40,7 @@ public class TestPDFParserInstrumentation
         File TARGETPDFDIR = new File(testContext.getCacheDir(), "pdfs");
         TARGETPDFDIR.mkdirs();
         File pdfFile = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-3950-23EGDHXSBBYQLKYOKGZUOVYVNE675PRD.pdf", "https://issues.apache.org/jira/secure/attachment/12890042/23EGDHXSBBYQLKYOKGZUOVYVNE675PRD.pdf");
-        assumeNotNull(pdfFile);
+        assumeTrue(pdfFile.exists());
 
         PDDocument doc = PDDocument.load(pdfFile);
         assertEquals(4, doc.getNumberOfPages());

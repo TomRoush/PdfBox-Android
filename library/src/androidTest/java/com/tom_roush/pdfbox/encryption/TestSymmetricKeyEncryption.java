@@ -60,7 +60,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeNotNull;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests for symmetric key encryption.
@@ -244,7 +244,7 @@ public class TestSymmetricKeyEncryption
         File TARGETPDFDIR = new File(testContext.getCacheDir(), "pdfs");
         TARGETPDFDIR.mkdirs();
         File pdfFile = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-4308.pdf", "https://issues.apache.org/jira/secure/attachment/12938094/Quelldatei.pdf");
-        assumeNotNull(pdfFile);
+        assumeTrue(pdfFile.exists());
 
         InputStream is = new FileInputStream(pdfFile);
         byte[] inputFileAsByteArray = IOUtils.toByteArray(is);
