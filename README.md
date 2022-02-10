@@ -14,7 +14,7 @@ Add the following to dependency to `build.gradle`:
 
 ```gradle
 dependencies {
-    implementation 'com.tom-roush:pdfbox-android:2.0.13.0'
+    implementation 'com.tom-roush:pdfbox-android:2.0.14.0'
 }
 ```
 
@@ -29,6 +29,6 @@ An example app is located in the `sample` directory and includes examples of com
 Important notes
 ==============
 
--Currently based on PdfBox v2.0.13
+-Currently based on PdfBox v2.0.14
 
 -Requires API 19 or greater for full functionality
