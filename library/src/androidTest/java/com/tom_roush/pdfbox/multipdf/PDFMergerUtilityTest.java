@@ -633,7 +633,10 @@ public class PDFMergerUtilityTest
     @Test
     public void testParentTree() throws IOException
     {
-        PDDocument doc = PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-3999-GeneralForbearance.pdf"));
+        File inputPdf = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-3999-GeneralForbearance.pdf", "https://issues.apache.org/jira/secure/attachment/12896905/GeneralForbearance.pdf");
+        assumeNotNull(inputPdf);
+
+        PDDocument doc = PDDocument.load(inputPdf);
         PDStructureTreeRoot structureTreeRoot = doc.getDocumentCatalog().getStructureTreeRoot();
         PDNumberTreeNode parentTree = structureTreeRoot.getParentTree();
         parentTree.getValue(0);
