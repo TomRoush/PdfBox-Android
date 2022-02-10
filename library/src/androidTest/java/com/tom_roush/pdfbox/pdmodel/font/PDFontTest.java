@@ -46,7 +46,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assume.assumeNotNull;
+import static org.junit.Assume.assumeTrue;
 
 /**
  *
@@ -136,7 +136,7 @@ public class PDFontTest
     public void testPDFBOX4115() throws IOException
     {
         File fontFile = TestResourceGenerator.downloadTestResource(IN_DIR, "n019003l.pfb", "https://issues.apache.org/jira/secure/attachment/12911053/n019003l.pfb");
-        assumeNotNull(fontFile);
+        assumeTrue(fontFile.exists());
 
         File outputFile = new File(OUT_DIR, "FontType1.pdf");
         String text = "äöüÄÖÜ";

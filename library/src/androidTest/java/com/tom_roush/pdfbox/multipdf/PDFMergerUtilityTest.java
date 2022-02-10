@@ -63,7 +63,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeNotNull;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Test suite for PDFMergerUtility.
@@ -208,7 +208,7 @@ public class PDFMergerUtilityTest
     public void testStructureTreeMerge() throws IOException
     {
         File inputPdf = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-3999-GeneralForbearance.pdf", "https://issues.apache.org/jira/secure/attachment/12896905/GeneralForbearance.pdf");
-        assumeNotNull(inputPdf);
+        assumeTrue(inputPdf.exists());
 
         PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
         PDDocument src = PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-3999-GeneralForbearance.pdf"));
@@ -248,7 +248,7 @@ public class PDFMergerUtilityTest
     public void testStructureTreeMerge2() throws IOException
     {
         File inputPdf = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-3999-GeneralForbearance.pdf", "https://issues.apache.org/jira/secure/attachment/12896905/GeneralForbearance.pdf");
-        assumeNotNull(inputPdf);
+        assumeTrue(inputPdf.exists());
 
         PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
         PDDocument doc = PDDocument.load(inputPdf);
@@ -296,7 +296,7 @@ public class PDFMergerUtilityTest
     public void testStructureTreeMerge3() throws IOException
     {
         File inputPdf = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-4408.pdf", "https://issues.apache.org/jira/secure/attachment/12952086/form.pdf");
-        assumeNotNull(inputPdf);
+        assumeTrue(inputPdf.exists());
 
         PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
         PDDocument src = PDDocument.load(inputPdf);
@@ -412,7 +412,7 @@ public class PDFMergerUtilityTest
     public void testStructureTreeMerge6() throws IOException
     {
         File srcPdf = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-4418-000671.pdf", "https://issues.apache.org/jira/secure/attachment/12953421/000671.pdf");
-        assumeNotNull(srcPdf);
+        assumeTrue(srcPdf.exists());
 
         PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
         PDDocument src = PDDocument.load(srcPdf);
@@ -426,7 +426,7 @@ public class PDFMergerUtilityTest
         assertEquals(743, structureTreeRoot.getParentTreeNextKey());
 
         File dstPdf = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-4418-000314.pdf", "https://issues.apache.org/jira/secure/attachment/12953423/000314.pdf");
-        assumeNotNull(dstPdf);
+        assumeTrue(dstPdf.exists());
 
         PDDocument dst = PDDocument.load(dstPdf);
 
@@ -469,7 +469,7 @@ public class PDFMergerUtilityTest
     public void testStructureTreeMerge7() throws IOException
     {
         File inputPdf = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-4423-000746.pdf", "https://issues.apache.org/jira/secure/attachment/12953866/000746.pdf");
-        assumeNotNull(inputPdf);
+        assumeTrue(inputPdf.exists());
 
         PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
         PDDocument src = PDDocument.load(inputPdf);
@@ -512,8 +512,11 @@ public class PDFMergerUtilityTest
     public void testMissingParentTreeNextKey() throws IOException
     {
         PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
-        PDDocument src = PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-4418-000314.pdf"));
-        PDDocument dst = PDDocument.load(new File(TARGETPDFDIR, "PDFBOX-4418-000314.pdf"));
+        File inputPdf = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-4418-000314.pdf", "https://issues.apache.org/jira/secure/attachment/12953423/000314.pdf");
+        assumeTrue(inputPdf.exists());
+
+        PDDocument src = PDDocument.load(inputPdf);
+        PDDocument dst = PDDocument.load(inputPdf);
         // existing numbers are 321..327; ParentTreeNextKey is 408. 
         // After deletion, it is recalculated in the merge 328.
         // That value is added to all numbers of the destination,
@@ -584,7 +587,7 @@ public class PDFMergerUtilityTest
     public void testMergeBogusStructParents1() throws IOException
     {
         File inputPdf = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-4408.pdf", "https://issues.apache.org/jira/secure/attachment/12952086/form.pdf");
-        assumeNotNull(inputPdf);
+        assumeTrue(inputPdf.exists());
 
         PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
         PDDocument src = PDDocument.load(inputPdf);
@@ -609,7 +612,7 @@ public class PDFMergerUtilityTest
     public void testMergeBogusStructParents2() throws IOException
     {
         File inputPdf = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-4408.pdf", "https://issues.apache.org/jira/secure/attachment/12952086/form.pdf");
-        assumeNotNull(inputPdf);
+        assumeTrue(inputPdf.exists());
 
         PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
         PDDocument src = PDDocument.load(inputPdf);
@@ -634,7 +637,7 @@ public class PDFMergerUtilityTest
     public void testParentTree() throws IOException
     {
         File inputPdf = TestResourceGenerator.downloadTestResource(TARGETPDFDIR, "PDFBOX-3999-GeneralForbearance.pdf", "https://issues.apache.org/jira/secure/attachment/12896905/GeneralForbearance.pdf");
-        assumeNotNull(inputPdf);
+        assumeTrue(inputPdf.exists());
 
         PDDocument doc = PDDocument.load(inputPdf);
         PDStructureTreeRoot structureTreeRoot = doc.getDocumentCatalog().getStructureTreeRoot();
