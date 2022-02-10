@@ -463,6 +463,16 @@ public class PDEncryption
     }
 
     /**
+     * Returns the default crypt filter (for public-key security handler).
+     *
+     * @return the default crypt filter if available.
+     */
+    public PDCryptFilterDictionary getDefaultCryptFilterDictionary()
+    {
+        return getCryptFilterDictionary(COSName.DEFAULT_CRYPT_FILTER);
+    }
+
+    /**
      * Returns the crypt filter with the given name.
      *
      * @param cryptFilterName the name of the crypt filter
@@ -471,13 +481,14 @@ public class PDEncryption
      */
     public PDCryptFilterDictionary getCryptFilterDictionary(COSName cryptFilterName)
     {
-        COSDictionary cryptFilterDictionary = (COSDictionary) dictionary.getDictionaryObject( COSName.CF );
-        if (cryptFilterDictionary != null)
+        // See CF in "Table 20 – Entries common to all encryption dictionaries"
+        COSBase base = dictionary.getDictionaryObject(COSName.CF);
+        if (base instanceof COSDictionary)
         {
-            COSDictionary stdCryptFilterDictionary = (COSDictionary)cryptFilterDictionary.getDictionaryObject(cryptFilterName);
-            if (stdCryptFilterDictionary != null)
+            COSBase base2 = ((COSDictionary) base).getDictionaryObject(cryptFilterName);
+            if (base2 instanceof COSDictionary)
             {
-                return new PDCryptFilterDictionary(stdCryptFilterDictionary);
+                return new PDCryptFilterDictionary((COSDictionary) base2);
             }
         }
         return null;
@@ -509,6 +520,16 @@ public class PDEncryption
     public void setStdCryptFilterDictionary(PDCryptFilterDictionary cryptFilterDictionary)
     {
         setCryptFilterDictionary(COSName.STD_CF, cryptFilterDictionary);
+    }
+
+    /**
+     * Sets the default crypt filter (for public-key security handler).
+     *
+     * @param defaultFilterDictionary the standard crypt filter to set
+     */
+    public void setDefaultCryptFilterDictionary(PDCryptFilterDictionary defaultFilterDictionary)
+    {
+        setCryptFilterDictionary(COSName.DEFAULT_CRYPT_FILTER, defaultFilterDictionary);
     }
 
     /**

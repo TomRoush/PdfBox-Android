@@ -96,6 +96,7 @@ public class PDDocument implements Closeable
     static
     {
         PDDeviceRGB.INSTANCE.toRGB(new float[]{1,1,1,1});
+
         try
         {
             COSNumber.get("0");
@@ -769,9 +770,10 @@ public class PDDocument implements Closeable
     }
 
     /**
-     * This will get the document info dictionary. This is guaranteed to not return null.
+     * This will get the document info dictionary. If it doesn't exist, an empty document info
+     * dictionary is created in the document trailer.
      *
-     * @return The documents /Info dictionary
+     * @return The documents /Info dictionary, never null.
      */
     public PDDocumentInformation getDocumentInformation()
     {

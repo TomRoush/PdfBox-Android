@@ -17,8 +17,13 @@
 
 package com.tom_roush.pdfbox.util;
 
+import android.util.Log;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Utility functions for hex encoding.
@@ -172,5 +177,111 @@ public final class Hex
     private static int getLowNibble(byte b)
     {
         return b & 0x0F;
+    }
+
+    /**
+     * Decode a base64 String.
+     *
+     * @param base64Value a base64 encoded String.
+     *
+     * @return the decoded String as a byte array.
+     *
+     * @throws IllegalArgumentException if this isn't a base64 encoded string.
+     */
+    public static byte[] decodeBase64(String base64Value)
+    {
+        // https://stackoverflow.com/questions/469695/decode-base64-data-in-java
+        try
+        {
+            // jdk8 and higher? java.util.Base64.getDecoder().decode()
+            Class<?> b64Class = Class.forName("java.util.Base64");
+            Method getDecoderMethod = b64Class.getMethod("getDecoder");
+            Object base64Decoder = getDecoderMethod.invoke(b64Class);
+            Method decodeMethod = base64Decoder.getClass().getMethod("decode", String.class);
+            return (byte[]) decodeMethod.invoke(base64Decoder, base64Value.replaceAll("\\s", ""));
+        }
+        catch (ClassNotFoundException ex)
+        {
+            Log.d("PdfBox-Android", ex.getMessage(), ex);
+        }
+        catch (IllegalAccessException ex)
+        {
+            Log.d("PdfBox-Android", ex.getMessage(), ex);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            Log.d("PdfBox-Android", ex.getMessage(), ex);
+        }
+        catch (NoSuchMethodException ex)
+        {
+            Log.d("PdfBox-Android", ex.getMessage(), ex);
+        }
+        catch (SecurityException ex)
+        {
+            Log.d("PdfBox-Android", ex.getMessage(), ex);
+        }
+        catch (InvocationTargetException ex)
+        {
+            Log.d("PdfBox-Android", ex.getMessage(), ex);
+        }
+        try
+        {
+            // up to java7? javax.xml.bind.DatatypeConverter.parseBase64Binary()
+            Class<?> datatypeConverterClass = Class.forName("javax.xml.bind.DatatypeConverter");
+            Method parseBase64BinaryMethod = datatypeConverterClass.getMethod("parseBase64Binary", String.class);
+            return (byte[]) parseBase64BinaryMethod.invoke(null, base64Value);
+        }
+        catch (ClassNotFoundException ex)
+        {
+            Log.d("PdfBox-Android", ex.getMessage(), ex);
+        }
+        catch (IllegalAccessException ex)
+        {
+            Log.d("PdfBox-Android", ex.getMessage(), ex);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            Log.d("PdfBox-Android", ex.getMessage(), ex);
+        }
+        catch (NoSuchMethodException ex)
+        {
+            Log.d("PdfBox-Android", ex.getMessage(), ex);
+        }
+        catch (SecurityException ex)
+        {
+            Log.d("PdfBox-Android", ex.getMessage(), ex);
+        }
+        catch (InvocationTargetException ex)
+        {
+            Log.d("PdfBox-Android", ex.getMessage(), ex);
+        }
+        Log.e("PdfBox-Android", "Can't decode base64 value, try adding javax.xml.bind:jaxb-api to your build");
+        return new byte[0];
+    }
+
+    /**
+     * Decodes a hex String into a byte array.
+     *
+     * @param s A String with ASCII hex.
+     * @return decoded byte array.
+     * @throws IOException
+     */
+    public static byte[] decodeHex(String s) throws IOException
+    {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        for (int i = 0; i < s.length() - 1; i += 2)
+        {
+            String hexByte = s.substring(i, i + 2);
+            try
+            {
+                baos.write(Integer.parseInt(hexByte, 16)); // Byte.parseByte won't work with "9C"
+            }
+            catch (NumberFormatException ex)
+            {
+                Log.e("PdfBox-Android", "Can't parse " + hexByte + ", aborting decode", ex);
+                break;
+            }
+        }
+        return baos.toByteArray();
     }
 }

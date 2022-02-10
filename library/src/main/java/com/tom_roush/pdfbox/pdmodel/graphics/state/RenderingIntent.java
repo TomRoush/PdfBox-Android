@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.graphics.state;
 
 /**
@@ -45,21 +46,12 @@ public enum RenderingIntent
 
     public static RenderingIntent fromString(String value)
     {
-        if (value.equals("AbsoluteColorimetric"))
+        for (RenderingIntent instance : RenderingIntent.values())
         {
-            return ABSOLUTE_COLORIMETRIC;
-        }
-        else if (value.equals("RelativeColorimetric"))
-        {
-            return RELATIVE_COLORIMETRIC;
-        }
-        else if (value.equals("Saturation"))
-        {
-            return SATURATION;
-        }
-        else if (value.equals("Perceptual"))
-        {
-            return PERCEPTUAL;
+            if (instance.value.equals(value))
+            {
+                return instance;
+            }
         }
         // "If a conforming reader does not recognize the specified name,
         // it shall use the RelativeColorimetric intent by default."

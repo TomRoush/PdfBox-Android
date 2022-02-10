@@ -1848,8 +1848,7 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
             }
             else
             {
-                // Fallback
-                input = PDFTextStripper.class.getClassLoader().getResourceAsStream(path);
+                input = PDFTextStripper.class.getResourceAsStream("/" + path);
             }
 
             if (input != null)

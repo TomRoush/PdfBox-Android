@@ -29,12 +29,12 @@ import java.util.List;
  */
 public final class QuickSort
 {
-    
+
     private QuickSort()
     {
     }
-    
-    private static final Comparator<? extends Comparable> objComp = new Comparator<Comparable>()
+
+    private static final Comparator<? extends Comparable> OBJCOMP = new Comparator<Comparable>()
     {
         @Override
         public int compare(Comparable object1, Comparable object2)
@@ -45,9 +45,10 @@ public final class QuickSort
 
     /**
      * Sorts the given list using the given comparator.
-     * 
+     *
+     * @param <T> type of the objects to be sorted.
      * @param list list to be sorted
-     * @param cmp comparator used to compare the object swithin the list
+     * @param cmp comparator used to compare the objects within the list
      */
     public static <T> void sort(List<T> list, Comparator<T> cmp)
     {
@@ -61,12 +62,13 @@ public final class QuickSort
 
     /**
      * Sorts the given list using compareTo as comparator.
-     * 
+     *
+     * @param <T> type of the objects to be sorted.
      * @param list list to be sorted
      */
     public static <T extends Comparable> void sort(List<T> list)
     {
-        sort(list, (Comparator<T>) objComp);
+        sort(list, (Comparator<T>) OBJCOMP);
     }
 
     private static <T> void quicksort(List<T> list, Comparator<T> cmp)

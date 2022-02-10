@@ -184,6 +184,8 @@ public class COSParser extends BaseParser
 
     /**
      * Default constructor.
+     *
+     * @param source input representing the pdf.
      */
     public COSParser(RandomAccessRead source)
     {
@@ -709,9 +711,15 @@ public class COSParser extends BaseParser
                                     }
                                     else
                                     {
-                                        throw new IOException(
+                                        String msg =
                                             "Invalid object stream xref object reference for key '"
-                                                + objKey + "': " + fileOffset);
+                                                + objKey + "': " + fileOffset;
+                                        if (isLenient && fileOffset == null)
+                                        {
+                                            Log.w("PdfBox-Android", msg);
+                                            continue;
+                                        }
+                                        throw new IOException(msg);
                                     }
                                 }
 
@@ -1906,7 +1914,6 @@ public class COSParser extends BaseParser
                 long currentPosition = source.getPosition();
                 // search backwards for the beginning of the object
                 long newOffset = -1;
-                COSObjectKey streamObjectKey = null;
                 boolean objFound = false;
                 for (int i = 1; i < 40 && !objFound; i++)
                 {
@@ -1941,7 +1948,7 @@ public class COSParser extends BaseParser
                                             newOffset = source.getPosition();
                                             long objNumber = readObjectNumber();
                                             int genNumber = readGenerationNumber();
-                                            streamObjectKey = new COSObjectKey(objNumber,
+                                            COSObjectKey streamObjectKey = new COSObjectKey(objNumber,
                                                 genNumber);
                                             bfSearchObjStreamsOffsets.put(newOffset,
                                                 streamObjectKey);
@@ -2253,7 +2260,7 @@ public class COSParser extends BaseParser
 
     private COSDictionary retrieveCOSDictionary(COSObject object) throws IOException
     {
-        COSObjectKey key = new COSObjectKey((COSObject) object);
+        COSObjectKey key = new COSObjectKey(object);
         Long offset = bfSearchCOSObjectKeyOffsets.get(key);
         if (offset != null)
         {
@@ -2688,7 +2695,7 @@ public class COSParser extends BaseParser
                 return false;
             }
             // first obj id
-            long currObjID = 0;
+            long currObjID;
             try
             {
                 currObjID = Long.parseLong(splitString[0]);
