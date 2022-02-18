@@ -26,6 +26,7 @@ import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDMarkedCo
  * An artifact marked content.
  *
  * @author Johannes Koch
+ *
  */
 public class PDArtifactMarkedContent extends PDMarkedContent
 {
@@ -38,7 +39,7 @@ public class PDArtifactMarkedContent extends PDMarkedContent
 
     /**
      * Gets the type (Type).
-     * 
+     *
      * @return the type
      */
     public String getType()
@@ -48,7 +49,7 @@ public class PDArtifactMarkedContent extends PDMarkedContent
 
     /**
      * Gets the artifact's bounding box (BBox).
-     * 
+     *
      * @return the artifact's bounding box
      */
     public PDRectangle getBBox()
@@ -65,7 +66,7 @@ public class PDArtifactMarkedContent extends PDMarkedContent
 
     /**
      * Is the artifact attached to the top edge?
-     * 
+     *
      * @return <code>true</code> if the artifact is attached to the top edge,
      * <code>false</code> otherwise
      */
@@ -76,7 +77,7 @@ public class PDArtifactMarkedContent extends PDMarkedContent
 
     /**
      * Is the artifact attached to the bottom edge?
-     * 
+     *
      * @return <code>true</code> if the artifact is attached to the bottom edge,
      * <code>false</code> otherwise
      */
@@ -87,7 +88,7 @@ public class PDArtifactMarkedContent extends PDMarkedContent
 
     /**
      * Is the artifact attached to the left edge?
-     * 
+     *
      * @return <code>true</code> if the artifact is attached to the left edge,
      * <code>false</code> otherwise
      */
@@ -98,7 +99,7 @@ public class PDArtifactMarkedContent extends PDMarkedContent
 
     /**
      * Is the artifact attached to the right edge?
-     * 
+     *
      * @return <code>true</code> if the artifact is attached to the right edge,
      * <code>false</code> otherwise
      */
@@ -109,7 +110,7 @@ public class PDArtifactMarkedContent extends PDMarkedContent
 
     /**
      * Gets the subtype (Subtype).
-     * 
+     *
      * @return the subtype
      */
     public String getSubtype()
@@ -120,7 +121,7 @@ public class PDArtifactMarkedContent extends PDMarkedContent
 
     /**
      * Is the artifact attached to the given edge?
-     * 
+     *
      * @param edge the edge
      * @return <code>true</code> if the artifact is attached to the given edge,
      * <code>false</code> otherwise

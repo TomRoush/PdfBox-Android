@@ -22,8 +22,8 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -33,6 +33,7 @@ import com.tom_roush.pdfbox.cos.COSDocument;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdfparser.FDFParser;
 import com.tom_roush.pdfbox.pdfwriter.COSWriter;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -238,8 +239,7 @@ public class FDFDocument implements Closeable
      */
     public static FDFDocument loadXFDF(InputStream input) throws IOException
     {
-        Document doc = XMLUtil.parse(input);
-        return new FDFDocument(doc);
+        return new FDFDocument(com.tom_roush.pdfbox.util.XMLUtil.parse(input));
     }
 
     /**

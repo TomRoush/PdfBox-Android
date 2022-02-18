@@ -158,11 +158,13 @@ public abstract class BaseParser
         readExpectedChar('R');
         if (!(value instanceof COSInteger))
         {
-            throw new IOException("expected number, actual=" + value + " at offset " + numOffset);
+            Log.e("PdfBox-Android", "expected number, actual=" + value + " at offset " + numOffset);
+            return COSNull.NULL;
         }
         if (!(generationNumber instanceof COSInteger))
         {
-            throw new IOException("expected number, actual=" + value + " at offset " + genOffset);
+            Log.e("PdfBox-Android", "expected number, actual=" + value + " at offset " + genOffset);
+            return COSNull.NULL;
         }
         COSObjectKey key = new COSObjectKey(((COSInteger) value).longValue(),
             ((COSInteger) generationNumber).intValue());
@@ -1325,7 +1327,9 @@ public abstract class BaseParser
         catch( NumberFormatException e )
         {
             seqSource.unread(intBuffer.toString().getBytes(ISO_8859_1));
-            throw new IOException( "Error: Expected an integer type at offset "+ seqSource.getPosition(), e);
+            throw new IOException("Error: Expected an integer type at offset " +
+                seqSource.getPosition() +
+                ", instead got '" + intBuffer + "'", e);
         }
         return retval;
     }

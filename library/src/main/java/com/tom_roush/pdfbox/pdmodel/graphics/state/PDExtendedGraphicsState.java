@@ -597,10 +597,14 @@ public class PDExtendedGraphicsState implements COSObjectable
     /**
      * Returns the soft mask stored in the COS dictionary
      *
-     * @return the soft mask
+     * @return the soft mask or null if there isn't any.
      */
     public PDSoftMask getSoftMask()
     {
+        if (!dict.containsKey(COSName.SMASK))
+        {
+            return null;
+        }
         return PDSoftMask.create(dict.getDictionaryObject(COSName.SMASK));
     }
 

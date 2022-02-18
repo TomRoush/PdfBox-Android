@@ -16,8 +16,6 @@
  */
 package com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent;
 
-import android.graphics.Color;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
@@ -279,4 +277,6 @@ public class TestOptionalContentGroups extends TestCase
             doc.close();
         }
     }
+
+//    testOCGGenerationSameNameCanHaveSameVisibilityOff is an instrumentation test
 }

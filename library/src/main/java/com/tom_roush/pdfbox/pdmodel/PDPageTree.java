@@ -153,7 +153,8 @@ public class PDPageTree implements COSObjectable, Iterable<PDPage>
             }
             else
             {
-                Log.w("PdfBox-Android", "COSDictionary expected, but got " + base.getClass().getSimpleName());
+                Log.w("PdfBox-Android", "COSDictionary expected, but got " +
+                    (base == null ? "null" : base.getClass().getSimpleName()));
             }
         }
 

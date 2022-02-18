@@ -27,7 +27,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * A default attribute object.
- * 
+ *
  * @author Johannes Koch
  */
 public class PDDefaultAttributeObject extends PDAttributeObject
@@ -42,7 +42,7 @@ public class PDDefaultAttributeObject extends PDAttributeObject
 
     /**
      * Creates a default attribute object with a given dictionary.
-     * 
+     *
      * @param dictionary the dictionary
      */
     public PDDefaultAttributeObject(COSDictionary dictionary)
@@ -53,7 +53,7 @@ public class PDDefaultAttributeObject extends PDAttributeObject
 
     /**
      * Gets the attribute names.
-     * 
+     *
      * @return the attribute names
      */
     public List<String> getAttributeNames()
@@ -72,7 +72,7 @@ public class PDDefaultAttributeObject extends PDAttributeObject
 
     /**
      * Gets the attribute value for a given name.
-     * 
+     *
      * @param attrName the given attribute name
      * @return the attribute value for a given name
      */
@@ -83,7 +83,7 @@ public class PDDefaultAttributeObject extends PDAttributeObject
 
     /**
      * Gets the attribute value for a given name.
-     * 
+     *
      * @param attrName the given attribute name
      * @param defaultValue the default value
      * @return the attribute value for a given name
@@ -100,7 +100,7 @@ public class PDDefaultAttributeObject extends PDAttributeObject
 
     /**
      * Sets an attribute.
-     * 
+     *
      * @param attrName the attribute name
      * @param attrValue the attribute value
      */

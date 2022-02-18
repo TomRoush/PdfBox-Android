@@ -25,6 +25,7 @@ import com.tom_roush.pdfbox.cos.COSBoolean;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSString;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * This class is a specialized view of the encryption dictionary of a PDF document.
@@ -37,7 +38,7 @@ import com.tom_roush.pdfbox.cos.COSString;
  * @author Ben Litchfield
  * @author Benoit Guillon
  */
-public class PDEncryption
+public class PDEncryption implements COSObjectable
 {
     /**
      * See PDF Reference 1.4 Table 3.13.
@@ -133,8 +134,21 @@ public class PDEncryption
      * This will get the dictionary associated with this encryption dictionary.
      *
      * @return The COS dictionary that this object wraps.
+     * @deprecated use {@link #getCOSObject() }
      */
+    @Deprecated
     public COSDictionary getCOSDictionary()
+    {
+        return dictionary;
+    }
+
+    /**
+     * This will get the dictionary associated with this encryption dictionary.
+     *
+     * @return The COS dictionary that this object wraps.
+     */
+    @Override
+    public COSDictionary getCOSObject()
     {
         return dictionary;
     }
@@ -426,6 +440,7 @@ public class PDEncryption
             array.add(recip);
         }
         dictionary.setItem(COSName.RECIPIENTS, array);
+        array.setDirect(true);
     }
 
     /**
@@ -502,14 +517,14 @@ public class PDEncryption
      */
     public void setCryptFilterDictionary(COSName cryptFilterName, PDCryptFilterDictionary cryptFilterDictionary)
     {
-        COSDictionary cfDictionary = (COSDictionary)dictionary.getDictionaryObject( COSName.CF );
+        COSDictionary cfDictionary = dictionary.getCOSDictionary(COSName.CF);
         if (cfDictionary == null)
         {
             cfDictionary = new COSDictionary();
             dictionary.setItem(COSName.CF, cfDictionary);
         }
-
-        cfDictionary.setItem(cryptFilterName, cryptFilterDictionary.getCOSDictionary());
+        cfDictionary.setDirect(true); // PDFBOX-4436 direct obj needed for Adobe Reader on Android
+        cfDictionary.setItem(cryptFilterName, cryptFilterDictionary.getCOSObject());
     }
 
     /**
@@ -519,6 +534,7 @@ public class PDEncryption
      */
     public void setStdCryptFilterDictionary(PDCryptFilterDictionary cryptFilterDictionary)
     {
+        cryptFilterDictionary.getCOSObject().setDirect(true); // PDFBOX-4436
         setCryptFilterDictionary(COSName.STD_CF, cryptFilterDictionary);
     }
 
@@ -529,6 +545,7 @@ public class PDEncryption
      */
     public void setDefaultCryptFilterDictionary(PDCryptFilterDictionary defaultFilterDictionary)
     {
+        defaultFilterDictionary.getCOSObject().setDirect(true); // PDFBOX-4436
         setCryptFilterDictionary(COSName.DEFAULT_CRYPT_FILTER, defaultFilterDictionary);
     }
 

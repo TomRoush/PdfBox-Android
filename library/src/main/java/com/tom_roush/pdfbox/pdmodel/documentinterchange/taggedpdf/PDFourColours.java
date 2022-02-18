@@ -57,7 +57,7 @@ public class PDFourColours implements COSObjectable
 
     /**
      * Gets the colour for the before edge.
-     * 
+     *
      * @return the colour for the before edge
      */
     public PDGamma getBeforeColour()
@@ -67,7 +67,7 @@ public class PDFourColours implements COSObjectable
 
     /**
      * Sets the colour for the before edge.
-     * 
+     *
      * @param colour the colour for the before edge
      */
     public void setBeforeColour(PDGamma colour)
@@ -77,7 +77,7 @@ public class PDFourColours implements COSObjectable
 
     /**
      * Gets the colour for the after edge.
-     * 
+     *
      * @return the colour for the after edge
      */
     public PDGamma getAfterColour()
@@ -87,7 +87,7 @@ public class PDFourColours implements COSObjectable
 
     /**
      * Sets the colour for the after edge.
-     * 
+     *
      * @param colour the colour for the after edge
      */
     public void setAfterColour(PDGamma colour)
@@ -97,7 +97,7 @@ public class PDFourColours implements COSObjectable
 
     /**
      * Gets the colour for the start edge.
-     * 
+     *
      * @return the colour for the start edge
      */
     public PDGamma getStartColour()
@@ -107,7 +107,7 @@ public class PDFourColours implements COSObjectable
 
     /**
      * Sets the colour for the start edge.
-     * 
+     *
      * @param colour the colour for the start edge
      */
     public void setStartColour(PDGamma colour)
@@ -117,7 +117,7 @@ public class PDFourColours implements COSObjectable
 
     /**
      * Gets the colour for the end edge.
-     * 
+     *
      * @return the colour for the end edge
      */
     public PDGamma getEndColour()
@@ -127,7 +127,7 @@ public class PDFourColours implements COSObjectable
 
     /**
      * Sets the colour for the end edge.
-     * 
+     *
      * @param colour the colour for the end edge
      */
     public void setEndColour(PDGamma colour)
@@ -148,7 +148,7 @@ public class PDFourColours implements COSObjectable
 
     /**
      * Gets the colour by edge index.
-     * 
+     *
      * @param index edge index
      * @return the colour
      */
@@ -165,7 +165,7 @@ public class PDFourColours implements COSObjectable
 
     /**
      * Sets the colour by edge index.
-     * 
+     *
      * @param index the edge index
      * @param colour the colour
      */

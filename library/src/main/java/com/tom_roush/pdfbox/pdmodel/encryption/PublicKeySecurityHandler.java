@@ -154,11 +154,11 @@ public final class PublicKeySecurityHandler extends SecurityHandler
             byte[] envelopedData = null;
 
             // the bytes of each recipient in the recipients array
-            COSArray array = (COSArray) encryption.getCOSDictionary().getItem(COSName.RECIPIENTS);
+            COSArray array = (COSArray) encryption.getCOSObject().getItem(COSName.RECIPIENTS);
             if (array == null)
             {
                 PDCryptFilterDictionary defaultCryptFilterDictionary = encryption.getDefaultCryptFilterDictionary();
-                array = (COSArray) defaultCryptFilterDictionary.getCOSDictionary().getItem(COSName.RECIPIENTS);
+                array = (COSArray) defaultCryptFilterDictionary.getCOSObject().getItem(COSName.RECIPIENTS);
             }
             byte[][] recipientFieldsBytes = new byte[array.size()][];
             //TODO encryption.getRecipientsLength() and getRecipientStringAt() should be deprecated
@@ -386,7 +386,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
             System.arraycopy(mdResult, 0, this.encryptionKey, 0, this.keyLength/8);
 
             doc.setEncryptionDictionary(dictionary);
-            doc.getDocument().setEncryptionDictionary(dictionary.getCOSDictionary());
+            doc.getDocument().setEncryptionDictionary(dictionary.getCOSObject());
         }
         catch(GeneralSecurityException e)
         {
@@ -428,11 +428,12 @@ public final class PublicKeySecurityHandler extends SecurityHandler
         {
             array.add(new COSString(recipient));
         }
-        cryptFilterDictionary.getCOSDictionary().setItem(COSName.RECIPIENTS, array);
+        cryptFilterDictionary.getCOSObject().setItem(COSName.RECIPIENTS, array);
+        array.setDirect(true);
         encryptionDictionary.setDefaultCryptFilterDictionary(cryptFilterDictionary);
         encryptionDictionary.setStreamFilterName(COSName.DEFAULT_CRYPT_FILTER);
         encryptionDictionary.setStringFilterName(COSName.DEFAULT_CRYPT_FILTER);
-        cryptFilterDictionary.getCOSDictionary().setDirect(true);
+        cryptFilterDictionary.getCOSObject().setDirect(true);
         setAES(true);
     }
 

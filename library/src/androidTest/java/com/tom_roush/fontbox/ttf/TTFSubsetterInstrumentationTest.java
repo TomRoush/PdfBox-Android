@@ -62,7 +62,7 @@ public class TTFSubsetterInstrumentationTest
 
         TrueTypeFont ttf = new TTFParser().parse(testFile);
         TTFSubsetter ttfSubsetter = new TTFSubsetter(ttf);
-        ttfSubsetter.add('Ö');
+        ttfSubsetter.add('\u00D6'); // 'Ö' doesn't work with jdk6 (PDFBOX-3757)?
         ttfSubsetter.add('\u200A');
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ttfSubsetter.writeToStream(baos);
