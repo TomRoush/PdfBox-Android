@@ -144,7 +144,8 @@ public abstract class PDButton extends PDTerminalField
     }
 
     /**
-     * Sets the selected option given its name.
+     * Sets the selected option given its name. It also tries to update the visual appearance,
+     * unless {@link PDAcroForm#getNeedAppearances()} is true.
      *
      * @param value Name of option to select
      * @throws IOException if the value could not be set

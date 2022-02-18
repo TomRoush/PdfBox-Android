@@ -479,15 +479,6 @@ public class Type1CharString
         {
             Type1CharString base = font.getType1CharString(baseName);
             path.op(base.getPath(), Path.Op.UNION); // TODO: PdfBox-Android
-            PathMeasure pm = new PathMeasure(path, false);
-            //coordinates will be here
-            float aCoordinates[] = {0f, 0f};
-
-            //get coordinates of the middle point
-            for (int i = 0; i < pm.getLength(); i++)
-            {
-                pm.getPosTan(pm.getLength() * 0.5f, aCoordinates, null);
-            }
         }
         catch (IOException e)
         {
@@ -499,7 +490,7 @@ public class Type1CharString
         {
             Type1CharString accent = font.getType1CharString(accentName);
             AffineTransform at = AffineTransform.getTranslateInstance(
-                leftSideBearing.x + adx.floatValue(),
+                leftSideBearing.x + adx.floatValue() - asb.floatValue(),
                 leftSideBearing.y + ady.floatValue());
             path.op(accent.getPath(), Path.Op.UNION); // TODO: PdfBox-Android
         }

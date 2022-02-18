@@ -29,6 +29,8 @@ import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
+import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
+import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.AnnotationFilter;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
@@ -57,6 +59,8 @@ public class PDFRenderer
     };
 
     private boolean subsamplingAllowed = false;
+
+    private RenderDestination defaultDestination;
 
     private Bitmap pageImage;
 
@@ -120,6 +124,22 @@ public class PDFRenderer
     }
 
     /**
+     * @return the defaultDestination
+     */
+    public RenderDestination getDefaultDestination()
+    {
+        return defaultDestination;
+    }
+
+    /**
+     * @param defaultDestination the defaultDestination to set
+     */
+    public void setDefaultDestination(RenderDestination defaultDestination)
+    {
+        this.defaultDestination = defaultDestination;
+    }
+
+    /**
      * Returns the given page as an RGB image at 72 DPI
      * @param pageIndex the zero-based index of the page to be converted.
      * @return the rendered page image
@@ -180,6 +200,22 @@ public class PDFRenderer
     public Bitmap renderImage(int pageIndex, float scale, ImageType imageType)
         throws IOException
     {
+        return renderImage(pageIndex, scale, imageType,
+            defaultDestination == null ? RenderDestination.EXPORT : defaultDestination);
+    }
+
+    /**
+     * Returns the given page as an RGB or ARGB image at the given scale.
+     * @param pageIndex the zero-based index of the page to be converted
+     * @param scale the scaling factor, where 1 = 72 DPI
+     * @param imageType the type of image to return
+     * @param destination controlling visibility of optional content groups
+     * @return the rendered page image
+     * @throws IOException if the PDF cannot be read
+     */
+    public Bitmap renderImage(int pageIndex, float scale, ImageType imageType, RenderDestination destination)
+        throws IOException
+    {
         PDPage page = document.getPage(pageIndex);
 
         PDRectangle cropbBox = page.getCropBox();
@@ -233,7 +269,8 @@ public class PDFRenderer
         transform(canvas, page, scale, scale);
 
         // the end-user may provide a custom PageDrawer
-        PageDrawerParameters parameters = new PageDrawerParameters(this, page, subsamplingAllowed);
+        PageDrawerParameters parameters = new PageDrawerParameters(this, page, subsamplingAllowed,
+            destination);
         PageDrawer drawer = createPageDrawer(parameters);
         drawer.drawPage(paint, canvas, page.getCropBox());
 
@@ -292,6 +329,24 @@ public class PDFRenderer
     public void renderPageToGraphics(int pageIndex, Paint paint, Canvas canvas, float scaleX, float scaleY)
         throws IOException
     {
+        renderPageToGraphics(pageIndex, paint, canvas, scaleX, scaleY,
+            defaultDestination == null ? RenderDestination.VIEW : defaultDestination);
+    }
+
+    /**
+     * Renders a given page to an AWT Graphics2D instance.
+     *
+     * @param pageIndex the zero-based index of the page to be converted
+     * @param paint the Paint that will be used to draw the page
+     * @param canvas the Canvas on which to draw the page
+     * @param scaleX the scale to draw the page at for the x-axis
+     * @param scaleY the scale to draw the page at for the y-axis
+     * @param destination controlling visibility of optional content groups
+     * @throws IOException if the PDF cannot be read
+     */
+    public void renderPageToGraphics(int pageIndex, Paint paint, Canvas canvas, float scaleX, float scaleY, RenderDestination destination)
+        throws IOException
+    {
         PDPage page = document.getPage(pageIndex);
         // TODO need width/wight calculations? should these be in PageDrawer?
 
@@ -301,9 +356,21 @@ public class PDFRenderer
         canvas.drawRect(0, 0, cropBox.getWidth(), cropBox.getHeight(), paint);
 
         // the end-user may provide a custom PageDrawer
-        PageDrawerParameters parameters = new PageDrawerParameters(this, page, subsamplingAllowed);
+        PageDrawerParameters parameters = new PageDrawerParameters(this, page, subsamplingAllowed,
+            destination);
         PageDrawer drawer = createPageDrawer(parameters);
         drawer.drawPage(paint, canvas, cropBox);
+    }
+
+    /**
+     * Indicates whether an optional content group is enabled.
+     * @param group the group
+     * @return true if the group is enabled
+     */
+    public boolean isGroupEnabled(PDOptionalContentGroup group)
+    {
+        PDOptionalContentProperties ocProperties = document.getDocumentCatalog().getOCProperties();
+        return ocProperties == null || ocProperties.isGroupEnabled(group);
     }
 
     // scale rotate translate

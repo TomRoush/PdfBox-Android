@@ -79,7 +79,7 @@ public final class PDAcroForm implements COSObjectable
     }
 
     /**
-     * Constructor.
+     * Constructor. Side effect: /Helv and /ZaDb fonts added with update mark.
      *
      * @param doc The document that this form is part of.
      * @param form The existing acroForm.
@@ -107,6 +107,7 @@ public final class PDAcroForm implements COSObjectable
         if (getDefaultAppearance().length() == 0)
         {
             setDefaultAppearance(adobeDefaultAppearanceString);
+            dictionary.setNeedToBeUpdated(true);
         }
 
         // DR entry is required
@@ -115,19 +116,32 @@ public final class PDAcroForm implements COSObjectable
         {
             defaultResources = new PDResources();
             setDefaultResources(defaultResources);
+            dictionary.setNeedToBeUpdated(true);
         }
 
-        // Adobe Acrobat uses Helvetica as a default font and 
+        // PDFBOX-3732: Adobe Acrobat uses Helvetica as a default font and 
         // stores that under the name '/Helv' in the resources dictionary
         // Zapf Dingbats is included per default for check boxes and 
         // radio buttons as /ZaDb.
-        if (!defaultResources.getCOSObject().containsKey("Helv"))
+        // PDFBOX-4393: the two fonts are added by Adobe when signing
+        // and this breaks a previous signature. (Might be an Adobe bug)
+        COSDictionary fontDict = defaultResources.getCOSObject().getCOSDictionary(COSName.FONT);
+        if (fontDict == null)
         {
-            defaultResources.put(COSName.getPDFName("Helv"), PDType1Font.HELVETICA);
+            fontDict = new COSDictionary();
+            defaultResources.getCOSObject().setItem(COSName.FONT, fontDict);
         }
-        if (!defaultResources.getCOSObject().containsKey("ZaDb"))
+        if (!fontDict.containsKey(COSName.HELV))
         {
-            defaultResources.put(COSName.getPDFName("ZaDb"), PDType1Font.ZAPF_DINGBATS);
+            defaultResources.put(COSName.HELV, PDType1Font.HELVETICA);
+            defaultResources.getCOSObject().setNeedToBeUpdated(true);
+            fontDict.setNeedToBeUpdated(true);
+        }
+        if (!fontDict.containsKey(COSName.ZA_DB))
+        {
+            defaultResources.put(COSName.ZA_DB, PDType1Font.ZAPF_DINGBATS);
+            defaultResources.getCOSObject().setNeedToBeUpdated(true);
+            fontDict.setNeedToBeUpdated(true);
         }
     }
 
@@ -250,8 +264,17 @@ public final class PDAcroForm implements COSObjectable
     public void flatten(List<PDField> fields, boolean refreshAppearances) throws IOException
     {
         // Nothing to flatten if there are no fields provided
-        if (fields.isEmpty()) {
+        if (fields.isEmpty())
+        {
             return;
+        }
+
+        if (!refreshAppearances && getNeedAppearances())
+        {
+            Log.w("PdfBox-Android", "acroForm.getNeedAppearances() returns true, " +
+                "visual field appearances may not have been set");
+            Log.w("PdfBox-Android", "call acroForm.refreshAppearances() or " +
+                "use the flatten() method with refreshAppearances parameter");
         }
 
         // for dynamic XFA forms there is no flatten as this would mean to do a rendering

@@ -125,10 +125,8 @@ public class PDSignatureField extends PDTerminalField
     }
 
     /**
-     * Sets the value of this field.
-     *
-     * <b>This will throw an UnsupportedOperationException if used as the signature fields
-     * value can't be set using a String</b>
+     * <b>This will throw an UnsupportedOperationException if used as the signature fields value
+     * can't be set using a String</b>
      *
      * @param value the plain text value.
      *
@@ -160,11 +158,11 @@ public class PDSignatureField extends PDTerminalField
     public PDSignature getValue()
     {
         COSBase value = getCOSObject().getDictionaryObject(COSName.V);
-        if (value == null)
+        if (value instanceof COSDictionary)
         {
-            return null;
+            return new PDSignature((COSDictionary) value);
         }
-        return new PDSignature((COSDictionary)value);
+        return null;
     }
 
     /**

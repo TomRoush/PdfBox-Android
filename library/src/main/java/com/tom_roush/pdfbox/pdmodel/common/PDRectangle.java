@@ -19,6 +19,8 @@ package com.tom_roush.pdfbox.pdmodel.common;
 import android.graphics.Path;
 import android.graphics.PointF;
 
+import java.util.Arrays;
+
 import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -127,7 +129,7 @@ public class PDRectangle implements COSObjectable
      */
     public PDRectangle( COSArray array )
     {
-        float[] values = array.toFloatArray();
+        float[] values = Arrays.copyOf(array.toFloatArray(), 4);
         rectArray = new COSArray();
         // we have to start with the lower left corner
         rectArray.add( new COSFloat( Math.min(values[0],values[2] )) );

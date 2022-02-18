@@ -14,11 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.util;
 
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.Properties;
+
+import com.tom_roush.pdfbox.io.IOUtils;
 
 /**
  * Exposes PDFBox version.
@@ -26,7 +29,7 @@ import java.util.Properties;
 public final class Version
 {
     private static final String PDFBOX_VERSION_PROPERTIES =
-            "com/tom_roush/pdfbox/resources/pdfbox.properties";
+        "/com/tom_roush/pdfbox/resources/version.properties";
 
     private Version()
     {
@@ -38,20 +41,25 @@ public final class Version
      */
     public static String getVersion()
     {
+        InputStream is = null;
         try
         {
-            URL url = Version.class.getClassLoader().getResource(PDFBOX_VERSION_PROPERTIES);
-            if (url == null)
+            is = Version.class.getResourceAsStream(PDFBOX_VERSION_PROPERTIES);
+            if (is == null)
             {
                 return null;
             }
             Properties properties = new Properties();
-            properties.load(url.openStream());
+            properties.load(is);
             return properties.getProperty("pdfbox.version", null);
         }
         catch (IOException io)
         {
             return null;
+        }
+        finally
+        {
+            IOUtils.closeQuietly(is);
         }
     }
 }

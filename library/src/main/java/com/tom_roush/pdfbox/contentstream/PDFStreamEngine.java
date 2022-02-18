@@ -36,6 +36,8 @@ import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 import com.tom_roush.pdfbox.contentstream.operator.state.EmptyGraphicsStackException;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSString;
@@ -814,6 +816,25 @@ public abstract class PDFStreamEngine
         {
             processType3Stream(charProc, textRenderingMatrix);
         }
+    }
+
+    /**
+     * Called when a marked content group begins
+     *
+     * @param tag indicates the role or significance of the sequence
+     * @param properties optional properties
+     */
+    public void beginMarkedContentSequence(COSName tag, COSDictionary properties)
+    {
+        // overridden in subclasses
+    }
+
+    /**
+     * Called when a a marked content group ends
+     */
+    public void endMarkedContentSequence()
+    {
+        // overridden in subclasses
     }
 
     /**

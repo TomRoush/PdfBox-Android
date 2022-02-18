@@ -24,7 +24,6 @@ public class TestResourceGenerator
             catch (Exception e)
             {
                 Log.w("PdfBox-Android", "Unable to download test file. Test will be skipped");
-                return null;
             }
         }
         return resourceFile;

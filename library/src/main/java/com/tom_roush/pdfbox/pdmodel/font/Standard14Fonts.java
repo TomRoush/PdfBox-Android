@@ -19,7 +19,6 @@ package com.tom_roush.pdfbox.pdmodel.font;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -123,18 +122,13 @@ final class Standard14Fonts
         }
         else
         {
-            // Fallback
-            URL url = PDType1Font.class.getClassLoader().getResource(resourceName);
-            if (url != null)
-            {
-                afmStream = url.openStream();
-            }
-            else
-            {
-                throw new IOException(resourceName + " not found");
-            }
+            afmStream = PDType1Font.class.getResourceAsStream("/" + resourceName);
         }
 
+        if (afmStream == null)
+        {
+            throw new IOException(resourceName + " not found");
+        }
         try
         {
             AFMParser parser = new AFMParser(afmStream);

@@ -20,8 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @author Johannes Koch
  *
+ * @author Johannes Koch
+
  * @param <T> the type of object to store the revision numbers with
  */
 public class Revisions<T>
@@ -48,7 +49,7 @@ public class Revisions<T>
     }
 
     /**
-     * 
+     *
      */
     public Revisions()
     {
@@ -56,7 +57,7 @@ public class Revisions<T>
 
     /**
      * Returns the object at the specified position.
-     * 
+     *
      * @param index the position
      * @return the object
      * @throws IndexOutOfBoundsException if the index is out of range
@@ -68,7 +69,7 @@ public class Revisions<T>
 
     /**
      * Returns the revision number at the specified position.
-     * 
+     *
      * @param index the position
      * @return the revision number
      * @throws IndexOutOfBoundsException if the index is out of range
@@ -80,7 +81,7 @@ public class Revisions<T>
 
     /**
      * Adds an object with a specified revision number.
-     * 
+     *
      * @param object the object
      * @param revisionNumber the revision number
      */
@@ -92,7 +93,7 @@ public class Revisions<T>
 
     /**
      * Sets the revision number of a specified object.
-     * 
+     *
      * @param object the object
      * @param revisionNumber the revision number
      */
@@ -107,7 +108,7 @@ public class Revisions<T>
 
     /**
      * Returns the size.
-     * 
+     *
      * @return the size
      */
     public int size()
@@ -133,4 +134,5 @@ public class Revisions<T>
         }
         return sb.toString();
     }
+
 }

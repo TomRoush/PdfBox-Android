@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -43,6 +45,7 @@ public class PDFCloneUtility
 {
     private final PDDocument destination;
     private final Map<Object,COSBase> clonedVersion = new HashMap<Object,COSBase>();
+    private final Set<COSBase> clonedValues = new HashSet<COSBase>();
 
     /**
      * Creates a new instance for the given target document.
@@ -79,8 +82,14 @@ public class PDFCloneUtility
         if( retval != null )
         {
             //we are done, it has already been converted.
+            return retval;
         }
-        else if( base instanceof List)
+        if (base instanceof COSBase && clonedValues.contains(base))
+        {
+            // Don't clone a clone
+            return (COSBase) base;
+        }
+        if (base instanceof List)
         {
             COSArray array = new COSArray();
             List<?> list = (List<?>) base;
@@ -93,13 +102,11 @@ public class PDFCloneUtility
         else if( base instanceof COSObjectable && !(base instanceof COSBase) )
         {
             retval = cloneForNewDocument( ((COSObjectable)base).getCOSObject() );
-            clonedVersion.put( base, retval );
         }
         else if( base instanceof COSObject )
         {
             COSObject object = (COSObject)base;
             retval = cloneForNewDocument( object.getObject() );
-            clonedVersion.put( base, retval );
         }
         else if( base instanceof COSArray )
         {
@@ -110,7 +117,6 @@ public class PDFCloneUtility
                 newArray.add( cloneForNewDocument( array.get( i ) ) );
             }
             retval = newArray;
-            clonedVersion.put( base, retval );
         }
         else if( base instanceof COSStream )
         {
@@ -145,9 +151,9 @@ public class PDFCloneUtility
             retval = (COSBase)base;
         }
         clonedVersion.put( base, retval );
+        clonedValues.add(retval);
         return retval;
     }
-
 
     /**
      * Merges two objects of the same type by deep-cloning its members.
@@ -169,10 +175,10 @@ public class PDFCloneUtility
             return;
             //we are done, it has already been converted. // ### Is that correct for cloneMerge???
         }
-        else if (!(base instanceof COSBase))
+        //TODO what when clone-merging a clone? Does it ever happen?
+        if (!(base instanceof COSBase))
         {
             cloneMerge(base.getCOSObject(), target.getCOSObject());
-            clonedVersion.put(base, retval);
         }
         else if( base instanceof COSObject )
         {
@@ -180,11 +186,10 @@ public class PDFCloneUtility
             {
                 cloneMerge(((COSObject) base).getObject(),((COSObject) target).getObject() );
             }
-            else if(target instanceof COSDictionary)
+            else if (target instanceof COSDictionary || target instanceof COSArray)
             {
                 cloneMerge(((COSObject) base).getObject(), target);
             }
-            clonedVersion.put( base, retval );
         }
         else if( base instanceof COSArray )
         {
@@ -193,7 +198,6 @@ public class PDFCloneUtility
             {
                 ((COSArray)target).add( cloneForNewDocument( array.get( i ) ) );
             }
-            clonedVersion.put( base, retval );
         }
         else if( base instanceof COSStream )
         {
@@ -235,6 +239,6 @@ public class PDFCloneUtility
             retval = (COSBase)base;
         }
         clonedVersion.put( base, retval );
+        clonedValues.add(retval);
     }
-
 }

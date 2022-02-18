@@ -31,7 +31,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -81,7 +82,13 @@ public abstract class SecurityHandler
     /** indicates if the Metadata have to be decrypted of not. */
     private boolean decryptMetadata;
 
-    private final Set<COSBase> objects = new HashSet<COSBase>();
+    // PDFBOX-4453, PDFBOX-4477: Originally this was just a Set. This failed in rare cases
+    // when a decrypted string was identical to an encrypted string.
+    // Because COSString.equals() checks the contents, decryption was then skipped.
+    // This solution keeps all different "equal" objects.
+    // IdentityHashMap solves this problem and is also faster than a HashMap
+    private final Set<COSBase> objects =
+        Collections.newSetFromMap(new IdentityHashMap<COSBase, Boolean>());
 
     private boolean useAES;
 
@@ -385,26 +392,36 @@ public abstract class SecurityHandler
      */
     public void decrypt(COSBase obj, long objNum, long genNum) throws IOException
     {
-        if (!objects.contains(obj))
+        if (!(obj instanceof COSString || obj instanceof COSDictionary || obj instanceof COSArray))
         {
+            return;
+        }
+        // PDFBOX-4477: only cache strings and streams, this improves speed and memory footprint
+        if (obj instanceof COSString)
+        {
+            if (objects.contains(obj))
+            {
+                return;
+            }
             objects.add(obj);
-
-            if (obj instanceof COSString)
+            decryptString((COSString) obj, objNum, genNum);
+        }
+        else if (obj instanceof COSStream)
+        {
+            if (objects.contains(obj))
             {
-                decryptString((COSString) obj, objNum, genNum);
+                return;
             }
-            else if (obj instanceof COSStream)
-            {
-                decryptStream((COSStream) obj, objNum, genNum);
-            }
-            else if (obj instanceof COSDictionary)
-            {
-                decryptDictionary((COSDictionary) obj, objNum, genNum);
-            }
-            else if (obj instanceof COSArray)
-            {
-                decryptArray((COSArray) obj, objNum, genNum);
-            }
+            objects.add(obj);
+            decryptStream((COSStream) obj, objNum, genNum);
+        }
+        else if (obj instanceof COSDictionary)
+        {
+            decryptDictionary((COSDictionary) obj, objNum, genNum);
+        }
+        else if (obj instanceof COSArray)
+        {
+            decryptArray((COSArray) obj, objNum, genNum);
         }
     }
 
@@ -500,7 +517,11 @@ public abstract class SecurityHandler
             return;
         }
         COSBase type = dictionary.getDictionaryObject(COSName.TYPE);
-        boolean isSignature = COSName.SIG.equals(type) || COSName.DOC_TIME_STAMP.equals(type);
+        boolean isSignature = COSName.SIG.equals(type) || COSName.DOC_TIME_STAMP.equals(type) ||
+            // PDFBOX-4466: /Type is optional, see
+            // https://ec.europa.eu/cefdigital/tracker/browse/DSS-1538
+            (dictionary.getDictionaryObject(COSName.CONTENTS) instanceof COSString &&
+                dictionary.getDictionaryObject(COSName.BYTERANGE) instanceof COSArray);
         for (Map.Entry<COSName, COSBase> entry : dictionary.entrySet())
         {
             if (isSignature && COSName.CONTENTS.equals(entry.getKey()))

@@ -116,8 +116,7 @@ class LegacyPDFStreamEngine extends PDFStreamEngine
         }
         else
         {
-            // Fallback
-            input = GlyphList.class.getClassLoader().getResourceAsStream(path);
+            input = GlyphList.class.getResourceAsStream("/" + path);
         }
         glyphList = new GlyphList(GlyphList.getAdobeGlyphList(), input);
     }
@@ -181,9 +180,19 @@ class LegacyPDFStreamEngine extends PDFStreamEngine
         if (fontDescriptor != null)
         {
             float capHeight = fontDescriptor.getCapHeight();
-            if (capHeight != 0 && (capHeight < glyphHeight || glyphHeight == 0))
+            if (Float.compare(capHeight, 0) != 0 &&
+                (capHeight < glyphHeight || Float.compare(glyphHeight, 0) == 0))
             {
                 glyphHeight = capHeight;
+            }
+            // PDFBOX-3464, PDFBOX-448:
+            // sometimes even CapHeight has very high value, but Ascent and Descent are ok
+            float ascent = fontDescriptor.getAscent();
+            float descent = fontDescriptor.getDescent();
+            if (ascent > 0 && descent < 0 &&
+                ((ascent - descent) / 2 < glyphHeight || Float.compare(glyphHeight, 0) == 0))
+            {
+                glyphHeight = (ascent - descent) / 2;
             }
         }
 

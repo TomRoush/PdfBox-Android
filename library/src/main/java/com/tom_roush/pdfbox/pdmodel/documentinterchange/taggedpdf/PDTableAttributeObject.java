@@ -20,7 +20,7 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * A Table attribute object.
- * 
+ *
  * @author Johannes Koch
  */
 public class PDTableAttributeObject extends PDStandardAttributeObject
@@ -61,7 +61,7 @@ public class PDTableAttributeObject extends PDStandardAttributeObject
 
     /**
      * Creates a new Table attribute object with a given dictionary.
-     * 
+     *
      * @param dictionary the dictionary
      */
     public PDTableAttributeObject(COSDictionary dictionary)
@@ -73,7 +73,7 @@ public class PDTableAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the number of rows in the enclosing table that shall be spanned by
      * the cell (RowSpan). The default value is 1.
-     * 
+     *
      * @return the row span
      */
     public int getRowSpan()
@@ -84,7 +84,7 @@ public class PDTableAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the number of rows in the enclosing table that shall be spanned by
      * the cell (RowSpan).
-     * 
+     *
      * @param rowSpan the row span
      */
     public void setRowSpan(int rowSpan)
@@ -95,7 +95,7 @@ public class PDTableAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the number of columns in the enclosing table that shall be spanned
      * by the cell (ColSpan). The default value is 1.
-     * 
+     *
      * @return the column span
      */
     public int getColSpan()
@@ -106,7 +106,7 @@ public class PDTableAttributeObject extends PDStandardAttributeObject
     /**
      * Sets the number of columns in the enclosing table that shall be spanned
      * by the cell (ColSpan).
-     * 
+     *
      * @param colSpan the column span
      */
     public void setColSpan(int colSpan)
@@ -119,7 +119,7 @@ public class PDTableAttributeObject extends PDStandardAttributeObject
      * shall be the element identifier (see the
      * {@link com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement#getElementIdentifier()}) for a TH structure
      * element that shall be used as a header associated with this cell.
-     * 
+     *
      * @return the headers.
      */
     public String[] getHeaders()
@@ -132,7 +132,7 @@ public class PDTableAttributeObject extends PDStandardAttributeObject
      * shall be the element identifier (see the
      * {@link com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureElement#getElementIdentifier()}) for a TH structure
      * element that shall be used as a header associated with this cell.
-     * 
+     *
      * @param headers the headers
      */
     public void setHeaders(String[] headers)
@@ -144,7 +144,7 @@ public class PDTableAttributeObject extends PDStandardAttributeObject
      * Gets the scope (Scope). It shall reflect whether the header cell applies
      * to the rest of the cells in the row that contains it, the column that
      * contains it, or both the row and the column that contain it.
-     * 
+     *
      * @return the scope
      */
     public String getScope()
@@ -162,7 +162,7 @@ public class PDTableAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #SCOPE_COLUMN}, or</li>
      *   <li>{@link #SCOPE_BOTH}.</li>
      * </ul>
-     * 
+     *
      * @param scope the scope
      */
     public void setScope(String scope)
@@ -172,7 +172,7 @@ public class PDTableAttributeObject extends PDStandardAttributeObject
 
     /**
      * Gets the summary of the table’s purpose and structure.
-     * 
+     *
      * @return the summary
      */
     public String getSummary()
@@ -182,7 +182,7 @@ public class PDTableAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the summary of the table’s purpose and structure.
-     * 
+     *
      * @param summary the summary
      */
     public void setSummary(String summary)

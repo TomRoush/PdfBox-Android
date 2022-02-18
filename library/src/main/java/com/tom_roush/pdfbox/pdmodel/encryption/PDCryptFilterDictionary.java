@@ -19,6 +19,7 @@ package com.tom_roush.pdfbox.pdmodel.encryption;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * This class is a specialized view of the crypt filter dictionary of a PDF document.
@@ -26,7 +27,7 @@ import com.tom_roush.pdfbox.cos.COSName;
  * manage its fields.
  *
  */
-public class PDCryptFilterDictionary
+public class PDCryptFilterDictionary implements COSObjectable
 {
 
     /**
@@ -55,8 +56,21 @@ public class PDCryptFilterDictionary
      * This will get the dictionary associated with this crypt filter dictionary.
      *
      * @return The COS dictionary that this object wraps.
+     * @deprecated use {@link #getCOSObject()}
      */
+    @Deprecated
     public COSDictionary getCOSDictionary()
+    {
+        return cryptFilterDictionary;
+    }
+
+    /**
+     * This will get the dictionary associated with this crypt filter dictionary.
+     *
+     * @return The COS dictionary that this object wraps.
+     */
+    @Override
+    public COSDictionary getCOSObject()
     {
         return cryptFilterDictionary;
     }

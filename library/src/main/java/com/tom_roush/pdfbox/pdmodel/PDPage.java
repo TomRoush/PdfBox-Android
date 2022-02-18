@@ -173,9 +173,7 @@ public class PDPage implements COSObjectable, PDContentStream
     }
 
     /**
-     * Returns true if this page has contents.
-     *
-     * @return true if the page has contents.
+     * Returns true if this page has one or more content streams.
      */
     public boolean hasContents()
     {
@@ -231,11 +229,12 @@ public class PDPage implements COSObjectable, PDContentStream
     /**
      * This will get the key of this Page in the structural parent tree.
      *
-     * @return the integer key of the page's entry in the structural parent tree
+     * @return the integer key of the page's entry in the structural parent tree or -1 if
+     * there isn't any.
      */
     public int getStructParents()
     {
-        return page.getInt(COSName.STRUCT_PARENTS, 0);
+        return page.getInt(COSName.STRUCT_PARENTS);
     }
 
     /**

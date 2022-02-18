@@ -16,6 +16,8 @@
  */
 package com.tom_roush.pdfbox.pdmodel;
 
+import android.util.Log;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -104,10 +106,14 @@ public class PDPageTree implements COSObjectable, Iterable<PDPage>
             return value;
         }
 
-        COSDictionary parent = (COSDictionary) node.getDictionaryObject(COSName.PARENT, COSName.P);
-        if (parent != null)
+        COSBase base = node.getDictionaryObject(COSName.PARENT, COSName.P);
+        if (base instanceof COSDictionary)
         {
-            return getInheritableAttribute(parent, key);
+            COSDictionary parent = (COSDictionary) base;
+            if (COSName.PAGES.equals(parent.getDictionaryObject(COSName.TYPE)))
+            {
+                return getInheritableAttribute(parent, key);
+            }
         }
 
         return null;
@@ -131,7 +137,7 @@ public class PDPageTree implements COSObjectable, Iterable<PDPage>
     {
         List<COSDictionary> result = new ArrayList<COSDictionary>();
 
-        COSArray kids = (COSArray)node.getDictionaryObject(COSName.KIDS);
+        COSArray kids = node.getCOSArray(COSName.KIDS);
         if (kids == null)
         {
             // probably a malformed PDF
@@ -140,7 +146,16 @@ public class PDPageTree implements COSObjectable, Iterable<PDPage>
 
         for (int i = 0, size = kids.size(); i < size; i++)
         {
-            result.add((COSDictionary)kids.getObject(i));
+            COSBase base = kids.getObject(i);
+            if (base instanceof COSDictionary)
+            {
+                result.add((COSDictionary) base);
+            }
+            else
+            {
+                Log.w("PdfBox-Android", "COSDictionary expected, but got " +
+                    (base == null ? "null" : base.getClass().getSimpleName()));
+            }
         }
 
         return result;

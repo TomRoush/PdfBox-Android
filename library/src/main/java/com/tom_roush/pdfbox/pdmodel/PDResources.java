@@ -31,14 +31,14 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDFontFactory;
-import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
-import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
+import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.pattern.PDAbstractPattern;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
-import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 
 /**
  * A set of resources available at the page/pages/stream level.
@@ -476,6 +476,7 @@ public final class PDResources implements COSObjectable
         {
             return (COSObject)base;
         }
+        // not an indirect object. Resource may have been added at runtime.
         return null;
     }
 

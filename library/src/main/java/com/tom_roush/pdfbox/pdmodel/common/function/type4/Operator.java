@@ -18,6 +18,7 @@ package com.tom_roush.pdfbox.pdmodel.common.function.type4;
 
 /**
  * Interface for PostScript operators.
+ *
  */
 public interface Operator
 {

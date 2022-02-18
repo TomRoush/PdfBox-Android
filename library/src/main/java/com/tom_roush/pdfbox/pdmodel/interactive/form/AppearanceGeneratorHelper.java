@@ -414,6 +414,18 @@ class AppearanceGeneratorHelper
         {
             throw new IllegalArgumentException("font is null, check whether /DA entry is incomplete or incorrect");
         }
+        if (font.getName().contains("+"))
+        {
+            Log.w("PdfBox-Android", "Font '" + defaultAppearance.getFontName().getName() +
+                "' of field '" + field.getFullyQualifiedName() +
+                "' contains subsetted font '" + font.getName() + "'");
+            Log.w("PdfBox-Android", "This may bring trouble with PDField.setValue(), PDAcroForm.flatten() or " +
+                "PDAcroForm.refreshAppearances()");
+            Log.w("PdfBox-Android", "You should replace this font with a non-subsetted font:");
+            Log.w("PdfBox-Android", "PDFont font = PDType0Font.load(doc, new FileInputStream(fontfile), false);");
+            Log.w("PdfBox-Android", "acroForm.getDefaultResources().put(COSName.getPDFName(\"" +
+                defaultAppearance.getFontName().getName() + "\", font);");
+        }
 
         // calculate the fontSize (because 0 = autosize)
         float fontSize = defaultAppearance.getFontSize();
