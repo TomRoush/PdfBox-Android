@@ -20,7 +20,7 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * A List attribute object.
- * 
+ *
  * @author Johannes Koch
  */
 public class PDListAttributeObject extends PDStandardAttributeObject
@@ -82,7 +82,7 @@ public class PDListAttributeObject extends PDStandardAttributeObject
 
     /**
      * Creates a new List attribute object with a given dictionary.
-     * 
+     *
      * @param dictionary the dictionary
      */
     public PDListAttributeObject(COSDictionary dictionary)
@@ -94,7 +94,7 @@ public class PDListAttributeObject extends PDStandardAttributeObject
     /**
      * Gets the list numbering (ListNumbering). The default value is
      * {@link #LIST_NUMBERING_NONE}.
-     * 
+     *
      * @return the list numbering
      */
     public String getListNumbering()
@@ -116,7 +116,7 @@ public class PDListAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #LIST_NUMBERING_UPPER_ALPHA},</li>
      *   <li>{@link #LIST_NUMBERING_LOWER_ALPHA}.</li>
      * </ul>
-     * 
+     *
      * @param listNumbering the list numbering
      */
     public void setListNumbering(String listNumbering)
@@ -134,5 +134,6 @@ public class PDListAttributeObject extends PDStandardAttributeObject
         }
         return sb.toString();
     }
+
 
 }

@@ -168,7 +168,7 @@ final class SampledImageReader
      * @param region The region of the source image to get, or null if the entire image is needed.
      *               The actual region will be clipped to the dimensions of the source image.
      * @param subsampling The amount of rows and columns to advance for every output pixel, a value
-     *                  of 1 meaning every pixel will be read
+     * of 1 meaning every pixel will be read. It must not be larger than the image width or height.
      * @param colorKey an optional color key mask
      * @return content of this image as an (A)RGB buffered image
      * @throws IOException if the image cannot be read
@@ -195,29 +195,37 @@ final class SampledImageReader
             throw new IOException("image width and height must be positive");
         }
 
-        if (bitsPerComponent == 1 && colorKey == null && numComponents == 1)
+        try
         {
-            return from1Bit(pdImage, clipped, subsampling, width, height);
-        }
+            if (bitsPerComponent == 1 && colorKey == null && numComponents == 1)
+            {
+                return from1Bit(pdImage, clipped, subsampling, width, height);
+            }
 
-        //
-        // An AWT raster must use 8/16/32 bits per component. Images with < 8bpc
-        // will be unpacked into a byte-backed raster. Images with 16bpc will be reduced
-        // in depth to 8bpc as they will be drawn to TYPE_INT_RGB images anyway. All code
-        // in PDColorSpace#toRGBImage expects an 8-bit range, i.e. 0-255.
-        final float[] defaultDecode = pdImage.getColorSpace().getDefaultDecode(8);
-        if (pdImage.getSuffix() != null && pdImage.getSuffix().equals("jpg") && subsampling == 1)
-        {
-            return BitmapFactory.decodeStream(pdImage.createInputStream());
-        }
-        else if (bitsPerComponent == 8 && Arrays.equals(decode, defaultDecode) && colorKey == null)
-        {
-            // convert image, faster path for non-decoded, non-colormasked 8-bit images
+            //
+            // An AWT raster must use 8/16/32 bits per component. Images with < 8bpc
+            // will be unpacked into a byte-backed raster. Images with 16bpc will be reduced
+            // in depth to 8bpc as they will be drawn to TYPE_INT_RGB images anyway. All code
+            // in PDColorSpace#toRGBImage expects an 8-bit range, i.e. 0-255.
+            final float[] defaultDecode = pdImage.getColorSpace().getDefaultDecode(8);
+            if (pdImage.getSuffix() != null && pdImage.getSuffix().equals("jpg") && subsampling == 1)
+            {
+                return BitmapFactory.decodeStream(pdImage.createInputStream());
+            }
+            else if (bitsPerComponent == 8 && Arrays.equals(decode, defaultDecode) &&
+                colorKey == null)
+            {
+                // convert image, faster path for non-decoded, non-colormasked 8-bit images
+                return from8bit(pdImage, clipped, subsampling, width, height);
+            }
+            Log.e("PdfBox-Android", "Trying to create other-bit image not supported");
+//        return fromAny(pdImage, colorKey, clipped, subsampling, width, height);
             return from8bit(pdImage, clipped, subsampling, width, height);
         }
-        Log.e("PdfBox-Android", "Trying to create other-bit image not supported");
-//        return fromAny(pdImage, colorKey, clipped, subsampling, width, height);
-        return from8bit(pdImage, clipped, subsampling, width, height);
+        catch (NegativeArraySizeException ex)
+        {
+            throw new IOException(ex);
+        }
     }
 
     private static Bitmap from1Bit(PDImage pdImage, Rect clipped, final int subsampling,
@@ -237,6 +245,9 @@ final class SampledImageReader
         InputStream iis = null;
         try
         {
+            // create stream
+            iis = pdImage.createInputStream(options);
+
             final int inputWidth;
             final int startx;
             final int starty;
@@ -263,9 +274,6 @@ final class SampledImageReader
             }
             output = buffer.array();
             final boolean isIndexed = false; // colorSpace instanceof PDIndexed; TODO: PdfBox-Android
-
-            // create stream
-            iis = pdImage.createInputStream(options);
 
             int rowLen = inputWidth / 8;
             if (inputWidth % 8 > 0)

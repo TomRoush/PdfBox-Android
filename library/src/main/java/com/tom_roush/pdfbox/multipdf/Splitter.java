@@ -141,9 +141,8 @@ public class Splitter
      */
     private void processPages() throws IOException
     {
-        for (int i = 0; i < sourceDocument.getNumberOfPages(); i++)
+        for (PDPage page : sourceDocument.getPages())
         {
-            PDPage page = sourceDocument.getPage(i);
             if (currentPageNumber + 1 >= startPage && currentPageNumber + 1 <= endPage)
             {
                 processPage(page);

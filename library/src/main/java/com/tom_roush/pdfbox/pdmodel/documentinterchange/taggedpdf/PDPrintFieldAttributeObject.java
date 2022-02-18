@@ -20,7 +20,7 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * A PrintField attribute object.
- * 
+ *
  * @author Johannes Koch
  */
 public class PDPrintFieldAttributeObject extends PDStandardAttributeObject
@@ -75,7 +75,7 @@ public class PDPrintFieldAttributeObject extends PDStandardAttributeObject
 
     /**
      * Creates a new PrintField attribute object with a given dictionary.
-     * 
+     *
      * @param dictionary the dictionary
      */
     public PDPrintFieldAttributeObject(COSDictionary dictionary)
@@ -86,7 +86,7 @@ public class PDPrintFieldAttributeObject extends PDStandardAttributeObject
 
     /**
      * Gets the role.
-     * 
+     *
      * @return the role
      */
     public String getRole()
@@ -102,7 +102,7 @@ public class PDPrintFieldAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #ROLE_PB},</li>
      *   <li>{@link #ROLE_TV}.</li>
      * </ul>
-     * 
+     *
      * @param role the role
      */
     public void setRole(String role)
@@ -112,7 +112,7 @@ public class PDPrintFieldAttributeObject extends PDStandardAttributeObject
 
     /**
      * Gets the checked state. The default value is {@link #CHECKED_STATE_OFF}.
-     * 
+     *
      * @return the checked state
      */
     public String getCheckedState()
@@ -127,7 +127,7 @@ public class PDPrintFieldAttributeObject extends PDStandardAttributeObject
      *   <li>{@link #CHECKED_STATE_OFF} (default), or</li>
      *   <li>{@link #CHECKED_STATE_NEUTRAL}.</li>
      * </ul>
-     * 
+     *
      * @param checkedState the checked state
      */
     public void setCheckedState(String checkedState)
@@ -137,7 +137,7 @@ public class PDPrintFieldAttributeObject extends PDStandardAttributeObject
 
     /**
      * Gets the alternate name of the field (Desc).
-     * 
+     *
      * @return the alternate name of the field
      */
     public String getAlternateName()
@@ -147,7 +147,7 @@ public class PDPrintFieldAttributeObject extends PDStandardAttributeObject
 
     /**
      * Sets the alternate name of the field (Desc).
-     * 
+     *
      * @param alternateName the alternate name of the field
      */
     public void setAlternateName(String alternateName)

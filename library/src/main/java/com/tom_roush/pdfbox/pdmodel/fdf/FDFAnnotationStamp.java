@@ -22,25 +22,24 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBoolean;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSFloat;
+import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.util.Hex;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * This represents a Stamp FDF annotation.
@@ -115,7 +114,10 @@ public class FDFAnnotationStamp extends FDFAnnotation
         }
         if (base64EncodedAppearance != null && !base64EncodedAppearance.isEmpty())
         {
-            Document stampAppearance = getStampAppearanceDocument(decodedAppearanceXML);
+            Log.d("PdfBox-Android", "Decoded XML: " + new String(decodedAppearanceXML));
+
+            Document stampAppearance = com.tom_roush.pdfbox.util.XMLUtil
+                .parse(new ByteArrayInputStream(decodedAppearanceXML));
 
             Element appearanceEl = stampAppearance.getDocumentElement();
 
@@ -127,31 +129,6 @@ public class FDFAnnotationStamp extends FDFAnnotation
             }
             Log.d("PdfBox-Android", "Generate and set the appearance dictionary to the stamp annotation");
             annot.setItem(COSName.AP, parseStampAnnotationAppearanceXML(appearanceEl));
-        }
-    }
-
-    /**
-     * Parse the <param>xmlString</param> to DOM Document tree from XML content
-     */
-    private Document getStampAppearanceDocument(byte[] xml) throws IOException
-    {
-        try
-        {
-            // Obtain DOM Document instance and create DocumentBuilder with default configuration
-            DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-
-            // Parse the content to Document object
-            return builder.parse(new ByteArrayInputStream(xml));
-        }
-        catch (ParserConfigurationException ex)
-        {
-            Log.e("PdfBox-Android", "Error while converting appearance xml to document: " + ex);
-            throw new IOException(ex);
-        }
-        catch (SAXException ex)
-        {
-            Log.e("PdfBox-Android", "Error while converting appearance xml to document: " + ex);
-            throw new IOException(ex);
         }
     }
 
@@ -206,6 +183,7 @@ public class FDFAnnotationStamp extends FDFAnnotation
 
     private COSStream parseStreamElement(Element streamEl) throws IOException
     {
+        Log.d("PdfBox-Android", "Parse " + streamEl.getAttribute("KEY") + " Stream");
         COSStream stream = new COSStream();
 
         NodeList nodeList = streamEl.getChildNodes();
@@ -229,6 +207,11 @@ public class FDFAnnotationStamp extends FDFAnnotation
                         Log.d("PdfBox-Android", parentAttrKey + " => Set " + childAttrKey + ": " + childAttrVal);
                     }
                 }
+                else if ("FIXED".equalsIgnoreCase(child.getTagName()))
+                {
+                    stream.setFloat(COSName.getPDFName(childAttrKey), Float.parseFloat(childAttrVal));
+                    Log.d("PdfBox-Android", parentAttrKey + " => Set " + childAttrKey + ": " + childAttrVal);
+                }
                 else if ("NAME".equalsIgnoreCase(child.getTagName()))
                 {
                     stream.setName(COSName.getPDFName(childAttrKey), childAttrVal);
@@ -237,7 +220,7 @@ public class FDFAnnotationStamp extends FDFAnnotation
                 else if ("BOOL".equalsIgnoreCase(child.getTagName()))
                 {
                     stream.setBoolean(COSName.getPDFName(childAttrKey), Boolean.parseBoolean(childAttrVal));
-                    Log.d("PdfBox-Android", parentAttrKey + " => Set Interpolate: " + childAttrVal);
+                    Log.d("PdfBox-Android", parentAttrKey + " => Set " + childAttrVal);
                 }
                 else if ("ARRAY".equalsIgnoreCase(child.getTagName()))
                 {
@@ -269,10 +252,22 @@ public class FDFAnnotationStamp extends FDFAnnotation
                         }
                         finally
                         {
-                            if (os != null)
-                            {
-                                os.close();
-                            }
+                            IOUtils.closeQuietly(os);
+                        }
+                    }
+                    else if ("ASCII".equals(child.getAttribute("ENCODING")))
+                    {
+                        OutputStream os = null;
+                        try
+                        {
+                            os = stream.createOutputStream();
+                            // not sure about charset
+                            os.write(child.getTextContent().getBytes());
+                            Log.d("PdfBox-Android", parentAttrKey + " => Data was streamed");
+                        }
+                        finally
+                        {
+                            IOUtils.closeQuietly(os);
                         }
                     }
                     else
@@ -295,10 +290,11 @@ public class FDFAnnotationStamp extends FDFAnnotation
     {
         Log.d("PdfBox-Android", "Parse " + arrayEl.getAttribute("KEY") + " Array");
         COSArray array = new COSArray();
-        NodeList nodeList = arrayEl.getElementsByTagName("FIXED");
-        String elAttrKey = arrayEl.getAttribute("KEY");
 
-        if ("BBox".equals(elAttrKey))
+        NodeList nodeList = arrayEl.getChildNodes();
+        String parentAttrKey = arrayEl.getAttribute("KEY");
+
+        if ("BBox".equals(parentAttrKey))
         {
             if (nodeList.getLength() < 4)
             {
@@ -306,7 +302,7 @@ public class FDFAnnotationStamp extends FDFAnnotation
                     nodeList.getLength());
             }
         }
-        else if ("Matrix".equals(elAttrKey))
+        else if ("Matrix".equals(parentAttrKey))
         {
             if (nodeList.getLength() < 6)
             {
@@ -315,16 +311,55 @@ public class FDFAnnotationStamp extends FDFAnnotation
             }
         }
 
-        Log.d("PdfBox-Android", "There are " + nodeList.getLength() + " FIXED elements");
-
         for (int i = 0; i < nodeList.getLength(); i++)
         {
             Node node = nodeList.item(i);
             if (node instanceof Element)
             {
-                Element el = (Element) node;
-                Log.d("PdfBox-Android", elAttrKey + " value(" + i + "): " + el.getAttribute("VAL"));
-                array.add(new COSFloat(el.getAttribute("VAL")));
+                Element child = (Element) node;
+                String childAttrKey = child.getAttribute("KEY");
+                String childAttrVal = child.getAttribute("VAL");
+                Log.d("PdfBox-Android", parentAttrKey + " => reading child: " + child.getTagName() +
+                    " with key: " + childAttrKey);
+                if ("INT".equalsIgnoreCase(child.getTagName()))
+                {
+                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    array.add(COSFloat.get(childAttrVal));
+                }
+                else if ("FIXED".equalsIgnoreCase(child.getTagName()))
+                {
+                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    array.add(COSInteger.get(childAttrVal));
+                }
+                else if ("NAME".equalsIgnoreCase(child.getTagName()))
+                {
+                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    array.add(COSName.getPDFName(childAttrVal));
+                }
+                else if ("BOOL".equalsIgnoreCase(child.getTagName()))
+                {
+                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    array.add(COSBoolean.getBoolean(Boolean.parseBoolean(childAttrVal)));
+                }
+                else if ("DICT".equalsIgnoreCase(child.getTagName()))
+                {
+                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    array.add(parseDictElement(child));
+                }
+                else if ("STREAM".equalsIgnoreCase(child.getTagName()))
+                {
+                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    array.add(parseStreamElement(child));
+                }
+                else if ("ARRAY".equalsIgnoreCase(child.getTagName()))
+                {
+                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    array.add(parseArrayElement(child));
+                }
+                else
+                {
+                    Log.w("PdfBox-Android", parentAttrKey + " => Not handling child element: " + child.getTagName());
+                }
             }
         }
 
@@ -364,6 +399,26 @@ public class FDFAnnotationStamp extends FDFAnnotation
                     Log.d("PdfBox-Android", parentAttrKey + " => Handling NAME element with key: " + childAttrKey);
                     dict.setName(COSName.getPDFName(childAttrKey), childAttrVal);
                     Log.d("PdfBox-Android", parentAttrKey + " => Set " + childAttrKey + ": " + childAttrVal);
+                }
+                else if ("INT".equalsIgnoreCase(child.getTagName()))
+                {
+                    dict.setInt(COSName.getPDFName(childAttrKey), Integer.parseInt(childAttrVal));
+                    Log.d("PdfBox-Android", parentAttrKey + " => Set " + childAttrKey + ": " + childAttrVal);
+                }
+                else if ("FIXED".equalsIgnoreCase(child.getTagName()))
+                {
+                    dict.setFloat(COSName.getPDFName(childAttrKey), Float.parseFloat(childAttrVal));
+                    Log.d("PdfBox-Android", parentAttrKey + " => Set " + childAttrKey + ": " + childAttrVal);
+                }
+                else if ("BOOL".equalsIgnoreCase(child.getTagName()))
+                {
+                    dict.setBoolean(COSName.getPDFName(childAttrKey), Boolean.parseBoolean(childAttrVal));
+                    Log.d("PdfBox-Android", parentAttrKey + " => Set " + childAttrVal);
+                }
+                else if ("ARRAY".equalsIgnoreCase(child.getTagName()))
+                {
+                    dict.setItem(COSName.getPDFName(childAttrKey), parseArrayElement(child));
+                    Log.d("PdfBox-Android", parentAttrKey + " => Set " + childAttrKey);
                 }
                 else
                 {
