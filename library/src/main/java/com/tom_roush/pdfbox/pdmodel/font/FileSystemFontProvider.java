@@ -248,7 +248,7 @@ final class FileSystemFontProvider extends FontProvider
 
             // load cached FontInfo objects
             List<FSFontInfo> cachedInfos = loadDiskCache(files);
-            if (cachedInfos != null && cachedInfos.size() > 0)
+            if (cachedInfos != null && !cachedInfos.isEmpty())
             {
                 fontInfoList.addAll(cachedInfos);
             }
@@ -499,7 +499,7 @@ final class FileSystemFontProvider extends FontProvider
             }
         }
 
-        if (pending.size() > 0)
+        if (!pending.isEmpty())
         {
             // re-build the entire cache if we encounter un-cached fonts (could be optimised)
             Log.w("PdfBox-Android", "New fonts found, font cache will be re-built");

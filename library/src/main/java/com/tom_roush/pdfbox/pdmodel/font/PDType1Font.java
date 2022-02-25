@@ -581,21 +581,34 @@ public class PDType1Font extends PDSimpleFont
         {
             return name;
         }
-        else
+
+        // try alternative name
+        String altName = ALT_NAMES.get(name);
+        if (altName != null && !name.equals(".notdef") && genericFont.hasGlyph(altName))
         {
-            // try alternative name
-            String altName = ALT_NAMES.get(name);
-            if (altName != null && !name.equals(".notdef") && genericFont.hasGlyph(altName))
+            return altName;
+        }
+
+        // try unicode name
+        String unicodes = getGlyphList().toUnicode(name);
+        if (unicodes != null && unicodes.length() == 1)
+        {
+            String uniName = getUniNameOfCodePoint(unicodes.codePointAt(0));
+            if (genericFont.hasGlyph(uniName))
             {
-                return altName;
+                return uniName;
             }
-            else
+            // PDFBOX-4017: no postscript table on Windows 10, and the low uni00NN
+            // names are not found in Symbol font. What works is using the PDF code plus 0xF000
+            // while disregarding encoding from the PDF (because of file from PDFBOX-1606,
+            // makes sense because this segment is about finding the name in a standard font)
+            //TODO bring up better solution than this
+            if ("SymbolMT".equals(genericFont.getName()))
             {
-                // try unicode name
-                String unicodes = getGlyphList().toUnicode(name);
-                if (unicodes != null && unicodes.length() == 1)
+                Integer code = SymbolEncoding.INSTANCE.getNameToCodeMap().get(name);
+                if (code != null)
                 {
-                    String uniName = getUniNameOfCodePoint(unicodes.codePointAt(0));
+                    uniName = getUniNameOfCodePoint(code + 0xF000);
                     if (genericFont.hasGlyph(uniName))
                     {
                         return uniName;
@@ -603,6 +616,7 @@ public class PDType1Font extends PDSimpleFont
                 }
             }
         }
+
         return ".notdef";
     }
 

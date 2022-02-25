@@ -19,10 +19,11 @@ package com.tom_roush.pdfbox.contentstream.operator.graphics;
 import java.io.IOException;
 import java.util.List;
 
-import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDInlineImage;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
 
 /**
  * BI Begins an inline image.
@@ -47,6 +48,6 @@ public final class BeginInlineImage extends GraphicsOperatorProcessor
     @Override
     public String getName()
     {
-        return "BI";
+        return OperatorName.BEGIN_INLINE_IMAGE;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
+ * contributor license agreements. See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -36,7 +36,7 @@ public class FDFAnnotationCircle extends FDFAnnotation
     /**
      * COS Model value for SubType entry.
      */
-    public static final String SUBTYPE ="Circle";
+    public static final String SUBTYPE = "Circle";
 
     /**
      * Default constructor.
@@ -44,7 +44,7 @@ public class FDFAnnotationCircle extends FDFAnnotation
     public FDFAnnotationCircle()
     {
         super();
-        annot.setName( COSName.SUBTYPE, SUBTYPE );
+        annot.setName(COSName.SUBTYPE, SUBTYPE);
     }
 
     /**
@@ -52,9 +52,9 @@ public class FDFAnnotationCircle extends FDFAnnotation
      *
      * @param a An existing FDF Annotation.
      */
-    public FDFAnnotationCircle( COSDictionary a )
+    public FDFAnnotationCircle(COSDictionary a)
     {
-        super( a );
+        super(a);
     }
 
     /**
@@ -64,7 +64,7 @@ public class FDFAnnotationCircle extends FDFAnnotation
      *
      * @throws IOException If there is an error extracting information from the element.
      */
-    public FDFAnnotationCircle( Element element ) throws IOException
+    public FDFAnnotationCircle(Element element) throws IOException
     {
         super(element);
         annot.setName(COSName.SUBTYPE, SUBTYPE);

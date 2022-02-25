@@ -23,6 +23,7 @@ import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
 import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 
 /**
@@ -54,6 +55,6 @@ public class SetCharSpacing extends OperatorProcessor
     @Override
     public String getName()
     {
-        return "Tc";
+        return OperatorName.SET_CHAR_SPACING;
     }
 }

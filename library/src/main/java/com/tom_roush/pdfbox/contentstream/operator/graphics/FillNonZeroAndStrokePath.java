@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
 import com.tom_roush.pdfbox.cos.COSBase;
 
 /**
@@ -41,6 +42,6 @@ public class FillNonZeroAndStrokePath extends GraphicsOperatorProcessor
     @Override
     public String getName()
     {
-        return "B";
+        return OperatorName.FILL_NON_ZERO_AND_STROKE;
     }
 }

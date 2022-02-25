@@ -21,7 +21,6 @@ import java.io.IOException;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationText;
-
 import org.w3c.dom.Element;
 
 /**
@@ -35,7 +34,7 @@ public class FDFAnnotationText extends FDFAnnotation
     /**
      * COS Model value for SubType entry.
      */
-    public static final String SUBTYPE ="Text";
+    public static final String SUBTYPE = "Text";
 
     /**
      * Default constructor.
@@ -43,7 +42,7 @@ public class FDFAnnotationText extends FDFAnnotation
     public FDFAnnotationText()
     {
         super();
-        annot.setName( COSName.SUBTYPE, SUBTYPE );
+        annot.setName(COSName.SUBTYPE, SUBTYPE);
     }
 
     /**
@@ -51,9 +50,9 @@ public class FDFAnnotationText extends FDFAnnotation
      *
      * @param a An existing FDF Annotation.
      */
-    public FDFAnnotationText( COSDictionary a )
+    public FDFAnnotationText(COSDictionary a)
     {
-        super( a );
+        super(a);
     }
 
     /**
@@ -63,7 +62,7 @@ public class FDFAnnotationText extends FDFAnnotation
      *
      * @throws IOException If there is an error extracting information from the element.
      */
-    public FDFAnnotationText( Element element ) throws IOException
+    public FDFAnnotationText(Element element) throws IOException
     {
         super(element);
         annot.setName(COSName.SUBTYPE, SUBTYPE);

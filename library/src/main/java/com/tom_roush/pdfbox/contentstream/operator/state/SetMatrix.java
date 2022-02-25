@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
 import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
@@ -61,6 +62,6 @@ public class SetMatrix extends OperatorProcessor
     @Override
     public String getName()
     {
-        return "Tm";
+        return OperatorName.SET_MATRIX;
     }
 }

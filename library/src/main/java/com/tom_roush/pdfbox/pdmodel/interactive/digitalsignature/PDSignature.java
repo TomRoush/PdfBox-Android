@@ -306,7 +306,7 @@ public class PDSignature implements COSObjectable
     /**
      * Will return the embedded signature between the byterange gap.
      *
-     * @param pdfFile The signed pdf file as InputStream
+     * @param pdfFile The signed pdf file as InputStream. It will be closed in this method.
      * @return a byte array containing the signature
      * @throws IOException if the pdfFile can't be read
      */
@@ -316,7 +316,7 @@ public class PDSignature implements COSObjectable
         int begin = byteRange[0]+byteRange[1]+1;
         int len = byteRange[2]-begin;
 
-        return getContents(new COSFilterInputStream(pdfFile,new int[] {begin,len}));
+        return getConvertedContents(new COSFilterInputStream(pdfFile,new int[] {begin,len}));
     }
 
     /**
@@ -332,15 +332,15 @@ public class PDSignature implements COSObjectable
         int begin = byteRange[0]+byteRange[1]+1;
         int len = byteRange[2]-begin;
 
-        return getContents(new COSFilterInputStream(pdfFile,new int[] {begin,len}));
+        return getConvertedContents(new COSFilterInputStream(pdfFile,new int[] {begin,len}));
     }
 
-    private byte[] getContents(COSFilterInputStream fis) throws IOException
+    private byte[] getConvertedContents(InputStream is) throws IOException
     {
         ByteArrayOutputStream byteOS = new ByteArrayOutputStream(1024);
         byte[] buffer = new byte[1024];
         int c;
-        while ((c = fis.read(buffer)) != -1)
+        while ((c = is.read(buffer)) != -1)
         {
             // Filter < and (
             if(buffer[0]==0x3C || buffer[0]==0x28)
@@ -357,7 +357,7 @@ public class PDSignature implements COSObjectable
                 byteOS.write(buffer, 0, c);
             }
         }
-        fis.close();
+        is.close();
 
         return COSString.parseHex(byteOS.toString("ISO-8859-1")).getBytes();
     }
@@ -381,7 +381,7 @@ public class PDSignature implements COSObjectable
      * <a href="https://www.adobe.com/devnet-docs/acrobatetk/tools/DigSig/Acrobat_DigitalSignatures_in_PDF.pdf#page=5">Digital
      * Signatures in a PDF</a>.
      *
-     * @param pdfFile The signed pdf file as InputStream
+     * @param pdfFile The signed pdf file as InputStream. It will be closed in this method.
      * @return a byte array containing only the signed part of the content
      * @throws IOException if the pdfFile can't be read
      */

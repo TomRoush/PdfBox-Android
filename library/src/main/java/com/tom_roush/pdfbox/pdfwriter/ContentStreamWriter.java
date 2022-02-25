@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
-
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSBoolean;
@@ -170,9 +170,9 @@ public class ContentStreamWriter
         else if( o instanceof Operator)
         {
             Operator op = (Operator)o;
-            if( op.getName().equals( "BI" ) )
+            if (op.getName().equals(OperatorName.BEGIN_INLINE_IMAGE))
             {
-                output.write( "BI".getBytes(Charsets.ISO_8859_1) );
+                output.write(OperatorName.BEGIN_INLINE_IMAGE.getBytes(Charsets.ISO_8859_1));
                 COSDictionary dic = op.getImageParameters();
                 for( COSName key : dic.keySet() )
                 {
@@ -182,11 +182,11 @@ public class ContentStreamWriter
                     writeObject( value );
                     output.write( EOL );
                 }
-                output.write( "ID".getBytes(Charsets.ISO_8859_1) );
+                output.write(OperatorName.BEGIN_INLINE_IMAGE_DATA.getBytes(Charsets.ISO_8859_1));
                 output.write( EOL );
                 output.write( op.getImageData() );
                 output.write( EOL );
-                output.write( "EI".getBytes(Charsets.ISO_8859_1) );
+                output.write(OperatorName.END_INLINE_IMAGE.getBytes(Charsets.ISO_8859_1));
                 output.write( EOL );
             }
             else

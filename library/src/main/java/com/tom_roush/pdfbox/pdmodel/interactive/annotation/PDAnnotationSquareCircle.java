@@ -19,9 +19,13 @@ package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDAppearanceHandler;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDCircleAppearanceHandler;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDSquareAppearanceHandler;
 
 /**
  * This is the class that represents a rectangular or eliptical annotation Introduced in PDF 1.3 specification .
@@ -39,6 +43,8 @@ public class PDAnnotationSquareCircle extends PDAnnotationMarkup
      * Constant for an elliptical type of annotation.
      */
     public static final String SUB_TYPE_CIRCLE = "Circle";
+
+    private PDAppearanceHandler customAppearanceHandler;
 
     /**
      * Creates a Circle or Square annotation of the specified sub type.
@@ -189,6 +195,88 @@ public class PDAnnotationSquareCircle extends PDAnnotationMarkup
             return new PDBorderStyleDictionary((COSDictionary) bs);
         }
         return null;
+    }
+
+    /**
+     * This will set the difference between the annotations "outer" rectangle defined by /Rect and
+     * the border.
+     *
+     * <p>
+     * This will set an equal difference for all sides</p>
+     *
+     * @param difference from the annotations /Rect entry
+     */
+    public void setRectDifferences(float difference)
+    {
+        setRectDifferences(difference, difference, difference, difference);
+    }
+
+    /**
+     * This will set the difference between the annotations "outer" rectangle defined by
+     * /Rect and the border.
+     *
+     * @param differenceLeft left difference from the annotations /Rect entry
+     * @param differenceTop top difference from the annotations /Rect entry
+     * @param differenceRight right difference from  the annotations /Rect entry
+     * @param differenceBottom bottom difference from the annotations /Rect entry
+     *
+     */
+    public void setRectDifferences(float differenceLeft, float differenceTop, float differenceRight, float differenceBottom)
+    {
+        COSArray margins = new COSArray();
+        margins.add(new COSFloat(differenceLeft));
+        margins.add(new COSFloat(differenceTop));
+        margins.add(new COSFloat(differenceRight));
+        margins.add(new COSFloat(differenceBottom));
+        getCOSObject().setItem(COSName.RD, margins);
+    }
+
+    /**
+     * This will get the differences between the annotations "outer" rectangle defined by
+     * /Rect and the border.
+     *
+     * @return the differences. If the entry hasn't been set am empty array is returned.
+     */
+    public float[] getRectDifferences()
+    {
+        COSBase margin = getCOSObject().getItem(COSName.RD);
+        if (margin instanceof COSArray)
+        {
+            return ((COSArray) margin).toFloatArray();
+        }
+        return new float[]{};
+    }
+
+    /**
+     * Set a custom appearance handler for generating the annotations appearance streams.
+     *
+     * @param appearanceHandler
+     */
+    public void setCustomAppearanceHandler(PDAppearanceHandler appearanceHandler)
+    {
+        customAppearanceHandler = appearanceHandler;
+    }
+
+    @Override
+    public void constructAppearances()
+    {
+        if (customAppearanceHandler == null)
+        {
+            if (SUB_TYPE_CIRCLE.equals(getSubtype()))
+            {
+                PDCircleAppearanceHandler appearanceHandler = new PDCircleAppearanceHandler(this);
+                appearanceHandler.generateAppearanceStreams();
+            }
+            else if (SUB_TYPE_SQUARE.equals(getSubtype()))
+            {
+                PDSquareAppearanceHandler appearanceHandler = new PDSquareAppearanceHandler(this);
+                appearanceHandler.generateAppearanceStreams();
+            }
+        }
+        else
+        {
+            customAppearanceHandler.generateAppearanceStreams();
+        }
     }
 
 }

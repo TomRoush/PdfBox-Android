@@ -21,6 +21,7 @@ import java.util.List;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
 import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 
 /**
@@ -33,7 +34,7 @@ public class SetWordSpacing extends OperatorProcessor
     @Override
     public void process(Operator operator, List<COSBase> arguments)
     {
-        if (arguments.size() < 1)
+        if (arguments.isEmpty())
         {
             return;
         }
@@ -49,6 +50,6 @@ public class SetWordSpacing extends OperatorProcessor
     @Override
     public String getName()
     {
-        return "Tw";
+        return OperatorName.SET_WORD_SPACING;
     }
 }
