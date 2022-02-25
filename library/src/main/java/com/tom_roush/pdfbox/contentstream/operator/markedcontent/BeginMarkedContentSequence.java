@@ -22,6 +22,7 @@ import java.util.List;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
 import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 
 /**
@@ -42,12 +43,12 @@ public class BeginMarkedContentSequence extends OperatorProcessor
                 tag = (COSName) argument;
             }
         }
-        this.context.beginMarkedContentSequence(tag, null);
+        context.beginMarkedContentSequence(tag, null);
     }
 
     @Override
     public String getName()
     {
-        return "BMC";
+        return OperatorName.BEGIN_MARKED_CONTENT;
     }
 }

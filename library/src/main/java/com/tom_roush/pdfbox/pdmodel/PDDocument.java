@@ -206,6 +206,42 @@ public class PDDocument implements Closeable
     }
 
     /**
+     * Constructor that uses an existing document. The COSDocument that is passed in must be valid.
+     *
+     * @param doc The COSDocument that this document wraps.
+     */
+    public PDDocument(COSDocument doc)
+    {
+        this(doc, null);
+    }
+
+    /**
+     * Constructor that uses an existing document. The COSDocument that is passed in must be valid.
+     *
+     * @param doc The COSDocument that this document wraps.
+     * @param source the parser which is used to read the pdf
+     */
+    public PDDocument(COSDocument doc, RandomAccessRead source)
+    {
+        this(doc, source, null);
+    }
+
+    /**
+     * Constructor that uses an existing document. The COSDocument that is passed in must be valid.
+     *
+     * @param doc The COSDocument that this document wraps.
+     * @param source the parser which is used to read the pdf
+     * @param permission he access permissions of the pdf
+     *
+     */
+    public PDDocument(COSDocument doc, RandomAccessRead source, AccessPermission permission)
+    {
+        document = doc;
+        pdfSource = source;
+        accessPermission = permission;
+    }
+
+    /**
      * This will add a page to the document. This is a convenience method, that will add the page to the root of the
      * hierarchy and set the parent of the page to the root.
      *
@@ -725,42 +761,6 @@ public class PDDocument implements Closeable
     }
 
     /**
-     * Constructor that uses an existing document. The COSDocument that is passed in must be valid.
-     *
-     * @param doc The COSDocument that this document wraps.
-     */
-    public PDDocument(COSDocument doc)
-    {
-        this(doc, null);
-    }
-
-    /**
-     * Constructor that uses an existing document. The COSDocument that is passed in must be valid.
-     *
-     * @param doc The COSDocument that this document wraps.
-     * @param source the parser which is used to read the pdf
-     */
-    public PDDocument(COSDocument doc, RandomAccessRead source)
-    {
-        this(doc, source, null);
-    }
-
-    /**
-     * Constructor that uses an existing document. The COSDocument that is passed in must be valid.
-     *
-     * @param doc The COSDocument that this document wraps.
-     * @param source the parser which is used to read the pdf
-     * @param permission he access permissions of the pdf
-     *
-     */
-    public PDDocument(COSDocument doc, RandomAccessRead source, AccessPermission permission)
-    {
-        document = doc;
-        pdfSource = source;
-        accessPermission = permission;
-    }
-
-    /**
      * This will get the low level document.
      *
      * @return The document that this layer sits on top of.
@@ -781,7 +781,7 @@ public class PDDocument implements Closeable
         if (documentInformation == null)
         {
             COSDictionary trailer = document.getTrailer();
-            COSDictionary infoDic = (COSDictionary) trailer.getDictionaryObject(COSName.INFO);
+            COSDictionary infoDic = trailer.getCOSDictionary(COSName.INFO);
             if (infoDic == null)
             {
                 infoDic = new COSDictionary();
@@ -1331,6 +1331,10 @@ public class PDDocument implements Closeable
      * file or a stream, not if the document was created in PDFBox itself. There must be a path of
      * objects that have {@link COSUpdateInfo#isNeedToBeUpdated()} set, starting from the document
      * catalog. For signatures this is taken care by PDFBox itself.
+     * <p>
+     * Other usages of this method are for experienced users only. You will usually never need it.
+     * It is useful only if you are required to keep the current revision and append the changes. A
+     * typical use case is changing a signed file without invalidating the signature.
      *
      * @param output stream to write to. It will be closed when done. It
      * <i><b>must never</b></i> point to the source file or that one will be

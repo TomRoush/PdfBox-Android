@@ -22,9 +22,11 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.pdmodel.interactive.action.PDAction;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionFactory;
+import com.tom_roush.pdfbox.pdmodel.interactive.action.PDAction;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionURI;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDAppearanceHandler;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDLinkAppearanceHandler;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
 
 /**
@@ -35,6 +37,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.P
  */
 public class PDAnnotationLink extends PDAnnotation
 {
+    private PDAppearanceHandler customAppearanceHandler;
 
     /**
      * Constant values of the Text as defined in the PDF 1.6 reference Table 8.19.
@@ -225,5 +228,29 @@ public class PDAnnotationLink extends PDAnnotation
         }
         // Should never happen as this is a required item
         return null;
+    }
+
+    /**
+     * Set a custom appearance handler for generating the annotations appearance streams.
+     *
+     * @param appearanceHandler
+     */
+    public void setCustomAppearanceHandler(PDAppearanceHandler appearanceHandler)
+    {
+        customAppearanceHandler = appearanceHandler;
+    }
+
+    @Override
+    public void constructAppearances()
+    {
+        if (customAppearanceHandler == null)
+        {
+            PDLinkAppearanceHandler appearanceHandler = new PDLinkAppearanceHandler(this);
+            appearanceHandler.generateAppearanceStreams();
+        }
+        else
+        {
+            customAppearanceHandler.generateAppearanceStreams();
+        }
     }
 }

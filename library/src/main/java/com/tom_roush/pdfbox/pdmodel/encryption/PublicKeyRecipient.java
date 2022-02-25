@@ -24,6 +24,7 @@ import java.security.cert.X509Certificate;
  * @see PublicKeyProtectionPolicy
  *
  * @author Benoit Guillon
+ *
  */
 public class PublicKeyRecipient
 {

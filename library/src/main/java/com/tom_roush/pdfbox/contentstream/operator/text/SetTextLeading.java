@@ -16,12 +16,13 @@
  */
 package com.tom_roush.pdfbox.contentstream.operator.text;
 
-import com.tom_roush.pdfbox.contentstream.operator.Operator;
-import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
+import java.util.List;
+
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
-
-import java.util.List;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 
 /**
  * TL: Set text leading.
@@ -40,6 +41,6 @@ public class SetTextLeading extends OperatorProcessor
     @Override
     public String getName()
     {
-        return "TL";
+        return OperatorName.SET_TEXT_LEADING;
     }
 }

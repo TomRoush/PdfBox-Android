@@ -22,8 +22,8 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -33,7 +33,6 @@ import com.tom_roush.pdfbox.cos.COSDocument;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdfparser.FDFParser;
 import com.tom_roush.pdfbox.pdfwriter.COSWriter;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -128,7 +127,7 @@ public class FDFDocument implements Closeable
     {
         FDFCatalog retval = null;
         COSDictionary trailer = document.getTrailer();
-        COSDictionary root = (COSDictionary) trailer.getDictionaryObject(COSName.ROOT);
+        COSDictionary root = trailer.getCOSDictionary(COSName.ROOT);
         if (root == null)
         {
             retval = new FDFCatalog();

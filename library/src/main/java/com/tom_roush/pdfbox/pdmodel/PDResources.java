@@ -142,7 +142,7 @@ public final class PDResources implements COSObjectable
         COSDictionary dict = (COSDictionary)get(COSName.FONT, name);
         if (dict != null)
         {
-            font = PDFontFactory.createFont(dict);
+            font = PDFontFactory.createFont(dict, cache);
         }
 
         if (cache != null && indirect != null)
@@ -704,6 +704,20 @@ public final class PDResources implements COSObjectable
         if (dict != null && dict.containsValue(object.getCOSObject()))
         {
             return dict.getKeyForValue(object.getCOSObject());
+        }
+
+        // PDFBOX-4509: It could exist as an indirect object, happens when a font is taken from the 
+        // AcroForm default resources of a loaded PDF.
+        if (dict != null && COSName.FONT.equals(kind))
+        {
+            for (Map.Entry<COSName, COSBase> entry : dict.entrySet())
+            {
+                if (entry.getValue() instanceof COSObject &&
+                    object.getCOSObject() == ((COSObject) entry.getValue()).getObject())
+                {
+                    return entry.getKey();
+                }
+            }
         }
 
         // add the item with a new key

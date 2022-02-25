@@ -43,7 +43,6 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.function.PDFunction;
@@ -55,6 +54,7 @@ import com.tom_roush.pdfbox.pdmodel.font.PDTrueTypeFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType0Font;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1CFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
+import com.tom_roush.pdfbox.pdmodel.font.PDType3Font;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDLineDashPattern;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
@@ -66,6 +66,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.form.PDTransparencyGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup.RenderState;
+import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentMembershipDictionary;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDGraphicsState;
@@ -73,10 +74,8 @@ import com.tom_roush.pdfbox.pdmodel.graphics.state.PDSoftMask;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.RenderingMode;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.AnnotationFilter;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
-import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
-import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationMarkup;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationUnknown;
-import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
 
@@ -413,6 +412,18 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
 //                textClippings.add(glyph); TODO: PdfBox-Android
             }
+        }
+    }
+
+    @Override
+    protected void showType3Glyph(Matrix textRenderingMatrix, PDType3Font font, int code,
+        String unicode, Vector displacement) throws IOException
+    {
+        PDGraphicsState state = getGraphicsState();
+        RenderingMode renderingMode = state.getTextState().getRenderingMode();
+        if (!RenderingMode.NEITHER.equals(renderingMode))
+        {
+            super.showType3Glyph(textRenderingMatrix, font, code, unicode, displacement);
         }
     }
 
@@ -990,168 +1001,27 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             return;
         }
 
-        super.showAnnotation(annotation);
-
-        if (annotation.getAppearance() == null)
+        PDAppearanceDictionary appearance = annotation.getAppearance();
+        if (appearance == null || appearance.getNormalAppearance() == null)
         {
-            if (annotation instanceof PDAnnotationLink)
-            {
-                drawAnnotationLinkBorder((PDAnnotationLink) annotation);
-            }
-
-            if (annotation instanceof PDAnnotationMarkup && annotation.getSubtype().equals(PDAnnotationMarkup.SUB_TYPE_INK))
-            {
-                drawAnnotationInk((PDAnnotationMarkup) annotation);
-            }
+            // TODO: Improve memory consumption by passing a ScratchFile
+            annotation.constructAppearances();
         }
-    }
 
-    private static class AnnotationBorder
-    {
-        private float[] dashArray = null;
-        private boolean underline = false;
-        private float width = 0;
-        private PDColor color;
-    }
-
-    // return border info. BorderStyle must be provided as parameter because
-    // method is not available in the base class
-    private AnnotationBorder getAnnotationBorder(PDAnnotation annotation,
-        PDBorderStyleDictionary borderStyle)
-    {
-        AnnotationBorder ab = new AnnotationBorder();
-        COSArray border = annotation.getBorder();
-        if (borderStyle == null)
+        if (annotation.isNoRotate() && getCurrentPage().getRotation() != 0)
         {
-            if (border.getObject(2) instanceof COSNumber)
-            {
-                ab.width = ((COSNumber) border.getObject(2)).floatValue();
-            }
-            if (border.size() > 3)
-            {
-                COSBase base3 = border.getObject(3);
-                if (base3 instanceof COSArray)
-                {
-                    ab.dashArray = ((COSArray) base3).toFloatArray();
-                }
-            }
+            PDRectangle rect = annotation.getRectangle();
+            android.graphics.Matrix savedTransform = canvas.getMatrix();
+            // "The upper-left corner of the annotation remains at the same point in
+            //  default user space; the annotation pivots around that point."
+            canvas.rotate(getCurrentPage().getRotation(),
+                rect.getLowerLeftX(), rect.getUpperRightY());
+            super.showAnnotation(annotation);
+            canvas.setMatrix(savedTransform);
         }
         else
         {
-            ab.width = borderStyle.getWidth();
-            if (borderStyle.getStyle().equals(PDBorderStyleDictionary.STYLE_DASHED))
-            {
-                ab.dashArray = borderStyle.getDashStyle().getDashArray();
-            }
-            if (borderStyle.getStyle().equals(PDBorderStyleDictionary.STYLE_UNDERLINE))
-            {
-                ab.underline = true;
-            }
-        }
-        ab.color = annotation.getColor();
-        if (ab.color == null)
-        {
-            // spec is unclear, but black seems to be the right thing to do
-            ab.color = new PDColor(new float[] { 0 }, PDDeviceGray.INSTANCE);
-        }
-        if (ab.dashArray != null)
-        {
-            boolean allZero = true;
-            for (float f : ab.dashArray)
-            {
-                if (f != 0)
-                {
-                    allZero = false;
-                    break;
-                }
-            }
-            if (allZero)
-            {
-                ab.dashArray = null;
-            }
-        }
-        return ab;
-    }
-
-    private void drawAnnotationLinkBorder(PDAnnotationLink link) throws IOException
-    {
-        AnnotationBorder ab = getAnnotationBorder(link, link.getBorderStyle());
-        if (ab.width == 0 || ab.color.getComponents().length == 0)
-        {
-            return;
-        }
-        PDRectangle rectangle = link.getRectangle();
-        Paint strokePaint = new Paint(paint);
-        strokePaint.setColor(getColor(ab.color));
-        setStroke(strokePaint, ab.width, Paint.Cap.BUTT, Paint.Join.MITER, 10, ab.dashArray, 0);
-        canvas.restore();
-        if (ab.underline)
-        {
-            canvas.drawLine(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),
-                rectangle.getLowerLeftX() + rectangle.getWidth(), rectangle.getLowerLeftY(),
-                strokePaint);
-        }
-        else
-        {
-            canvas.drawRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),
-                rectangle.getWidth(), rectangle.getHeight(), strokePaint);
-        }
-    }
-
-    private void drawAnnotationInk(PDAnnotationMarkup inkAnnotation) throws IOException
-    {
-        if (!inkAnnotation.getCOSObject().containsKey(COSName.INKLIST))
-        {
-            return;
-        }
-        //TODO there should be an InkAnnotation class with a getInkList method
-        COSBase base = inkAnnotation.getCOSObject().getDictionaryObject(COSName.INKLIST);
-        if (!(base instanceof COSArray))
-        {
-            return;
-        }
-        // PDF spec does not mention /Border for ink annotations, but it is used if /BS is not available
-        AnnotationBorder ab = getAnnotationBorder(inkAnnotation, inkAnnotation.getBorderStyle());
-        if (ab.width == 0 || ab.color.getComponents().length == 0)
-        {
-            return;
-        }
-        Paint strokePaint = new Paint(paint);
-        strokePaint.setColor(getColor(ab.color));
-        setStroke(strokePaint, ab.width, Paint.Cap.BUTT, Paint.Join.MITER, 10, ab.dashArray, 0);
-        canvas.restore();
-        COSArray pathsArray = (COSArray) base;
-        for (COSBase baseElement : pathsArray.toList())
-        {
-            if (!(baseElement instanceof COSArray))
-            {
-                continue;
-            }
-            COSArray pathArray = (COSArray) baseElement;
-            int nPoints = pathArray.size() / 2;
-
-            // "When drawn, the points shall be connected by straight lines or curves 
-            // in an implementation-dependent way" - we do lines.
-            Path path = new Path();
-            for (int i = 0; i < nPoints; ++i)
-            {
-                COSBase bx = pathArray.getObject(i * 2);
-                COSBase by = pathArray.getObject(i * 2 + 1);
-                if (bx instanceof COSNumber && by instanceof COSNumber)
-                {
-                    float x = ((COSNumber) bx).floatValue();
-                    float y = ((COSNumber) by).floatValue();
-                    if (i == 0)
-                    {
-                        path.moveTo(x, y);
-                    }
-                    else
-                    {
-                        path.lineTo(x, y);
-                    }
-                }
-            }
-            canvas.drawPath(path, strokePaint);
+            super.showAnnotation(annotation);
         }
     }
 
@@ -1326,7 +1196,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            height = maxY - minY;
 
             // FIXME - color space
-            if (isGray(form.getGroup().getColorSpace()))
+            if (isGray(form.getGroup().getColorSpace(form.getResources())))
             {
 //                image = create2ByteGrayAlphaImage(width, height);
             }
@@ -1592,7 +1462,68 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 return true;
             }
         }
+        else if (propertyList instanceof PDOptionalContentMembershipDictionary)
+        {
+            return isHiddenOCMD((PDOptionalContentMembershipDictionary) propertyList);
+        }
         return false;
+    }
+
+    private boolean isHiddenOCMD(PDOptionalContentMembershipDictionary ocmd)
+    {
+        if (ocmd.getCOSObject().getCOSArray(COSName.VE) != null)
+        {
+            // support seems to be optional, and is approximated by /P and /OCGS
+            Log.i("PdfBox-Android", "/VE entry ignored in Optional Content Membership Dictionary");
+        }
+        List<Boolean> visibles = new ArrayList<Boolean>();
+        for (PDPropertyList prop : ocmd.getOCGs())
+        {
+            visibles.add(!isHiddenOCG(prop));
+        }
+        COSName visibilityPolicy = ocmd.getVisibilityPolicy();
+        if (COSName.ANY_OFF.equals(visibilityPolicy))
+        {
+            for (boolean visible : visibles)
+            {
+                if (!visible)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (COSName.ALL_ON.equals(visibilityPolicy))
+        {
+            for (boolean visible : visibles)
+            {
+                if (!visible)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (COSName.ALL_OFF.equals(visibilityPolicy))
+        {
+            for (boolean visible : visibles)
+            {
+                if (visible)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        // AnyOn is default
+        for (boolean visible : visibles)
+        {
+            if (visible)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static int getJavaVersion()

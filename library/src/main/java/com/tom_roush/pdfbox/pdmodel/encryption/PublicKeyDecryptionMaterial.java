@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.encryption;
 
 import java.security.Key;
@@ -36,6 +37,7 @@ import java.util.Enumeration;
  * </ul>
  *
  * @author Benoit Guillon
+ *
  */
 
 public class PublicKeyDecryptionMaterial extends DecryptionMaterial

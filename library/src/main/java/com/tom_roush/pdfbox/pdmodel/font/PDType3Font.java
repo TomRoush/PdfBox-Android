@@ -30,6 +30,7 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
+import com.tom_roush.pdfbox.pdmodel.ResourceCache;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.DictionaryEncoding;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
@@ -48,6 +49,7 @@ public class PDType3Font extends PDSimpleFont
     private COSDictionary charProcs;
     private Matrix fontMatrix;
     private BoundingBox fontBBox;
+    private final ResourceCache resourceCache;
 
     /**
      * Constructor.
@@ -56,7 +58,19 @@ public class PDType3Font extends PDSimpleFont
      */
     public PDType3Font(COSDictionary fontDictionary) throws IOException
     {
+        this(fontDictionary, null);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param fontDictionary The font dictionary according to the PDF specification.
+     * @param resourceCache Resource cache, can be null.
+     */
+    public PDType3Font(COSDictionary fontDictionary, ResourceCache resourceCache) throws IOException
+    {
         super(fontDictionary);
+        this.resourceCache = resourceCache;
         readEncoding();
     }
 
@@ -253,7 +267,7 @@ public class PDType3Font extends PDSimpleFont
             COSBase base = dict.getDictionaryObject(COSName.RESOURCES);
             if (base instanceof COSDictionary)
             {
-                this.resources = new PDResources((COSDictionary) base);
+                this.resources = new PDResources((COSDictionary) base, resourceCache);
             }
         }
         return resources;

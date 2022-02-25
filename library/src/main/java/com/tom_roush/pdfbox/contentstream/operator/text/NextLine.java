@@ -20,10 +20,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.tom_roush.pdfbox.contentstream.operator.Operator;
-import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSFloat;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 
 /**
  * T*: Move to start of next text line.
@@ -42,12 +43,12 @@ public class NextLine extends OperatorProcessor
         // specification (p.369) the acrobat reader seems to implement it the same way
         args.add(new COSFloat(-1 * context.getGraphicsState().getTextState().getLeading()));
         // use Td instead of repeating code
-        context.processOperator("Td", args);
+        context.processOperator(OperatorName.MOVE_TEXT, args);
     }
 
     @Override
     public String getName()
     {
-        return "T*";
+        return OperatorName.NEXT_LINE;
     }
 }

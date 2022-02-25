@@ -102,6 +102,8 @@ public abstract class PDFont implements COSObjectable, PDFontLike
      * Constructor.
      *
      * @param fontDictionary Font dictionary.
+     *
+     * @throws java.io.IOException
      */
     protected PDFont(COSDictionary fontDictionary) throws IOException
     {
@@ -110,46 +112,61 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 
         // standard 14 fonts use an AFM
         afmStandard14 = Standard14Fonts.getAFM(getName()); // may be null (it usually is)
+        fontDescriptor = loadFontDescriptor();
+        toUnicodeCMap = loadUnicodeCmap();
+    }
 
-        // font descriptor
+    private PDFontDescriptor loadFontDescriptor()
+    {
         COSDictionary fd = (COSDictionary) dict.getDictionaryObject(COSName.FONT_DESC);
         if (fd != null)
         {
-            fontDescriptor = new PDFontDescriptor(fd);
+            return new PDFontDescriptor(fd);
         }
         else if (afmStandard14 != null)
         {
             // build font descriptor from the AFM
-            fontDescriptor = PDType1FontEmbedder.buildFontDescriptor(afmStandard14);
+            return PDType1FontEmbedder.buildFontDescriptor(afmStandard14);
         }
         else
         {
-            fontDescriptor = null;
+            return null;
+        }
+    }
+
+    private CMap loadUnicodeCmap()
+    {
+        COSBase toUnicode = dict.getDictionaryObject(COSName.TO_UNICODE);
+        if (toUnicode == null)
+        {
+            return null;
         }
 
-        // ToUnicode CMap
-        COSBase toUnicode = dict.getDictionaryObject(COSName.TO_UNICODE);
-        if (toUnicode != null)
+        CMap cmap = null;
+        try
         {
-            CMap cmap = null;
-            try
+            cmap = readCMap(toUnicode);
+            if (cmap != null && !cmap.hasUnicodeMappings())
             {
-                cmap = readCMap(toUnicode);
-                if (cmap != null && !cmap.hasUnicodeMappings())
+                Log.w("PdfBox-Android", "Invalid ToUnicode CMap in font " + getName());
+                String cmapName = cmap.getName() != null ? cmap.getName() : "";
+                String ordering = cmap.getOrdering() != null ? cmap.getOrdering() : "";
+                COSBase encoding = dict.getDictionaryObject(COSName.ENCODING);
+                if (cmapName.contains("Identity") //
+                    || ordering.contains("Identity") //
+                    || COSName.IDENTITY_H.equals(encoding) //
+                    || COSName.IDENTITY_V.equals(encoding))
                 {
-                    Log.w("PdfBox-Android", "Invalid ToUnicode CMap in font " + getName());
+                    // assume that if encoding is identity, then the reverse is also true
+                    cmap = CMapManager.getPredefinedCMap(COSName.IDENTITY_H.getName());
                 }
             }
-            catch (IOException ex)
-            {
-                Log.e("PdfBox-Android", "Could not read ToUnicode CMap in font " + getName(), ex);
-            }
-            toUnicodeCMap = cmap;
         }
-        else
+        catch (IOException ex)
         {
-            toUnicodeCMap = null;
+            Log.e("PdfBox-Android", "Could not read ToUnicode CMap in font " + getName(), ex);
         }
+        return cmap;
     }
 
     /**

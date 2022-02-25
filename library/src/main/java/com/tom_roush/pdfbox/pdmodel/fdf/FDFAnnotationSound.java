@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-
 import org.w3c.dom.Element;
 
 /**
@@ -33,7 +32,7 @@ public class FDFAnnotationSound extends FDFAnnotation
     /**
      * COS Model value for SubType entry.
      */
-    public static final String SUBTYPE ="Sound";
+    public static final String SUBTYPE = "Sound";
 
     /**
      * Default constructor.
@@ -41,7 +40,7 @@ public class FDFAnnotationSound extends FDFAnnotation
     public FDFAnnotationSound()
     {
         super();
-        annot.setName( COSName.SUBTYPE, SUBTYPE );
+        annot.setName(COSName.SUBTYPE, SUBTYPE);
     }
 
     /**
@@ -49,9 +48,9 @@ public class FDFAnnotationSound extends FDFAnnotation
      *
      * @param a An existing FDF Annotation.
      */
-    public FDFAnnotationSound( COSDictionary a )
+    public FDFAnnotationSound(COSDictionary a)
     {
-        super( a );
+        super(a);
     }
 
     /**
@@ -61,9 +60,9 @@ public class FDFAnnotationSound extends FDFAnnotation
      *
      * @throws IOException If there is an error extracting information from the element.
      */
-    public FDFAnnotationSound( Element element ) throws IOException
+    public FDFAnnotationSound(Element element) throws IOException
     {
-        super( element );
-        annot.setName( COSName.SUBTYPE, SUBTYPE );
+        super(element);
+        annot.setName(COSName.SUBTYPE, SUBTYPE);
     }
 }

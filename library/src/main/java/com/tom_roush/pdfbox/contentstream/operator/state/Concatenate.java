@@ -24,6 +24,7 @@ import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
 import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 
 /**
@@ -62,6 +63,6 @@ public class Concatenate extends OperatorProcessor
     @Override
     public String getName()
     {
-        return "cm";
+        return OperatorName.CONCAT;
     }
 }

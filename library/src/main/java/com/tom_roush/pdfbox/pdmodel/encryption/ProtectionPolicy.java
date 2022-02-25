@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.encryption;
 
 /**
@@ -24,7 +25,7 @@ package com.tom_roush.pdfbox.pdmodel.encryption;
  *
  * @see com.tom_roush.pdfbox.pdmodel.PDDocument#protect(ProtectionPolicy)
  *
- * @author Benoit Guillon
+ * @author Benoit Guillon (benoit.guillon@snv.jussieu.fr)
  */
 public abstract class ProtectionPolicy
 {

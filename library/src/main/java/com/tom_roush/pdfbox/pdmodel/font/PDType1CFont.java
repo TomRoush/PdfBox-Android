@@ -281,6 +281,7 @@ public class PDType1CFont extends PDSimpleFont
     public float getWidthFromFont(int code) throws IOException
     {
         String name = codeToName(code);
+        name = getNameInFont(name);
         float width = genericFont.getWidth(name);
 
         PointF p = new PointF(width, 0);

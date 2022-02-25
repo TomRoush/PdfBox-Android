@@ -168,6 +168,12 @@ public final class StandardSecurityHandler extends SecurityHandler
         {
             throw new IOException("Decryption material is not compatible with the document");
         }
+
+        // This is only used with security version 4 and 5.
+        if (encryption.getVersion() >= 4) {
+            setStreamFilterName(encryption.getStreamFilterName());
+            setStringFilterName(encryption.getStreamFilterName());
+        }
         setDecryptMetadata(encryption.isEncryptMetaData());
         StandardDecryptionMaterial material = (StandardDecryptionMaterial)decryptionMaterial;
 
@@ -196,6 +202,11 @@ public final class StandardSecurityHandler extends SecurityHandler
             passwordCharset = Charsets.UTF_8;
             ue = encryption.getUserEncryptionKey();
             oe = encryption.getOwnerEncryptionKey();
+        }
+
+        if (dicRevision == 6)
+        {
+            password = SaslPrep.saslPrepQuery(password); // PDFBOX-4155
         }
 
         AccessPermission currentAccessPermission;
@@ -382,6 +393,9 @@ public final class StandardSecurityHandler extends SecurityHandler
 
         if (revision == 6)
         {
+            // PDFBOX-4155
+            ownerPassword = SaslPrep.saslPrepStored(ownerPassword);
+            userPassword = SaslPrep.saslPrepStored(userPassword);
             prepareEncryptionDictRev6(ownerPassword, userPassword, encryptionDictionary, permissionInt);
         }
         else
