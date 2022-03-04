@@ -35,7 +35,6 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Vector;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -97,6 +96,7 @@ public class COSParser extends BaseParser
 
     private AccessPermission accessPermission;
     private InputStream keyStoreInputStream = null;
+    @SuppressWarnings({"squid:S2068"})
     private String password = "";
     private String keyAlias = null;
 
@@ -658,7 +658,7 @@ public class COSParser extends BaseParser
                 }
                 else if (baseObj instanceof COSArray)
                 {
-                    for (COSBase cosBase : ((COSArray) baseObj))
+                    for (COSBase cosBase : (COSArray) baseObj)
                     {
                         addNewToList(toBeParsedList, cosBase, addedObjects);
                     }
@@ -693,8 +693,7 @@ public class COSParser extends BaseParser
                             else
                             {
                                 // negative offset means we have a compressed
-                                // object within object stream;
-                                // get offset of object stream
+                                // object within object stream => get offset of object stream
                                 COSObjectKey key = new COSObjectKey((int) -fileOffset, 0);
                                 fileOffset = document.getXrefTable().get(key);
                                 if (fileOffset == null || fileOffset <= 0)
@@ -707,6 +706,12 @@ public class COSParser extends BaseParser
                                             Log.d("PdfBox-Android", "Set missing " + fileOffset + " for object "
                                                 + key);
                                             document.getXrefTable().put(key, fileOffset);
+                                        }
+                                        else
+                                        {
+                                            Log.w("PdfBox-Android", "Invalid object stream xref object reference for key '"
+                                                + objKey + "': " + fileOffset);
+                                            continue;
                                         }
                                     }
                                     else
@@ -1035,7 +1040,7 @@ public class COSParser extends BaseParser
         {
             return null;
         }
-        COSNumber retVal = null;
+        COSNumber retVal;
         // maybe length was given directly
         if (lengthBaseObj instanceof COSNumber)
         {
@@ -2083,7 +2088,7 @@ public class COSParser extends BaseParser
         if (bfSearchXRefTablesOffsets == null)
         {
             // a pdf may contain more than one xref entry
-            bfSearchXRefTablesOffsets = new Vector<Long>();
+            bfSearchXRefTablesOffsets = new ArrayList<Long>();
             long originOffset = source.getPosition();
             source.seek(MINIMUM_SEARCH_OFFSET);
             // search for xref tables
@@ -2116,7 +2121,7 @@ public class COSParser extends BaseParser
         if (bfSearchXRefStreamsOffsets == null)
         {
             // a pdf may contain more than one /XRef entry
-            bfSearchXRefStreamsOffsets = new Vector<Long>();
+            bfSearchXRefStreamsOffsets = new ArrayList<Long>();
             long originOffset = source.getPosition();
             source.seek(MINIMUM_SEARCH_OFFSET);
             // search for XRef streams
@@ -2214,17 +2219,13 @@ public class COSParser extends BaseParser
             trailer = xrefTrailerResolver.getTrailer();
             getDocument().setTrailer(trailer);
             boolean searchForObjStreamsDone = false;
-            if (!bfSearchForTrailer(trailer))
+            if (!bfSearchForTrailer(trailer) && !searchForTrailerItems(trailer))
             {
-                // search for the different parts of the trailer dictionary
-                if (!searchForTrailerItems(trailer))
-                {
-                    // root entry wasn't found, maybe it is part of an object stream
-                    bfSearchForObjStreams();
-                    searchForObjStreamsDone = true;
-                    // search again for the root entry
-                    searchForTrailerItems(trailer);
-                }
+                // root entry wasn't found, maybe it is part of an object stream
+                bfSearchForObjStreams();
+                searchForObjStreamsDone = true;
+                // search again for the root entry
+                searchForTrailerItems(trailer);
             }
             // prepare decryption if necessary
             prepareDecryption();
@@ -2237,6 +2238,13 @@ public class COSParser extends BaseParser
         return trailer;
     }
 
+    /**
+     * Search for the different parts of the trailer dictionary.
+     *
+     * @param trailer
+     * @return true if the root was found, false if not.
+     * @throws IOException
+     */
     private boolean searchForTrailerItems(COSDictionary trailer) throws IOException
     {
         boolean rootFound = false;
@@ -2881,56 +2889,58 @@ public class COSParser extends BaseParser
      * @throws InvalidPasswordException If the password is incorrect.
      * @throws IOException if something went wrong
      */
-    private void prepareDecryption() throws InvalidPasswordException, IOException
+    private void prepareDecryption() throws IOException
     {
-        if (encryption == null)
+        if (encryption != null)
         {
-            COSBase trailerEncryptItem = document.getTrailer().getItem(COSName.ENCRYPT);
-            if (trailerEncryptItem != null && !(trailerEncryptItem instanceof COSNull))
+            return;
+        }
+        COSBase trailerEncryptItem = document.getTrailer().getItem(COSName.ENCRYPT);
+        if (trailerEncryptItem == null || trailerEncryptItem instanceof COSNull)
+        {
+            return;
+        }
+
+        if (trailerEncryptItem instanceof COSObject)
+        {
+            COSObject trailerEncryptObj = (COSObject) trailerEncryptItem;
+            parseDictionaryRecursive(trailerEncryptObj);
+        }
+
+        try
+        {
+            encryption = new PDEncryption(document.getEncryptionDictionary());
+            DecryptionMaterial decryptionMaterial;
+            if (keyStoreInputStream != null)
             {
-                if (trailerEncryptItem instanceof COSObject)
-                {
-                    COSObject trailerEncryptObj = (COSObject) trailerEncryptItem;
-                    parseDictionaryRecursive(trailerEncryptObj);
-                }
-                try
-                {
-                    encryption = new PDEncryption(document.getEncryptionDictionary());
-                    DecryptionMaterial decryptionMaterial;
-                    if (keyStoreInputStream != null)
-                    {
-                        KeyStore ks = KeyStore.getInstance("PKCS12");
-                        ks.load(keyStoreInputStream, password.toCharArray());
+                KeyStore ks = KeyStore.getInstance("PKCS12");
+                ks.load(keyStoreInputStream, password.toCharArray());
+                decryptionMaterial = new PublicKeyDecryptionMaterial(ks, keyAlias, password);
+            }
+            else
+            {
+                decryptionMaterial = new StandardDecryptionMaterial(password);
+            }
 
-                        decryptionMaterial = new PublicKeyDecryptionMaterial(ks, keyAlias,
-                            password);
-                    }
-                    else
-                    {
-                        decryptionMaterial = new StandardDecryptionMaterial(password);
-                    }
-
-                    securityHandler = encryption.getSecurityHandler();
-                    securityHandler.prepareForDecryption(encryption, document.getDocumentID(),
-                        decryptionMaterial);
-                    accessPermission = securityHandler.getCurrentAccessPermission();
-                }
-                catch (IOException e)
-                {
-                    throw e;
-                }
-                catch (Exception e)
-                {
-                    throw new IOException("Error (" + e.getClass().getSimpleName()
-                        + ") while creating security handler for decryption", e);
-                }
-                finally
-                {
-                    if (keyStoreInputStream != null)
-                    {
-                        IOUtils.closeQuietly(keyStoreInputStream);
-                    }
-                }
+            securityHandler = encryption.getSecurityHandler();
+            securityHandler.prepareForDecryption(encryption, document.getDocumentID(),
+                decryptionMaterial);
+            accessPermission = securityHandler.getCurrentAccessPermission();
+        }
+        catch (IOException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new IOException("Error (" + e.getClass().getSimpleName()
+                + ") while creating security handler for decryption", e);
+        }
+        finally
+        {
+            if (keyStoreInputStream != null)
+            {
+                IOUtils.closeQuietly(keyStoreInputStream);
             }
         }
     }

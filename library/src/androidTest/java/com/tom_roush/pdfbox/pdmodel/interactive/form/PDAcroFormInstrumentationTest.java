@@ -32,6 +32,7 @@ import com.tom_roush.pdfbox.rendering.TestRendering;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -86,6 +87,10 @@ public class PDAcroFormInstrumentationTest
             }
         }
         testPdf.getDocumentCatalog().getAcroForm().flatten();
+
+        // 36 non widget annotations shall not be flattened
+        assertEquals(36, testPdf.getPage(0).getAnnotations().size());
+
         assertTrue(testPdf.getDocumentCatalog().getAcroForm().getFields().isEmpty());
         File file = new File(OUT_DIR, "AlignmentTests-flattened-noRef.pdf");
         testPdf.save(file);

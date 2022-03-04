@@ -18,7 +18,6 @@
 package com.tom_roush.pdfbox.pdmodel.font.encoding;
 
 import java.util.Map;
-
 import com.tom_roush.pdfbox.cos.COSBase;
 
 /**

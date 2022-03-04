@@ -25,6 +25,11 @@ import java.util.Stack;
 class BitwiseOperators
 {
 
+    private BitwiseOperators()
+    {
+        // Private constructor.
+    }
+
     /** Abstract base class for logical operators. */
     private abstract static class AbstractLogicalOperator implements Operator
     {
@@ -68,7 +73,7 @@ class BitwiseOperators
         @Override
         protected boolean applyForBoolean(boolean bool1, boolean bool2)
         {
-            return bool1 & bool2;
+            return bool1 && bool2;
         }
 
         @Override
@@ -148,7 +153,7 @@ class BitwiseOperators
         @Override
         protected boolean applyForBoolean(boolean bool1, boolean bool2)
         {
-            return bool1 | bool2;
+            return bool1 || bool2;
         }
 
         @Override

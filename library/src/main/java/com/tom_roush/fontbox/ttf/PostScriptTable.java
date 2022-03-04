@@ -56,7 +56,7 @@ public class PostScriptTable extends TTFTable
      * @throws IOException If there is an error reading the data.
      */
     @Override
-    public void read(TrueTypeFont ttf, TTFDataStream data) throws IOException
+    void read(TrueTypeFont ttf, TTFDataStream data) throws IOException
     {
         formatType = data.read32Fixed();
         italicAngle = data.read32Fixed();
@@ -106,7 +106,7 @@ public class PostScriptTable extends TTFTable
             for (int i = 0; i < numGlyphs; i++)
             {
                 int index = glyphNameIndex[i];
-                if (index < WGL4Names.NUMBER_OF_MAC_GLYPHS)
+                if (index >= 0 && index < WGL4Names.NUMBER_OF_MAC_GLYPHS)
                 {
                     glyphNames[i] = WGL4Names.MAC_GLYPH_NAMES[index];
                 }
@@ -133,13 +133,21 @@ public class PostScriptTable extends TTFTable
             glyphNames = new String[glyphNameIndex.length];
             for (int i = 0; i < glyphNames.length; i++)
             {
-                String name = WGL4Names.MAC_GLYPH_NAMES[glyphNameIndex[i]];
-                if (name != null)
+                int index = glyphNameIndex[i];
+                if (index >= 0 && index < WGL4Names.NUMBER_OF_MAC_GLYPHS)
                 {
-                    glyphNames[i] = name;
+                    String name = WGL4Names.MAC_GLYPH_NAMES[index];
+                    if (name != null)
+                    {
+                        glyphNames[i] = name;
+                    }
+                }
+                else
+                {
+                    Log.d("PdfBox-Android", "incorrect glyph name index " + index +
+                        ", valid numbers 0.." + WGL4Names.NUMBER_OF_MAC_GLYPHS);
                 }
             }
-
         }
         else if (formatType == 3.0f)
         {

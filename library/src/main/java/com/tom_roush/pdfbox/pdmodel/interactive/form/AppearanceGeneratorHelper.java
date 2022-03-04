@@ -96,14 +96,24 @@ class AppearanceGeneratorHelper
         this.field = field;
         validateAndEnsureAcroFormResources();
 
-        this.defaultAppearance = field.getDefaultAppearanceString();
+        try
+        {
+            this.defaultAppearance = field.getDefaultAppearanceString();
+        }
+        catch (IOException ex)
+        {
+            throw new IOException("Could not process default appearance string '" +
+                field.getDefaultAppearance() + "' for field '" +
+                field.getFullyQualifiedName() + "'", ex);
+        }
     }
 
     /*
      * Adobe Reader/Acrobat are adding resources which are at the field/widget level
      * to the AcroForm level.
      */
-    private void validateAndEnsureAcroFormResources() {
+    private void validateAndEnsureAcroFormResources()
+    {
         // add font resources which might be available at the field 
         // level but are not at the AcroForm level to the AcroForm
         // to match Adobe Reader/Acrobat behavior        
@@ -196,7 +206,7 @@ class AppearanceGeneratorHelper
                 // TODO support appearances other than "normal"
 
                 PDAppearanceStream appearanceStream;
-                if (appearance != null && appearance.isStream())
+                if (isValidAppearanceStream(appearance))
                 {
                     appearanceStream = appearance.getAppearanceStream();
                 }
@@ -225,6 +235,24 @@ class AppearanceGeneratorHelper
             // restore the field level appearance
             defaultAppearance =  acroFormAppearance;
         }
+    }
+
+    private static boolean isValidAppearanceStream(PDAppearanceEntry appearance)
+    {
+        if (appearance == null)
+        {
+            return false;
+        }
+        if (!appearance.isStream())
+        {
+            return false;
+        }
+        PDRectangle bbox = appearance.getAppearanceStream().getBBox();
+        if (bbox == null)
+        {
+            return false;
+        }
+        return Math.abs(bbox.getWidth()) > 0 && Math.abs(bbox.getHeight()) > 0;
     }
 
     private PDAppearanceStream prepareNormalAppearanceStream(PDAnnotationWidget widget)

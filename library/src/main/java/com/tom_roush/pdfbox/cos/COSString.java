@@ -45,9 +45,57 @@ import com.tom_roush.pdfbox.util.Hex;
  */
 public final class COSString extends COSBase
 {
+    private byte[] bytes;
+    private boolean forceHexForm;
+
     // legacy behaviour for old PDFParser
     public static final boolean FORCE_PARSING =
         Boolean.getBoolean("com.tom_roush.pdfbox.forceParsing");
+
+    /**
+     * Creates a new PDF string from a byte array. This method can be used to read a string from
+     * an existing PDF file, or to create a new byte string.
+     *
+     * @param bytes The raw bytes of the PDF text string or byte string.
+     */
+    public COSString(byte[] bytes)
+    {
+        setValue(bytes);
+    }
+
+    /**
+     * Creates a new <i>text string</i> from a Java String.
+     *
+     * @param text The string value of the object.
+     */
+    public COSString(String text)
+    {
+        // check whether the string uses only characters available in PDFDocEncoding
+        boolean isOnlyPDFDocEncoding = true;
+        for (char c : text.toCharArray())
+        {
+            if (!PDFDocEncoding.containsChar(c))
+            {
+                isOnlyPDFDocEncoding = false;
+                break;
+            }
+        }
+
+        if (isOnlyPDFDocEncoding)
+        {
+            // PDFDocEncoded string
+            bytes = PDFDocEncoding.getBytes(text);
+        }
+        else
+        {
+            // UTF-16BE encoded string with a leading byte order marker
+            byte[] data = text.getBytes(Charsets.UTF_16BE);
+            bytes = new byte[data.length + 2];
+            bytes[0] = (byte) 0xFE;
+            bytes[1] = (byte) 0xFF;
+            System.arraycopy(data, 0, bytes, 2, data.length);
+        }
+    }
 
     /**
      * This will create a COS string from a string of hex characters.
@@ -89,63 +137,6 @@ public final class COSString extends COSBase
         }
 
         return new COSString(bytes.toByteArray());
-    }
-
-    private byte[] bytes;
-    private boolean forceHexForm;
-
-    /**
-     * Creates a new PDF string from a byte array. This method can be used to read a string from
-     * an existing PDF file, or to create a new byte string.
-     *
-     * @param bytes The raw bytes of the PDF text string or byte string.
-     */
-    public COSString(byte[] bytes)
-    {
-        setValue(bytes);
-    }
-
-    /**
-     * Creates a new <i>text string</i> from a Java String.
-     *
-     * @param text The string value of the object.
-     */
-    public COSString(String text)
-    {
-        // check whether the string uses only characters available in PDFDocEncoding
-        boolean isOnlyPDFDocEncoding = true;
-        for (char c : text.toCharArray())
-        {
-            if (!PDFDocEncoding.containsChar(c))
-            {
-                isOnlyPDFDocEncoding = false;
-                break;
-            }
-        }
-
-        if (isOnlyPDFDocEncoding)
-        {
-            // PDFDocEncoded string
-            bytes = PDFDocEncoding.getBytes(text);
-        }
-        else
-        {
-            // UTF-16BE encoded string with a leading byte order marker
-            byte[] data = text.getBytes(Charsets.UTF_16BE);
-            ByteArrayOutputStream out = new ByteArrayOutputStream(data.length + 2);
-            out.write(0xFE); // BOM
-            out.write(0xFF); // BOM
-            try
-            {
-                out.write(data);
-            }
-            catch (IOException e)
-            {
-                // should never happen
-                throw new RuntimeException(e);
-            }
-            bytes = out.toByteArray();
-        }
     }
 
     /**

@@ -18,7 +18,6 @@ package com.tom_roush.pdfbox.pdmodel.fdf;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -51,7 +50,7 @@ public class FDFJavaScript implements COSObjectable
      *
      * @param javaScript The FDF java script.
      */
-    public FDFJavaScript( COSDictionary javaScript )
+    public FDFJavaScript(COSDictionary javaScript)
     {
         dictionary = javaScript;
     }
@@ -74,14 +73,14 @@ public class FDFJavaScript implements COSObjectable
      */
     public String getBefore()
     {
-        COSBase base = dictionary.getDictionaryObject( COSName.BEFORE );
+        COSBase base = dictionary.getDictionaryObject(COSName.BEFORE);
         if (base instanceof COSString)
         {
-            return ((COSString)base).getString();
+            return ((COSString) base).getString();
         }
         else if (base instanceof COSStream)
         {
-            return ((COSStream)base).toTextString();
+            return ((COSStream) base).toTextString();
         }
         else
         {
@@ -94,7 +93,7 @@ public class FDFJavaScript implements COSObjectable
      *
      * @param before A reference to some javascript code.
      */
-    public void setBefore( String before )
+    public void setBefore(String before)
     {
         dictionary.setItem(COSName.BEFORE, new COSString(before));
     }
@@ -126,14 +125,14 @@ public class FDFJavaScript implements COSObjectable
      *
      * @param after A reference to some javascript code.
      */
-    public void setAfter( String after )
+    public void setAfter(String after)
     {
         dictionary.setItem(COSName.AFTER, new COSString(after));
     }
 
     /**
-     * Returns the dictionary's "Doc" entry, that is, a map of key value pairs to be added to
-     * the document's JavaScript name tree.
+     * Returns the dictionary's "Doc" entry, that is, a map of key value pairs to be added to the document's JavaScript
+     * name tree.
      *
      * @return Map of named "JavaScript" dictionaries.
      */

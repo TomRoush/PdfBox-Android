@@ -720,14 +720,13 @@ public final class Matrix implements Cloneable
     @Override
     public String toString()
     {
-        String sb = "" + "[" +
+        return "[" +
             single[0] + "," +
             single[1] + "," +
             single[3] + "," +
             single[4] + "," +
             single[6] + "," +
             single[7] + "]";
-        return sb;
     }
 
     @Override

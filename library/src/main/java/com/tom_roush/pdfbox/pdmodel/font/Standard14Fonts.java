@@ -37,10 +37,6 @@ import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
  */
 final class Standard14Fonts
 {
-    private Standard14Fonts()
-    {
-    }
-
     private static final Set<String> STANDARD_14_NAMES = new HashSet<String>(34);
     private static final Map<String, String> STANDARD_14_MAPPING = new HashMap<String, String>(34);
     private static final Map<String, FontMetrics> STANDARD14_AFM_MAP =  new HashMap<String, FontMetrics>(34);
@@ -97,6 +93,10 @@ final class Standard14Fonts
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private Standard14Fonts()
+    {
     }
 
     private static void addAFM(String fontName) throws IOException

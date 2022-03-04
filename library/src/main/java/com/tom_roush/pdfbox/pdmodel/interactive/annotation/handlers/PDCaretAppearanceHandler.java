@@ -22,6 +22,7 @@ import java.io.IOException;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDAppearanceContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationMarkup;
@@ -37,6 +38,11 @@ public class PDCaretAppearanceHandler extends PDAbstractAppearanceHandler
    public PDCaretAppearanceHandler(PDAnnotation annotation)
    {
       super(annotation);
+   }
+
+   public PDCaretAppearanceHandler(PDAnnotation annotation, PDDocument document)
+   {
+      super(annotation, document);
    }
 
    @Override

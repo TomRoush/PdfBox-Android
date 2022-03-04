@@ -22,9 +22,9 @@ import java.io.IOException;
 
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDAppearanceContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDFormContentStream;
 import com.tom_roush.pdfbox.pdmodel.PDPatternContentStream;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
@@ -44,6 +44,11 @@ public class PDSquigglyAppearanceHandler extends PDAbstractAppearanceHandler
     public PDSquigglyAppearanceHandler(PDAnnotation annotation)
     {
         super(annotation);
+    }
+
+    public PDSquigglyAppearanceHandler(PDAnnotation annotation, PDDocument document)
+    {
+        super(annotation, document);
     }
 
     @Override
@@ -126,7 +131,7 @@ public class PDSquigglyAppearanceHandler extends PDAbstractAppearanceHandler
                 // Create form, BBox is mostly fixed, except for the horizontal size which is
                 // horizontal size divided by the horizontal transform factor from above
                 // (almost)
-                PDFormXObject form = new PDFormXObject(new COSStream());
+                PDFormXObject form = new PDFormXObject(createCOSStream());
                 form.setBBox(new PDRectangle(-0.5f, -0.5f, (pathsArray[i * 8 + 2] - pathsArray[i * 8]) / height * 40f + 0.5f, 13));
                 form.setResources(new PDResources());
                 form.setMatrix(AffineTransform.getTranslateInstance(0.5f, 0.5f));

@@ -20,7 +20,6 @@ package com.tom_roush.pdfbox.pdmodel.font;
 import java.lang.ref.SoftReference;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import com.tom_roush.fontbox.FontBoxFont;
 
 /**

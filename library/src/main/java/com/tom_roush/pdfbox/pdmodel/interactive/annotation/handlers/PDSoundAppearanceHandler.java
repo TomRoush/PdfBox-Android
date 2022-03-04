@@ -15,6 +15,7 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers;
 
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 
 public class PDSoundAppearanceHandler extends PDAbstractAppearanceHandler
@@ -22,6 +23,11 @@ public class PDSoundAppearanceHandler extends PDAbstractAppearanceHandler
    public PDSoundAppearanceHandler(PDAnnotation annotation)
    {
       super(annotation);
+   }
+
+   public PDSoundAppearanceHandler(PDAnnotation annotation, PDDocument document)
+   {
+      super(annotation, document);
    }
 
    @Override

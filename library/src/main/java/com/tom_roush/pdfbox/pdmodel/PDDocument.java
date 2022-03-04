@@ -773,6 +773,10 @@ public class PDDocument implements Closeable
     /**
      * This will get the document info dictionary. If it doesn't exist, an empty document info
      * dictionary is created in the document trailer.
+     * <p>
+     * In PDF 2.0 this is deprecated except for two entries, /CreationDate and /ModDate. For any other
+     * document level metadata, a metadata stream should be used instead, see
+     * {@link PDDocumentCatalog#getMetadata()}.
      *
      * @return The documents /Info dictionary, never null.
      */
@@ -794,6 +798,10 @@ public class PDDocument implements Closeable
 
     /**
      * This will set the document information for this document.
+     * <p>
+     * In PDF 2.0 this is deprecated except for two entries, /CreationDate and /ModDate. For any other
+     * document level metadata, a metadata stream should be used instead, see
+     * {@link PDDocumentCatalog#setMetadata(com.tom_roush.pdfbox.pdmodel.common.PDMetadata) PDDocumentCatalog#setMetadata(PDMetadata)}.
      *
      * @param info The updated document information.
      */
@@ -956,7 +964,7 @@ public class PDDocument implements Closeable
      * @throws InvalidPasswordException If the file required a non-empty password.
      * @throws IOException in case of a file reading or parsing error
      */
-    public static PDDocument load(File file) throws InvalidPasswordException, IOException
+    public static PDDocument load(File file) throws IOException
     {
         return load(file, "", MemoryUsageSetting.setupMainMemoryOnly());
     }
@@ -973,7 +981,7 @@ public class PDDocument implements Closeable
      * @throws IOException in case of a file reading or parsing error
      */
     public static PDDocument load(File file, MemoryUsageSetting memUsageSetting)
-        throws InvalidPasswordException, IOException
+        throws IOException
     {
         return load(file, "", null, null, memUsageSetting);
     }
@@ -990,7 +998,7 @@ public class PDDocument implements Closeable
      * @throws IOException in case of a file reading or parsing error
      */
     public static PDDocument load(File file, String password)
-        throws InvalidPasswordException, IOException
+        throws IOException
     {
         return load(file, password, null, null, MemoryUsageSetting.setupMainMemoryOnly());
     }
@@ -1008,7 +1016,7 @@ public class PDDocument implements Closeable
      * @throws IOException in case of a file reading or parsing error
      */
     public static PDDocument load(File file, String password, MemoryUsageSetting memUsageSetting)
-        throws InvalidPasswordException, IOException
+        throws IOException
     {
         return load(file, password, null, null, memUsageSetting);
     }
@@ -1047,25 +1055,33 @@ public class PDDocument implements Closeable
     public static PDDocument load(File file, String password, InputStream keyStore, String alias,
         MemoryUsageSetting memUsageSetting) throws IOException
     {
+        @SuppressWarnings({"squid:S2095"}) // raFile not closed here, may be needed for signing
         RandomAccessBufferedFileInputStream raFile = new RandomAccessBufferedFileInputStream(file);
         try
         {
-            ScratchFile scratchFile = new ScratchFile(memUsageSetting);
-            try
-            {
-                PDFParser parser = new PDFParser(raFile, password, keyStore, alias, scratchFile);
-                parser.parse();
-                return parser.getPDDocument();
-            }
-            catch (IOException ioe)
-            {
-                IOUtils.closeQuietly(scratchFile);
-                throw ioe;
-            }
+            return load(raFile, password, keyStore, alias, memUsageSetting);
         }
         catch (IOException ioe)
         {
             IOUtils.closeQuietly(raFile);
+            throw ioe;
+        }
+    }
+
+    private static PDDocument load(RandomAccessBufferedFileInputStream raFile, String password,
+        InputStream keyStore, String alias,
+        MemoryUsageSetting memUsageSetting) throws IOException
+    {
+        ScratchFile scratchFile = new ScratchFile(memUsageSetting);
+        try
+        {
+            PDFParser parser = new PDFParser(raFile, password, keyStore, alias, scratchFile);
+            parser.parse();
+            return parser.getPDDocument();
+        }
+        catch (IOException ioe)
+        {
+            IOUtils.closeQuietly(scratchFile);
             throw ioe;
         }
     }
@@ -1081,7 +1097,7 @@ public class PDDocument implements Closeable
      * @throws InvalidPasswordException If the PDF required a non-empty password.
      * @throws IOException In case of a reading or parsing error.
      */
-    public static PDDocument load(InputStream input) throws InvalidPasswordException, IOException
+    public static PDDocument load(InputStream input) throws IOException
     {
         return load(input, "", null, null, MemoryUsageSetting.setupMainMemoryOnly());
     }
@@ -1099,7 +1115,7 @@ public class PDDocument implements Closeable
      * @throws IOException In case of a reading or parsing error.
      */
     public static PDDocument load(InputStream input, MemoryUsageSetting memUsageSetting)
-        throws InvalidPasswordException, IOException
+        throws IOException
     {
         return load(input, "", null, null, memUsageSetting);
     }
@@ -1117,7 +1133,7 @@ public class PDDocument implements Closeable
      * @throws IOException In case of a reading or parsing error.
      */
     public static PDDocument load(InputStream input, String password)
-        throws InvalidPasswordException, IOException
+        throws IOException
     {
         return load(input, password, null, null, MemoryUsageSetting.setupMainMemoryOnly());
     }
@@ -1155,7 +1171,7 @@ public class PDDocument implements Closeable
      * @throws IOException In case of a reading or parsing error.
      */
     public static PDDocument load(InputStream input, String password, MemoryUsageSetting memUsageSetting)
-        throws InvalidPasswordException, IOException
+        throws IOException
     {
         return load(input, password, null, null, memUsageSetting);
     }
@@ -1203,7 +1219,7 @@ public class PDDocument implements Closeable
      * @throws InvalidPasswordException If the PDF required a non-empty password.
      * @throws IOException In case of a reading or parsing error.
      */
-    public static PDDocument load(byte[] input) throws InvalidPasswordException, IOException
+    public static PDDocument load(byte[] input) throws IOException
     {
         return load(input, "");
     }
@@ -1220,7 +1236,7 @@ public class PDDocument implements Closeable
      * @throws IOException In case of a reading or parsing error.
      */
     public static PDDocument load(byte[] input, String password)
-        throws InvalidPasswordException, IOException
+        throws IOException
     {
         return load(input, password, null, null);
     }

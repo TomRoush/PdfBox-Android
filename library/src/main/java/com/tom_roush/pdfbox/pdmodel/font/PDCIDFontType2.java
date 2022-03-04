@@ -20,6 +20,8 @@ import android.graphics.Path;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.tom_roush.fontbox.cff.Type2CharString;
 import com.tom_roush.fontbox.cmap.CMap;
@@ -48,6 +50,7 @@ public class PDCIDFontType2 extends PDCIDFont
     private final CmapLookup cmap; // may be null
     private Matrix fontMatrix;
     private BoundingBox fontBBox;
+    private final Set<Integer> noMapping = new HashSet<Integer>();
 
     /**
      * Constructor.
@@ -113,12 +116,6 @@ public class PDCIDFontType2 extends PDCIDFont
                         // PDFBOX-3344 contains PostScript outlines instead of TrueType
                         fontIsDamaged = true;
                         Log.w("PdfBox-Android", "Found CFF/OTF but expected embedded TTF font " + fd.getFontName());
-                    }
-
-                    if (otf.hasLayoutTables())
-                    {
-                        Log.i("PdfBox-Android", "OpenType Layout tables used in font " + getBaseFont() +
-                            " are not implemented in PDFBox and will be ignored");
                     }
                 }
                 catch (NullPointerException e) // TTF parser is buggy
@@ -250,7 +247,12 @@ public class PDCIDFontType2 extends PDCIDFont
                 String unicode = parent.toUnicode(code);
                 if (unicode == null)
                 {
-                    Log.w("PdfBox-Android", "Failed to find a character mapping for " + code + " in " + getName());
+                    if (!noMapping.contains(code))
+                    {
+                        // we keep track of which warnings have been issued, so we don't log multiple times
+                        noMapping.add(code);
+                        Log.w("PdfBox-Android", "Failed to find a character mapping for " + code + " in " + getName());
+                    }
                     // Acrobat is willing to use the CID as a GID, even when the font isn't embedded
                     // see PDFBOX-2599
                     return codeToCID(code);
@@ -360,7 +362,7 @@ public class PDCIDFontType2 extends PDCIDFont
         if (cid == 0)
         {
             throw new IllegalArgumentException(
-                String.format("No glyph for U+%04X in font %s", unicode, getName()));
+                String.format("No glyph for U+%04X (%c) in font %s", unicode, (char) unicode, getName()));
         }
 
         // CID is always 2-bytes (16-bit) for TrueType

@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDAppearanceContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
@@ -35,6 +36,11 @@ public class PDUnderlineAppearanceHandler extends PDAbstractAppearanceHandler
    public PDUnderlineAppearanceHandler(PDAnnotation annotation)
    {
       super(annotation);
+   }
+
+   public PDUnderlineAppearanceHandler(PDAnnotation annotation, PDDocument document)
+   {
+      super(annotation, document);
    }
 
    @Override

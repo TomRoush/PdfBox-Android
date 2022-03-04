@@ -71,7 +71,7 @@ final class FileSystemFontProvider extends FontProvider
         private final int macStyle;
         private final PDPanoseClassification panose;
         private final File file;
-        private transient FileSystemFontProvider parent;
+        private final FileSystemFontProvider parent;
 
         private FSFontInfo(File file, FontFormat format, String postScriptName,
             CIDSystemInfo cidSystemInfo, int usWeightClass, int sFamilyClass,
@@ -128,9 +128,9 @@ final class FileSystemFontProvider extends FontProvider
                 FontBoxFont font;
                 switch (format)
                 {
-                    case PFB: font = parent.getType1Font(postScriptName, file); break;
-                    case TTF: font = parent.getTrueTypeFont(postScriptName, file); break;
-                    case OTF: font = parent.getOTFFont(postScriptName, file); break;
+                    case PFB: font = getType1Font(postScriptName, file); break;
+                    case TTF: font = getTrueTypeFont(postScriptName, file); break;
+                    case OTF: font = getOTFFont(postScriptName, file); break;
                     default: throw new RuntimeException("can't happen");
                 }
                 if (font != null)
@@ -181,6 +181,98 @@ final class FileSystemFontProvider extends FontProvider
         public String toString()
         {
             return super.toString() + " " + file;
+        }
+
+        private TrueTypeFont getTrueTypeFont(String postScriptName, File file)
+        {
+            try
+            {
+                TrueTypeFont ttf = readTrueTypeFont(postScriptName, file);
+
+                if (PDFBoxConfig.isDebugEnabled())
+                {
+                    Log.d("PdfBox-Android", "Loaded " + postScriptName + " from " + file);
+                }
+                return ttf;
+            }
+            catch (NullPointerException e) // TTF parser is buggy
+            {
+                Log.e("PdfBox-Android", "Could not load font file: " + file, e);
+            }
+            catch (IOException e)
+            {
+                Log.e("PdfBox-Android", "Could not load font file: " + file, e);
+            }
+            return null;
+        }
+
+        private TrueTypeFont readTrueTypeFont(String postScriptName, File file) throws IOException
+        {
+            if (file.getName().toLowerCase().endsWith(".ttc"))
+            {
+                @SuppressWarnings("squid:S2095")
+                // ttc not closed here because it is needed later when ttf is accessed,
+                // e.g. rendering PDF with non-embedded font which is in ttc file in our font directory
+                TrueTypeCollection ttc = new TrueTypeCollection(file);
+                TrueTypeFont ttf = ttc.getFontByName(postScriptName);
+                if (ttf == null)
+                {
+                    ttc.close();
+                    throw new IOException("Font " + postScriptName + " not found in " + file);
+                }
+                return ttf;
+            }
+            else
+            {
+                TTFParser ttfParser = new TTFParser(false, true);
+                return ttfParser.parse(file);
+            }
+        }
+
+        private OpenTypeFont getOTFFont(String postScriptName, File file)
+        {
+            try
+            {
+                // todo JH: we don't yet support loading CFF fonts from OTC collections 
+                OTFParser parser = new OTFParser(false, true);
+                OpenTypeFont otf = parser.parse(file);
+
+                if (PDFBoxConfig.isDebugEnabled())
+                {
+                    Log.d("PdfBox-Android", "Loaded " + postScriptName + " from " + file);
+                }
+                return otf;
+            }
+            catch (IOException e)
+            {
+                Log.e("PdfBox-Android", "Could not load font file: " + file, e);
+            }
+            return null;
+        }
+
+        private Type1Font getType1Font(String postScriptName, File file)
+        {
+            InputStream input = null;
+            try
+            {
+                input = new FileInputStream(file);
+                Type1Font type1 = Type1Font.createWithPFB(input);
+
+                if (PDFBoxConfig.isDebugEnabled())
+                {
+                    Log.d("PdfBox-Android", "Loaded " + postScriptName + " from " + file);
+                }
+                return type1;
+            }
+            catch (IOException e)
+            {
+                Log.e("PdfBox-Android", "Could not load font file: " + file, e);
+            }
+            finally
+            {
+                IOUtils.closeQuietly(input);
+            }
+            return null;
         }
     }
 
@@ -315,12 +407,11 @@ final class FileSystemFontProvider extends FontProvider
     private void saveDiskCache()
     {
         BufferedWriter writer = null;
-        File file = null;
         try
         {
             try
             {
-                file = getDiskCacheFile();
+                File file = getDiskCacheFile();
                 writer = new BufferedWriter(new FileWriter(file));
             }
             catch (SecurityException e)
@@ -641,7 +732,7 @@ final class FileSystemFontProvider extends FontProvider
                         String registryName = reg.substring(0, reg.indexOf('\0'));
                         String ord = new String(bytes, 76, 64, Charsets.US_ASCII);
                         String orderName = ord.substring(0, ord.indexOf('\0'));
-                        int supplementVersion = bytes[140] << 8 & bytes[141];
+                        int supplementVersion = bytes[140] << 8 & (bytes[141] & 0xFF);
                         ros = new CIDSystemInfo(registryName, orderName, supplementVersion);
                     }
 
@@ -711,95 +802,6 @@ final class FileSystemFontProvider extends FontProvider
         {
             input.close();
         }
-    }
-
-    private TrueTypeFont getTrueTypeFont(String postScriptName, File file)
-    {
-        try
-        {
-            TrueTypeFont ttf = readTrueTypeFont(postScriptName, file);
-
-            if (PDFBoxConfig.isDebugEnabled())
-            {
-                Log.d("PdfBox-Android", "Loaded " + postScriptName + " from " + file);
-            }
-            return ttf;
-        }
-        catch (NullPointerException e) // TTF parser is buggy
-        {
-            Log.e("PdfBox-Android", "Could not load font file: " + file, e);
-        }
-        catch (IOException e)
-        {
-            Log.e("PdfBox-Android", "Could not load font file: " + file, e);
-        }
-        return null;
-    }
-
-    private TrueTypeFont readTrueTypeFont(String postScriptName, File file) throws IOException
-    {
-        if (file.getName().toLowerCase().endsWith(".ttc"))
-        {
-            TrueTypeCollection ttc = new TrueTypeCollection(file);
-            TrueTypeFont ttf = ttc.getFontByName(postScriptName);
-            if (ttf == null)
-            {
-                ttc.close();
-                throw new IOException("Font " + postScriptName + " not found in " + file);
-            }
-            return ttf;
-        }
-        else
-        {
-            TTFParser ttfParser = new TTFParser(false, true);
-            return ttfParser.parse(file);
-        }
-    }
-
-    private OpenTypeFont getOTFFont(String postScriptName, File file)
-    {
-        try
-        {
-            // todo JH: we don't yet support loading CFF fonts from OTC collections 
-            OTFParser parser = new OTFParser(false, true);
-            OpenTypeFont otf = parser.parse(file);
-
-            if (PDFBoxConfig.isDebugEnabled())
-            {
-                Log.d("PdfBox-Android", "Loaded " + postScriptName + " from " + file);
-            }
-            return otf;
-        }
-        catch (IOException e)
-        {
-            Log.e("PdfBox-Android", "Could not load font file: " + file, e);
-        }
-        return null;
-    }
-
-    private Type1Font getType1Font(String postScriptName, File file)
-    {
-        InputStream input = null;
-        try
-        {
-            input = new FileInputStream(file);
-            Type1Font type1 = Type1Font.createWithPFB(input);
-
-            if (PDFBoxConfig.isDebugEnabled())
-            {
-                Log.d("PdfBox-Android", "Loaded " + postScriptName + " from " + file);
-            }
-            return type1;
-        }
-        catch (IOException e)
-        {
-            Log.e("PdfBox-Android", "Could not load font file: " + file, e);
-        }
-        finally
-        {
-            IOUtils.closeQuietly(input);
-        }
-        return null;
     }
 
     @Override

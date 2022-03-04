@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDAppearanceContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationMarkup;
@@ -35,6 +36,11 @@ public class PDInkAppearanceHandler extends PDAbstractAppearanceHandler
    public PDInkAppearanceHandler(PDAnnotation annotation)
    {
       super(annotation);
+   }
+
+   public PDInkAppearanceHandler(PDAnnotation annotation, PDDocument document)
+   {
+      super(annotation, document);
    }
 
    @Override
