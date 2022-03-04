@@ -25,7 +25,7 @@ A clear and concise description of what you expected to happen.
 A clear and concise description of what happened instead.
 
 **Environment details:**
- - PdfBox-Android version: [e.g. 2.0.15.0]
+ - PdfBox-Android version: [e.g. 2.0.16.0]
  - Android API version: [e.g. API 31]
 
 **Additional context**
