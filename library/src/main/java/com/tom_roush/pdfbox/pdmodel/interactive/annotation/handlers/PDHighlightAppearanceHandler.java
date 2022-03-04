@@ -22,9 +22,9 @@ import java.io.IOException;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDAppearanceContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDFormContentStream;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
@@ -44,6 +44,11 @@ public class PDHighlightAppearanceHandler extends PDAbstractAppearanceHandler
    public PDHighlightAppearanceHandler(PDAnnotation annotation)
    {
       super(annotation);
+   }
+
+   public PDHighlightAppearanceHandler(PDAnnotation annotation, PDDocument document)
+   {
+      super(annotation, document);
    }
 
    @Override
@@ -125,8 +130,8 @@ public class PDHighlightAppearanceHandler extends PDAbstractAppearanceHandler
          cs.setGraphicsStateParameters(r1);
          //TODO replace with document.getDocument().createCOSStream()
          //     or call new PDFormXObject(document)
-         PDFormXObject frm1 = new PDFormXObject(new COSStream());
-         PDFormXObject frm2 = new PDFormXObject(new COSStream());
+         PDFormXObject frm1 = new PDFormXObject(createCOSStream());
+         PDFormXObject frm2 = new PDFormXObject(createCOSStream());
          frm1.setResources(new PDResources());
 
          PDFormContentStream mwfofrmCS =null;

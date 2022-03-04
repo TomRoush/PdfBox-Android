@@ -25,6 +25,7 @@ import java.util.Set;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDAppearanceContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
 import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
@@ -65,6 +66,11 @@ public class PDTextAppearanceHandler extends PDAbstractAppearanceHandler
    public PDTextAppearanceHandler(PDAnnotation annotation)
    {
       super(annotation);
+   }
+
+   public PDTextAppearanceHandler(PDAnnotation annotation, PDDocument document)
+   {
+      super(annotation, document);
    }
 
    @Override

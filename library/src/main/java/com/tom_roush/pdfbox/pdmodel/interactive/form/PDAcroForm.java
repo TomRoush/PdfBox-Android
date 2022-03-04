@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -291,41 +293,35 @@ public final class PDAcroForm implements COSObjectable
             refreshAppearances(fields);
         }
 
-        // indicates if the original content stream
-        // has been wrapped in a q...Q pair.
-        boolean isContentStreamWrapped;
-
         // the content stream to write to
         PDPageContentStream contentStream;
 
         // get the widgets per page
-        Map<COSDictionary,Map<COSDictionary,PDAnnotationWidget>> pagesWidgetsMap = buildPagesWidgetsMap(fields);
+        Map<COSDictionary,Set<COSDictionary>> pagesWidgetsMap = buildPagesWidgetsMap(fields);
 
         // preserve all non widget annotations
         for (PDPage page : document.getPages())
         {
-            Map<COSDictionary,PDAnnotationWidget> widgetsForPageMap = pagesWidgetsMap.get(page.getCOSObject());
-            isContentStreamWrapped = false;
+            Set<COSDictionary> widgetsForPageMap = pagesWidgetsMap.get(page.getCOSObject());
+
+            // indicates if the original content stream
+            // has been wrapped in a q...Q pair.
+            boolean isContentStreamWrapped = false;
 
             List<PDAnnotation> annotations = new ArrayList<PDAnnotation>();
 
             for (PDAnnotation annotation: page.getAnnotations())
             {
-                if (widgetsForPageMap != null && widgetsForPageMap.get(annotation.getCOSObject()) == null)
+                if (widgetsForPageMap != null && !widgetsForPageMap.contains(annotation.getCOSObject()))
                 {
                     annotations.add(annotation);
                 }
-                else if (!annotation.isInvisible() && !annotation.isHidden() && annotation.getNormalAppearanceStream() != null)
+                else if (!annotation.isInvisible() && !annotation.isHidden() &&
+                    annotation.getNormalAppearanceStream() != null &&
+                    annotation.getNormalAppearanceStream().getBBox() != null)
                 {
-                    if (!isContentStreamWrapped)
-                    {
-                        contentStream = new PDPageContentStream(document, page, AppendMode.APPEND, true, true);
-                        isContentStreamWrapped = true;
-                    }
-                    else
-                    {
-                        contentStream = new PDPageContentStream(document, page, AppendMode.APPEND, true);
-                    }
+                    contentStream = new PDPageContentStream(document, page, AppendMode.APPEND, true, !isContentStreamWrapped);
+                    isContentStreamWrapped = true;
 
                     PDAppearanceStream appearanceStream = annotation.getNormalAppearanceStream();
 
@@ -339,7 +335,7 @@ public final class PDAcroForm implements COSObjectable
 
                     // scale the appearance stream - mainly needed for images
                     // in buttons and signatures
-                    boolean needsScaling = resolveNeedsScaling(appearanceStream);
+                    boolean needsScaling = resolveNeedsScaling(annotation, page.getRotation());
 
                     Matrix transformationMatrix = new Matrix();
                     boolean transformed = false;
@@ -356,14 +352,21 @@ public final class PDAcroForm implements COSObjectable
                         PDRectangle bbox = appearanceStream.getBBox();
                         PDRectangle fieldRect = annotation.getRectangle();
 
-                        if (bbox.getWidth() - fieldRect.getWidth() != 0 && bbox.getHeight() - fieldRect.getHeight() != 0)
+                        float xScale;
+                        float yScale;
+                        if (page.getRotation() == 90 || page.getRotation() == 270)
                         {
-                            float xScale = fieldRect.getWidth() / bbox.getWidth();
-                            float yScale = fieldRect.getHeight() / bbox.getHeight();
-                            Matrix scalingMatrix = Matrix.getScaleInstance(xScale, yScale);
-                            transformationMatrix.concatenate(scalingMatrix);
-                            transformed = true;
+                            xScale = fieldRect.getWidth() / bbox.getHeight();
+                            yScale = fieldRect.getHeight() / bbox.getWidth();
                         }
+                        else
+                        {
+                            xScale = fieldRect.getWidth() / bbox.getWidth();
+                            yScale = fieldRect.getHeight() / bbox.getHeight();
+                        }
+                        Matrix scalingMatrix = Matrix.getScaleInstance(xScale, yScale);
+                        transformationMatrix.concatenate(scalingMatrix);
+                        transformed = true;
                     }
 
                     if (transformed)
@@ -591,7 +594,7 @@ public final class PDAcroForm implements COSObjectable
     /**
      * This will get the default resources for the AcroForm.
      *
-     * @return The default resources or null if their is none.
+     * @return The default resources or null if there is none.
      */
     public PDResources getDefaultResources()
     {
@@ -746,7 +749,6 @@ public final class PDAcroForm implements COSObjectable
         PDResources resources = appearanceStream.getResources();
         if (resources != null && resources.getXObjectNames().iterator().hasNext())
         {
-
             Iterator<COSName> xObjectNames = resources.getXObjectNames().iterator();
 
             while (xObjectNames.hasNext())
@@ -782,19 +784,37 @@ public final class PDAcroForm implements COSObjectable
     /**
      * Check if there needs to be a scaling transformation applied.
      *
-     * @param appearanceStream
+     * @param annotation
+     * @param rotation
      * @return the need for a scaling transformation.
      */
-    private boolean resolveNeedsScaling(PDAppearanceStream appearanceStream)
+    private boolean resolveNeedsScaling(PDAnnotation annotation, int rotation)
     {
+        PDAppearanceStream appearanceStream = annotation.getNormalAppearanceStream();
         // Check if there is a transformation within the XObjects content
         PDResources resources = appearanceStream.getResources();
-        return resources != null && resources.getXObjectNames().iterator().hasNext();
+        if (resources != null && resources.getXObjectNames().iterator().hasNext())
+        {
+            return true;
+        }
+        PDRectangle bbox = appearanceStream.getBBox();
+        PDRectangle fieldRect = annotation.getRectangle();
+        if (rotation == 90 || rotation == 270)
+        {
+            return Float.compare(bbox.getWidth(),  fieldRect.getHeight()) != 0 ||
+                Float.compare(bbox.getHeight(), fieldRect.getWidth()) != 0;
+        }
+        else
+        {
+            return Float.compare(bbox.getWidth(),  fieldRect.getWidth()) != 0 ||
+                Float.compare(bbox.getHeight(), fieldRect.getHeight()) != 0;
+        }
     }
 
-    private Map<COSDictionary,Map<COSDictionary,PDAnnotationWidget>> buildPagesWidgetsMap(List<PDField> fields)
+    private Map<COSDictionary,Set<COSDictionary>> buildPagesWidgetsMap(List<PDField> fields) throws IOException
     {
-        Map<COSDictionary,Map<COSDictionary,PDAnnotationWidget>> pagesAnnotationsMap = new HashMap<COSDictionary,Map<COSDictionary,PDAnnotationWidget>>();
+        Map<COSDictionary,Set<COSDictionary>> pagesAnnotationsMap =
+            new HashMap<COSDictionary, Set<COSDictionary>>();
         boolean hasMissingPageRef = false;
 
         for (PDField field : fields)
@@ -802,20 +822,10 @@ public final class PDAcroForm implements COSObjectable
             List<PDAnnotationWidget> widgets = field.getWidgets();
             for (PDAnnotationWidget widget : widgets)
             {
-                PDPage pageForWidget = widget.getPage();
-                if (pageForWidget != null)
+                PDPage page = widget.getPage();
+                if (page != null)
                 {
-                    if (pagesAnnotationsMap.get(pageForWidget.getCOSObject()) == null)
-                    {
-                        Map<COSDictionary,PDAnnotationWidget> widgetsForPage = new HashMap<COSDictionary,PDAnnotationWidget>();
-                        widgetsForPage.put(widget.getCOSObject(), widget);
-                        pagesAnnotationsMap.put(pageForWidget.getCOSObject(), widgetsForPage);
-                    }
-                    else
-                    {
-                        Map<COSDictionary,PDAnnotationWidget> widgetsForPage = pagesAnnotationsMap.get(pageForWidget.getCOSObject());
-                        widgetsForPage.put(widget.getCOSObject(), widget);
-                    }
+                    fillPagesAnnotationMap(pagesAnnotationsMap, page, widget);
                 }
                 else
                 {
@@ -824,42 +834,60 @@ public final class PDAcroForm implements COSObjectable
             }
         }
 
-        // TODO: if there is a widget with a missing page reference 
-        // we'd need to build the map reverse i.e. form the annotations to the 
-        // widget. But this will be much slower so will be omitted for now.
-        if (hasMissingPageRef)
+        if (!hasMissingPageRef)
         {
-            Log.w("PdfBox-Android", "There has been a widget with a missing page reference. Please report to the PDFBox project");
+            return pagesAnnotationsMap;
+        }
+
+        // If there is a widget with a missing page reference we need to build the map reverse i.e. 
+        // from the annotations to the widget.
+        Log.w("PdfBox-Android", "There has been a widget with a missing page reference, will check all page annotations");
+        for (PDPage page : document.getPages())
+        {
+            for (PDAnnotation annotation : page.getAnnotations())
+            {
+                if (annotation instanceof PDAnnotationWidget)
+                {
+                    fillPagesAnnotationMap(pagesAnnotationsMap, page, (PDAnnotationWidget) annotation);
+                }
+            }
         }
 
         return pagesAnnotationsMap;
     }
 
+    private void fillPagesAnnotationMap(Map<COSDictionary, Set<COSDictionary>> pagesAnnotationsMap,
+        PDPage page, PDAnnotationWidget widget)
+    {
+        if (pagesAnnotationsMap.get(page.getCOSObject()) == null)
+        {
+            Set<COSDictionary> widgetsForPage = new HashSet<COSDictionary>();
+            widgetsForPage.add(widget.getCOSObject());
+            pagesAnnotationsMap.put(page.getCOSObject(), widgetsForPage);
+        }
+        else
+        {
+            Set<COSDictionary> widgetsForPage = pagesAnnotationsMap.get(page.getCOSObject());
+            widgetsForPage.add(widget.getCOSObject());
+        }
+    }
+
     private void removeFields(List<PDField> fields)
     {
-        for (PDField field : fields) {
+        for (PDField field : fields)
+        {
+            COSArray array;
             if (field.getParent() == null)
             {
-                COSArray cosFields = (COSArray) dictionary.getDictionaryObject(COSName.FIELDS);
-                for (int i=0; i<cosFields.size(); i++)
-                {
-                    COSDictionary element = (COSDictionary) cosFields.getObject(i);
-                    if (field.getCOSObject().equals(element)) {
-                        cosFields.remove(i);
-                    }
-                }
+                // if the field has no parent, assume it is at root level list, remove it from there
+                array = (COSArray) dictionary.getDictionaryObject(COSName.FIELDS);
             }
             else
             {
-                COSArray kids = (COSArray) field.getParent().getCOSObject().getDictionaryObject(COSName.KIDS);
-                for (int i=0; i<kids.size(); i++)
-                {
-                    COSDictionary element = (COSDictionary) kids.getObject(i);
-                    if (field.getCOSObject().equals(element)) {
-                        kids.remove(i);
-                    }
-                }
+                // if the field has a parent, then remove from the list there
+                array = (COSArray) field.getParent().getCOSObject().getDictionaryObject(COSName.KIDS);
             }
+            array.removeObject(field.getCOSObject());
         }
     }
 }

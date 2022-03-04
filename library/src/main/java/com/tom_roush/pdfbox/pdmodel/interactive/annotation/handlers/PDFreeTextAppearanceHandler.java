@@ -18,9 +18,12 @@ package com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.tom_roush.fontbox.util.Charsets;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -29,6 +32,8 @@ import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdfparser.PDFStreamParser;
 import com.tom_roush.pdfbox.pdmodel.PDAppearanceContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
@@ -48,9 +53,20 @@ import static com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationLi
 
 public class PDFreeTextAppearanceHandler extends PDAbstractAppearanceHandler
 {
+   private static final Pattern COLOR_PATTERN =
+       Pattern.compile(".*color\\:\\s*\\#([0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]).*");
+
+   private float fontSize = 10;
+   private COSName fontName = COSName.HELV;
+
    public PDFreeTextAppearanceHandler(PDAnnotation annotation)
    {
       super(annotation);
+   }
+
+   public PDFreeTextAppearanceHandler(PDAnnotation annotation, PDDocument document)
+   {
+      super(annotation, document);
    }
 
    @Override
@@ -87,8 +103,23 @@ public class PDFreeTextAppearanceHandler extends PDAbstractAppearanceHandler
          setOpacity(cs, annotation.getConstantOpacity());
 
          // Adobe uses the last non stroking color from /DA as stroking color!
+         // But if there is a color in /DS, then that one is used for text.
          PDColor strokingColor = extractNonStrokingColor(annotation);
          boolean hasStroke = cs.setStrokingColorOnDemand(strokingColor);
+         PDColor textColor = strokingColor;
+         String defaultStyleString = annotation.getDefaultStyleString();
+         if (defaultStyleString != null)
+         {
+            Matcher m = COLOR_PATTERN.matcher(defaultStyleString);
+            if (m.find())
+            {
+               int color = Integer.parseInt(m.group(1), 16);
+               float r = ((color >> 16) & 0xFF) / 255f;
+               float g = ((color >> 8) & 0xFF) / 255f;
+               float b = (color & 0xFF) / 255f;
+               textColor = new PDColor( new float[] { r, g, b }, PDDeviceRGB.INSTANCE);
+            }
+         }
 
          if (ab.dashArray != null)
          {
@@ -211,7 +242,21 @@ public class PDFreeTextAppearanceHandler extends PDAbstractAppearanceHandler
          float clipWidth = width - ab.width * 4;
          float clipHeight = rotation == 90 || rotation == 270 ?
              borderBox.getWidth() - ab.width * 4 : borderBox.getHeight() - ab.width * 4;
-         float fontSize = extractFontSize(annotation);
+         extractFontDetails(annotation);
+         if (document != null && document.getDocumentCatalog().getAcroForm() != null)
+         {
+            // Try to get font from AcroForm default resources
+            // Sample file: https://gitlab.freedesktop.org/poppler/poppler/issues/6
+            PDResources defaultResources = document.getDocumentCatalog().getAcroForm().getDefaultResources();
+            if (defaultResources != null)
+            {
+               PDFont defaultResourcesFont = defaultResources.getFont(fontName);
+               if (defaultResourcesFont != null)
+               {
+                  font = defaultResourcesFont;
+               }
+            }
+         }
 
          // value used by Adobe, no idea where it comes from, actual font bbox max y is 0.931
          // gathered by creating an annotation with width 0.
@@ -247,7 +292,7 @@ public class PDFreeTextAppearanceHandler extends PDAbstractAppearanceHandler
 
          cs.beginText();
          cs.setFont(font, fontSize);
-         cs.setNonStrokingColor(strokingColor.getComponents());
+         cs.setNonStrokingColor(textColor.getComponents());
          AppearanceStyle appearanceStyle = new AppearanceStyle();
          appearanceStyle.setFont(font);
          appearanceStyle.setFontSize(fontSize);
@@ -260,7 +305,14 @@ public class PDFreeTextAppearanceHandler extends PDAbstractAppearanceHandler
              // Adobe ignores the /Q
              //.textAlign(annotation.getQ())
              .build();
-         formatter.format();
+         try
+         {
+            formatter.format();
+         }
+         catch (IllegalArgumentException ex)
+         {
+            throw new IOException(ex);
+         }
          cs.endText();
 
 
@@ -341,7 +393,9 @@ public class PDFreeTextAppearanceHandler extends PDAbstractAppearanceHandler
             {
                Operator op = (Operator) token;
                String name = op.getName();
-               if ("g".equals(name) || "rg".equals(name) || "k".equals(name))
+               if (OperatorName.NON_STROKING_GRAY.equals(name) ||
+                   OperatorName.NON_STROKING_RGB.equals(name) ||
+                   OperatorName.NON_STROKING_CMYK.equals(name))
                {
                   graphicOp = op;
                   colors = arguments;
@@ -356,15 +410,15 @@ public class PDFreeTextAppearanceHandler extends PDAbstractAppearanceHandler
          if (graphicOp != null)
          {
             String graphicOpName =  graphicOp.getName();
-            if ("g".equals(graphicOpName))
+            if (OperatorName.NON_STROKING_GRAY.equals(graphicOpName))
             {
                strokingColor = new PDColor(colors, PDDeviceGray.INSTANCE);
             }
-            else if ("rg".equals(graphicOpName))
+            else if (OperatorName.NON_STROKING_RGB.equals(graphicOpName))
             {
                strokingColor = new PDColor(colors, PDDeviceRGB.INSTANCE);
             }
-            else if ("k".equals(graphicOpName))
+            else if (OperatorName.NON_STROKING_CMYK.equals(graphicOpName))
             {
 //               strokingColor = new PDColor(colors, PDDeviceCMYK.INSTANCE); TODO: PdfBox-Android
             }
@@ -377,15 +431,19 @@ public class PDFreeTextAppearanceHandler extends PDAbstractAppearanceHandler
       return strokingColor;
    }
 
-   //TODO extractNonStrokingColor and extractFontSize
-   // might somehow be replaced with PDDefaultAppearanceString,
-   // which is quite similar.
-   private float extractFontSize(PDAnnotationMarkup annotation)
+   //TODO extractNonStrokingColor and extractFontDetails
+   // might somehow be replaced with PDDefaultAppearanceString, which is quite similar.
+   private void extractFontDetails(PDAnnotationMarkup annotation)
    {
       String defaultAppearance = annotation.getDefaultAppearance();
+      if (defaultAppearance == null && document != null &&
+          document.getDocumentCatalog().getAcroForm() != null)
+      {
+         defaultAppearance = document.getDocumentCatalog().getAcroForm().getDefaultAppearance();
+      }
       if (defaultAppearance == null)
       {
-         return 10;
+         return;
       }
 
       try
@@ -404,7 +462,7 @@ public class PDFreeTextAppearanceHandler extends PDAbstractAppearanceHandler
             {
                Operator op = (Operator) token;
                String name = op.getName();
-               if ("Tf".equals(name))
+               if (OperatorName.SET_FONT_AND_SIZE.equals(name))
                {
                   fontArguments = arguments;
                }
@@ -417,18 +475,22 @@ public class PDFreeTextAppearanceHandler extends PDAbstractAppearanceHandler
          }
          if (fontArguments.size() >= 2)
          {
-            COSBase base = fontArguments.get(1);
+            COSBase base = fontArguments.get(0);
+            if (base instanceof COSName)
+            {
+               fontName = (COSName) base;
+            }
+            base = fontArguments.get(1);
             if (base instanceof COSNumber)
             {
-               return ((COSNumber) base).floatValue();
+               fontSize = ((COSNumber) base).floatValue();
             }
          }
       }
       catch (IOException ex)
       {
-         Log.w("PdfBox-Android", "Problem parsing /DA, will use default 10", ex);
+         Log.w("PdfBox-Android", "Problem parsing /DA, will use default 'Helv 10'", ex);
       }
-      return 10;
    }
 
    @Override

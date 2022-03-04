@@ -164,12 +164,22 @@ public class GlyphSubstitutionTable extends TTFTable
         int featureCount = data.readUnsignedShort();
         FeatureRecord[] featureRecords = new FeatureRecord[featureCount];
         int[] featureOffsets = new int[featureCount];
+        String prevFeatureTag = "";
         for (int i = 0; i < featureCount; i++)
         {
             FeatureRecord featureRecord = new FeatureRecord();
             featureRecord.featureTag = data.readString(4);
+            if (i > 0 && featureRecord.featureTag.compareTo(prevFeatureTag) < 0)
+            {
+                // catch corrupt file
+                // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#flTbl
+                Log.e("PdfBox-Android", "FeatureRecord array not alphabetically sorted by FeatureTag: " +
+                    featureRecord.featureTag + " < " + prevFeatureTag);
+                return new FeatureRecord[0];
+            }
             featureOffsets[i] = data.readUnsignedShort();
             featureRecords[i] = featureRecord;
+            prevFeatureTag = featureRecord.featureTag;
         }
         for (int i = 0; i < featureCount; i++)
         {
@@ -272,7 +282,7 @@ public class GlyphSubstitutionTable extends TTFTable
                 return lookupSubTable;
             }
             default:
-                throw new IllegalArgumentException("Unknown substFormat: " + substFormat);
+                throw new IOException("Unknown substFormat: " + substFormat);
         }
     }
 
@@ -309,7 +319,7 @@ public class GlyphSubstitutionTable extends TTFTable
             }
             default:
                 // Should not happen (the spec indicates only format 1 and format 2)
-                throw new IllegalArgumentException("Unknown coverage format: " + coverageFormat);
+                throw new IOException("Unknown coverage format: " + coverageFormat);
         }
     }
 

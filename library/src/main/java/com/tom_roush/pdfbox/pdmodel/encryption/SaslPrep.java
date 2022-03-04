@@ -96,7 +96,8 @@ class SaslPrep
       boolean containsRandALCat = false;
       boolean containsLCat = false;
       boolean initialRandALCat = false;
-      for (int i = 0; i < normalized.length();)
+      int i = 0;
+      while (i < normalized.length())
       {
          final int codepoint = normalized.codePointAt(i);
          // 3. Prohibit
@@ -266,7 +267,7 @@ class SaslPrep
    private static boolean privateUse(int codepoint)
    {
       return 0xE000 <= codepoint && codepoint <= 0xF8FF
-          || 0xF000 <= codepoint && codepoint <= 0xFFFFD
+          || 0xF0000 <= codepoint && codepoint <= 0xFFFFD
           || 0x100000 <= codepoint && codepoint <= 0x10FFFD;
    }
 

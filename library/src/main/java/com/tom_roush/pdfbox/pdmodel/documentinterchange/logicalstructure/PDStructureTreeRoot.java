@@ -19,7 +19,7 @@ package com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure;
 import android.util.Log;
 
 import java.io.IOException;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -202,7 +202,7 @@ public class PDStructureTreeRoot extends PDStructureNode
                 Log.e("PdfBox-Android", e.getMessage(),e);
             }
         }
-        return new Hashtable<String, Object>();
+        return new HashMap<String, Object>();
     }
 
     /**

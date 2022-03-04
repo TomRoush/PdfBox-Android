@@ -27,6 +27,7 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
@@ -766,6 +767,17 @@ public abstract class PDAnnotation implements COSObjectable
             return new PDPage((COSDictionary) base);
         }
         return null;
+    }
+
+    /**
+     * Create the appearance entry for this annotation. Not having it may prevent display in some
+     * viewers. This method is for overriding in subclasses, the default implementation does
+     * nothing.
+     *
+     * @param document
+     */
+    public void constructAppearances(PDDocument document)
+    {
     }
 
     /**

@@ -21,6 +21,7 @@ import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDAppearanceHandler;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDLineAppearanceHandler;
@@ -469,9 +470,15 @@ public class PDAnnotationLine extends PDAnnotationMarkup
     @Override
     public void constructAppearances()
     {
+        this.constructAppearances(null);
+    }
+
+    @Override
+    public void constructAppearances(PDDocument document)
+    {
         if (customAppearanceHandler == null)
         {
-            PDLineAppearanceHandler appearanceHandler = new PDLineAppearanceHandler(this);
+            PDLineAppearanceHandler appearanceHandler = new PDLineAppearanceHandler(this, document);
             appearanceHandler.generateAppearanceStreams();
         }
         else

@@ -34,7 +34,6 @@ import com.tom_roush.fontbox.cff.Type2CharString;
 import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.util.Matrix;
@@ -79,7 +78,7 @@ public class PDCIDFontType0 extends PDCIDFont
             PDStream ff3Stream = fd.getFontFile3();
             if (ff3Stream != null)
             {
-                bytes = IOUtils.toByteArray(ff3Stream.createInputStream());
+                bytes = ff3Stream.toByteArray();
             }
         }
 
@@ -96,7 +95,7 @@ public class PDCIDFontType0 extends PDCIDFont
             CFFParser cffParser = new CFFParser();
             try
             {
-                cffFont = cffParser.parse(bytes, new ByteSource()).get(0);
+                cffFont = cffParser.parse(bytes, new FF3ByteSource()).get(0);
             }
             catch (IOException e)
             {
@@ -202,13 +201,12 @@ public class PDCIDFontType0 extends PDCIDFont
         return fontMatrix;
     }
 
-    private class ByteSource implements CFFParser.ByteSource
+    private class FF3ByteSource implements CFFParser.ByteSource
     {
         @Override
         public byte[] getBytes() throws IOException
         {
-            PDStream ff3Stream = getFontDescriptor().getFontFile3();
-            return IOUtils.toByteArray(ff3Stream.createInputStream());
+            return getFontDescriptor().getFontFile3().toByteArray();
         }
     }
 
@@ -440,11 +438,15 @@ public class PDCIDFontType0 extends PDCIDFont
     {
         int cid = codeToCID(code);
 
-        float height = 0;
+        float height;
         if (!glyphHeights.containsKey(cid))
         {
-            height =  (float) getType2CharString(cid).getBounds().height();
+            height = (float) getType2CharString(cid).getBounds().height();
             glyphHeights.put(cid, height);
+        }
+        else
+        {
+            height = glyphHeights.get(cid);
         }
         return height;
     }

@@ -25,6 +25,7 @@ import java.util.Set;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.PDAppearanceContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
@@ -46,6 +47,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 public abstract class PDAbstractAppearanceHandler implements PDAppearanceHandler
 {
    private final PDAnnotation annotation;
+   protected PDDocument document;
 
    /**
     * Line ending styles where the line has to be drawn shorter (minus line width).
@@ -66,7 +68,13 @@ public abstract class PDAbstractAppearanceHandler implements PDAppearanceHandler
 
    public PDAbstractAppearanceHandler(PDAnnotation annotation)
    {
+      this(annotation, null);
+   }
+
+   public PDAbstractAppearanceHandler(PDAnnotation annotation, PDDocument document)
+   {
       this.annotation = annotation;
+      this.document = document;
    }
 
    @Override
@@ -91,6 +99,11 @@ public abstract class PDAbstractAppearanceHandler implements PDAppearanceHandler
    PDRectangle getRectangle()
    {
       return annotation.getRectangle();
+   }
+
+   protected COSStream createCOSStream()
+   {
+      return document == null ? new COSStream() : document.getDocument().createCOSStream();
    }
 
    /**
@@ -161,8 +174,7 @@ public abstract class PDAbstractAppearanceHandler implements PDAppearanceHandler
 
       if (downAppearanceEntry.isSubDictionary())
       {
-         //TODO replace with "document.getDocument().createCOSStream()" 
-         downAppearanceEntry = new PDAppearanceEntry(new COSStream());
+         downAppearanceEntry = new PDAppearanceEntry(createCOSStream());
          appearanceDictionary.setDownAppearance(downAppearanceEntry);
       }
 
@@ -185,8 +197,7 @@ public abstract class PDAbstractAppearanceHandler implements PDAppearanceHandler
 
       if (rolloverAppearanceEntry.isSubDictionary())
       {
-         //TODO replace with "document.getDocument().createCOSStream()" 
-         rolloverAppearanceEntry = new PDAppearanceEntry(new COSStream());
+         rolloverAppearanceEntry = new PDAppearanceEntry(createCOSStream());
          appearanceDictionary.setRolloverAppearance(rolloverAppearanceEntry);
       }
 
@@ -469,8 +480,7 @@ public abstract class PDAbstractAppearanceHandler implements PDAppearanceHandler
 
       if (normalAppearanceEntry == null || normalAppearanceEntry.isSubDictionary())
       {
-         //TODO replace with "document.getDocument().createCOSStream()" 
-         normalAppearanceEntry = new PDAppearanceEntry(new COSStream());
+         normalAppearanceEntry = new PDAppearanceEntry(createCOSStream());
          appearanceDictionary.setNormalAppearance(normalAppearanceEntry);
       }
 

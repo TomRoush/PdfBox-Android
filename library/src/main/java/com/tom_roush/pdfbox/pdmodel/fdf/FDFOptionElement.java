@@ -19,11 +19,12 @@ package com.tom_roush.pdfbox.pdmodel.fdf;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSString;
+
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
- * This represents an object that can be used in a Field's Opt entry to represent
- * an available option and a default appearance string.
+ * This represents an object that can be used in a Field's Opt entry to represent an available option and a default
+ * appearance string.
  *
  * @author Ben Litchfield
  */
@@ -37,8 +38,8 @@ public class FDFOptionElement implements COSObjectable
     public FDFOptionElement()
     {
         option = new COSArray();
-        option.add( new COSString( "" ) );
-        option.add( new COSString( "" ) );
+        option.add(new COSString(""));
+        option.add(new COSString(""));
     }
 
     /**
@@ -46,7 +47,7 @@ public class FDFOptionElement implements COSObjectable
      *
      * @param o The option element.
      */
-    public FDFOptionElement( COSArray o )
+    public FDFOptionElement(COSArray o)
     {
         option = o;
     }
@@ -79,7 +80,7 @@ public class FDFOptionElement implements COSObjectable
      */
     public String getOption()
     {
-        return ((COSString)option.getObject( 0 ) ).getString();
+        return ((COSString) option.getObject(0)).getString();
     }
 
     /**
@@ -87,9 +88,9 @@ public class FDFOptionElement implements COSObjectable
      *
      * @param opt One of the available options.
      */
-    public void setOption( String opt )
+    public void setOption(String opt)
     {
-        option.set( 0, new COSString( opt ) );
+        option.set(0, new COSString(opt));
     }
 
     /**
@@ -99,7 +100,7 @@ public class FDFOptionElement implements COSObjectable
      */
     public String getDefaultAppearanceString()
     {
-        return ((COSString)option.getObject( 1 ) ).getString();
+        return ((COSString) option.getObject(1)).getString();
     }
 
     /**
@@ -107,8 +108,8 @@ public class FDFOptionElement implements COSObjectable
      *
      * @param da The default appearance string.
      */
-    public void setDefaultAppearanceString( String da )
+    public void setDefaultAppearanceString(String da)
     {
-        option.set( 1, new COSString( da ) );
+        option.set(1, new COSString(da));
     }
 }

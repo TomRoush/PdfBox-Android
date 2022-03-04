@@ -41,7 +41,7 @@ public class GlyfSimpleDescript extends GlyfDescript
      * @param x0 the initial X-position
      * @throws IOException is thrown if something went wrong
      */
-    public GlyfSimpleDescript(short numberOfContours, TTFDataStream bais, short x0) throws IOException
+    GlyfSimpleDescript(short numberOfContours, TTFDataStream bais, short x0) throws IOException
     {
         super(numberOfContours, bais);
 

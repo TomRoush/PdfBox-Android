@@ -28,13 +28,14 @@ import android.graphics.Region;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 import com.tom_roush.harmony.awt.geom.AffineTransform;
@@ -118,6 +119,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     // last clipping path
     private Region lastClip;
 
+    // clip when drawPage() is called, can be null, must be intersected when clipping
+    private Path initialClip;
+
     // shapes of glyphs being drawn to be used for clipping
     private List<Path> textClippings;
 
@@ -126,7 +130,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
     private PointF currentPoint = new PointF();
 
-    private final Stack<TransparencyGroup> transparencyGroupStack = new Stack<TransparencyGroup>();
+    private final Deque<TransparencyGroup> transparencyGroupStack = new ArrayDeque<>();
 
     // if greater zero the content is hidden and wil not be rendered
     private int nestedHiddenOCGCount;
@@ -232,6 +236,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         paint = p;
         canvas = c;
         xform = new AffineTransform(canvas.getMatrix());
+//        initialClip = graphics.getClip(); TODO: PdfBox-Android
         this.pageSize = pageSize;
 
         setRenderingHints();
@@ -280,6 +285,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         if (clippingPath != lastClip)
         {
 //            canvas.clipPath(clippingPath.getBoundaryPath()); TODO: PdfBox-Android
+            if (initialClip != null)
+            {
+                // apply the remembered initial clip, but transform it first
+                //TODO see PDFBOX-4583
+            }
             lastClip = clippingPath;
         }
     }
@@ -873,8 +883,12 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
         // prepare transfer functions (either one per color or one for all) 
         // and maps (actually arrays[256] to be faster) to avoid calculating values several times
-        Integer rMap[], gMap[], bMap[];
-        PDFunction rf, gf, bf;
+        Integer rMap[];
+        Integer gMap[];
+        Integer bMap[];
+        PDFunction rf;
+        PDFunction gf;
+        PDFunction bf;
         if (transfer instanceof COSArray)
         {
             COSArray ar = (COSArray) transfer;
@@ -905,7 +919,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 int ri = (rgb >> 16) & 0xFF;
                 int gi = (rgb >> 8) & 0xFF;
                 int bi = rgb & 0xFF;
-                int ro, go, bo;
+                int ro;
+                int go;
+                int bo;
                 if (rMap[ri] != null)
                 {
                     ro = rMap[ri];
@@ -1004,8 +1020,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         PDAppearanceDictionary appearance = annotation.getAppearance();
         if (appearance == null || appearance.getNormalAppearance() == null)
         {
-            // TODO: Improve memory consumption by passing a ScratchFile
-            annotation.constructAppearances();
+            annotation.constructAppearances(renderer.document);
         }
 
         if (annotation.isNoRotate() && getCurrentPage().getRotation() != 0)
@@ -1071,7 +1086,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         // both the DPI xform and the CTM were already applied to the group, so all we do
         // here is draw it directly onto the Graphics2D device at the appropriate position
 //        PDRectangle bbox = group.getBBox();
-//        AffineTransform prev = graphics.getTransform();
+//        AffineTransform savedTransform = graphics.getTransform();
 
         Matrix m = new Matrix(xform);
         float xScale = Math.abs(m.getScalingFactorX());
@@ -1112,12 +1127,20 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         {
             if (isContentRendered())
             {
-//                graphics.drawImage(image, null, null);
+//                try
+//                {
+//                    graphics.drawImage(image, null, null);
+//                }
+//                catch (InternalError ie)
+//                {
+//                    Log.e("PdfBox-Android", "Exception drawing image, see JDK-6689349, " +
+//                        "try rendering into a BufferedImage instead", ie);
+//                }
             }
 
         }
 
-//        graphics.setTransform(prev);
+//        graphics.setTransform(savedTransform);
     }
 
     /**
@@ -1152,8 +1175,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         private TransparencyGroup(PDTransparencyGroup form, boolean isSoftMask, Matrix ctm,
             PDColor backdropColor) throws IOException
         {
-//            Graphics2D g2dOriginal = graphics;
-//            Area lastClipOriginal = lastClip;
+//            Graphics2D savedGraphics = graphics;
+//            Area savedLastClip = lastClip;
+//            Shape savedInitialClip = initialClip;
 
             // get the CTM x Form Matrix transform
             Matrix transform = Matrix.concatenate(ctm, form.getMatrix());
@@ -1252,7 +1276,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            g.translate(0, image.getHeight());
 //            g.scale(1, -1);
 
-            boolean oldFlipTG = flipTG;
+            boolean savedFlipTG = flipTG;
             flipTG = false;
 
             // apply device transform (DPI)
@@ -1294,10 +1318,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             }
             finally
             {
-                flipTG = oldFlipTG;
-//                lastClip = lastClipOriginal;
+                flipTG = savedFlipTG;
+//                lastClip = savedLastClip;
 //                graphics.dispose();
-//                graphics = g2dOriginal;
+//                graphics = savedGraphics;
+//                initialClip = savedInitialClip;
                 clipWindingRule = clipWindingRuleOriginal;
                 linePath = linePathOriginal;
                 pageSize = pageSizeOriginal;

@@ -21,6 +21,7 @@ import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDAppearanceHandler;
@@ -252,6 +253,7 @@ public class PDAnnotationSquareCircle extends PDAnnotationMarkup
      *
      * @param appearanceHandler
      */
+    @Override
     public void setCustomAppearanceHandler(PDAppearanceHandler appearanceHandler)
     {
         customAppearanceHandler = appearanceHandler;
@@ -260,16 +262,22 @@ public class PDAnnotationSquareCircle extends PDAnnotationMarkup
     @Override
     public void constructAppearances()
     {
+        this.constructAppearances(null);
+    }
+
+    @Override
+    public void constructAppearances(PDDocument document)
+    {
         if (customAppearanceHandler == null)
         {
             if (SUB_TYPE_CIRCLE.equals(getSubtype()))
             {
-                PDCircleAppearanceHandler appearanceHandler = new PDCircleAppearanceHandler(this);
+                PDCircleAppearanceHandler appearanceHandler = new PDCircleAppearanceHandler(this, document);
                 appearanceHandler.generateAppearanceStreams();
             }
             else if (SUB_TYPE_SQUARE.equals(getSubtype()))
             {
-                PDSquareAppearanceHandler appearanceHandler = new PDSquareAppearanceHandler(this);
+                PDSquareAppearanceHandler appearanceHandler = new PDSquareAppearanceHandler(this, document);
                 appearanceHandler.generateAppearanceStreams();
             }
         }

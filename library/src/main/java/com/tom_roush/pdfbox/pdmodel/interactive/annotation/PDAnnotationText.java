@@ -18,6 +18,7 @@ package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDAppearanceHandler;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDTextAppearanceHandler;
 
@@ -224,6 +225,7 @@ public class PDAnnotationText extends PDAnnotationMarkup
      *
      * @param appearanceHandler
      */
+    @Override
     public void setCustomAppearanceHandler(PDAppearanceHandler appearanceHandler)
     {
         customAppearanceHandler = appearanceHandler;
@@ -232,9 +234,15 @@ public class PDAnnotationText extends PDAnnotationMarkup
     @Override
     public void constructAppearances()
     {
+        this.constructAppearances(null);
+    }
+
+    @Override
+    public void constructAppearances(PDDocument document)
+    {
         if (customAppearanceHandler == null)
         {
-            PDTextAppearanceHandler appearanceHandler = new PDTextAppearanceHandler(this);
+            PDTextAppearanceHandler appearanceHandler = new PDTextAppearanceHandler(this, document);
             appearanceHandler.generateAppearanceStreams();
         }
         else

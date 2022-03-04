@@ -273,12 +273,14 @@ public class Overlay implements Closeable
         private final PDRectangle overlayMediaBox;
         private final COSStream overlayContentStream;
         private final COSDictionary overlayResources;
+        private final int overlayRotation;
 
-        private LayoutPage(PDRectangle mediaBox, COSStream contentStream, COSDictionary resources)
+        private LayoutPage(PDRectangle mediaBox, COSStream contentStream, COSDictionary resources, int rotation)
         {
             overlayMediaBox = mediaBox;
             overlayContentStream = contentStream;
             overlayResources = resources;
+            overlayRotation = rotation;
         }
     }
 
@@ -292,7 +294,7 @@ public class Overlay implements Closeable
             resources = new PDResources();
         }
         return new LayoutPage(page.getMediaBox(), createCombinedContentStream(contents),
-            resources.getCOSObject());
+            resources.getCOSObject(), page.getRotation());
     }
 
     private Map<Integer,LayoutPage> getLayoutPages(PDDocument doc) throws IOException
@@ -309,7 +311,7 @@ public class Overlay implements Closeable
                 resources = new PDResources();
             }
             layoutPages.put(i, new LayoutPage(page.getMediaBox(), createCombinedContentStream(contents),
-                resources.getCOSObject()));
+                resources.getCOSObject(), page.getRotation()));
         }
         return layoutPages;
     }
@@ -429,8 +431,7 @@ public class Overlay implements Closeable
             resources = new PDResources();
             page.setResources(resources);
         }
-        COSName xObjectId = createOverlayXObject(page, layoutPage,
-            layoutPage.overlayContentStream);
+        COSName xObjectId = createOverlayXObject(page, layoutPage);
         array.add(createOverlayStream(page, layoutPage, xObjectId));
     }
 
@@ -469,13 +470,31 @@ public class Overlay implements Closeable
         return layoutPage;
     }
 
-    private COSName createOverlayXObject(PDPage page, LayoutPage layoutPage, COSStream contentStream)
+    private COSName createOverlayXObject(PDPage page, LayoutPage layoutPage)
     {
-        PDFormXObject xobjForm = new PDFormXObject(contentStream);
+        PDFormXObject xobjForm = new PDFormXObject(layoutPage.overlayContentStream);
         xobjForm.setResources(new PDResources(layoutPage.overlayResources));
         xobjForm.setFormType(1);
-        xobjForm.setBBox( layoutPage.overlayMediaBox.createRetranslatedRectangle());
-        xobjForm.setMatrix(new AffineTransform());
+        xobjForm.setBBox(layoutPage.overlayMediaBox.createRetranslatedRectangle());
+        AffineTransform at = new AffineTransform();
+        switch (layoutPage.overlayRotation)
+        {
+            case 90:
+                at.translate(0, layoutPage.overlayMediaBox.getWidth());
+                at.rotate(Math.toRadians(-90));
+                break;
+            case 180:
+                at.translate(layoutPage.overlayMediaBox.getWidth(), layoutPage.overlayMediaBox.getHeight());
+                at.rotate(Math.toRadians(-180));
+                break;
+            case 270:
+                at.translate(layoutPage.overlayMediaBox.getHeight(), 0);
+                at.rotate(Math.toRadians(-270));
+                break;
+            default:
+                break;
+        }
+        xobjForm.setMatrix(at);
         PDResources resources = page.getResources();
         return resources.add(xobjForm, "OL");
     }
@@ -486,7 +505,15 @@ public class Overlay implements Closeable
         // create a new content stream that executes the XObject content
         StringBuilder overlayStream = new StringBuilder();
         overlayStream.append("q\nq\n");
-        AffineTransform at = calculateAffineTransform(page, layoutPage.overlayMediaBox);
+        PDRectangle overlayMediaBox = new PDRectangle(layoutPage.overlayMediaBox.getCOSArray());
+        if (layoutPage.overlayRotation == 90 || layoutPage.overlayRotation == 270)
+        {
+            overlayMediaBox.setLowerLeftX(layoutPage.overlayMediaBox.getLowerLeftY());
+            overlayMediaBox.setLowerLeftY(layoutPage.overlayMediaBox.getLowerLeftX());
+            overlayMediaBox.setUpperRightX(layoutPage.overlayMediaBox.getUpperRightY());
+            overlayMediaBox.setUpperRightY(layoutPage.overlayMediaBox.getUpperRightX());
+        }
+        AffineTransform at = calculateAffineTransform(page, overlayMediaBox);
         double[] flatmatrix = new double[6];
         at.getMatrix(flatmatrix);
         for (double v : flatmatrix)
@@ -494,7 +521,13 @@ public class Overlay implements Closeable
             overlayStream.append(float2String((float) v));
             overlayStream.append(" ");
         }
-        overlayStream.append(" cm\n/");
+        overlayStream.append(" cm\n");
+
+        // if debugging, insert
+        // 0 0 overlayMediaBox.getHeight() overlayMediaBox.getWidth() re\ns\n
+        // into the content stream
+
+        overlayStream.append(" /");
         overlayStream.append(xObjectId.getName());
         overlayStream.append(" Do Q\nQ\n");
         return createStream(overlayStream.toString());

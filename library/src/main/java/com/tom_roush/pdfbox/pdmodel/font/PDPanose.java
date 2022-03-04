@@ -21,7 +21,7 @@ import java.util.Arrays;
 
 /**
  * Represents the "Panose" entry of a FontDescriptor's Style dictionary. This is a sequence of 12
- * bytes which contain both the TTF sFamilyClass and PANOSE classification bytes.
+ * bytes which contain both the TTF sFamilyClass and PANOSE classification bytes. 
  *
  * @author John Hewson
  */

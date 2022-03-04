@@ -27,7 +27,6 @@ import java.io.IOException;
  */
 public class KerningTable extends TTFTable
 {
-
     /**
      * Tag to identify this table.
      */
@@ -48,7 +47,7 @@ public class KerningTable extends TTFTable
      * @throws IOException If there is an error reading the data.
      */
     @Override
-    public void read(TrueTypeFont ttf, TTFDataStream data) throws IOException
+    void read(TrueTypeFont ttf, TTFDataStream data) throws IOException
     {
         int version = data.readUnsignedShort();
         if (version != 0)

@@ -26,6 +26,7 @@ import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDAppearanceContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationMarkup;
@@ -42,6 +43,11 @@ public class PDPolygonAppearanceHandler extends PDAbstractAppearanceHandler
    public PDPolygonAppearanceHandler(PDAnnotation annotation)
    {
       super(annotation);
+   }
+
+   public PDPolygonAppearanceHandler(PDAnnotation annotation, PDDocument document)
+   {
+      super(annotation, document);
    }
 
    @Override

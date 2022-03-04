@@ -105,6 +105,8 @@ public final class PDPageContentStream implements Closeable
     private final NumberFormat formatDecimal = NumberFormat.getNumberInstance(Locale.US);
     private final byte[] formatBuffer = new byte[32];
 
+    private boolean sourcePageHadContents = false;
+
     /**
      * Create a new PDPage content stream. This constructor overwrites all existing content streams
      * of this page.
@@ -116,6 +118,10 @@ public final class PDPageContentStream implements Closeable
     public PDPageContentStream(PDDocument document, PDPage sourcePage) throws IOException
     {
         this(document, sourcePage, AppendMode.OVERWRITE, true, false);
+        if (sourcePageHadContents)
+        {
+            Log.w("PdfBox-Android", "You are overwriting an existing content, you should use the append mode");
+        }
     }
 
     /**
@@ -250,10 +256,7 @@ public final class PDPageContentStream implements Closeable
         }
         else
         {
-            if (sourcePage.hasContents())
-            {
-                Log.w("PdfBox-Android", "You are overwriting an existing content, you should use the append mode");
-            }
+            sourcePageHadContents = sourcePage.hasContents();
             PDStream contents = new PDStream(document);
             sourcePage.setContents(contents);
             output = contents.createOutputStream(filter);
@@ -969,7 +972,10 @@ public final class PDPageContentStream implements Closeable
     }
 
     /**
-     * The cm operator. Concatenates the given matrix with the CTM.
+     * The cm operator. Concatenates the given matrix with the current transformation matrix (CTM),
+     * which maps user space coordinates used within a PDF content stream into output device
+     * coordinates. More details on coordinates can be found in the PDF 32000 specification, 8.3.2
+     * Coordinate Spaces.
      *
      * @param matrix the transformation matrix
      * @throws IOException If there is an error writing to the stream.

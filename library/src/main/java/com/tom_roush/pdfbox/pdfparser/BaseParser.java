@@ -114,7 +114,7 @@ public abstract class BaseParser
     /**
      * This is the stream that will be read from.
      */
-    protected final SequentialSource seqSource;
+    final SequentialSource seqSource;
 
     /**
      * This is the document that will be parsed.
@@ -124,7 +124,7 @@ public abstract class BaseParser
     /**
      * Default constructor.
      */
-    public BaseParser(SequentialSource pdfSource)
+    BaseParser(SequentialSource pdfSource)
     {
         this.seqSource = pdfSource;
     }
@@ -711,7 +711,7 @@ public abstract class BaseParser
                 // valid hex digits.
                 if (isHexDigit((char)ch1) && isHexDigit((char)ch2))
                 {
-                    String hex = "" + (char)ch1 + (char)ch2;
+                    String hex = Character.toString((char) ch1) + (char) ch2;
                     try
                     {
                         buffer.write(Integer.parseInt(hex, 16));
@@ -790,7 +790,7 @@ public abstract class BaseParser
      */
     protected COSBoolean parseBoolean() throws IOException
     {
-        COSBoolean retval = null;
+        COSBoolean retval;
         char c = (char) seqSource.peek();
         if( c == 't' )
         {
@@ -1365,7 +1365,7 @@ public abstract class BaseParser
      */
     protected final StringBuilder readStringNumber() throws IOException
     {
-        int lastByte = 0;
+        int lastByte;
         StringBuilder buffer = new StringBuilder();
         while( (lastByte = seqSource.read() ) != ASCII_SPACE &&
             lastByte != ASCII_LF &&

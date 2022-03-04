@@ -22,8 +22,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.tom_roush.fontbox.ttf.TTFDataStream;
-
 /**
  * An interface into a data stream.
  *
@@ -156,12 +154,16 @@ class MemoryTTFDataStream extends TTFDataStream
      * Seek into the datasource.
      *
      * @param pos The position to seek to.
-     * @throws IOException If there is an error seeking to that position.
+     * @throws IOException If the seek position is negative or larger than MAXINT.
      */
     @Override
     public void seek(long pos) throws IOException
     {
-        currentPosition = (int)pos;
+        if (pos < 0 || pos > Integer.MAX_VALUE)
+        {
+            throw new IOException("Illegal seek position: " + pos);
+        }
+        currentPosition = (int) pos;
     }
 
     /**
