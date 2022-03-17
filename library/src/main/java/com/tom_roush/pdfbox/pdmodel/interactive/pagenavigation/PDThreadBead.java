@@ -19,6 +19,7 @@ package com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
@@ -30,6 +31,8 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
  */
 public class PDThreadBead implements COSObjectable
 {
+
+
     private final COSDictionary bead;
 
     /**

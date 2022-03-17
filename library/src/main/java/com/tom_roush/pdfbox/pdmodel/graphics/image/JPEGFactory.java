@@ -79,19 +79,36 @@ public final class JPEGFactory
         // copy stream
         ByteArrayInputStream byteStream = new ByteArrayInputStream(byteArray);
 
-        // read image
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeStream(byteStream, null, options);
-        byteStream.reset();
+        Dimensions meta = retrieveDimensions(byteStream);
 
         PDColorSpace colorSpace = PDDeviceRGB.INSTANCE; // TODO: PdfBox-Android
 
         // create PDImageXObject from stream
         PDImageXObject pdImage = new PDImageXObject(document, byteStream,
-            COSName.DCT_DECODE, options.outWidth, options.outHeight, 8, colorSpace);
+            COSName.DCT_DECODE, meta.width, meta.height, 8, colorSpace);
 
         return pdImage;
+    }
+
+    private static class Dimensions
+    {
+        private int width;
+        private int height;
+        private int numComponents;
+    }
+
+    private static Dimensions retrieveDimensions(ByteArrayInputStream stream) throws IOException
+    {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(stream, null, options);
+        stream.reset();
+
+        Dimensions meta = new Dimensions();
+        meta.width = options.outWidth;
+        meta.height = options.outHeight;
+
+        return meta;
     }
 
     /**
@@ -158,7 +175,7 @@ public final class JPEGFactory
     }
 
     // returns the alpha channel of an image
-    private static Bitmap getAlphaImage(Bitmap image) throws IOException
+    private static Bitmap getAlphaImage(Bitmap image)
     {
         if (!image.hasAlpha())
         {

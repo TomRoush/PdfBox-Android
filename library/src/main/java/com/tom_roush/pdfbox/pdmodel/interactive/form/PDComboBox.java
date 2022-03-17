@@ -35,7 +35,7 @@ public final class PDComboBox extends PDChoice
     /**
      * @see PDField#PDField(PDAcroForm)
      *
-     * @param acroForm The acroForm.
+     * @param acroForm The acroform.
      */
     public PDComboBox(PDAcroForm acroForm)
     {

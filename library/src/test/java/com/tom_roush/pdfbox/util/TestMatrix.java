@@ -16,11 +16,11 @@
  */
 package com.tom_roush.pdfbox.util;
 
+import java.io.IOException;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
-import java.io.IOException;
 
 /**
  * Test the {@link Matrix} class.
@@ -79,15 +79,15 @@ public class TestMatrix extends TestCase
 
         // Operand 1 should not have changed
         assertMatrixValuesEqualTo(new float[] {0,  1,  2,
-                1,  2,  3,
-                2,  3,  4}, m1);
+            1,  2,  3,
+            2,  3,  4}, m1);
         // Operand 2 should not have changed
         assertMatrixValuesEqualTo(new float[] {0,  1,  2,
-                1,  2,  3,
-                2,  3,  4}, m2);
+            1,  2,  3,
+            2,  3,  4}, m2);
         assertMatrixValuesEqualTo(new float[] {5,  8,  11,
-                8,  14, 20,
-                11, 20, 29}, product);
+            8,  14, 20,
+            11, 20, 29}, product);
 
         // Multiply two matrices together with the result being written to a third matrix
         // (Any existing values there will be overwritten).
@@ -97,15 +97,15 @@ public class TestMatrix extends TestCase
         assertSame(retVal, resultMatrix);
         // Operand 1 should not have changed
         assertMatrixValuesEqualTo(new float[] {0,  1,  2,
-                1,  2,  3,
-                2,  3,  4}, m1);
+            1,  2,  3,
+            2,  3,  4}, m1);
         // Operand 2 should not have changed
         assertMatrixValuesEqualTo(new float[] {0,  1,  2,
-                1,  2,  3,
-                2,  3,  4}, m2);
+            1,  2,  3,
+            2,  3,  4}, m2);
         assertMatrixValuesEqualTo(new float[] {5,  8,  11,
-                8,  14, 20,
-                11, 20, 29}, resultMatrix);
+            8,  14, 20,
+            11, 20, 29}, resultMatrix);
 
 
 
@@ -114,11 +114,11 @@ public class TestMatrix extends TestCase
         assertSame(retVal, m2);
         // Operand 1 should not have changed
         assertMatrixValuesEqualTo(new float[] {0,  1,  2,
-                1,  2,  3,
-                2,  3,  4}, m1);
+            1,  2,  3,
+            2,  3,  4}, m1);
         assertMatrixValuesEqualTo(new float[] {5,  8,  11,
-                8,  14, 20,
-                11, 20, 29}, retVal);
+            8,  14, 20,
+            11, 20, 29}, retVal);
 
 
 
@@ -130,11 +130,11 @@ public class TestMatrix extends TestCase
         assertSame(retVal, m1);
         // Operand 2 should not have changed
         assertMatrixValuesEqualTo(new float[] {0,  1,  2,
-                1,  2,  3,
-                2,  3,  4}, m2);
+            1,  2,  3,
+            2,  3,  4}, m2);
         assertMatrixValuesEqualTo(new float[] {5,  8,  11,
-                8,  14, 20,
-                11, 20, 29}, retVal);
+            8,  14, 20,
+            11, 20, 29}, retVal);
 
 
 
@@ -144,8 +144,8 @@ public class TestMatrix extends TestCase
         retVal = m1.multiply(m1, m1);
         assertSame(retVal, m1);
         assertMatrixValuesEqualTo(new float[] {5,  8,  11,
-                8,  14, 20,
-                11, 20, 29}, retVal);
+            8,  14, 20,
+            11, 20, 29}, retVal);
     }
 
     /**
@@ -156,8 +156,8 @@ public class TestMatrix extends TestCase
     private void assertMatrixIsPristine(Matrix m)
     {
         assertMatrixValuesEqualTo(new float[] {1 ,0 ,0,
-                0, 1, 0,
-                0, 0, 1}, m);
+            0, 1, 0,
+            0, 0, 1}, m);
     }
 
     /**
@@ -171,12 +171,12 @@ public class TestMatrix extends TestCase
         float delta = 0.00001f;
         for (int i = 0; i < values.length; i++)
         {
-            // Need to convert a (row, column) co-ordinate into a straight index.
+            // Need to convert a (row, column) coordinate into a straight index.
             int row = (int)Math.floor(i / 3);
             int column = i % 3;
             StringBuilder failureMsg = new StringBuilder();
             failureMsg.append("Incorrect value for matrix[")
-                    .append(row).append(",").append(column).append("]");
+                .append(row).append(",").append(column).append("]");
             assertEquals(failureMsg.toString(), values[i], m.getValue(row, column), delta);
         }
     }

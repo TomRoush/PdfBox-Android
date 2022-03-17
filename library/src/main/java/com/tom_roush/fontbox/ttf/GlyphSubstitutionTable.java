@@ -173,7 +173,7 @@ public class GlyphSubstitutionTable extends TTFTable
             {
                 // catch corrupt file
                 // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#flTbl
-                Log.e("PdfBox-Android", "FeatureRecord array not alphabetically sorted by FeatureTag: " +
+                Log.w("PdfBox-Android", "FeatureRecord array not alphabetically sorted by FeatureTag: " +
                     featureRecord.featureTag + " < " + prevFeatureTag);
                 return new FeatureRecord[0];
             }

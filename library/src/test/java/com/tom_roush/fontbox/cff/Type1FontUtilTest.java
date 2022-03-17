@@ -16,11 +16,11 @@
  */
 package com.tom_roush.fontbox.cff;
 
-import junit.framework.TestCase;
+import java.util.Random;
 
 import org.junit.internal.ArrayComparisonFailure;
 
-import java.util.Random;
+import junit.framework.TestCase;
 
 import static org.junit.Assert.assertArrayEquals;
 

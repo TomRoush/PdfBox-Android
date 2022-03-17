@@ -212,8 +212,10 @@ public class COSWriter implements ICOSVisitor, Closeable
     // signing
     private boolean incrementalUpdate = false;
     private boolean reachedSignature = false;
-    private long signatureOffset, signatureLength;
-    private long byteRangeOffset, byteRangeLength;
+    private long signatureOffset;
+    private long signatureLength;
+    private long byteRangeOffset;
+    private long byteRangeLength;
     private RandomAccessRead incrementalInput;
     private OutputStream incrementalOutput;
     private SignatureInterface signatureInterface;
@@ -787,7 +789,7 @@ public class COSWriter implements ICOSVisitor, Closeable
         }
         byte[] signatureBytes = Hex.getBytes(cmsSignature);
 
-        // substract 2 bytes because of the enclosing "<>"
+        // subtract 2 bytes because of the enclosing "<>"
         if (signatureBytes.length > signatureLength - 2)
         {
             throw new IOException("Can't write signature, not enough space");

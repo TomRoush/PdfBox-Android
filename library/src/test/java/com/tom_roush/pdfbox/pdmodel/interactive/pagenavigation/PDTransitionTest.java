@@ -28,9 +28,11 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author Andrea Vacondio
+ *
  */
 public class PDTransitionTest
 {
+
     @Test
     public void defaultStyle()
     {

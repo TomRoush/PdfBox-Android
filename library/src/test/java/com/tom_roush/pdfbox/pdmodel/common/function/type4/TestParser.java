@@ -20,13 +20,13 @@ import junit.framework.TestCase;
 
 /**
  * Tests the type 4 function parser.
+ *
  */
 public class TestParser extends TestCase
 {
 
     /**
      * Test the very basics.
-     *
      * @throws Exception if an error occurs
      */
     public void testParserBasics() throws Exception
@@ -36,7 +36,6 @@ public class TestParser extends TestCase
 
     /**
      * Test nested blocks.
-     *
      * @throws Exception if an error occurs
      */
     public void testNested() throws Exception
@@ -49,7 +48,6 @@ public class TestParser extends TestCase
 
     /**
      * Tests parsing of real values.
-     *
      * @throws Exception if an error occurs
      */
     public void testParseFloat() throws Exception
@@ -66,7 +64,6 @@ public class TestParser extends TestCase
 
     /**
      * Tests problematic functions from PDFBOX-804.
-     *
      * @throws Exception if an error occurs
      */
     public void testJira804() throws Exception

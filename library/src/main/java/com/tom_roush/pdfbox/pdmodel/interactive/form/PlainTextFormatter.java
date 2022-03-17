@@ -34,6 +34,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.form.PlainText.Word;
 
 class PlainTextFormatter
 {
+
     enum TextAlign
     {
         LEFT(0), CENTER(1), RIGHT(2), JUSTIFY(4);
@@ -92,6 +93,7 @@ class PlainTextFormatter
         private PlainText textContent;
         private TextAlign textAlignment = TextAlign.LEFT;
 
+
         // initial offset from where to start the position of the first line
         private float horizontalOffset = 0f;
         private float verticalOffset = 0f;
@@ -121,15 +123,16 @@ class PlainTextFormatter
 
         Builder textAlign(int alignment)
         {
-            this.textAlignment = TextAlign.valueOf(alignment);
+            this.textAlignment  = TextAlign.valueOf(alignment);
             return this;
         }
 
         Builder textAlign(TextAlign alignment)
         {
-            this.textAlignment = alignment;
+            this.textAlignment  = alignment;
             return this;
         }
+
 
         Builder text(PlainText textContent)
         {
@@ -188,15 +191,16 @@ class PlainTextFormatter
                 {
                     float startOffset = 0f;
 
-                    float lineWidth = appearanceStyle.getFont().getStringWidth(
-                        paragraph.getText()) * appearanceStyle.getFontSize() / FONTSCALE;
+
+                    float lineWidth = appearanceStyle.getFont().getStringWidth(paragraph.getText()) *
+                        appearanceStyle.getFontSize() / FONTSCALE;
 
                     if (lineWidth < width)
                     {
                         switch (textAlignment)
                         {
                             case CENTER:
-                                startOffset = (width - lineWidth) / 2;
+                                startOffset = (width - lineWidth)/2;
                                 break;
                             case RIGHT:
                                 startOffset = width - lineWidth;
@@ -215,9 +219,9 @@ class PlainTextFormatter
     }
 
     /**
-     * Process lines for output.
+     * Process lines for output. 
      *
-     * Process lines for an individual paragraph and generate the
+     * Process lines for an individual paragraph and generate the 
      * commands for the content stream to show the text.
      *
      * @param lines the lines to process.
@@ -252,6 +256,7 @@ class PlainTextFormatter
             }
 
             float offset = -lastPos + startOffset + horizontalOffset;
+
             if (lines.indexOf(line) == 0 && isFirstParagraph)
             {
                 contents.newLineAtOffset(offset, verticalOffset);
@@ -260,8 +265,9 @@ class PlainTextFormatter
             {
                 // keep the last position
                 verticalOffset = verticalOffset - appearanceStyle.getLeading();
-                contents.newLineAtOffset(offset, -appearanceStyle.getLeading());
+                contents.newLineAtOffset(offset, - appearanceStyle.getLeading());
             }
+
             lastPos += offset;
 
             List<Word> words = line.getWords();

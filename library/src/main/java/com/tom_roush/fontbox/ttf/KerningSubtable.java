@@ -42,7 +42,7 @@ public class KerningSubtable
 
     // true if horizontal kerning
     private boolean horizontal;
-    // true if mimimum adjustment values (versus kerning values)
+    // true if minimum adjustment values (versus kerning values)
     private boolean minimums;
     // true if cross-stream (block progression) kerning
     private boolean crossStream;
@@ -222,12 +222,12 @@ public class KerningSubtable
         pairs.read(data);
     }
 
-    private void readSubtable0Format2(TTFDataStream data) throws IOException
+    private void readSubtable0Format2(TTFDataStream data)
     {
         Log.i("PdfBox-Android", "Kerning subtable format 2 not yet supported.");
     }
 
-    private void readSubtable1(TTFDataStream data) throws IOException
+    private void readSubtable1(TTFDataStream data)
     {
         Log.i("PdfBox-Android", "Kerning subtable format 1 not yet supported.");
     }

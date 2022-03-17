@@ -19,7 +19,6 @@ package com.tom_roush.pdfbox.util;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-
 import junit.framework.TestCase;
 
 /**
@@ -28,6 +27,7 @@ import junit.framework.TestCase;
  */
 public class TestQuickSort extends TestCase
 {
+
     <T extends Comparable<T>> void doTest(T[] input, T[] expected)
     {
         List<T> list = Arrays.asList(input);
@@ -43,6 +43,7 @@ public class TestQuickSort extends TestCase
      */
     public void testSort()
     {
+
         {
             Integer[] input = new Integer[] { 9, 8, 7, 6, 5, 4, 3, 2, 1 };
             Integer[] expected = new Integer[] { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -88,7 +89,7 @@ public class TestQuickSort extends TestCase
             for (int i = 0; i < len; ++i)
             {
                 // choose values so that there are some duplicates
-                expected[i] = input[i] = rnd.nextInt(rnd.nextInt(100) + 1);
+                expected[i] = input[i] = rnd.nextInt(rnd.nextInt(100)+1);
             }
             Arrays.sort(expected);
             doTest(input, expected);

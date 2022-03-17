@@ -16,6 +16,10 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
@@ -24,23 +28,20 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * This will test the functionality of Radio Buttons in PDFBox.
  */
 public class TestRadioButtons extends TestCase
 {
+
     /**
      * Constructor.
      *
      * @param name The name of the test to run.
      */
-    public TestRadioButtons(String name)
+    public TestRadioButtons( String name )
     {
-        super(name);
+        super( name );
     }
 
     /**
@@ -50,7 +51,7 @@ public class TestRadioButtons extends TestCase
      */
     public static Test suite()
     {
-        return new TestSuite(TestRadioButtons.class);
+        return new TestSuite( TestRadioButtons.class );
     }
 
     /**
@@ -58,10 +59,10 @@ public class TestRadioButtons extends TestCase
      *
      * @param args The command line arguments.
      */
-    public static void main(String[] args)
+    public static void main( String[] args )
     {
-        String[] arg = {TestRadioButtons.class.getName()};
-        junit.textui.TestRunner.main(arg);
+        String[] arg = {TestRadioButtons.class.getName() };
+        junit.textui.TestRunner.main( arg );
     }
 
     /**
@@ -75,7 +76,7 @@ public class TestRadioButtons extends TestCase
         try
         {
             doc = new PDDocument();
-            PDAcroForm form = new PDAcroForm(doc);
+            PDAcroForm form = new PDAcroForm( doc );
             PDRadioButton radioButton = new PDRadioButton(form);
 
             // test that there are no nulls returned for an empty field
@@ -95,12 +96,12 @@ public class TestRadioButtons extends TestCase
 
             // assert that the values have been correctly set
             assertNotNull(radioButton.getCOSObject().getItem(COSName.OPT));
-            assertEquals(optItem.size(), 2);
+            assertEquals(optItem.size(),2);
             assertEquals(options.get(0), optItem.getString(0));
 
             // assert that the values can be retrieved correctly
             List<String> retrievedOptions = radioButton.getExportValues();
-            assertEquals(retrievedOptions.size(), 2);
+            assertEquals(retrievedOptions.size(),2);
             assertEquals(retrievedOptions, options);
 
             // assert that the Opt entry is removed
@@ -111,7 +112,7 @@ public class TestRadioButtons extends TestCase
         }
         finally
         {
-            if (doc != null)
+            if( doc != null )
             {
                 doc.close();
             }

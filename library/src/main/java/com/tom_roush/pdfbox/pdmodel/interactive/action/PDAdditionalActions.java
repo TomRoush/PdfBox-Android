@@ -65,7 +65,7 @@ public class PDAdditionalActions implements COSObjectable
      */
     public PDAction getF()
     {
-        return PDActionFactory.createAction((COSDictionary)actions.getDictionaryObject(COSName.F));
+        return PDActionFactory.createAction( (COSDictionary)actions.getDictionaryObject(COSName.F ) );
     }
 
     /**
@@ -75,6 +75,6 @@ public class PDAdditionalActions implements COSObjectable
      */
     public void setF( PDAction action )
     {
-        actions.setItem(COSName.F, action);
+        actions.setItem( COSName.F, action );
     }
 }

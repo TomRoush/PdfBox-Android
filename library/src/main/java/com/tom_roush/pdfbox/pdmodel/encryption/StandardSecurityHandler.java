@@ -300,7 +300,7 @@ public final class StandardSecurityHandler extends SecurityHandler
         return documentIDBytes;
     }
 
-    // Algorithm 13: validate permissions ("Perms" field). Relaxed to accomodate buggy encoders
+    // Algorithm 13: validate permissions ("Perms" field). Relaxed to accommodate buggy encoders
     // https://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/pdfs/adobe_supplement_iso32000.pdf
     private void validatePerms(PDEncryption encryption, int dicPermissions, boolean encryptMetadata) throws IOException
     {
@@ -344,7 +344,7 @@ public final class StandardSecurityHandler extends SecurityHandler
     /**
      * Prepare document for encryption.
      *
-     * @param document The documenet to encrypt.
+     * @param document The document to encrypt.
      *
      * @throws IOException If there is an error accessing data.
      */

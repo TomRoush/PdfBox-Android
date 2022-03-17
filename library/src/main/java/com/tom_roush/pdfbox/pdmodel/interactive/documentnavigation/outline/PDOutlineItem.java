@@ -69,7 +69,7 @@ public final class PDOutlineItem extends PDOutlineNode
      * Insert a single sibling after this node.
      *
      * @param newSibling The item to insert.
-     * @throws IllegalArgumentException if the given sibling node is part of a list
+     * @throws IllegalArgumentException if the given sibling node is part of a list 
      * (i.e. if it has a previous or a next sibling)
      */
     public void insertSiblingAfter(PDOutlineItem newSibling)
@@ -96,7 +96,7 @@ public final class PDOutlineItem extends PDOutlineNode
      * Insert a single sibling before this node.
      *
      * @param newSibling The item to insert.
-     * @throws IllegalArgumentException if the given sibling node is part of a list
+     * @throws IllegalArgumentException if the given sibling node is part of a list 
      * (i.e. if it has a previous or a next sibling)
      */
     public void insertSiblingBefore(PDOutlineItem newSibling)
@@ -221,7 +221,8 @@ public final class PDOutlineItem extends PDOutlineNode
      *
      * @param doc The document to get the page from.
      *
-     * @return The page that this outline will go to when activated or null if it does not point to anything.
+     * @return The page that this outline will go to when activated or null if it does not point to
+     * anything.
      * @throws IOException If there is an error when trying to find the page.
      */
     public PDPage findDestinationPage(PDDocument doc) throws IOException
@@ -243,8 +244,7 @@ public final class PDOutlineItem extends PDOutlineNode
         PDPageDestination pageDestination = null;
         if (dest instanceof PDNamedDestination)
         {
-            pageDestination = doc.getDocumentCatalog().findNamedDestinationPage(
-                (PDNamedDestination)dest);
+            pageDestination = doc.getDocumentCatalog().findNamedDestinationPage((PDNamedDestination) dest);
             if (pageDestination == null)
             {
                 return null;
@@ -280,8 +280,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public PDAction getAction()
     {
-        return PDActionFactory.createAction(
-            (COSDictionary)getCOSObject().getDictionaryObject(COSName.A));
+        return PDActionFactory.createAction((COSDictionary) getCOSObject().getDictionaryObject(COSName.A));
     }
 
     /**
@@ -315,7 +314,7 @@ public final class PDOutlineItem extends PDOutlineNode
      *
      * @param structureElement The new structure element for this node.
      */
-    public void setStructureElement(PDStructureElement structureElement)
+    public void setStructureElement( PDStructureElement structureElement )
     {
         getCOSObject().setItem(COSName.SE, structureElement);
     }
@@ -345,7 +344,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public void setTextColor( PDColor textColor )
     {
-        getCOSObject().setItem(COSName.C, textColor.toCOSArray());
+        getCOSObject().setItem( COSName.C, textColor.toCOSArray() );
     }
 
     /**
@@ -369,7 +368,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public boolean isItalic()
     {
-        return getCOSObject().getFlag(COSName.F, ITALIC_FLAG);
+        return getCOSObject().getFlag( COSName.F, ITALIC_FLAG );
     }
 
     /**
@@ -379,7 +378,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public void setItalic( boolean italic )
     {
-        getCOSObject().setFlag(COSName.F, ITALIC_FLAG, italic);
+        getCOSObject().setFlag( COSName.F, ITALIC_FLAG, italic );
     }
 
     /**
@@ -389,7 +388,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public boolean isBold()
     {
-        return getCOSObject().getFlag(COSName.F, BOLD_FLAG);
+        return getCOSObject().getFlag( COSName.F, BOLD_FLAG );
     }
 
     /**
@@ -399,6 +398,7 @@ public final class PDOutlineItem extends PDOutlineNode
      */
     public void setBold( boolean bold )
     {
-        getCOSObject().setFlag(COSName.F, BOLD_FLAG, bold);
+        getCOSObject().setFlag( COSName.F, BOLD_FLAG, bold );
     }
+
 }

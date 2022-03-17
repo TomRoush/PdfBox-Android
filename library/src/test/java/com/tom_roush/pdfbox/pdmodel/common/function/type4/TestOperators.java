@@ -16,19 +16,19 @@
  */
 package com.tom_roush.pdfbox.pdmodel.common.function.type4;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
+
+import junit.framework.TestCase;
 
 /**
  * Tests all implemented PostScript operators.
+ *
  */
 public class TestOperators extends TestCase
 {
 
     /**
      * Tests the "add" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testAdd() throws Exception
@@ -40,14 +40,13 @@ public class TestOperators extends TestCase
         int bigValue = Integer.MAX_VALUE - 2;
         ExecutionContext context = Type4Tester.create(
             bigValue + " " + bigValue + " add").toExecutionContext();
-        float floatResult = (Float) context.getStack().pop();
-        assertEquals(2 * (long) Integer.MAX_VALUE - 4, floatResult, 1);
+        float floatResult = (Float)context.getStack().pop();
+        assertEquals(2 * (long)Integer.MAX_VALUE - 4, floatResult, 1);
         assertTrue(context.getStack().isEmpty());
     }
 
     /**
      * Tests the "abs" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testAbs() throws Exception
@@ -58,7 +57,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "and" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testAnd() throws Exception
@@ -72,7 +70,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "atan" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testAtan() throws Exception
@@ -85,7 +82,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "ceiling" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testCeiling() throws Exception
@@ -96,7 +92,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "cos" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testCos() throws Exception
@@ -107,7 +102,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "cvi" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testCvi() throws Exception
@@ -118,7 +112,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "cvr" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testCvr() throws Exception
@@ -137,7 +130,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "div" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testDiv() throws Exception
@@ -148,7 +140,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "exp" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testExp() throws Exception
@@ -159,7 +150,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "floor" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testFloor() throws Exception
@@ -170,7 +160,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "div" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testIDiv() throws Exception
@@ -191,7 +180,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "ln" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testLn() throws Exception
@@ -202,7 +190,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "log" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testLog() throws Exception
@@ -213,7 +200,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "mod" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testMod() throws Exception
@@ -234,7 +220,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "mul" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testMul() throws Exception
@@ -248,7 +233,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "neg" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testNeg() throws Exception
@@ -260,12 +244,11 @@ public class TestOperators extends TestCase
         Type4Tester.create((Integer.MIN_VALUE + 1) + " neg")
             .pop(Integer.MAX_VALUE).isEmpty();
         Type4Tester.create(Integer.MIN_VALUE + " neg")
-            .popReal(-(float) Integer.MIN_VALUE).isEmpty();
+            .popReal(-(float)Integer.MIN_VALUE).isEmpty();
     }
 
     /**
      * Tests the "round" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testRound() throws Exception
@@ -279,7 +262,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "sin" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testSin() throws Exception
@@ -291,7 +273,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "sqrt" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testSqrt() throws Exception
@@ -313,7 +294,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "sub" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testSub() throws Exception
@@ -323,7 +303,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "truncate" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testTruncate() throws Exception
@@ -335,7 +314,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "bitshift" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testBitshift() throws Exception
@@ -346,7 +324,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "eq" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testEq() throws Exception
@@ -357,7 +334,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "ge" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testGe() throws Exception
@@ -368,7 +344,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "gt" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testGt() throws Exception
@@ -379,7 +354,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "le" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testLe() throws Exception
@@ -390,7 +364,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "lt" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testLt() throws Exception
@@ -401,7 +374,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "ne" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testNe() throws Exception
@@ -412,7 +384,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "not" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testNot() throws Exception
@@ -426,7 +397,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "or" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testOr() throws Exception
@@ -440,7 +410,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "cor" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testXor() throws Exception
@@ -454,7 +423,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "if" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testIf() throws Exception
@@ -478,7 +446,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "ifelse" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testIfElse() throws Exception
@@ -492,7 +459,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "copy" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testCopy() throws Exception
@@ -506,7 +472,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "dup" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testDup() throws Exception
@@ -521,7 +486,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "exch" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testExch() throws Exception
@@ -534,7 +498,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "index" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testIndex() throws Exception
@@ -547,7 +510,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "pop" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testPop() throws Exception
@@ -560,7 +522,6 @@ public class TestOperators extends TestCase
 
     /**
      * Tests the "roll" operator.
-     *
      * @throws Exception if an error occurs
      */
     public void testRoll() throws Exception

@@ -142,7 +142,7 @@ public class BidiTest
                 Writer writer = new OutputStreamWriter(os, ENCODING);
                 try
                 {
-                    //Allows for sorted tests
+                    //Allows for sorted tests 
                     stripper.setSortByPosition(bSort);
                     stripper.writeText(document, writer);
                 }

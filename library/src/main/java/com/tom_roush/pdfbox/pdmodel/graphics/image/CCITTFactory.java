@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+
 import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageOutputStream;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -200,7 +201,7 @@ public final class CCITTFactory
      * Creates a new CCITT Fax compressed image XObject from the first image of a TIFF file. Only
      * single-strip CCITT T4 or T6 compressed TIFF files are supported. If you're not sure what TIFF
      * files you have, use
-     * {@link LosslessFactory#createFromImage(com.tom_roush.pdfbox.pdmodel.PDDocument, Bitmap)}
+     * {@link LosslessFactory#createFromImage(com.tom_roush.pdfbox.pdmodel.PDDocument, android.graphics.Bitmap)}
      * or {@link CCITTFactory#createFromImage(PDDocument, Bitmap) }
      * instead.
      *
@@ -326,7 +327,7 @@ public final class CCITTFactory
 
             int numtags = readshort(endianess, reader);
 
-            // The number 50 is somewhat arbitary, it just stops us load up junk from somewhere
+            // The number 50 is somewhat arbitrary, it just stops us load up junk from somewhere
             // and tramping on
             if (numtags > 50)
             {
@@ -439,7 +440,7 @@ public final class CCITTFactory
                     {
                         if ((val & 1) != 0)
                         {
-                            // T4 2D - arbitary positive K value
+                            // T4 2D - arbitrary positive K value
                             k = 50;
                         }
                         // http://www.awaresystems.be/imaging/tiff/tifftags/t4options.html

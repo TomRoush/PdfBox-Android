@@ -25,7 +25,7 @@ import com.tom_roush.pdfbox.cos.COSName;
  * from a left-to-right direction. Only for {@link PDTransitionStyle#Wipe}, {@link PDTransitionStyle#Glitter},
  * {@link PDTransitionStyle#Fly}, {@link PDTransitionStyle#Cover}, {@link PDTransitionStyle#Uncover} and
  * {@link PDTransitionStyle#Push}.
- * 
+ *
  * @author Andrea Vacondio
  *
  */
@@ -48,13 +48,13 @@ public enum PDTransitionDirection
      * Relevant only for the Fly transition when the value of SS is not 1.0
      */
     NONE(0)
-    {
-        @Override
-        public COSBase getCOSBase()
         {
-            return COSName.NONE;
-        }
-    };
+            @Override
+            public COSBase getCOSBase()
+            {
+                return COSName.NONE;
+            }
+        };
 
     private final int degrees;
 

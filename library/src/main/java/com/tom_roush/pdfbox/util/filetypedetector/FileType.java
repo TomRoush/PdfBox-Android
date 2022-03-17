@@ -29,34 +29,29 @@ package com.tom_roush.pdfbox.util.filetypedetector;
  */
 public enum FileType
 {
-    UNKNOWN, JPEG, TIFF, PSD, PNG, BMP, GIF, ICO, PCX, RIFF,
+    UNKNOWN,
+    JPEG,
+    TIFF,
+    PSD,
+    PNG,
+    BMP,
+    GIF,
+    ICO,
+    PCX,
+    RIFF,
 
-    /**
-     * Sony camera raw.
-     */
+    /** Sony camera raw. */
     ARW,
-    /**
-     * Canon camera raw, version 1.
-     */
+    /** Canon camera raw, version 1. */
     CRW,
-    /**
-     * Canon camera raw, version 2.
-     */
+    /** Canon camera raw, version 2. */
     CR2,
-    /**
-     * Nikon camera raw.
-     */
+    /** Nikon camera raw. */
     NEF,
-    /**
-     * Olympus camera raw.
-     */
+    /** Olympus camera raw. */
     ORF,
-    /**
-     * FujiFilm camera raw.
-     */
+    /** FujiFilm camera raw. */
     RAF,
-    /**
-     * Panasonic camera raw.
-     */
+    /** Panasonic camera raw. */
     RW2
 }

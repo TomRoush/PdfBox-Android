@@ -86,7 +86,7 @@ public class PDPageXYZDestination extends PDPageDestination
     }
 
     /**
-     * Get the top y coordinate.  Return values 0 or -1 imply that the current y-coordinate
+     * Get the top y coordinate.  Return values of 0 or -1 imply that the current y-coordinate
      * will be used.
      *
      * @return The top y coordinate.
@@ -131,7 +131,7 @@ public class PDPageXYZDestination extends PDPageDestination
     }
 
     /**
-     * Set the zoom value for the page, values of 0 or -1 imply that the current zoom
+     * Set the zoom value for the page, values 0 or -1 imply that the current zoom
      * will be used.
      * @param zoom The zoom value.
      */

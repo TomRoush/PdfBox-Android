@@ -86,7 +86,7 @@ public class PDActionSubmitForm extends PDAction
     public COSArray getFields()
     {
         COSBase retval = this.action.getDictionaryObject(COSName.FIELDS);
-        return retval instanceof COSArray ? (COSArray)retval : null;
+        return retval instanceof COSArray ? (COSArray) retval : null;
     }
 
     /**

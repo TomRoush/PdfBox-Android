@@ -16,15 +16,15 @@
  */
 package com.tom_roush.pdfbox.io;
 
-import junit.framework.TestCase;
-
 import java.io.File;
 import java.io.IOException;
+
+import junit.framework.TestCase;
 
 /**
  * This is a unit test for RandomAccessOutputStream.
  *
- * @author Fredrik Kjellberg
+ * @author Fredrik Kjellberg 
  */
 public class TestRandomAccessOutputStream extends TestCase
 {

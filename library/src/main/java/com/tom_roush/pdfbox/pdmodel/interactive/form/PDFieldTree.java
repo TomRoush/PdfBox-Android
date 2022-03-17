@@ -77,8 +77,7 @@ public class PDFieldTree implements Iterable<PDField>
         @Override
         public PDField next()
         {
-            if (!hasNext())
-            {
+            if(!hasNext()){
                 throw new NoSuchElementException();
             }
 
@@ -96,7 +95,7 @@ public class PDFieldTree implements Iterable<PDField>
             queue.add(node);
             if (node instanceof PDNonTerminalField)
             {
-                List<PDField> kids = ((PDNonTerminalField)node).getChildren();
+                List<PDField> kids = ((PDNonTerminalField) node).getChildren();
                 for (PDField kid : kids)
                 {
                     enqueueKids(kid);

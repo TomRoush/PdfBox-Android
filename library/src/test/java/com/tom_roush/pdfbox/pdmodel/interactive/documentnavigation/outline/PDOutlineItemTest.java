@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * @author Andrea Vacondio
+ *
  */
 public class PDOutlineItemTest
 {

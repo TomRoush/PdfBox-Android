@@ -16,18 +16,19 @@
  */
 package com.tom_roush.pdfbox.pdmodel;
 
+import java.io.IOException;
+
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 
 import org.junit.After;
 import org.junit.Test;
 
-import java.io.IOException;
-
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author Andrea Vacondio
+ *
  */
 public class TestPDPageTree
 {

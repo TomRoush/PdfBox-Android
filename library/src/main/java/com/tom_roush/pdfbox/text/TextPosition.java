@@ -859,10 +859,6 @@ public final class TextPosition
         {
             return false;
         }
-        if (Float.compare(that.direction, direction) != 0)
-        {
-            return false;
-        }
         if (textMatrix != null ? !textMatrix.equals(that.textMatrix) : that.textMatrix != null)
         {
             return false;
@@ -871,16 +867,9 @@ public final class TextPosition
         {
             return false;
         }
-        if (font != null ? !font.equals(that.font) : that.font != null)
-        {
-            return false;
-        }
-        if (!Arrays.equals(widths, that.widths))
-        {
-            return false;
-        }
-        return unicode != null ? unicode.equals(that.unicode) : that.unicode == null;
+        return font != null ? font.equals(that.font) : that.font == null;
 
+        // If changing this method, do not compare mutable fields (PDFBOX-4701)        
     }
 
     @Override

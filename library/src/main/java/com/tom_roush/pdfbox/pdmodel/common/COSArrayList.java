@@ -204,8 +204,12 @@ public class COSArrayList<E> implements List<E>
         int index = actual.indexOf( o );
         if( index >= 0 )
         {
-            actual.remove( index );
-            array.remove( index );
+            retval = actual.remove( o );
+
+            if (o instanceof COSObjectable) {
+                COSBase cosBase = ((COSObjectable) o).getCOSObject();
+                retval = array.remove(cosBase);
+            }
         }
         else
         {
@@ -603,8 +607,9 @@ public class COSArrayList<E> implements List<E>
     @Override
     public E remove(int index)
     {
-        array.remove( index );
-        return actual.remove( index );
+        E toBeRemoved = actual.get(index);
+        remove(toBeRemoved);
+        return toBeRemoved;
     }
 
     /**
@@ -622,8 +627,7 @@ public class COSArrayList<E> implements List<E>
     @Override
     public int lastIndexOf(Object o)
     {
-        return actual.indexOf( o );
-
+        return actual.lastIndexOf( o );
     }
 
     /**
@@ -663,10 +667,22 @@ public class COSArrayList<E> implements List<E>
     }
 
     /**
-     * This will return then underlying COSArray.
+     * This will return the underlying COSArray.
      *
      * @return the COSArray
      */
+    public COSArray getCOSArray()
+    {
+        return array;
+    }
+
+    /**
+     * This will return the underlying COSArray.
+     *
+     * @deprecated use {@link #getCOSArray()} instead.
+     * @return the COSArray
+     */
+    @Deprecated
     public COSArray toList()
     {
         return array;
