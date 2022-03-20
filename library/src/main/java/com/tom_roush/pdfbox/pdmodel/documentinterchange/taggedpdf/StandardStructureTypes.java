@@ -32,11 +32,6 @@ import java.util.List;
 public class StandardStructureTypes
 {
 
-    private StandardStructureTypes()
-    {
-    }
-
-
     // Grouping Elements
     /**
      * Document
@@ -318,4 +313,7 @@ public class StandardStructureTypes
         Collections.sort(types);
     }
 
+    private StandardStructureTypes()
+    {
+    }
 }

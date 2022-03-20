@@ -37,6 +37,27 @@ public abstract class PDStructureNode implements COSObjectable
 {
 
     /**
+     * Constructor.
+     *
+     * @param type the type
+     */
+    protected PDStructureNode(String type)
+    {
+        this.dictionary = new COSDictionary();
+        this.dictionary.setName(COSName.TYPE, type);
+    }
+
+    /**
+     * Constructor for an existing structure node.
+     *
+     * @param dictionary The existing dictionary.
+     */
+    protected PDStructureNode(COSDictionary dictionary)
+    {
+        this.dictionary = dictionary;
+    }
+
+    /**
      * Creates a node in the structure tree. Can be either a structure tree root,
      *  or a structure element.
      *
@@ -69,27 +90,6 @@ public abstract class PDStructureNode implements COSObjectable
     }
 
     /**
-     * Constructor.
-     *
-     * @param type the type
-     */
-    protected PDStructureNode(String type)
-    {
-        this.dictionary = new COSDictionary();
-        this.dictionary.setName(COSName.TYPE, type);
-    }
-
-    /**
-     * Constructor for an existing structure node.
-     *
-     * @param dictionary The existing dictionary.
-     */
-    protected PDStructureNode(COSDictionary dictionary)
-    {
-        this.dictionary = dictionary;
-    }
-
-    /**
      * Returns the type.
      *
      * @return the type
@@ -110,7 +110,7 @@ public abstract class PDStructureNode implements COSObjectable
         COSBase k = this.getCOSObject().getDictionaryObject(COSName.K);
         if (k instanceof COSArray)
         {
-            for (COSBase kid : ((COSArray) k))
+            for (COSBase kid : (COSArray) k)
             {
                 Object kidObject = this.createObject(kid);
                 if (kidObject != null)

@@ -54,6 +54,8 @@ public abstract class BaseParser
 
     static final int MAX_LENGTH_LONG = Long.toString(Long.MAX_VALUE).length();
 
+    private final CharsetDecoder utf8Decoder = Charsets.UTF_8.newDecoder();
+
     protected static final int E = 'e';
     protected static final int N = 'n';
     protected static final int D = 'd';
@@ -112,7 +114,7 @@ public abstract class BaseParser
     /**
      * This is the stream that will be read from.
      */
-    protected final SequentialSource seqSource;
+    final SequentialSource seqSource;
 
     /**
      * This is the document that will be parsed.
@@ -122,7 +124,7 @@ public abstract class BaseParser
     /**
      * Default constructor.
      */
-    public BaseParser(SequentialSource pdfSource)
+    BaseParser(SequentialSource pdfSource)
     {
         this.seqSource = pdfSource;
     }
@@ -147,7 +149,7 @@ public abstract class BaseParser
         COSBase value = parseDirObject();
         skipSpaces();
         // proceed if the given object is a number and the following is a number as well
-        if (!(value instanceof COSNumber) || !isDigit())
+        if ((!(value instanceof COSNumber) || !isDigit()))
         {
             return value;
         }
@@ -206,7 +208,12 @@ public abstract class BaseParser
             }
             else if (c == '/')
             {
-                parseCOSDictionaryNameValuePair(obj);
+                // something went wrong, most likely the dictionary is corrupted
+                // stop immediately and return everything read so far
+                if (!parseCOSDictionaryNameValuePair(obj))
+                {
+                    return obj;
+                }
             }
             else
             {
@@ -270,29 +277,16 @@ public abstract class BaseParser
         return false;
     }
 
-    private void parseCOSDictionaryNameValuePair(COSDictionary obj) throws IOException
+    private boolean parseCOSDictionaryNameValuePair(COSDictionary obj) throws IOException
     {
         COSName key = parseCOSName();
         COSBase value = parseCOSDictionaryValue();
         skipSpaces();
-        if (((char) seqSource.peek()) == 'd')
-        {
-            // if the next string is 'def' then we are parsing a cmap stream
-            // and want to ignore it, otherwise throw an exception.
-            String potentialDEF = readString();
-            if (!potentialDEF.equals(DEF))
-            {
-                seqSource.unread(potentialDEF.getBytes(ISO_8859_1));
-            }
-            else
-            {
-                skipSpaces();
-            }
-        }
 
         if (value == null)
         {
             Log.w("PdfBox-Android", "Bad dictionary declaration at offset " + seqSource.getPosition());
+            return false;
         }
         else
         {
@@ -300,6 +294,7 @@ public abstract class BaseParser
             value.setDirect(true);
             obj.setItem(key, value);
         }
+        return true;
     }
 
     protected void skipWhiteSpaces() throws IOException
@@ -716,7 +711,7 @@ public abstract class BaseParser
                 // valid hex digits.
                 if (isHexDigit((char)ch1) && isHexDigit((char)ch2))
                 {
-                    String hex = "" + (char)ch1 + (char)ch2;
+                    String hex = Character.toString((char) ch1) + (char) ch2;
                     try
                     {
                         buffer.write(Integer.parseInt(hex, 16));
@@ -775,10 +770,9 @@ public abstract class BaseParser
      */
     private boolean isValidUTF8(byte[] input)
     {
-        CharsetDecoder cs = Charsets.UTF_8.newDecoder();
         try
         {
-            cs.decode(ByteBuffer.wrap(input));
+            utf8Decoder.decode(ByteBuffer.wrap(input));
             return true;
         }
         catch (CharacterCodingException e)
@@ -796,7 +790,7 @@ public abstract class BaseParser
      */
     protected COSBoolean parseBoolean() throws IOException
     {
-        COSBoolean retval = null;
+        COSBoolean retval;
         char c = (char) seqSource.peek();
         if( c == 't' )
         {
@@ -1371,7 +1365,7 @@ public abstract class BaseParser
      */
     protected final StringBuilder readStringNumber() throws IOException
     {
-        int lastByte = 0;
+        int lastByte;
         StringBuilder buffer = new StringBuilder();
         while( (lastByte = seqSource.read() ) != ASCII_SPACE &&
             lastByte != ASCII_LF &&

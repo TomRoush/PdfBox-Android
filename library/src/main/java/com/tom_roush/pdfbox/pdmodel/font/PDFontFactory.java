@@ -23,6 +23,7 @@ import java.io.IOException;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.ResourceCache;
 
 /**
  * Creates the appropriate font subtype based on information in the dictionary.
@@ -43,6 +44,19 @@ public final class PDFontFactory
      */
     public static PDFont createFont(COSDictionary dictionary) throws IOException
     {
+        return createFont(dictionary, null);
+    }
+
+    /**
+     * Creates a new PDFont instance with the appropriate subclass.
+     *
+     * @param dictionary a font dictionary
+     * @param resourceCache resource cache, only useful for type 3 fonts, can be null
+     * @return a PDFont instance, based on the SubType entry of the dictionary
+     * @throws IOException if something goes wrong
+     */
+    public static PDFont createFont(COSDictionary dictionary, ResourceCache resourceCache) throws IOException
+    {
         COSName type = dictionary.getCOSName(COSName.TYPE, COSName.FONT);
         if (!COSName.FONT.equals(type))
         {
@@ -62,7 +76,7 @@ public final class PDFontFactory
         else if (COSName.MM_TYPE1.equals(subType))
         {
             COSBase fd = dictionary.getDictionaryObject(COSName.FONT_DESC);
-            if (fd instanceof COSDictionary && ((COSDictionary)fd).containsKey(COSName.FONT_FILE3))
+            if (fd instanceof COSDictionary && ((COSDictionary) fd).containsKey(COSName.FONT_FILE3))
             {
                 return new PDType1CFont(dictionary);
             }
@@ -74,7 +88,7 @@ public final class PDFontFactory
         }
         else if (COSName.TYPE3.equals(subType))
         {
-            return new PDType3Font(dictionary);
+            return new PDType3Font(dictionary, resourceCache);
         }
         else if (COSName.TYPE0.equals(subType))
         {

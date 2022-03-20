@@ -24,6 +24,7 @@ import java.util.List;
 
 import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
 
@@ -71,6 +72,6 @@ public class CurveToReplicateInitialPoint extends GraphicsOperatorProcessor
     @Override
     public String getName()
     {
-        return "v";
+        return OperatorName.CURVE_TO_REPLICATE_INITIAL_POINT;
     }
 }

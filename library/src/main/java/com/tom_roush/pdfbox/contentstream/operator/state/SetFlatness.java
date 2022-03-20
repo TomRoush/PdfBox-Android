@@ -19,12 +19,12 @@ package com.tom_roush.pdfbox.contentstream.operator.state;
 
 import java.io.IOException;
 import java.util.List;
-
 import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
-import com.tom_roush.pdfbox.contentstream.operator.Operator;
-import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 
 /**
  * i: Set the flatness tolerance.
@@ -36,7 +36,7 @@ public class SetFlatness extends OperatorProcessor
     @Override
     public void process(Operator operator, List<COSBase> operands) throws IOException
     {
-        if (operands.size() < 1)
+        if (operands.isEmpty())
         {
             throw new MissingOperandException(operator, operands);
         }
@@ -51,6 +51,6 @@ public class SetFlatness extends OperatorProcessor
     @Override
     public String getName()
     {
-        return "i";
+        return OperatorName.SET_FLATNESS;
     }
 }

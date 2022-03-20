@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 
 /**
@@ -64,7 +63,8 @@ public class PDFTextStripperByArea extends PDFTextStripper
      * Add a new region to group text by.
      *
      * @param regionName The name of the region.
-     * @param rect The rectangle area to retrieve the text from.
+     * @param rect The rectangle area to retrieve the text from. The y-coordinates are java
+     * coordinates (y == 0 is top), not PDF coordinates (y == 0 is bottom).
      */
     public void addRegion( String regionName, RectF rect )
     {
@@ -137,15 +137,15 @@ public class PDFTextStripperByArea extends PDFTextStripper
      * {@inheritDoc}
      */
     @Override
-    protected void processTextPosition( TextPosition text )
+    protected void processTextPosition(TextPosition text)
     {
-        for (String region : regionArea.keySet())
+        for (Map.Entry<String, RectF> regionAreaEntry : regionArea.entrySet())
         {
-            RectF rect = regionArea.get( region );
-            if( rect.contains( text.getX(), text.getY() ) )
+            RectF rect = regionAreaEntry.getValue();
+            if (rect.contains(text.getX(), text.getY()))
             {
-                charactersByArticle = regionCharacterList.get( region );
-                super.processTextPosition( text );
+                charactersByArticle = regionCharacterList.get(regionAreaEntry.getKey());
+                super.processTextPosition(text);
             }
         }
     }

@@ -597,6 +597,23 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
     }
 
     /**
+     * This is a convenience method that will get the dictionary object that is expected to be a
+     * COSStream. Null is returned if the entry does not exist in the dictionary.
+     *
+     * @param key The key to the item in the dictionary.
+     * @return The COSStream.
+     */
+    public COSStream getCOSStream(COSName key)
+    {
+        COSBase base = getDictionaryObject(key);
+        if (base instanceof COSStream)
+        {
+            return (COSStream) base;
+        }
+        return null;
+    }
+
+    /**
      * This is a convenience method that will get the dictionary object that is expected to be a COSArray. Null is
      * returned if the entry does not exist in the dictionary.
      *
@@ -1431,8 +1448,7 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
              * If we're at a second trailer, we have a linearized pdf file, meaning that the first Size entry represents
              * all of the objects so we don't need to grab the second.
              */
-            if (!entry.getKey().getName().equals("Size")
-                || !items.containsKey(COSName.getPDFName("Size")))
+            if (!COSName.SIZE.equals(entry.getKey()) || !items.containsKey(COSName.SIZE))
             {
                 setItem(entry.getKey(), entry.getValue());
             }

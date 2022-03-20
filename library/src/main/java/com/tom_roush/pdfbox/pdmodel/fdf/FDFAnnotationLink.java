@@ -16,12 +16,22 @@
  */
 package com.tom_roush.pdfbox.pdmodel.fdf;
 
+import android.util.Log;
+
 import java.io.IOException;
+
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionURI;
 
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * This represents a Polygon FDF annotation.
@@ -38,7 +48,6 @@ public class FDFAnnotationLink extends FDFAnnotation
      */
     public FDFAnnotationLink()
     {
-        super();
         annot.setName(COSName.SUBTYPE, SUBTYPE);
     }
 
@@ -63,5 +72,28 @@ public class FDFAnnotationLink extends FDFAnnotation
     {
         super(element);
         annot.setName(COSName.SUBTYPE, SUBTYPE);
+        XPath xpath = XPathFactory.newInstance().newXPath();
+
+        try
+        {
+            NodeList uri = (NodeList) xpath.evaluate("OnActivation/Action/URI", element,
+                XPathConstants.NODESET);
+            if (uri.getLength() > 0)
+            {
+                Node namedItem = uri.item(0).getAttributes().getNamedItem("Name");
+                if (namedItem != null && namedItem.getNodeValue() != null)
+                {
+                    PDActionURI actionURI = new PDActionURI();
+                    actionURI.setURI(namedItem.getNodeValue());
+                    annot.setItem(COSName.A, actionURI);
+                }
+            }
+            // GoTo is more tricky, because because page destination needs page tree
+            // to convert number into PDPage object
+        }
+        catch (XPathExpressionException e)
+        {
+            Log.d("PdfBox-Android", "Error while evaluating XPath expression", e);
+        }
     }
 }

@@ -105,11 +105,11 @@ public final class PDOutputIntent implements COSObjectable
     }
 
     private PDStream configureOutputProfile(PDDocument doc, InputStream colorProfile)
-            throws IOException
+        throws IOException
     {
 //        ICC_Profile icc = ICC_Profile.getInstance(colorProfile);
 //        PDStream stream = new PDStream(doc, new ByteArrayInputStream(icc.getData()), COSName.FLATE_DECODE);
-//        stream.getCOSObject().setInt(COSName.N, icc.getNumComponents()); TODO: PdFBox-Android
+//        stream.getCOSObject().setInt(COSName.N, icc.getNumComponents()); TODO: PdfBox-Android
         PDStream stream = new PDStream(doc, colorProfile, COSName.FLATE_DECODE);
         stream.getStream().setInt(COSName.N, 3);
         return stream;

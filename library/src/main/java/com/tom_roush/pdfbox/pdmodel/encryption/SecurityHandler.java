@@ -99,6 +99,16 @@ public abstract class SecurityHandler
     private AccessPermission currentAccessPermission = null;
 
     /**
+     * The stream filter name.
+     */
+    private COSName streamFilterName;
+
+    /**
+     * The string filter name.
+     */
+    private COSName stringFilterName;
+
+    /**
      * Set wether to decrypt meta data.
      *
      * @param decryptMetadata true if meta data has to be decrypted.
@@ -106,6 +116,26 @@ public abstract class SecurityHandler
     protected void setDecryptMetadata(boolean decryptMetadata)
     {
         this.decryptMetadata = decryptMetadata;
+    }
+
+    /**
+     * Set the string filter name.
+     *
+     * @param stringFilterName the string filter name.
+     */
+    protected void setStringFilterName(COSName stringFilterName)
+    {
+        this.stringFilterName = stringFilterName;
+    }
+
+    /**
+     * Set the stream filter name.
+     *
+     * @param streamFilterName the stream filter name.
+     */
+    protected void setStreamFilterName(COSName streamFilterName)
+    {
+        this.streamFilterName = streamFilterName;
     }
 
     /**
@@ -128,7 +158,7 @@ public abstract class SecurityHandler
      * @throws IOException If there is an error accessing data.
      */
     public abstract void prepareForDecryption(PDEncryption encryption, COSArray documentIDArray,
-        DecryptionMaterial decryptionMaterial) throws InvalidPasswordException, IOException;
+        DecryptionMaterial decryptionMaterial) throws IOException;
 
     /**
      * Encrypt or decrypt a set of data.
@@ -436,6 +466,12 @@ public abstract class SecurityHandler
      */
     public void decryptStream(COSStream stream, long objNum, long genNum) throws IOException
     {
+        // Stream encrypted with identity filter
+        if (COSName.IDENTITY.equals(streamFilterName))
+        {
+            return;
+        }
+
         COSBase type = stream.getCOSName(COSName.TYPE);
         if (!decryptMetadata && COSName.METADATA.equals(type))
         {
@@ -549,6 +585,12 @@ public abstract class SecurityHandler
      */
     private void decryptString(COSString string, long objNum, long genNum) throws IOException
     {
+        // String encrypted with identity filter
+        if (COSName.IDENTITY.equals(stringFilterName))
+        {
+            return;
+        }
+
         ByteArrayInputStream data = new ByteArrayInputStream(string.getBytes());
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         try

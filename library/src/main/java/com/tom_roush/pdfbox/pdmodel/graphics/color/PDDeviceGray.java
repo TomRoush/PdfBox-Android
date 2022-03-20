@@ -21,7 +21,6 @@ import android.graphics.Color;
 import android.util.Log;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import com.tom_roush.pdfbox.cos.COSName;
 
@@ -85,18 +84,18 @@ public final class PDDeviceGray extends PDDeviceColorSpace
 
         Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 
-        ByteBuffer buffer = ByteBuffer.allocate(raster.getRowBytes() * height);
-        raster.copyPixelsToBuffer(buffer);
-        byte[] gray = buffer.array();
-
-        int[] rgb = new int[width * height];
-        image.getPixels(rgb, 0, width, 0, 0, width, height);
-        for (int pixelIdx = 0; pixelIdx < width * height; pixelIdx++)
+        int gray;
+        int rgb;
+        for (int y = 0; y < height; y++)
         {
-            int value = gray[pixelIdx];
-            rgb[pixelIdx] = Color.argb(255, value, value, value);
+            for (int x = 0; x < width; x++)
+            {
+                gray = Color.alpha(raster.getPixel(x, y));
+                rgb = Color.argb(255, gray, gray, gray);
+                image.setPixel(x, y, rgb);
+            }
         }
-        image.setPixels(rgb, 0, width, 0, 0, width, height);
+
         return image;
     }
 }

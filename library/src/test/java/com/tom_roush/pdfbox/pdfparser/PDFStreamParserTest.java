@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
 
 import junit.framework.TestCase;
 
@@ -95,7 +96,7 @@ public class PDFStreamParserTest extends TestCase
 
         assertEquals(2, tokens.size());
 
-        assertEquals("ID", ((Operator) tokens.get(0)).getName());
+        assertEquals(OperatorName.BEGIN_INLINE_IMAGE_DATA, ((Operator) tokens.get(0)).getName());
         assertEquals(imageDataString.length(), ((Operator) tokens.get(0)).getImageData().length);
         assertArrayEquals(imageDataString.getBytes(), ((Operator) tokens.get(0)).getImageData());
 
@@ -109,7 +110,7 @@ public class PDFStreamParserTest extends TestCase
 
         assertEquals(1, tokens.size());
 
-        assertEquals("ID", ((Operator) tokens.get(0)).getName());
+        assertEquals(OperatorName.BEGIN_INLINE_IMAGE_DATA, ((Operator) tokens.get(0)).getName());
         assertEquals(imageDataString.length(), ((Operator) tokens.get(0)).getImageData().length);
         assertArrayEquals(imageDataString.getBytes(), ((Operator) tokens.get(0)).getImageData());
     }

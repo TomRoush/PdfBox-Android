@@ -23,6 +23,7 @@ import java.util.List;
 
 import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
 import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
@@ -36,13 +37,13 @@ public class SetLineJoinStyle extends OperatorProcessor
     @Override
     public void process(Operator operator, List<COSBase> arguments) throws IOException
     {
-        if (arguments.size() < 1)
+        if (arguments.isEmpty())
         {
             throw new MissingOperandException(operator, arguments);
         }
-
         Paint.Join lineJoinStyle;
-        switch(((COSNumber)arguments.get( 0 )).intValue())  {
+        switch (((COSNumber)arguments.get( 0 )).intValue())
+        {
             case 0:
                 lineJoinStyle = Paint.Join.MITER;
                 break;
@@ -55,13 +56,12 @@ public class SetLineJoinStyle extends OperatorProcessor
             default:
                 lineJoinStyle = null;
         }
-
         context.getGraphicsState().setLineJoin( lineJoinStyle );
     }
 
     @Override
     public String getName()
     {
-        return "j";
+        return OperatorName.SET_LINE_JOINSTYLE;
     }
 }

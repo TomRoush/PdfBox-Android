@@ -50,7 +50,7 @@ public class CmapSubtable implements CmapLookup
      * @param data The stream to read the data from.
      * @throws IOException If there is an error reading the data.
      */
-    public void initData(TTFDataStream data) throws IOException
+    void initData(TTFDataStream data) throws IOException
     {
         platformId = data.readUnsignedShort();
         platformEncodingId = data.readUnsignedShort();
@@ -65,7 +65,7 @@ public class CmapSubtable implements CmapLookup
      * @param data The stream to read the data from.
      * @throws IOException If there is an error reading the data.
      */
-    public void initSubtable(CmapTable cmap, int numGlyphs, TTFDataStream data) throws IOException
+    void initSubtable(CmapTable cmap, int numGlyphs, TTFDataStream data) throws IOException
     {
         data.seek(cmap.getOffset() + subTableOffset);
         int subtableFormat = data.readUnsignedShort();
@@ -125,7 +125,7 @@ public class CmapSubtable implements CmapLookup
      * @param numGlyphs number of glyphs to be read
      * @throws IOException If there is an error parsing the true type font.
      */
-    protected void processSubtype8(TTFDataStream data, int numGlyphs) throws IOException
+    void processSubtype8(TTFDataStream data, int numGlyphs) throws IOException
     {
         // --- is32 is a 65536 BITS array ( = 8192 BYTES)
         int[] is32 = data.readUnsignedByteArray(8192);
@@ -139,6 +139,11 @@ public class CmapSubtable implements CmapLookup
 
         glyphIdToCharacterCode = newGlyphIdToCharacterCode(numGlyphs);
         characterCodeToGlyphId = new HashMap<Integer, Integer>(numGlyphs);
+        if (numGlyphs == 0)
+        {
+            Log.w("PdfBox-Android", "subtable has no glyphs");
+            return;
+        }
         // -- Read all sub header
         for (long i = 0; i < nbGroups; ++i)
         {
@@ -157,7 +162,11 @@ public class CmapSubtable implements CmapLookup
                 // -- Convert the Character code in decimal
                 if (j > Integer.MAX_VALUE)
                 {
-                    throw new IOException("[Sub Format 8] Invalid Character code");
+                    throw new IOException("[Sub Format 8] Invalid character code " + j);
+                }
+                if ((int) j / 8 >= is32.length)
+                {
+                    throw new IOException("[Sub Format 8] Invalid character code " + j);
                 }
 
                 int currentCharCode;
@@ -175,7 +184,7 @@ public class CmapSubtable implements CmapLookup
                     long codepoint = (lead << 10) + trail + SURROGATE_OFFSET;
                     if (codepoint > Integer.MAX_VALUE)
                     {
-                        throw new IOException("[Sub Format 8] Invalid Character code");
+                        throw new IOException("[Sub Format 8] Invalid character code " + codepoint);
                     }
                     currentCharCode = (int) codepoint;
                 }
@@ -199,7 +208,7 @@ public class CmapSubtable implements CmapLookup
      * @param numGlyphs number of glyphs to be read
      * @throws IOException If there is an error parsing the true type font.
      */
-    protected void processSubtype10(TTFDataStream data, int numGlyphs) throws IOException
+    void processSubtype10(TTFDataStream data, int numGlyphs) throws IOException
     {
         long startCode = data.readUnsignedInt();
         long numChars = data.readUnsignedInt();
@@ -223,11 +232,16 @@ public class CmapSubtable implements CmapLookup
      * @param numGlyphs number of glyphs to be read
      * @throws IOException If there is an error parsing the true type font.
      */
-    protected void processSubtype12(TTFDataStream data, int numGlyphs) throws IOException
+    void processSubtype12(TTFDataStream data, int numGlyphs) throws IOException
     {
         long nbGroups = data.readUnsignedInt();
         glyphIdToCharacterCode = newGlyphIdToCharacterCode(numGlyphs);
         characterCodeToGlyphId = new HashMap<Integer, Integer>(numGlyphs);
+        if (numGlyphs == 0)
+        {
+            Log.w("PdfBox-Android", "subtable has no glyphs");
+            return;
+        }
         for (long i = 0; i < nbGroups; ++i)
         {
             long firstCode = data.readUnsignedInt();
@@ -274,10 +288,16 @@ public class CmapSubtable implements CmapLookup
      * @param numGlyphs number of glyphs to be read
      * @throws IOException If there is an error parsing the true type font.
      */
-    protected void processSubtype13(TTFDataStream data, int numGlyphs) throws IOException
+    void processSubtype13(TTFDataStream data, int numGlyphs) throws IOException
     {
         long nbGroups = data.readUnsignedInt();
+        glyphIdToCharacterCode = newGlyphIdToCharacterCode(numGlyphs);
         characterCodeToGlyphId = new HashMap<Integer, Integer>(numGlyphs);
+        if (numGlyphs == 0)
+        {
+            Log.w("PdfBox-Android", "subtable has no glyphs");
+            return;
+        }
         for (long i = 0; i < nbGroups; ++i)
         {
             long firstCode = data.readUnsignedInt();
@@ -326,7 +346,7 @@ public class CmapSubtable implements CmapLookup
      * @param numGlyphs number of glyphs to be read
      * @throws IOException If there is an error parsing the true type font.
      */
-    protected void processSubtype14(TTFDataStream data, int numGlyphs) throws IOException
+    void processSubtype14(TTFDataStream data, int numGlyphs) throws IOException
     {
         // Unicode Variation Sequences (UVS)
         // see http://blogs.adobe.com/CCJKType/2013/05/opentype-cmap-table-ramblings.html
@@ -340,7 +360,7 @@ public class CmapSubtable implements CmapLookup
      * @param numGlyphs number of glyphs to be read
      * @throws IOException If there is an error parsing the true type font.
      */
-    protected void processSubtype6(TTFDataStream data, int numGlyphs) throws IOException
+    void processSubtype6(TTFDataStream data, int numGlyphs) throws IOException
     {
         int firstCode = data.readUnsignedShort();
         int entryCount = data.readUnsignedShort();
@@ -367,7 +387,7 @@ public class CmapSubtable implements CmapLookup
      * @param numGlyphs number of glyphs to be read
      * @throws IOException If there is an error parsing the true type font.
      */
-    protected void processSubtype4(TTFDataStream data, int numGlyphs) throws IOException
+    void processSubtype4(TTFDataStream data, int numGlyphs) throws IOException
     {
         int segCountX2 = data.readUnsignedShort();
         int segCount = segCountX2 / 2;
@@ -463,7 +483,7 @@ public class CmapSubtable implements CmapLookup
      * @param numGlyphs number of glyphs to be read
      * @throws IOException If there is an error parsing the true type font.
      */
-    protected void processSubtype2(TTFDataStream data, int numGlyphs) throws IOException
+    void processSubtype2(TTFDataStream data, int numGlyphs) throws IOException
     {
         int[] subHeaderKeys = new int[256];
         // ---- keep the Max Index of the SubHeader array to know its length
@@ -487,6 +507,11 @@ public class CmapSubtable implements CmapLookup
         long startGlyphIndexOffset = data.getCurrentPosition();
         glyphIdToCharacterCode = newGlyphIdToCharacterCode(numGlyphs);
         characterCodeToGlyphId = new HashMap<Integer, Integer>(numGlyphs);
+        if (numGlyphs == 0)
+        {
+            Log.w("PdfBox-Android", "subtable has no glyphs");
+            return;
+        }
         for (int i = 0; i <= maxSubHeaderIndex; ++i)
         {
             SubHeader sh = subHeaders[i];
@@ -534,7 +559,7 @@ public class CmapSubtable implements CmapLookup
      * @param data the data stream of the to be parsed ttf font
      * @throws IOException If there is an error parsing the true type font.
      */
-    protected void processSubtype0(TTFDataStream data) throws IOException
+    void processSubtype0(TTFDataStream data) throws IOException
     {
         byte[] glyphMapping = data.read(256);
         glyphIdToCharacterCode = newGlyphIdToCharacterCode(256);

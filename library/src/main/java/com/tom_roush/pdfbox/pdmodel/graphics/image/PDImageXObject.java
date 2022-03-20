@@ -373,7 +373,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
      */
     public PDMetadata getMetadata()
     {
-        COSStream cosStream = (COSStream) getCOSObject().getDictionaryObject(COSName.METADATA);
+        COSStream cosStream = getCOSObject().getCOSStream(COSName.METADATA);
         if (cosStream != null)
         {
             return new PDMetadata(cosStream);
@@ -548,12 +548,12 @@ public final class PDImageXObject extends PDXObject implements PDImage
                 if (isSoft)
                 {
                     alpha = Color.alpha(alphaPixel);
-                    if (matte != null && Float.compare(alphaPixel, 0) != 0)
+                    if (matte != null && Float.compare(alpha, 0) != 0)
                     {
                         rgb = Color.rgb(
-                            clampColor(((Color.red(rgb) / 255 - matte[0]) / (alphaPixel / 255) + matte[0]) * 255),
-                            clampColor(((Color.green(rgb) / 255 - matte[1]) / (alphaPixel / 255) + matte[1]) * 255),
-                            clampColor(((Color.blue(rgb) / 255 - matte[2]) / (alphaPixel / 255) + matte[2]) * 255)
+                            clampColor(((Color.red(rgb) / 255F - matte[0]) / (alpha / 255F) + matte[0]) * 255),
+                            clampColor(((Color.green(rgb) / 255F - matte[1]) / (alpha / 255F) + matte[1]) * 255),
+                            clampColor(((Color.blue(rgb) / 255F - matte[2]) / (alpha / 255F) + matte[2]) * 255)
                         );
                     }
                 }
@@ -599,7 +599,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         }
         else
         {
-            COSStream cosStream = (COSStream) getCOSObject().getDictionaryObject(COSName.MASK);
+            COSStream cosStream = getCOSObject().getCOSStream(COSName.MASK);
             if (cosStream != null)
             {
                 // always DeviceGray
@@ -630,7 +630,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
      */
     public PDImageXObject getSoftMask() throws IOException
     {
-        COSStream cosStream = (COSStream) getCOSObject().getDictionaryObject(COSName.SMASK);
+        COSStream cosStream = getCOSObject().getCOSStream(COSName.SMASK);
         if (cosStream != null)
         {
             // always DeviceGray

@@ -25,6 +25,7 @@ import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
 import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 
 /**
@@ -52,13 +53,13 @@ public class MoveTextSetLeading extends OperatorProcessor
 
         List<COSBase> args = new ArrayList<COSBase>();
         args.add(new COSFloat(-1 * y.floatValue()));
-        context.processOperator("TL", args);
-        context.processOperator("Td", arguments);
+        context.processOperator(OperatorName.SET_TEXT_LEADING, args);
+        context.processOperator(OperatorName.MOVE_TEXT, arguments);
     }
 
     @Override
     public String getName()
     {
-        return "TD";
+        return OperatorName.MOVE_TEXT_SET_LEADING;
     }
 }

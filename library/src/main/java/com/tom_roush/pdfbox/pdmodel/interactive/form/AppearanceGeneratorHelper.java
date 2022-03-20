@@ -96,14 +96,24 @@ class AppearanceGeneratorHelper
         this.field = field;
         validateAndEnsureAcroFormResources();
 
-        this.defaultAppearance = field.getDefaultAppearanceString();
+        try
+        {
+            this.defaultAppearance = field.getDefaultAppearanceString();
+        }
+        catch (IOException ex)
+        {
+            throw new IOException("Could not process default appearance string '" +
+                field.getDefaultAppearance() + "' for field '" +
+                field.getFullyQualifiedName() + "'", ex);
+        }
     }
 
     /*
      * Adobe Reader/Acrobat are adding resources which are at the field/widget level
      * to the AcroForm level.
      */
-    private void validateAndEnsureAcroFormResources() {
+    private void validateAndEnsureAcroFormResources()
+    {
         // add font resources which might be available at the field 
         // level but are not at the AcroForm level to the AcroForm
         // to match Adobe Reader/Acrobat behavior        
@@ -196,27 +206,13 @@ class AppearanceGeneratorHelper
                 // TODO support appearances other than "normal"
 
                 PDAppearanceStream appearanceStream;
-                if (appearance != null && appearance.isStream())
+                if (isValidAppearanceStream(appearance))
                 {
                     appearanceStream = appearance.getAppearanceStream();
                 }
                 else
                 {
-                    appearanceStream = new PDAppearanceStream(field.getAcroForm().getDocument());
-
-                    // Calculate the entries for the bounding box and the transformation matrix
-                    // settings for the appearance stream
-                    int rotation = resolveRotation(widget);
-                    Matrix matrix = Matrix.getRotateInstance(Math.toRadians(rotation), 0, 0);
-                    PointF point2D = matrix.transformPoint(rect.getWidth(), rect.getHeight());
-
-                    PDRectangle bbox = new PDRectangle(Math.abs((float) point2D.x), Math.abs((float) point2D.y));
-                    appearanceStream.setBBox(bbox);
-
-                    appearanceStream.setMatrix(calculateMatrix(bbox, rotation));
-                    appearanceStream.setFormType(1);
-
-                    appearanceStream.setResources(new PDResources());
+                    appearanceStream = prepareNormalAppearanceStream(widget);
 
                     appearanceDict.setNormalAppearance(appearanceStream);
                     // TODO support appearances other than "normal"
@@ -239,6 +235,48 @@ class AppearanceGeneratorHelper
             // restore the field level appearance
             defaultAppearance =  acroFormAppearance;
         }
+    }
+
+    private static boolean isValidAppearanceStream(PDAppearanceEntry appearance)
+    {
+        if (appearance == null)
+        {
+            return false;
+        }
+        if (!appearance.isStream())
+        {
+            return false;
+        }
+        PDRectangle bbox = appearance.getAppearanceStream().getBBox();
+        if (bbox == null)
+        {
+            return false;
+        }
+        return Math.abs(bbox.getWidth()) > 0 && Math.abs(bbox.getHeight()) > 0;
+    }
+
+    private PDAppearanceStream prepareNormalAppearanceStream(PDAnnotationWidget widget)
+    {
+        PDAppearanceStream appearanceStream = new PDAppearanceStream(field.getAcroForm().getDocument());
+
+        // Calculate the entries for the bounding box and the transformation matrix
+        // settings for the appearance stream
+        int rotation = resolveRotation(widget);
+        PDRectangle rect = widget.getRectangle();
+        Matrix matrix = Matrix.getRotateInstance(Math.toRadians(rotation), 0, 0);
+        PointF point2D = matrix.transformPoint(rect.getWidth(), rect.getHeight());
+
+        PDRectangle bbox = new PDRectangle(Math.abs((float) point2D.x), Math.abs((float) point2D.y));
+        appearanceStream.setBBox(bbox);
+
+        AffineTransform at = calculateMatrix(bbox, rotation);
+        if (!at.isIdentity())
+        {
+            appearanceStream.setMatrix(at);
+        }
+        appearanceStream.setFormType(1);
+        appearanceStream.setResources(new PDResources());
+        return appearanceStream;
     }
 
     private PDDefaultAppearanceString getWidgetDefaultAppearanceString(PDAnnotationWidget widget) throws IOException
@@ -445,7 +483,7 @@ class AppearanceGeneratorHelper
         // start the text output
         contents.beginText();
 
-        // write the /DA string
+        // write font and color from the /DA string, with the calculated font size
         defaultAppearance.writeTo(contents, fontSize);
 
         // calculate the y-position of the baseline

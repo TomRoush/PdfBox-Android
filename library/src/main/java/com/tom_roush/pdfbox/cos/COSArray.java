@@ -459,12 +459,8 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
         for (int i = 0; retval < 0 && i < this.size(); i++)
         {
             COSBase item = this.get(i);
-            if (item.equals(object))
-            {
-                retval = i;
-                break;
-            }
-            else if (item instanceof COSObject && ((COSObject) item).getObject().equals(object))
+            if (item.equals(object) ||
+                item instanceof COSObject && ((COSObject) item).getObject().equals(object))
             {
                 retval = i;
                 break;
@@ -520,6 +516,15 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
         return needToBeUpdated;
     }
 
+    /**
+     * {@inheritDoc}
+     *<p>
+     * Although the state is set, it has no effect on COSWriter behavior because arrays are always
+     * written as direct object. If an array is to be part of an incremental save, then the method
+     * should be called for its holding dictionary.
+     *
+     * @param flag
+     */
     @Override
     public void setNeedToBeUpdated(boolean flag)
     {

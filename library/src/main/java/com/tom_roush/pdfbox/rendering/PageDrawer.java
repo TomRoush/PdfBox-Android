@@ -28,13 +28,14 @@ import android.graphics.Region;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.StringTokenizer;
 
 import com.tom_roush.harmony.awt.geom.AffineTransform;
@@ -43,7 +44,6 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.function.PDFunction;
@@ -55,6 +55,7 @@ import com.tom_roush.pdfbox.pdmodel.font.PDTrueTypeFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType0Font;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1CFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
+import com.tom_roush.pdfbox.pdmodel.font.PDType3Font;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDLineDashPattern;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
@@ -66,6 +67,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.form.PDTransparencyGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup.RenderState;
+import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentMembershipDictionary;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDGraphicsState;
@@ -73,10 +75,8 @@ import com.tom_roush.pdfbox.pdmodel.graphics.state.PDSoftMask;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.RenderingMode;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.AnnotationFilter;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
-import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
-import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationMarkup;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationUnknown;
-import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
 
@@ -119,6 +119,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     // last clipping path
     private Region lastClip;
 
+    // clip when drawPage() is called, can be null, must be intersected when clipping
+    private Path initialClip;
+
     // shapes of glyphs being drawn to be used for clipping
     private List<Path> textClippings;
 
@@ -127,7 +130,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
     private PointF currentPoint = new PointF();
 
-    private final Stack<TransparencyGroup> transparencyGroupStack = new Stack<TransparencyGroup>();
+    private final Deque<TransparencyGroup> transparencyGroupStack = new ArrayDeque<>();
 
     // if greater zero the content is hidden and wil not be rendered
     private int nestedHiddenOCGCount;
@@ -233,6 +236,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         paint = p;
         canvas = c;
         xform = new AffineTransform(canvas.getMatrix());
+//        initialClip = graphics.getClip(); TODO: PdfBox-Android
         this.pageSize = pageSize;
 
         setRenderingHints();
@@ -281,6 +285,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         if (clippingPath != lastClip)
         {
 //            canvas.clipPath(clippingPath.getBoundaryPath()); TODO: PdfBox-Android
+            if (initialClip != null)
+            {
+                // apply the remembered initial clip, but transform it first
+                //TODO see PDFBOX-4583
+            }
             lastClip = clippingPath;
         }
     }
@@ -413,6 +422,18 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
 //                textClippings.add(glyph); TODO: PdfBox-Android
             }
+        }
+    }
+
+    @Override
+    protected void showType3Glyph(Matrix textRenderingMatrix, PDType3Font font, int code,
+        String unicode, Vector displacement) throws IOException
+    {
+        PDGraphicsState state = getGraphicsState();
+        RenderingMode renderingMode = state.getTextState().getRenderingMode();
+        if (!RenderingMode.NEITHER.equals(renderingMode))
+        {
+            super.showType3Glyph(textRenderingMatrix, font, code, unicode, displacement);
         }
     }
 
@@ -862,8 +883,12 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
         // prepare transfer functions (either one per color or one for all) 
         // and maps (actually arrays[256] to be faster) to avoid calculating values several times
-        Integer rMap[], gMap[], bMap[];
-        PDFunction rf, gf, bf;
+        Integer rMap[];
+        Integer gMap[];
+        Integer bMap[];
+        PDFunction rf;
+        PDFunction gf;
+        PDFunction bf;
         if (transfer instanceof COSArray)
         {
             COSArray ar = (COSArray) transfer;
@@ -894,7 +919,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 int ri = (rgb >> 16) & 0xFF;
                 int gi = (rgb >> 8) & 0xFF;
                 int bi = rgb & 0xFF;
-                int ro, go, bo;
+                int ro;
+                int go;
+                int bo;
                 if (rMap[ri] != null)
                 {
                     ro = rMap[ri];
@@ -990,168 +1017,26 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             return;
         }
 
-        super.showAnnotation(annotation);
-
-        if (annotation.getAppearance() == null)
+        PDAppearanceDictionary appearance = annotation.getAppearance();
+        if (appearance == null || appearance.getNormalAppearance() == null)
         {
-            if (annotation instanceof PDAnnotationLink)
-            {
-                drawAnnotationLinkBorder((PDAnnotationLink) annotation);
-            }
-
-            if (annotation instanceof PDAnnotationMarkup && annotation.getSubtype().equals(PDAnnotationMarkup.SUB_TYPE_INK))
-            {
-                drawAnnotationInk((PDAnnotationMarkup) annotation);
-            }
+            annotation.constructAppearances(renderer.document);
         }
-    }
 
-    private static class AnnotationBorder
-    {
-        private float[] dashArray = null;
-        private boolean underline = false;
-        private float width = 0;
-        private PDColor color;
-    }
-
-    // return border info. BorderStyle must be provided as parameter because
-    // method is not available in the base class
-    private AnnotationBorder getAnnotationBorder(PDAnnotation annotation,
-        PDBorderStyleDictionary borderStyle)
-    {
-        AnnotationBorder ab = new AnnotationBorder();
-        COSArray border = annotation.getBorder();
-        if (borderStyle == null)
+        if (annotation.isNoRotate() && getCurrentPage().getRotation() != 0)
         {
-            if (border.getObject(2) instanceof COSNumber)
-            {
-                ab.width = ((COSNumber) border.getObject(2)).floatValue();
-            }
-            if (border.size() > 3)
-            {
-                COSBase base3 = border.getObject(3);
-                if (base3 instanceof COSArray)
-                {
-                    ab.dashArray = ((COSArray) base3).toFloatArray();
-                }
-            }
+            PDRectangle rect = annotation.getRectangle();
+            android.graphics.Matrix savedTransform = canvas.getMatrix();
+            // "The upper-left corner of the annotation remains at the same point in
+            //  default user space; the annotation pivots around that point."
+            canvas.rotate(getCurrentPage().getRotation(),
+                rect.getLowerLeftX(), rect.getUpperRightY());
+            super.showAnnotation(annotation);
+            canvas.setMatrix(savedTransform);
         }
         else
         {
-            ab.width = borderStyle.getWidth();
-            if (borderStyle.getStyle().equals(PDBorderStyleDictionary.STYLE_DASHED))
-            {
-                ab.dashArray = borderStyle.getDashStyle().getDashArray();
-            }
-            if (borderStyle.getStyle().equals(PDBorderStyleDictionary.STYLE_UNDERLINE))
-            {
-                ab.underline = true;
-            }
-        }
-        ab.color = annotation.getColor();
-        if (ab.color == null)
-        {
-            // spec is unclear, but black seems to be the right thing to do
-            ab.color = new PDColor(new float[] { 0 }, PDDeviceGray.INSTANCE);
-        }
-        if (ab.dashArray != null)
-        {
-            boolean allZero = true;
-            for (float f : ab.dashArray)
-            {
-                if (f != 0)
-                {
-                    allZero = false;
-                    break;
-                }
-            }
-            if (allZero)
-            {
-                ab.dashArray = null;
-            }
-        }
-        return ab;
-    }
-
-    private void drawAnnotationLinkBorder(PDAnnotationLink link) throws IOException
-    {
-        AnnotationBorder ab = getAnnotationBorder(link, link.getBorderStyle());
-        if (ab.width == 0 || ab.color.getComponents().length == 0)
-        {
-            return;
-        }
-        PDRectangle rectangle = link.getRectangle();
-        Paint strokePaint = new Paint(paint);
-        strokePaint.setColor(getColor(ab.color));
-        setStroke(strokePaint, ab.width, Paint.Cap.BUTT, Paint.Join.MITER, 10, ab.dashArray, 0);
-        canvas.restore();
-        if (ab.underline)
-        {
-            canvas.drawLine(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),
-                rectangle.getLowerLeftX() + rectangle.getWidth(), rectangle.getLowerLeftY(),
-                strokePaint);
-        }
-        else
-        {
-            canvas.drawRect(rectangle.getLowerLeftX(), rectangle.getLowerLeftY(),
-                rectangle.getWidth(), rectangle.getHeight(), strokePaint);
-        }
-    }
-
-    private void drawAnnotationInk(PDAnnotationMarkup inkAnnotation) throws IOException
-    {
-        if (!inkAnnotation.getCOSObject().containsKey(COSName.INKLIST))
-        {
-            return;
-        }
-        //TODO there should be an InkAnnotation class with a getInkList method
-        COSBase base = inkAnnotation.getCOSObject().getDictionaryObject(COSName.INKLIST);
-        if (!(base instanceof COSArray))
-        {
-            return;
-        }
-        // PDF spec does not mention /Border for ink annotations, but it is used if /BS is not available
-        AnnotationBorder ab = getAnnotationBorder(inkAnnotation, inkAnnotation.getBorderStyle());
-        if (ab.width == 0 || ab.color.getComponents().length == 0)
-        {
-            return;
-        }
-        Paint strokePaint = new Paint(paint);
-        strokePaint.setColor(getColor(ab.color));
-        setStroke(strokePaint, ab.width, Paint.Cap.BUTT, Paint.Join.MITER, 10, ab.dashArray, 0);
-        canvas.restore();
-        COSArray pathsArray = (COSArray) base;
-        for (COSBase baseElement : pathsArray.toList())
-        {
-            if (!(baseElement instanceof COSArray))
-            {
-                continue;
-            }
-            COSArray pathArray = (COSArray) baseElement;
-            int nPoints = pathArray.size() / 2;
-
-            // "When drawn, the points shall be connected by straight lines or curves 
-            // in an implementation-dependent way" - we do lines.
-            Path path = new Path();
-            for (int i = 0; i < nPoints; ++i)
-            {
-                COSBase bx = pathArray.getObject(i * 2);
-                COSBase by = pathArray.getObject(i * 2 + 1);
-                if (bx instanceof COSNumber && by instanceof COSNumber)
-                {
-                    float x = ((COSNumber) bx).floatValue();
-                    float y = ((COSNumber) by).floatValue();
-                    if (i == 0)
-                    {
-                        path.moveTo(x, y);
-                    }
-                    else
-                    {
-                        path.lineTo(x, y);
-                    }
-                }
-            }
-            canvas.drawPath(path, strokePaint);
+            super.showAnnotation(annotation);
         }
     }
 
@@ -1201,7 +1086,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         // both the DPI xform and the CTM were already applied to the group, so all we do
         // here is draw it directly onto the Graphics2D device at the appropriate position
 //        PDRectangle bbox = group.getBBox();
-//        AffineTransform prev = graphics.getTransform();
+//        AffineTransform savedTransform = graphics.getTransform();
 
         Matrix m = new Matrix(xform);
         float xScale = Math.abs(m.getScalingFactorX());
@@ -1242,12 +1127,20 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         {
             if (isContentRendered())
             {
-//                graphics.drawImage(image, null, null);
+//                try
+//                {
+//                    graphics.drawImage(image, null, null);
+//                }
+//                catch (InternalError ie)
+//                {
+//                    Log.e("PdfBox-Android", "Exception drawing image, see JDK-6689349, " +
+//                        "try rendering into a BufferedImage instead", ie);
+//                }
             }
 
         }
 
-//        graphics.setTransform(prev);
+//        graphics.setTransform(savedTransform);
     }
 
     /**
@@ -1282,8 +1175,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         private TransparencyGroup(PDTransparencyGroup form, boolean isSoftMask, Matrix ctm,
             PDColor backdropColor) throws IOException
         {
-//            Graphics2D g2dOriginal = graphics;
-//            Area lastClipOriginal = lastClip;
+//            Graphics2D savedGraphics = graphics;
+//            Area savedLastClip = lastClip;
+//            Shape savedInitialClip = initialClip;
 
             // get the CTM x Form Matrix transform
             Matrix transform = Matrix.concatenate(ctm, form.getMatrix());
@@ -1326,7 +1220,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            height = maxY - minY;
 
             // FIXME - color space
-            if (isGray(form.getGroup().getColorSpace()))
+            if (isGray(form.getGroup().getColorSpace(form.getResources())))
             {
 //                image = create2ByteGrayAlphaImage(width, height);
             }
@@ -1382,7 +1276,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            g.translate(0, image.getHeight());
 //            g.scale(1, -1);
 
-            boolean oldFlipTG = flipTG;
+            boolean savedFlipTG = flipTG;
             flipTG = false;
 
             // apply device transform (DPI)
@@ -1424,10 +1318,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             }
             finally
             {
-                flipTG = oldFlipTG;
-//                lastClip = lastClipOriginal;
+                flipTG = savedFlipTG;
+//                lastClip = savedLastClip;
 //                graphics.dispose();
-//                graphics = g2dOriginal;
+//                graphics = savedGraphics;
+//                initialClip = savedInitialClip;
                 clipWindingRule = clipWindingRuleOriginal;
                 linePath = linePathOriginal;
                 pageSize = pageSizeOriginal;
@@ -1592,7 +1487,68 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 return true;
             }
         }
+        else if (propertyList instanceof PDOptionalContentMembershipDictionary)
+        {
+            return isHiddenOCMD((PDOptionalContentMembershipDictionary) propertyList);
+        }
         return false;
+    }
+
+    private boolean isHiddenOCMD(PDOptionalContentMembershipDictionary ocmd)
+    {
+        if (ocmd.getCOSObject().getCOSArray(COSName.VE) != null)
+        {
+            // support seems to be optional, and is approximated by /P and /OCGS
+            Log.i("PdfBox-Android", "/VE entry ignored in Optional Content Membership Dictionary");
+        }
+        List<Boolean> visibles = new ArrayList<Boolean>();
+        for (PDPropertyList prop : ocmd.getOCGs())
+        {
+            visibles.add(!isHiddenOCG(prop));
+        }
+        COSName visibilityPolicy = ocmd.getVisibilityPolicy();
+        if (COSName.ANY_OFF.equals(visibilityPolicy))
+        {
+            for (boolean visible : visibles)
+            {
+                if (!visible)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (COSName.ALL_ON.equals(visibilityPolicy))
+        {
+            for (boolean visible : visibles)
+            {
+                if (!visible)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (COSName.ALL_OFF.equals(visibilityPolicy))
+        {
+            for (boolean visible : visibles)
+            {
+                if (visible)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        // AnyOn is default
+        for (boolean visible : visibles)
+        {
+            if (visible)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static int getJavaVersion()

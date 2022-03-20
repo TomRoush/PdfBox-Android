@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.graphics.form;
 
 import com.tom_roush.pdfbox.cos.COSStream;
@@ -30,7 +31,6 @@ public class PDTransparencyGroup extends PDFormXObject
 {
     /**
      * Creates a Transparency Group for reading.
-     *
      * @param stream The XObject stream
      */
     public PDTransparencyGroup(PDStream stream)
@@ -40,7 +40,6 @@ public class PDTransparencyGroup extends PDFormXObject
 
     /**
      * Creates a Transparency Group for reading.
-     *
      * @param stream The XObject stream
      */
     public PDTransparencyGroup(COSStream stream, ResourceCache cache)
@@ -50,7 +49,6 @@ public class PDTransparencyGroup extends PDFormXObject
 
     /**
      * Creates a Transparency Group for writing, in the given document.
-     *
      * @param document The current document
      */
     public PDTransparencyGroup(PDDocument document)

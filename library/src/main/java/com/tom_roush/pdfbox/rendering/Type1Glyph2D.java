@@ -21,6 +21,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import com.tom_roush.pdfbox.pdmodel.font.PDSimpleFont;
@@ -64,6 +65,17 @@ final class Type1Glyph2D implements Glyph2D
                         cache.put(code, path);
                         return path;
                     }
+
+                    // try unicode name
+                    String unicodes = font.getGlyphList().toUnicode(name);
+                    if (unicodes != null && unicodes.length() == 1)
+                    {
+                        String uniName = getUniNameOfCodePoint(unicodes.codePointAt(0));
+                        if (font.hasGlyph(uniName))
+                        {
+                            name = uniName;
+                        }
+                    }
                 }
 
                 // todo: can this happen? should it be encapsulated?
@@ -90,5 +102,22 @@ final class Type1Glyph2D implements Glyph2D
     public void dispose()
     {
         cache.clear();
+    }
+
+    // copied from UniUtil
+    private static String getUniNameOfCodePoint(int codePoint)
+    {
+        String hex = Integer.toString(codePoint, 16).toUpperCase(Locale.US);
+        switch (hex.length())
+        {
+            case 1:
+                return "uni000" + hex;
+            case 2:
+                return "uni00" + hex;
+            case 3:
+                return "uni0" + hex;
+            default:
+                return "uni" + hex;
+        }
     }
 }

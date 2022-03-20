@@ -20,6 +20,12 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDAppearanceHandler;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDHighlightAppearanceHandler;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDSquigglyAppearanceHandler;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDStrikeoutAppearanceHandler;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDUnderlineAppearanceHandler;
 
 /**
  * This is the abstract class that represents a text markup annotation Introduced in PDF 1.3 specification, except
@@ -29,6 +35,7 @@ import com.tom_roush.pdfbox.cos.COSName;
  */
 public class PDAnnotationTextMarkup extends PDAnnotationMarkup
 {
+    private PDAppearanceHandler customAppearanceHandler;
 
     /**
      * The types of annotation.
@@ -124,4 +131,53 @@ public class PDAnnotationTextMarkup extends PDAnnotationMarkup
         return getCOSObject().getNameAsString(COSName.SUBTYPE);
     }
 
+    /**
+     * Set a custom appearance handler for generating the annotations appearance streams.
+     *
+     * @param appearanceHandler
+     */
+    public void setCustomAppearanceHandler(PDAppearanceHandler appearanceHandler)
+    {
+        customAppearanceHandler = appearanceHandler;
+    }
+
+    @Override
+    public void constructAppearances()
+    {
+        this.constructAppearances(null);
+    }
+
+    @Override
+    public void constructAppearances(PDDocument document)
+    {
+        if (customAppearanceHandler == null)
+        {
+            PDAppearanceHandler appearanceHandler = null;
+            if (SUB_TYPE_HIGHLIGHT.equals(getSubtype()))
+            {
+                appearanceHandler = new PDHighlightAppearanceHandler(this);
+            }
+            else if  (SUB_TYPE_SQUIGGLY.equals(getSubtype()))
+            {
+                appearanceHandler = new PDSquigglyAppearanceHandler(this);
+            }
+            else if  (SUB_TYPE_STRIKEOUT.equals(getSubtype()))
+            {
+                appearanceHandler = new PDStrikeoutAppearanceHandler(this);
+            }
+            else if  (SUB_TYPE_UNDERLINE.equals(getSubtype()))
+            {
+                appearanceHandler = new PDUnderlineAppearanceHandler(this);
+            }
+
+            if (appearanceHandler != null)
+            {
+                appearanceHandler.generateAppearanceStreams();
+            }
+        }
+        else
+        {
+            customAppearanceHandler.generateAppearanceStreams();
+        }
+    }
 }

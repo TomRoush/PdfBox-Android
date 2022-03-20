@@ -190,7 +190,7 @@ public class ScratchFile implements Closeable
      * if no new pages could be added because we reached the maximum of
      * {@link Integer#MAX_VALUE} pages.
      *
-     * <p>If scratch file uage is allowed and scratch file does not exist already
+     * <p>If scratch file usage is allowed and scratch file does not exist already
      * it will be created.</p>
      *
      * <p>Only to be called under synchronization on {@link #freePages}.</p>
@@ -231,16 +231,29 @@ public class ScratchFile implements Closeable
 
                 if (expectedFileLen != fileLen)
                 {
-                    throw new IOException("Expected scratch file size of " + expectedFileLen + " but found " + fileLen);
+                    throw new IOException("Expected scratch file size of " + expectedFileLen +
+                        " but found " + fileLen + " in file " + file);
                 }
 
-                // enlarge if we do not overflow
+                // enlarge if we do not int overflow
                 if (pageCount + ENLARGE_PAGE_COUNT > pageCount)
                 {
+                    Log.d("PdfBox-Android", "file: " + file);
+                    Log.d("PdfBox-Android", "fileLen before: " + fileLen + ", raf length: " + raf.length() + ", file length: " + file.length());
                     fileLen += ENLARGE_PAGE_COUNT * PAGE_SIZE;
 
                     raf.setLength(fileLen);
-
+                    Log.d("PdfBox-Android", "fileLen after1:  " + fileLen + ", raf length: " + raf.length() + ", file length: " + file.length());
+                    if (fileLen != raf.length() || fileLen != file.length())
+                    {
+                        // PDFBOX-4601 possible AWS lambda bug that setLength() doesn't throw
+                        // if not enough space
+                        long origFilePointer = raf.getFilePointer();
+                        raf.seek(fileLen - 1);
+                        raf.write(0);
+                        raf.seek(origFilePointer);
+                        Log.d("PdfBox-Android", "fileLen after2:  " + fileLen + ", raf length: " + raf.length() + ", file length: " + file.length());
+                    }
                     freePages.set(pageCount, pageCount + ENLARGE_PAGE_COUNT);
                 }
             }

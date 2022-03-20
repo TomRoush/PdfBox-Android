@@ -32,6 +32,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -180,8 +181,10 @@ public class COSWriter implements ICOSVisitor, Closeable
     // these are used for indirect references in other objects
     //A hashtable is used on purpose over a hashmap
     //so that null entries will not get added.
+    @SuppressWarnings({"squid:S1149"})
     private final Map<COSBase,COSObjectKey> objectKeys = new Hashtable<COSBase,COSObjectKey>();
-    private final Map<COSObjectKey,COSBase> keyObject = new Hashtable<COSObjectKey,COSBase>();
+
+    private final Map<COSObjectKey,COSBase> keyObject = new HashMap<COSObjectKey,COSBase>();
 
     // the list of x ref entries to be made so far
     private final List<COSWriterXRefEntry> xRefEntries = new ArrayList<COSWriterXRefEntry>();
@@ -426,9 +429,9 @@ public class COSWriter implements ICOSVisitor, Closeable
     protected void doWriteBody(COSDocument doc) throws IOException
     {
         COSDictionary trailer = doc.getTrailer();
-        COSDictionary root = (COSDictionary)trailer.getDictionaryObject( COSName.ROOT );
-        COSDictionary info = (COSDictionary)trailer.getDictionaryObject( COSName.INFO );
-        COSDictionary encrypt = (COSDictionary)trailer.getDictionaryObject( COSName.ENCRYPT );
+        COSDictionary root = trailer.getCOSDictionary(COSName.ROOT);
+        COSDictionary info = trailer.getCOSDictionary(COSName.INFO);
+        COSDictionary encrypt = trailer.getCOSDictionary(COSName.ENCRYPT);
         if( root != null )
         {
             addObjectToWrite( root );
@@ -534,11 +537,11 @@ public class COSWriter implements ICOSVisitor, Closeable
         String headerString;
         if (fdfDocument != null)
         {
-            headerString = "%FDF-"+ Float.toString(fdfDocument.getDocument().getVersion());
+            headerString = "%FDF-"+ Float.toString(doc.getVersion());
         }
         else
         {
-            headerString = "%PDF-"+ Float.toString(pdDocument.getDocument().getVersion());
+            headerString = "%PDF-"+ Float.toString(doc.getVersion());
         }
         getStandardOutput().write( headerString.getBytes(Charsets.ISO_8859_1) );
 
@@ -578,7 +581,11 @@ public class COSWriter implements ICOSVisitor, Closeable
         // Remove a checksum if present
         trailer.removeItem( COSName.DOC_CHECKSUM );
 
-        ((COSArray) trailer.getItem(COSName.ID)).setDirect(true);
+        COSArray idArray = trailer.getCOSArray(COSName.ID);
+        if (idArray != null)
+        {
+            idArray.setDirect(true);
+        }
 
         trailer.accept(this);
     }
@@ -885,14 +892,12 @@ public class COSWriter implements ICOSVisitor, Closeable
         {
             actual = ((COSObject)obj).getObject();
         }
-        COSObjectKey key = null;
-        if( actual != null )
+        // PDFBOX-4540: because objectKeys is accessible from outside, it is possible
+        // that a COSObject obj is already in the objectKeys map.
+        COSObjectKey key = objectKeys.get(obj);
+        if( key == null && actual != null )
         {
             key = objectKeys.get(actual);
-        }
-        if( key == null )
-        {
-            key = objectKeys.get(obj);
         }
         if (key == null)
         {
@@ -1357,7 +1362,7 @@ public class COSWriter implements ICOSVisitor, Closeable
             // we don't have path or size, so do the best we can
             md5.update( Long.toString(idTime).getBytes(Charsets.ISO_8859_1) );
 
-            COSDictionary info = (COSDictionary)trailer.getDictionaryObject( COSName.INFO );
+            COSDictionary info = trailer.getCOSDictionary(COSName.INFO);
             if( info != null )
             {
                 for (COSBase cosBase : info.getValues())

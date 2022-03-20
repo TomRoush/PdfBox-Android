@@ -226,6 +226,13 @@ public class PDFRenderer
         int widthPx = (int) Math.max(Math.floor(widthPt * scale), 1);
         int heightPx = (int) Math.max(Math.floor(heightPt * scale), 1);
 
+        // PDFBOX-4518 the maximum size (w*h) of a buffered image is limited to Integer.MAX_VALUE
+        if ((long) widthPx * (long) heightPx > Integer.MAX_VALUE)
+        {
+            throw new IOException("Maximum size of image exceeded (w * h * scale) = "//
+                + widthPt + " * " + heightPt + " * " + scale + " > " + Integer.MAX_VALUE);
+        }
+
         int rotationAngle = page.getRotation();
 
         Bitmap.Config bimType = imageType.toBitmapConfig();
@@ -291,7 +298,11 @@ public class PDFRenderer
     }
 
     /**
-     * Renders a given page to a Canvas instance.
+     * Renders a given page to a Canvas instance at 72 DPI.
+     * <p>
+     * Read {@link #renderPageToGraphics(int, Paint, Canvas, float, float, com.tom_roush.pdfbox.rendering.RenderDestination) renderPageToGraphics(int, Graphics2D, float, float, RenderDestination)}
+     * before using this.
+     *
      * @param pageIndex the zero-based index of the page to be converted
      * @param paint the Paint that will be used to draw the page
      * @param canvas the Canvas on which to draw the page
@@ -304,10 +315,14 @@ public class PDFRenderer
 
     /**
      * Renders a given page to a Canvas instance.
+     * <p>
+     * Read {@link #renderPageToGraphics(int, Paint, Canvas, float, float, com.tom_roush.pdfbox.rendering.RenderDestination) renderPageToGraphics(int, Graphics2D, float, float, RenderDestination)}
+     * before using this.
+     *
      * @param pageIndex the zero-based index of the page to be converted
      * @param paint the Paint that will be used to draw the page
      * @param canvas the Canvas on which to draw the page
-     * @param scale the scale to draw the page at
+     * @param scale the scaling factor, where 1 = 72 DPI
      * @throws IOException if the PDF cannot be read
      */
     public void renderPageToGraphics(int pageIndex, Paint paint, Canvas canvas, float scale)
@@ -318,12 +333,15 @@ public class PDFRenderer
 
     /**
      * Renders a given page to a Canvas instance.
+     * <p>
+     * Read {@link #renderPageToGraphics(int, Paint, Canvas, float, float, com.tom_roush.pdfbox.rendering.RenderDestination) renderPageToGraphics(int, Graphics2D, float, float, RenderDestination)}
+     * before using this.
      *
      * @param pageIndex the zero-based index of the page to be converted
      * @param paint the Paint that will be used to draw the page
      * @param canvas the Canvas on which to draw the page
-     * @param scaleX the scale to draw the page at for the x-axis
-     * @param scaleY the scale to draw the page at for the y-axis
+     * @param scaleX the scale to draw the page at for the x-axis, where 1 = 72 DPI
+     * @param scaleY the scale to draw the page at for the y-axis, where 1 = 72 DPI
      * @throws IOException if the PDF cannot be read
      */
     public void renderPageToGraphics(int pageIndex, Paint paint, Canvas canvas, float scaleX, float scaleY)
@@ -339,8 +357,8 @@ public class PDFRenderer
      * @param pageIndex the zero-based index of the page to be converted
      * @param paint the Paint that will be used to draw the page
      * @param canvas the Canvas on which to draw the page
-     * @param scaleX the scale to draw the page at for the x-axis
-     * @param scaleY the scale to draw the page at for the y-axis
+     * @param scaleX the scale to draw the page at for the x-axis, where 1 = 72 DPI
+     * @param scaleY the scale to draw the page at for the y-axis, where 1 = 72 DPI
      * @param destination controlling visibility of optional content groups
      * @throws IOException if the PDF cannot be read
      */

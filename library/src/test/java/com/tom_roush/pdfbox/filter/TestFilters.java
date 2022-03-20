@@ -18,6 +18,7 @@ package com.tom_roush.pdfbox.filter;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
@@ -25,13 +26,17 @@ import java.util.Random;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.IOUtils;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * This will test all of the filters in the PDFBox system.
  */
-public class TestFilters extends TestCase
+public class TestFilters
 {
     /**
      * This will test all of the filters in the system. There will be COUNT
@@ -40,6 +45,7 @@ public class TestFilters extends TestCase
      *
      * @throws IOException If there is an exception while encoding.
      */
+    @Test
     public void testFilters() throws IOException
     {
         final int COUNT = 10;
@@ -115,6 +121,20 @@ public class TestFilters extends TestCase
         }
     }
 
+    /**
+     * This will test the use of identity filter to decode stream and string.
+     * This test threw an IOException before the correction.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testPDFBOX4517() throws IOException
+    {
+        File inputPdf = new File("target/pdfs/PDFBOX-4517-cryptfilter.pdf");
+        assumeTrue(inputPdf.exists());
+        PDDocument.load(inputPdf,
+            "userpassword1234");
+    }
 
     /**
      * This will test the LZW filter with the sequence that failed in PDFBOX-1777.
@@ -123,6 +143,7 @@ public class TestFilters extends TestCase
      *
      * @throws IOException
      */
+    @Test
     public void testPDFBOX1777() throws IOException
     {
         Filter lzwFilter = FilterFactory.INSTANCE.getFilter(COSName.LZW_DECODE);

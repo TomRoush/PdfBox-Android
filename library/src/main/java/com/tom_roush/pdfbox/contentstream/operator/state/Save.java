@@ -16,11 +16,12 @@
  */
 package com.tom_roush.pdfbox.contentstream.operator.state;
 
-import com.tom_roush.pdfbox.contentstream.operator.Operator;
-import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
-import com.tom_roush.pdfbox.cos.COSBase;
-
 import java.util.List;
+
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
+import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 
 /**
  * q: Save the graphics state.
@@ -38,6 +39,6 @@ public class Save extends OperatorProcessor
     @Override
     public String getName()
     {
-        return "q";
+        return OperatorName.SAVE;
     }
 }

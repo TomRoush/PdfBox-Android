@@ -38,7 +38,7 @@ public class FDFAnnotationLine extends FDFAnnotation
     /**
      * COS Model value for SubType entry.
      */
-    public static final String SUBTYPE ="Line";
+    public static final String SUBTYPE = "Line";
 
     /**
      * Default constructor.
@@ -46,7 +46,7 @@ public class FDFAnnotationLine extends FDFAnnotation
     public FDFAnnotationLine()
     {
         super();
-        annot.setName( COSName.SUBTYPE, SUBTYPE );
+        annot.setName(COSName.SUBTYPE, SUBTYPE);
     }
 
     /**
@@ -54,9 +54,9 @@ public class FDFAnnotationLine extends FDFAnnotation
      *
      * @param a An existing FDF Annotation.
      */
-    public FDFAnnotationLine( COSDictionary a )
+    public FDFAnnotationLine(COSDictionary a)
     {
-        super( a );
+        super(a);
     }
 
     /**
@@ -66,7 +66,7 @@ public class FDFAnnotationLine extends FDFAnnotation
      *
      * @throws IOException If there is an error extracting information from the element.
      */
-    public FDFAnnotationLine( Element element ) throws IOException
+    public FDFAnnotationLine(Element element) throws IOException
     {
         super(element);
         annot.setName(COSName.SUBTYPE, SUBTYPE);
@@ -417,7 +417,7 @@ public class FDFAnnotationLine extends FDFAnnotation
         if (array == null)
         {
             array = new COSArray();
-            array.setFloatArray(new float[]{offset, 0.f});
+            array.setFloatArray(new float[] { offset, 0.f });
             annot.setItem(COSName.CO, array);
         }
         else
@@ -454,7 +454,7 @@ public class FDFAnnotationLine extends FDFAnnotation
         if (array == null)
         {
             array = new COSArray();
-            array.setFloatArray(new float[]{0.f, offset});
+            array.setFloatArray(new float[] { 0.f, offset });
             annot.setItem(COSName.CO, array);
         }
         else

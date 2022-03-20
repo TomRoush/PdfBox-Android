@@ -28,6 +28,7 @@ import java.util.Map;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.ScratchFile;
 import com.tom_roush.pdfbox.pdfparser.PDFObjectStreamParser;
+import com.tom_roush.pdfbox.pdmodel.PDDocument;
 
 /**
  * This is the in-memory representation of the PDF document.  You need to call
@@ -308,22 +309,22 @@ public class COSDocument extends COSBase implements Closeable
     public boolean isEncrypted()
     {
         boolean encrypted = false;
-        if( trailer != null )
+        if (trailer != null)
         {
-            encrypted = trailer.getDictionaryObject( COSName.ENCRYPT ) != null;
+            encrypted = trailer.getDictionaryObject(COSName.ENCRYPT) instanceof COSDictionary;
         }
         return encrypted;
     }
 
     /**
-     * This will get the encryption dictionary if the document is encrypted or null
-     * if the document is not encrypted.
+     * This will get the encryption dictionary if the document is encrypted or null if the document
+     * is not encrypted.
      *
      * @return The encryption dictionary.
      */
     public COSDictionary getEncryptionDictionary()
     {
-        return (COSDictionary)trailer.getDictionaryObject( COSName.ENCRYPT );
+        return trailer.getCOSDictionary(COSName.ENCRYPT);
     }
 
     /**
@@ -344,7 +345,7 @@ public class COSDocument extends COSBase implements Closeable
      */
     public COSArray getDocumentID()
     {
-        return (COSArray) getTrailer().getDictionaryObject(COSName.ID);
+        return getTrailer().getCOSArray(COSName.ID);
     }
 
     /**
@@ -363,6 +364,8 @@ public class COSDocument extends COSBase implements Closeable
      * @return The catalog is the root of the document; never null.
      *
      * @throws IOException If no catalog can be found.
+     *
+     * @deprecated use {@link PDDocument#getDocumentCatalog()} instead.
      */
     public COSObject getCatalog() throws IOException
     {

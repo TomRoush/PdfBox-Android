@@ -35,7 +35,6 @@ import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 import com.tom_roush.pdfbox.pdmodel.font.encoding.Encoding;
@@ -81,7 +80,7 @@ public class PDType1CFont extends PDSimpleFont
             PDStream ff3Stream = fd.getFontFile3();
             if (ff3Stream != null)
             {
-                bytes = IOUtils.toByteArray(ff3Stream.createInputStream());
+                bytes = ff3Stream.toByteArray();
                 if (bytes.length == 0)
                 {
                     Log.e("PdfBox-Android", "Invalid data for embedded Type1C font " + getName());
@@ -98,7 +97,7 @@ public class PDType1CFont extends PDSimpleFont
             {
                 // note: this could be an OpenType file, fortunately CFFParser can handle that
                 CFFParser cffParser = new CFFParser();
-                cffEmbedded = (CFFType1Font)cffParser.parse(bytes, new ByteSource()).get(0);
+                cffEmbedded = (CFFType1Font)cffParser.parse(bytes, new FF3ByteSource()).get(0);
             }
         }
         catch (IOException e)
@@ -131,13 +130,12 @@ public class PDType1CFont extends PDSimpleFont
         fontMatrixTransform.scale(1000, 1000);
     }
 
-    private class ByteSource implements CFFParser.ByteSource
+    private class FF3ByteSource implements CFFParser.ByteSource
     {
         @Override
         public byte[] getBytes() throws IOException
         {
-            PDStream ff3Stream = getFontDescriptor().getFontFile3();
-            return IOUtils.toByteArray(ff3Stream.createInputStream());
+            return getFontDescriptor().getFontFile3().toByteArray();
         }
     }
 
@@ -281,6 +279,7 @@ public class PDType1CFont extends PDSimpleFont
     public float getWidthFromFont(int code) throws IOException
     {
         String name = codeToName(code);
+        name = getNameInFont(name);
         float width = genericFont.getWidth(name);
 
         PointF p = new PointF(width, 0);
@@ -298,11 +297,15 @@ public class PDType1CFont extends PDSimpleFont
     public float getHeight(int code) throws IOException
     {
         String name = codeToName(code);
-        float height = 0;
+        float height;
         if (!glyphHeights.containsKey(name))
         {
             height = (float)cffFont.getType1CharString(name).getBounds().height(); // todo: cffFont could be null
             glyphHeights.put(name, height);
+        }
+        else
+        {
+            height = glyphHeights.get(name);
         }
         return height;
     }

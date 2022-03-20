@@ -269,17 +269,26 @@ public final class Hex
     public static byte[] decodeHex(String s) throws IOException
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        for (int i = 0; i < s.length() - 1; i += 2)
+        int i = 0;
+        while (i < s.length() - 1)
         {
-            String hexByte = s.substring(i, i + 2);
-            try
+            if (s.charAt(i) == '\n' || s.charAt(i) == '\r')
             {
-                baos.write(Integer.parseInt(hexByte, 16)); // Byte.parseByte won't work with "9C"
+                ++i;
             }
-            catch (NumberFormatException ex)
+            else
             {
-                Log.e("PdfBox-Android", "Can't parse " + hexByte + ", aborting decode", ex);
-                break;
+                String hexByte = s.substring(i, i + 2);
+                try
+                {
+                    baos.write(Integer.parseInt(hexByte, 16)); // Byte.parseByte won't work with "9C"
+                }
+                catch (NumberFormatException ex)
+                {
+                    Log.e("PdfBox-Android", "Can't parse " + hexByte + ", aborting decode", ex);
+                    break;
+                }
+                i += 2;
             }
         }
         return baos.toByteArray();
