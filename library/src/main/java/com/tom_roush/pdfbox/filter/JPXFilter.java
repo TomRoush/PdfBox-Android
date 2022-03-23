@@ -24,6 +24,7 @@ import java.io.OutputStream;
  */
 public final class JPXFilter extends Filter {
 
+    private static final int CACHE_SIZE = 1024;
     /**
      * {@inheritDoc}
      */
@@ -37,12 +38,23 @@ public final class JPXFilter extends Filter {
         int arrLen = image.getWidth() * image.getHeight();
         int[] pixels = new int[arrLen];
         image.getPixels(pixels, 0, image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
+
+        // here we use a buffer to write batch to `decoded`, which makes it 10x faster than write byte one by one
+        byte[] buffer = new byte[CACHE_SIZE * 3];
+        int pos = 0;
+
         for (int i = 0; i < arrLen; i++) {
+            if (pos + 3 >= buffer.length) {
+                decoded.write(buffer, 0, pos);
+                pos = 0;
+            }
             int color = pixels[i];
-            decoded.write(Color.red(color));
-            decoded.write(Color.green(color));
-            decoded.write(Color.blue(color));
+            buffer[pos] = (byte)Color.red(color);
+            buffer[pos + 1] = (byte)Color.green(color);
+            buffer[pos + 2] = (byte)Color.blue(color);
+            pos += 3;
         }
+        decoded.write(buffer, 0, pos);
         return result;
     }
 
