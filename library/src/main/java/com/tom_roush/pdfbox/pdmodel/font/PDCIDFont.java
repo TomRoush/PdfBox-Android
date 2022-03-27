@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -30,7 +29,6 @@ import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
-import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
 
 /**
@@ -61,7 +59,7 @@ public abstract class PDCIDFont implements COSObjectable, PDFontLike, PDVectorFo
      *
      * @param fontDictionary The font dictionary according to the PDF specification.
      */
-    PDCIDFont(COSDictionary fontDictionary, PDType0Font parent) throws IOException
+    PDCIDFont(COSDictionary fontDictionary, PDType0Font parent)
     {
         this.dict = fontDictionary;
         this.parent = parent;
@@ -200,9 +198,6 @@ public abstract class PDCIDFont implements COSObjectable, PDFontLike, PDVectorFo
         return fontDescriptor;
     }
 
-    @Override
-    public abstract Matrix getFontMatrix();
-
     /**
      * Returns the Type 0 font which is the parent of this font.
      *
@@ -212,9 +207,6 @@ public abstract class PDCIDFont implements COSObjectable, PDFontLike, PDVectorFo
     {
         return parent;
     }
-
-    @Override
-    public abstract BoundingBox getBoundingBox() throws IOException;
 
     /**
      * This will get the default width. The default value for the default width is 1000.
@@ -294,9 +286,6 @@ public abstract class PDCIDFont implements COSObjectable, PDFontLike, PDVectorFo
     }
 
     @Override
-    public abstract float getHeight(int code) throws IOException;
-
-    @Override
     public float getWidth(int code) throws IOException
     {
         // these widths are supposed to be consistent with the actual widths given in the CIDFont
@@ -304,12 +293,6 @@ public abstract class PDCIDFont implements COSObjectable, PDFontLike, PDVectorFo
         // font widths with the widths given in the font dictionary
         return getWidthForCID(codeToCID(code));
     }
-
-    @Override
-    public abstract float getWidthFromFont(int code) throws IOException;
-
-    @Override
-    public abstract boolean isEmbedded();
 
     @Override
     // todo: this method is highly suspicious, the average glyph width is not usually a good metric

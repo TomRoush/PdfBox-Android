@@ -24,9 +24,11 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author Andrea Vacondio
+ *
  */
 public class PDOutlineItemIteratorTest
 {
+
     @Test
     public void singleItem()
     {

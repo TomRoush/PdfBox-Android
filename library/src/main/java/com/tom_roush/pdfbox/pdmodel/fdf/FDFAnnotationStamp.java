@@ -29,9 +29,8 @@ import javax.xml.xpath.XPathFactory;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBoolean;
 import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.cos.COSFloat;
-import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.util.Hex;
@@ -294,21 +293,15 @@ public class FDFAnnotationStamp extends FDFAnnotation
         NodeList nodeList = arrayEl.getChildNodes();
         String parentAttrKey = arrayEl.getAttribute("KEY");
 
-        if ("BBox".equals(parentAttrKey))
+        if ("BBox".equals(parentAttrKey) && nodeList.getLength() < 4)
         {
-            if (nodeList.getLength() < 4)
-            {
-                throw new IOException("BBox does not have enough coordinates, only has: " +
-                    nodeList.getLength());
-            }
+            throw new IOException("BBox does not have enough coordinates, only has: " +
+                nodeList.getLength());
         }
-        else if ("Matrix".equals(parentAttrKey))
+        else if ("Matrix".equals(parentAttrKey) && nodeList.getLength() < 6)
         {
-            if (nodeList.getLength() < 6)
-            {
-                throw new IOException("Matrix does not have enough coordinates, only has: " +
-                    nodeList.getLength());
-            }
+            throw new IOException("Matrix does not have enough coordinates, only has: " +
+                nodeList.getLength());
         }
 
         for (int i = 0; i < nodeList.getLength(); i++)
@@ -321,39 +314,34 @@ public class FDFAnnotationStamp extends FDFAnnotation
                 String childAttrVal = child.getAttribute("VAL");
                 Log.d("PdfBox-Android", parentAttrKey + " => reading child: " + child.getTagName() +
                     " with key: " + childAttrKey);
-                if ("INT".equalsIgnoreCase(child.getTagName()))
+                if ("INT".equalsIgnoreCase(child.getTagName()) || "FIXED".equalsIgnoreCase(child.getTagName()))
                 {
-                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
-                    array.add(COSFloat.get(childAttrVal));
-                }
-                else if ("FIXED".equalsIgnoreCase(child.getTagName()))
-                {
-                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
-                    array.add(COSInteger.get(childAttrVal));
+                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + childAttrVal);
+                    array.add(COSNumber.get(childAttrVal));
                 }
                 else if ("NAME".equalsIgnoreCase(child.getTagName()))
                 {
-                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + childAttrVal);
                     array.add(COSName.getPDFName(childAttrVal));
                 }
                 else if ("BOOL".equalsIgnoreCase(child.getTagName()))
                 {
-                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + childAttrVal);
                     array.add(COSBoolean.getBoolean(Boolean.parseBoolean(childAttrVal)));
                 }
                 else if ("DICT".equalsIgnoreCase(child.getTagName()))
                 {
-                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + childAttrVal);
                     array.add(parseDictElement(child));
                 }
                 else if ("STREAM".equalsIgnoreCase(child.getTagName()))
                 {
-                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + childAttrVal);
                     array.add(parseStreamElement(child));
                 }
                 else if ("ARRAY".equalsIgnoreCase(child.getTagName()))
                 {
-                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + child.getAttribute("VAL"));
+                    Log.d("PdfBox-Android", parentAttrKey + " value(" + i + "): " + childAttrVal);
                     array.add(parseArrayElement(child));
                 }
                 else

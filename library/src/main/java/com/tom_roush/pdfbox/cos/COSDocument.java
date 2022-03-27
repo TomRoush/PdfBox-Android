@@ -457,7 +457,7 @@ public class COSDocument extends COSBase implements Closeable
             // - first Exception is kept
             // - all COSStreams are closed
             // - ScratchFile is closed
-            // - there's a way to see which errors occured
+            // - there's a way to see which errors occurred
 
             IOException firstException = null;
 
@@ -491,7 +491,7 @@ public class COSDocument extends COSBase implements Closeable
     /**
      * Returns true if this document has been closed.
      *
-     * @return true if the documnet has been closed.
+     * @return true if the document has been closed.
      */
     public boolean isClosed()
     {

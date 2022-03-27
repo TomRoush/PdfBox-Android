@@ -16,6 +16,8 @@
  */
 package com.tom_roush.pdfbox.contentstream.operator;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -55,14 +57,30 @@ public class DrawObject extends OperatorProcessor
 
         PDXObject xobject = context.getResources().getXObject(name);
 
-        if (xobject instanceof PDTransparencyGroup)
+        if (xobject instanceof PDFormXObject)
         {
-            context.showTransparencyGroup((PDTransparencyGroup) xobject);
-        }
-        else if (xobject instanceof PDFormXObject)
-        {
-            PDFormXObject form = (PDFormXObject) xobject;
-            context.showForm(form);
+            try
+            {
+                context.increaseLevel();
+                if (context.getLevel() > 25)
+                {
+                    Log.e("PdfBox-Android", "recursion is too deep, skipping form XObject");
+                    return;
+                }
+                PDFormXObject form = (PDFormXObject) xobject;
+                if (form instanceof PDTransparencyGroup)
+                {
+                    context.showTransparencyGroup((PDTransparencyGroup) form);
+                }
+                else
+                {
+                    context.showForm(form);
+                }
+            }
+            finally
+            {
+                context.decreaseLevel();
+            }
         }
     }
 

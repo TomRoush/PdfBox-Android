@@ -22,6 +22,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * This class represents a measure dictionary.
+ *
  */
 public class PDMeasureDictionary implements COSObjectable
 {
@@ -43,7 +44,7 @@ public class PDMeasureDictionary implements COSObjectable
 
     /**
      * Constructor.
-     * 
+     *
      * @param dictionary the corresponding dictionary
      */
     public PDMeasureDictionary(COSDictionary dictionary)
@@ -53,7 +54,7 @@ public class PDMeasureDictionary implements COSObjectable
 
     /**
      * This will return the corresponding dictionary.
-     * 
+     *
      * @return the measure dictionary
      */
     @Override
@@ -65,7 +66,7 @@ public class PDMeasureDictionary implements COSObjectable
     /**
      * This will return the type of the measure dictionary.
      * It must be "Measure"
-     * 
+     *
      * @return the type
      */
     public String getType()
@@ -81,7 +82,7 @@ public class PDMeasureDictionary implements COSObjectable
     public String getSubtype()
     {
         return this.getCOSObject().getNameAsString(COSName.SUBTYPE,
-                PDRectlinearMeasureDictionary.SUBTYPE);
+            PDRectlinearMeasureDictionary.SUBTYPE);
     }
 
     /**

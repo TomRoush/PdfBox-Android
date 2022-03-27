@@ -416,7 +416,7 @@ public class CFFParser
         CFFDataInput topDictInput = new CFFDataInput(topDictIndex);
         DictData topDict = readDictData(topDictInput);
 
-        // we dont't support synthetic fonts
+        // we don't support synthetic fonts
         DictData.Entry syntheticBaseEntry = topDict.getEntry("SyntheticBase");
         if (syntheticBaseEntry != null)
         {
@@ -735,7 +735,7 @@ public class CFFParser
         }
     }
 
-    private String readString(int index) throws IOException
+    private String readString(int index)
     {
         if (index >= 0 && index <= 390)
         {
@@ -752,7 +752,7 @@ public class CFFParser
         }
     }
 
-    private String getString(DictData dict, String name) throws IOException
+    private String getString(DictData dict, String name)
     {
         DictData.Entry entry = dict.getEntry(name);
         return entry != null ? readString(entry.getNumber(0).intValue()) : null;

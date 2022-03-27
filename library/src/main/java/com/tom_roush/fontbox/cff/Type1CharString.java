@@ -17,7 +17,6 @@
 package com.tom_roush.fontbox.cff;
 
 import android.graphics.Path;
-import android.graphics.PathMeasure;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.util.Log;

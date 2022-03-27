@@ -22,6 +22,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * This class represents a rectlinear measure dictionary.
+ *
  */
 public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 {
@@ -41,7 +42,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * Constructor.
-     * 
+     *
      * @param dictionary the corresponding dictionary
      */
     public PDRectlinearMeasureDictionary(COSDictionary dictionary)
@@ -51,7 +52,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will return the scale ration.
-     * 
+     *
      * @return the scale ratio.
      */
     public String getScaleRatio()
@@ -61,7 +62,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will set the scale ration.
-     * 
+     *
      * @param scaleRatio the scale ratio.
      */
     public void setScaleRatio(String scaleRatio)
@@ -71,7 +72,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will return the changes along the x-axis.
-     * 
+     *
      * @return changes along the x-axis
      */
     public PDNumberFormatDictionary[] getChangeXs()
@@ -93,7 +94,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will set the changes along the x-axis.
-     * 
+     *
      * @param changeXs changes along the x-axis
      */
     public void setChangeXs(PDNumberFormatDictionary[] changeXs)
@@ -108,7 +109,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will return the changes along the y-axis.
-     * 
+     *
      * @return changes along the y-axis
      */
     public PDNumberFormatDictionary[] getChangeYs()
@@ -130,7 +131,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will set the changes along the y-axis.
-     * 
+     *
      * @param changeYs changes along the y-axis
      */
     public void setChangeYs(PDNumberFormatDictionary[] changeYs)
@@ -145,7 +146,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will return the distances.
-     * 
+     *
      * @return distances
      */
     public PDNumberFormatDictionary[] getDistances()
@@ -167,7 +168,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will set the distances.
-     * 
+     *
      * @param distances distances
      */
     public void setDistances(PDNumberFormatDictionary[] distances)
@@ -182,7 +183,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will return the areas.
-     * 
+     *
      * @return areas
      */
     public PDNumberFormatDictionary[] getAreas()
@@ -204,7 +205,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will set the areas.
-     * 
+     *
      * @param areas areas
      */
     public void setAreas(PDNumberFormatDictionary[] areas)
@@ -219,7 +220,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will return the angles.
-     * 
+     *
      * @return angles
      */
     public PDNumberFormatDictionary[] getAngles()
@@ -241,7 +242,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will set the angles.
-     * 
+     *
      * @param angles angles
      */
     public void setAngles(PDNumberFormatDictionary[] angles)
@@ -256,7 +257,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will return the sloaps of a line.
-     * 
+     *
      * @return the sloaps of a line
      */
     public PDNumberFormatDictionary[] getLineSloaps()
@@ -278,7 +279,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will set the sloaps of a line.
-     * 
+     *
      * @param lineSloaps the sloaps of a line
      */
     public void setLineSloaps(PDNumberFormatDictionary[] lineSloaps)
@@ -293,7 +294,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will return the origin of the coordinate system.
-     * 
+     *
      * @return the origin
      */
     public float[] getCoordSystemOrigin()
@@ -308,7 +309,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will set the origin of the coordinate system.
-     * 
+     *
      * @param coordSystemOrigin the origin
      */
     public void setCoordSystemOrigin(float[] coordSystemOrigin)
@@ -320,7 +321,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will return the CYX factor.
-     * 
+     *
      * @return CYX factor
      */
     public float getCYX()
@@ -330,7 +331,7 @@ public class PDRectlinearMeasureDictionary extends PDMeasureDictionary
 
     /**
      * This will set the CYX factor.
-     * 
+     *
      * @param cyx CYX factor
      */
     public void setCYX(float cyx)

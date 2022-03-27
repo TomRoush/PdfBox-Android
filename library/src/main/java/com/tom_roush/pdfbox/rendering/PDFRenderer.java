@@ -366,7 +366,7 @@ public class PDFRenderer
         throws IOException
     {
         PDPage page = document.getPage(pageIndex);
-        // TODO need width/wight calculations? should these be in PageDrawer?
+        // TODO need width/height calculations? should these be in PageDrawer?
 
         transform(canvas, page, scaleX, scaleY);
 

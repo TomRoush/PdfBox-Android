@@ -17,11 +17,10 @@
 
 package com.tom_roush.pdfbox.pdmodel.common;
 
+import java.io.IOException;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
-
-import java.io.IOException;
 
 /**
  * todo: JavaDoc
@@ -51,11 +50,11 @@ public class PDIntegerNameTreeNode extends PDNameTreeNode<COSInteger>
     @Override
     protected COSInteger convertCOSToPD(COSBase base) throws IOException
     {
-        return (COSInteger) base;
+        return (COSInteger)base;
     }
 
     @Override
-    protected PDIntegerNameTreeNode createChildNode(COSDictionary dic)
+    protected PDIntegerNameTreeNode createChildNode( COSDictionary dic )
     {
         return new PDIntegerNameTreeNode(dic);
     }

@@ -26,7 +26,7 @@ import java.util.Map;
 import com.tom_roush.pdfbox.pdmodel.font.PDCIDFontType0;
 
 /**
- * GeneralPath conversion for CFF CIDFont.
+ * Path conversion for CFF CIDFont.
  *
  * @author John Hewson
  */
@@ -46,6 +46,7 @@ final class CIDType0Glyph2D implements Glyph2D
         this.font = font;
         fontName = font.getBaseFont();
     }
+
     @Override
     public Path getPathForCharacterCode(int code)
     {
@@ -58,22 +59,23 @@ final class CIDType0Glyph2D implements Glyph2D
                 {
                     int cid = font.getParent().codeToCID(code);
                     String cidHex = String.format("%04x", cid);
-                    Log.w("PdfBox-Android",
-                        "No glyph for " + code + " (CID " + cidHex + ") in font " + fontName);
+                    Log.w("PdfBox-Android", "No glyph for " + code + " (CID " + cidHex + ") in font " + fontName);
                 }
+
                 path = font.getPath(code);
-//                cache.put(code, path); TODO: PdfBox-Android
+                cache.put(code, path);
                 return path;
             }
             catch (IOException e)
             {
-                // TODO: escalate this error?
-                Log.w("PdfBox-Android", "Glyph rendering failed", e);
-                return new Path();
+                // todo: escalate this error?
+                Log.e("PdfBox-Android", "Glyph rendering failed", e);
+                path = new Path();
             }
         }
         return path;
     }
+
     @Override
     public void dispose()
     {

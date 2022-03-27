@@ -22,6 +22,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 
 /**
  * This class represents a number format dictionary.
+ *
  */
 public class PDNumberFormatDictionary implements COSObjectable
 {
@@ -70,7 +71,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * Constructor.
-     * 
+     *
      * @param dictionary the corresponding dictionary
      */
     public PDNumberFormatDictionary(COSDictionary dictionary)
@@ -80,7 +81,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will return the dictionary.
-     * 
+     *
      * @return the number format dictionary
      */
     @Override
@@ -92,7 +93,7 @@ public class PDNumberFormatDictionary implements COSObjectable
     /**
      * This will return the type of the number format dictionary.
      * It must be "NumberFormat"
-     * 
+     *
      * @return the type
      */
     public String getType()
@@ -102,7 +103,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will return the label for the units.
-     * 
+     *
      * @return the label for the units
      */
     public String getUnits()
@@ -112,7 +113,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will set the label for the units.
-     * 
+     *
      * @param units the label for the units
      */
     public void setUnits(String units)
@@ -122,7 +123,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will return the conversion factor.
-     * 
+     *
      * @return the conversion factor
      */
     public float getConversionFactor()
@@ -132,7 +133,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will set the conversion factor.
-     * 
+     *
      * @param conversionFactor the conversion factor
      */
     public void setConversionFactor(float conversionFactor)
@@ -140,9 +141,9 @@ public class PDNumberFormatDictionary implements COSObjectable
         this.getCOSObject().setFloat("C", conversionFactor);
     }
 
-    /** 
+    /**
      * This will return the value for the manner to display a fractional value.
-     *  
+     *
      * @return the manner to display a fractional value
      */
     public String getFractionalDisplay()
@@ -150,7 +151,7 @@ public class PDNumberFormatDictionary implements COSObjectable
         return this.getCOSObject().getString("F", FRACTIONAL_DISPLAY_DECIMAL);
     }
 
-    /** 
+    /**
      * This will set the value for the manner to display a fractional value.
      * Allowed values are "D", "F", "R" and "T"
      * @param fractionalDisplay the manner to display a fractional value
@@ -173,7 +174,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will return the precision or denominator of a fractional amount.
-     * 
+     *
      * @return the precision or denominator
      */
     public int getDenominator()
@@ -183,7 +184,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will set the precision or denominator of a fractional amount.
-     * 
+     *
      * @param denominator the precision or denominator
      */
     public void setDenominator(int denominator)
@@ -193,7 +194,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will return the value indication if the denominator of the fractional value is reduced/truncated .
-     * 
+     *
      * @return fd
      */
     public boolean isFD()
@@ -213,7 +214,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will return the text to be used between orders of thousands in display of numerical values.
-     * 
+     *
      * @return thousands separator
      */
     public String getThousandsSeparator()
@@ -223,7 +224,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will set the text to be used between orders of thousands in display of numerical values.
-     * 
+     *
      * @param thousandsSeparator thousands separator
      */
     public void setThousandsSeparator(String thousandsSeparator)
@@ -233,7 +234,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will return the text to be used as the decimal point in displaying numerical values.
-     * 
+     *
      * @return decimal separator
      */
     public String getDecimalSeparator()
@@ -243,7 +244,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will set the text to be used as the decimal point in displaying numerical values.
-     * 
+     *
      * @param decimalSeparator decimal separator
      */
     public void setDecimalSeparator(String decimalSeparator)
@@ -271,7 +272,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will return the text to be concatenated after the label specified by U.
-     * 
+     *
      * @return label suffix
      */
     public String getLabelSuffixString()
@@ -281,7 +282,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will set the text to be concatenated after the label specified by U.
-     * 
+     *
      * @param labelSuffixString label suffix
      */
     public void setLabelSuffixString(String labelSuffixString)
@@ -291,7 +292,7 @@ public class PDNumberFormatDictionary implements COSObjectable
 
     /**
      * This will return a value indicating the ordering of the label specified by U to the calculated unit value.
-     * 
+     *
      * @return label position 
      */
     public String getLabelPositionToValue()
@@ -302,7 +303,7 @@ public class PDNumberFormatDictionary implements COSObjectable
     /**
      * This will set the value indicating the ordering of the label specified by U to the calculated unit value.
      * Possible values are "S" and "P"
-     * 
+     *
      * @param labelPositionToValue label position 
      */
     public void setLabelPositionToValue(String labelPositionToValue)

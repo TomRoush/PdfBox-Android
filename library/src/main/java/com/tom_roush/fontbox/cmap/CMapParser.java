@@ -114,34 +114,38 @@ public class CMapParser
             if (token instanceof Operator)
             {
                 Operator op = (Operator) token;
-                if (op.op.equals("usecmap"))
-                {
-                    parseUsecmap((LiteralName) previousToken, result);
-                }
-                else if (op.op.equals("endcmap"))
+                if (op.op.equals("endcmap"))
                 {
                     // end of CMap reached, stop reading as there isn't any interesting info anymore
                     break;
                 }
-                else if (op.op.equals("begincodespacerange"))
+
+                if (previousToken != null)
                 {
-                    parseBegincodespacerange((Number) previousToken, cmapStream, result);
-                }
-                else if (op.op.equals("beginbfchar"))
-                {
-                    parseBeginbfchar((Number) previousToken, cmapStream, result);
-                }
-                else if (op.op.equals("beginbfrange"))
-                {
-                    parseBeginbfrange((Number) previousToken, cmapStream, result);
-                }
-                else if (op.op.equals("begincidchar"))
-                {
-                    parseBegincidchar((Number) previousToken, cmapStream, result);
-                }
-                else if (op.op.equals("begincidrange"))
-                {
-                    parseBegincidrange((Integer) previousToken, cmapStream, result);
+                    if (op.op.equals("usecmap"))
+                    {
+                        parseUsecmap((LiteralName) previousToken, result);
+                    }
+                    else if (op.op.equals("begincodespacerange"))
+                    {
+                        parseBegincodespacerange((Number) previousToken, cmapStream, result);
+                    }
+                    else if (op.op.equals("beginbfchar"))
+                    {
+                        parseBeginbfchar((Number) previousToken, cmapStream, result);
+                    }
+                    else if (op.op.equals("beginbfrange"))
+                    {
+                        parseBeginbfrange((Number) previousToken, cmapStream, result);
+                    }
+                    else if (op.op.equals("begincidchar"))
+                    {
+                        parseBegincidchar((Number) previousToken, cmapStream, result);
+                    }
+                    else if (op.op.equals("begincidrange"))
+                    {
+                        parseBegincidrange((Integer) previousToken, cmapStream, result);
+                    }
                 }
             }
             else if (token instanceof LiteralName)
@@ -384,17 +388,14 @@ public class CMapParser
             // PDFBOX-3807: ignore null
             else if (nextToken instanceof byte[])
             {
-                // the range can not represent more that 255 values
-                if ((end - start) > 255)
-                {
-                    // PDFBOX-4550: likely corrupt stream
-                    break;
-                }
                 byte[] tokenBytes = (byte[]) nextToken;
                 // PDFBOX-3450: ignore <>
                 if (tokenBytes.length > 0)
                 {
-                    addMappingFrombfrange(result, startCode, end - start + 1, tokenBytes);
+                    // PDFBOX-4661: avoid overflow of the last byte, all following values are undefined
+                    int values = Math.min(end - start,
+                        255 - (tokenBytes[tokenBytes.length - 1] & 0xFF)) + 1;
+                    addMappingFrombfrange(result, startCode, values, tokenBytes);
                 }
             }
         }
@@ -436,7 +437,6 @@ public class CMapParser
             return PDFBoxResourceLoader.getStream("com/tom_roush/fontbox/resources/cmap/" + name);
         }
 
-        // Fallback
         InputStream is = getClass().getResourceAsStream("/com/tom_roush/fontbox/resources/cmap/" + name);
         if (is == null)
         {

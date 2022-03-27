@@ -15,12 +15,12 @@
  */
 package com.tom_roush.fontbox.ttf;
 
-import junit.framework.TestCase;
-
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Calendar;
 import java.util.TimeZone;
+
+import junit.framework.TestCase;
 
 /**
  * This will test the TTFParser implementation.
@@ -29,6 +29,7 @@ import java.util.TimeZone;
  */
 public class TestTTFParser extends TestCase
 {
+
     /**
      * Check whether the creation date is UTC
      *
@@ -36,7 +37,7 @@ public class TestTTFParser extends TestCase
      */
     public void testUTCDate() throws IOException
     {
-        final InputStream testFile = getClass().getResourceAsStream("/fontbox/ttf/LiberationSans-Regular.ttf");
+        final File testFile = new File("src/test/resources/fontbox/ttf/LiberationSans-Regular.ttf");
         TimeZone utc = TimeZone.getTimeZone("UTC");
         //Before PDFBOX-2122, TTFDataStream was using the default TimeZone
         //Set the default to something not UTC and see if a UTC timeZone is returned
@@ -51,4 +52,5 @@ public class TestTTFParser extends TestCase
         target.set(Calendar.MILLISECOND, 0);
         assertEquals(target, created);
     }
+
 }

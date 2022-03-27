@@ -258,7 +258,7 @@ public class RandomAccessBuffer implements RandomAccess, Cloneable
         return bytesRead;
     }
 
-    private int readRemainingBytes(byte[] b, int offset, int length) throws IOException
+    private int readRemainingBytes(byte[] b, int offset, int length)
     {
         int maxLength = (int) Math.min(length, size-pointer);
         int remainingBytes = chunkSize - currentBufferPointer;

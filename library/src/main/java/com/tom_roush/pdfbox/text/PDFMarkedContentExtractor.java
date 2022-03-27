@@ -23,14 +23,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDMarkedContent;
-import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.contentstream.operator.markedcontent.BeginMarkedContentSequence;
 import com.tom_roush.pdfbox.contentstream.operator.markedcontent.BeginMarkedContentSequenceWithProperties;
 import com.tom_roush.pdfbox.contentstream.operator.markedcontent.DrawObject;
 import com.tom_roush.pdfbox.contentstream.operator.markedcontent.EndMarkedContentSequence;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDMarkedContent;
+import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 
 /**
  * This is an stream engine to extract the marked content of a pdf.
@@ -184,7 +184,7 @@ public class PDFMarkedContentExtractor extends LegacyPDFStreamEngine
 
             /* In the wild, some PDF encoded documents put diacritics (accents on
              * top of characters) into a separate Tj element.  When displaying them
-             * graphically, the two chunks get overlayed.  With text output though,
+             * graphically, the two chunks get overlaid.  With text output though,
              * we need to do the overlay. This code recombines the diacritic with
              * its associated character if the two are consecutive.
              */

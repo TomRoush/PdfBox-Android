@@ -64,6 +64,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.ExternalSigningSupport;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
@@ -627,12 +628,18 @@ public class PDDocument implements Closeable
     }
 
     private void prepareNonVisibleSignature(PDSignatureField signatureField)
-        throws IOException
     {
         // "Signature fields that are not intended to be visible shall
         // have an annotation rectangle that has zero height and width."
         // Set rectangle for non-visual signature to rectangle array [ 0 0 0 0 ]
         signatureField.getWidgets().get(0).setRectangle(new PDRectangle());
+
+        // The visual appearance must also exist for an invisible signature but may be empty.
+        PDAppearanceDictionary appearanceDictionary = new PDAppearanceDictionary();
+        PDAppearanceStream appearanceStream = new PDAppearanceStream(this);
+        appearanceStream.setBBox(new PDRectangle());
+        appearanceDictionary.setNormalAppearance(appearanceStream);
+        signatureField.getWidgets().get(0).setAppearance(appearanceDictionary);
     }
 
     /**
@@ -846,7 +853,7 @@ public class PDDocument implements Closeable
 
     /**
      * This will get the encryption dictionary for this document. This will still return the parameters if the document
-     * was decrypted. As the encryption architecture in PDF documents is plugable this returns an abstract class,
+     * was decrypted. As the encryption architecture in PDF documents is pluggable this returns an abstract class,
      * but the only supported subclass at this time is a
      * PDStandardEncryption object.
      *
@@ -1496,7 +1503,7 @@ public class PDDocument implements Closeable
             // Make sure that:
             // - first Exception is kept
             // - all IO resources are closed
-            // - there's a way to see which errors occured
+            // - there's a way to see which errors occurred
 
             IOException firstException = null;
 

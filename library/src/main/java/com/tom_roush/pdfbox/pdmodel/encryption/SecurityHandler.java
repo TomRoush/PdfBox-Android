@@ -25,10 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,12 +34,8 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -109,7 +103,7 @@ public abstract class SecurityHandler
     private COSName stringFilterName;
 
     /**
-     * Set wether to decrypt meta data.
+     * Set whether to decrypt meta data.
      *
      * @param decryptMetadata true if meta data has to be decrypted.
      */
@@ -284,20 +278,7 @@ public abstract class SecurityHandler
 
         try
         {
-            Cipher decryptCipher;
-            try
-            {
-                decryptCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            }
-            catch (NoSuchAlgorithmException e)
-            {
-                // should never happen
-                throw new RuntimeException(e);
-            }
-
-            SecretKey aesKey = new SecretKeySpec(finalKey, "AES");
-            IvParameterSpec ips = new IvParameterSpec(iv);
-            decryptCipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, aesKey, ips);
+            Cipher decryptCipher = createCipher(finalKey, iv, decrypt);
             byte[] buffer = new byte[256];
             int n;
             while ((n = data.read(buffer)) != -1)
@@ -310,23 +291,7 @@ public abstract class SecurityHandler
             }
             output.write(decryptCipher.doFinal());
         }
-        catch (InvalidKeyException e)
-        {
-            throw new IOException(e);
-        }
-        catch (InvalidAlgorithmParameterException e)
-        {
-            throw new IOException(e);
-        }
-        catch (NoSuchPaddingException e)
-        {
-            throw new IOException(e);
-        }
-        catch (IllegalBlockSizeException e)
-        {
-            throw new IOException(e);
-        }
-        catch (BadPaddingException e)
+        catch (GeneralSecurityException e)
         {
             throw new IOException(e);
         }
@@ -353,10 +318,7 @@ public abstract class SecurityHandler
         Cipher cipher;
         try
         {
-            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            SecretKeySpec keySpec = new SecretKeySpec(encryptionKey, "AES");
-            IvParameterSpec ivSpec = new IvParameterSpec(iv);
-            cipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+            cipher = createCipher(this.encryptionKey, iv, decrypt);
         }
         catch (GeneralSecurityException e)
         {
@@ -368,7 +330,7 @@ public abstract class SecurityHandler
         {
             IOUtils.copy(cis, output);
         }
-        catch(IOException exception)
+        catch (IOException exception)
         {
             // starting with java 8 the JVM wraps an IOException around a GeneralSecurityException
             // it should be safe to swallow a GeneralSecurityException
@@ -376,12 +338,22 @@ public abstract class SecurityHandler
             {
                 throw exception;
             }
-            Log.d("PdfBox-Android", "A GeneralSecurityException occured when decrypting some stream data", exception);
+            Log.d("PdfBox-Android", "A GeneralSecurityException occurred when decrypting some stream data", exception);
         }
         finally
         {
             cis.close();
         }
+    }
+
+    private Cipher createCipher(byte[] key, byte[] iv, boolean decrypt) throws GeneralSecurityException
+    {
+        @SuppressWarnings({"squid:S4432"}) // PKCS#5 padding is requested by PDF specification
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        Key keySpec = new SecretKeySpec(key, "AES");
+        IvParameterSpec ips = new IvParameterSpec(iv);
+        cipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, keySpec, ips);
+        return cipher;
     }
 
     private boolean prepareAESInitializationVector(boolean decrypt, byte[] iv, InputStream data, OutputStream output) throws IOException

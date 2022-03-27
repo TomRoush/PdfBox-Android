@@ -32,6 +32,7 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * Test for the PDSignatureField class.
+ *
  */
 public class PDSignatureFieldTest
 {
@@ -55,8 +56,7 @@ public class PDSignatureFieldTest
         assertEquals(sigField.getFieldType(), "Sig");
 
         assertEquals(COSName.ANNOT, sigField.getCOSObject().getItem(COSName.TYPE));
-        assertEquals(PDAnnotationWidget.SUB_TYPE,
-            sigField.getCOSObject().getNameAsString(COSName.SUBTYPE));
+        assertEquals(PDAnnotationWidget.SUB_TYPE, sigField.getCOSObject().getNameAsString(COSName.SUBTYPE));
 
         // Add the field to the acroform
         List<PDField> fields = new ArrayList<PDField>();
@@ -66,12 +66,12 @@ public class PDSignatureFieldTest
         assertNotNull(acroForm.getField("SignatureField"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected=UnsupportedOperationException.class)
     public void setValueForAbstractedSignatureField() throws IOException
     {
         PDSignatureField sigField = new PDSignatureField(acroForm);
         sigField.setPartialName("SignatureField");
 
-        ((PDField)sigField).setValue("Can't set value using String");
+        ((PDField) sigField).setValue("Can't set value using String");
     }
 }

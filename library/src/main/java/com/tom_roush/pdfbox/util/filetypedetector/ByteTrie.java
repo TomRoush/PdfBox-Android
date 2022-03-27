@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @param <T> the type of value to store for byte sequences
  * @author Drew Noakes
  *
  * code taken from https://github.com/drewnoakes/metadata-extractor
@@ -30,6 +29,8 @@ import java.util.Map;
  * latest commit number 73f1a48
  *
  * Stores values using a prefix tree (aka 'trie', i.e. reTRIEval data structure).
+ *
+ * @param <T> the type of value to store for byte sequences
  */
 class ByteTrie<T>
 {
@@ -63,7 +64,6 @@ class ByteTrie<T>
      * Return the most specific value stored for this byte sequence. If not found, returns
      * <code>null</code> or a default values as specified by calling
      * {@link ByteTrie#setDefaultValue}.
-     *
      * @param bytes
      * @return
      */
@@ -89,7 +89,6 @@ class ByteTrie<T>
 
     /**
      * Store the given value at the specified path.
-     *
      * @param value
      * @param parts
      */
@@ -117,7 +116,6 @@ class ByteTrie<T>
 
     /**
      * Sets the default value to use in {@link ByteTrie#find(byte[])} when no path matches.
-     *
      * @param defaultValue
      */
     public void setDefaultValue(T defaultValue)
@@ -127,7 +125,6 @@ class ByteTrie<T>
 
     /**
      * Gets the maximum depth stored in this trie.
-     *
      * @return
      */
     public int getMaxDepth()

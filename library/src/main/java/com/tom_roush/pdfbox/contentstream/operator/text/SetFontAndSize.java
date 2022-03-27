@@ -17,6 +17,8 @@
 
 package com.tom_roush.pdfbox.contentstream.operator.text;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -58,6 +60,10 @@ public class SetFontAndSize extends OperatorProcessor
         float fontSize = ((COSNumber) base1).floatValue();
         context.getGraphicsState().getTextState().setFontSize(fontSize);
         PDFont font = context.getResources().getFont(fontName);
+        if (font == null)
+        {
+            Log.w("PdfBox-Android", "font '" + fontName.getName() + "' not found in resources");
+        }
         context.getGraphicsState().getTextState().setFont(font);
     }
 

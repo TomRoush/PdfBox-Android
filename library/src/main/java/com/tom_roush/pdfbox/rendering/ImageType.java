@@ -23,9 +23,7 @@ import android.graphics.Bitmap;
  */
 public enum ImageType
 {
-    /**
-     * Black or white.
-     */
+    /** Black or white. */
     BINARY
         {
             @Override
@@ -35,9 +33,7 @@ public enum ImageType
             }
         },
 
-    /**
-     * Shades of gray
-     */
+    /** Shades of gray */
     GRAY
         {
             @Override
@@ -47,9 +43,7 @@ public enum ImageType
             }
         },
 
-    /**
-     * Red, Green, Blue
-     */
+    /** Red, Green, Blue */
     RGB
         {
             @Override // TODO: PdfBox-Android 565?
@@ -59,9 +53,7 @@ public enum ImageType
             }
         },
 
-    /**
-     * Alpha, Red, Green, Blue
-     */
+    /** Alpha, Red, Green, Blue */
     ARGB
         {
             @Override

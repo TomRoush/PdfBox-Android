@@ -17,16 +17,16 @@ package com.tom_roush.pdfbox.util;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSFloat;
-
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
+ *
  * @author Tilman Hausherr
  */
 public class MatrixTest
 {
+
     /**
      * Test of PDFBOX-2872 bug
      */
@@ -43,4 +43,6 @@ public class MatrixTest
         assertEquals(new COSFloat(0), toCOSArray.get(5));
 
     }
+
+
 }

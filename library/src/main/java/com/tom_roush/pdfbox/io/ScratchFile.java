@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.BitSet;
 
+import com.tom_roush.pdfbox.android.PDFBoxConfig;
+
 /**
  * Implements a memory page handling mechanism as base for creating (multiple)
  * {@link RandomAccess} buffers each having its set of pages (implemented by
@@ -238,13 +240,21 @@ public class ScratchFile implements Closeable
                 // enlarge if we do not int overflow
                 if (pageCount + ENLARGE_PAGE_COUNT > pageCount)
                 {
-                    Log.d("PdfBox-Android", "file: " + file);
-                    Log.d("PdfBox-Android", "fileLen before: " + fileLen + ", raf length: " + raf.length() + ", file length: " + file.length());
+                    if (PDFBoxConfig.isDebugEnabled())
+                    {
+                        Log.d("PdfBox-Android", "file: " + file);
+                        Log.d("PdfBox-Android", "fileLen before: " + fileLen + ", raf length: " + raf.length() +
+                            ", file length: " + file.length());
+                    }
                     fileLen += ENLARGE_PAGE_COUNT * PAGE_SIZE;
 
                     raf.setLength(fileLen);
-                    Log.d("PdfBox-Android", "fileLen after1:  " + fileLen + ", raf length: " + raf.length() + ", file length: " + file.length());
-                    if (fileLen != raf.length() || fileLen != file.length())
+                    if (PDFBoxConfig.isDebugEnabled())
+                    {
+                        Log.d("PdfBox-Android", "fileLen after1: " + fileLen + ", raf length: " + raf.length() +
+                            ", file length: " + file.length());
+                    }
+                    if (fileLen != raf.length())
                     {
                         // PDFBOX-4601 possible AWS lambda bug that setLength() doesn't throw
                         // if not enough space
@@ -428,7 +438,7 @@ public class ScratchFile implements Closeable
         ScratchFileBuffer buf = new ScratchFileBuffer(this);
 
         byte[] byteBuffer = new byte[8192];
-        int bytesRead = 0;
+        int bytesRead;
         while ((bytesRead = input.read(byteBuffer)) > -1)
         {
             buf.write(byteBuffer, 0, bytesRead);
@@ -498,15 +508,9 @@ public class ScratchFile implements Closeable
                 }
             }
 
-            if (file != null)
+            if (file != null && !file.delete() && file.exists() && ioexc == null)
             {
-                if (!file.delete())
-                {
-                    if (file.exists() && (ioexc == null))
-                    {
-                        ioexc = new IOException("Error deleting scratch file: " + file.getAbsolutePath());
-                    }
-                }
+                ioexc = new IOException("Error deleting scratch file: " + file.getAbsolutePath());
             }
         }
 

@@ -197,7 +197,7 @@ final class FontMapperImpl implements FontMapper
         names.add(postScriptName);
 
         // remove hyphens (e.g. Arial-Black -> ArialBlack)
-        names.add(postScriptName.replaceAll("-", ""));
+        names.add(postScriptName.replace("-", ""));
 
         return names;
     }
@@ -230,7 +230,7 @@ final class FontMapperImpl implements FontMapper
      */
     private List<String> getSubstitutes(String postScriptName)
     {
-        List<String> subs = substitutes.get(postScriptName.replaceAll(" ", ""));
+        List<String> subs = substitutes.get(postScriptName.replace(" ", ""));
         if (subs != null)
         {
             return subs;
@@ -434,7 +434,7 @@ final class FontMapperImpl implements FontMapper
         }
 
         // remove hyphens (e.g. Arial-Black -> ArialBlack)
-        info = getFont(format, postScriptName.replaceAll("-", ""));
+        info = getFont(format, postScriptName.replace("-", ""));
         if (info != null)
         {
             return info.getFont();
@@ -451,7 +451,7 @@ final class FontMapperImpl implements FontMapper
         }
 
         // then try converting Windows names e.g. (ArialNarrow,Bold) -> (ArialNarrow-Bold)
-        info = getFont(format, postScriptName.replaceAll(",", "-"));
+        info = getFont(format, postScriptName.replace(",", "-"));
         if (info != null)
         {
             return info.getFont();

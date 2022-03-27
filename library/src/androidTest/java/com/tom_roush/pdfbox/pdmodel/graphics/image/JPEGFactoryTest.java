@@ -43,6 +43,7 @@ import static com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage.doWrite
 import static com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage.validate;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -250,6 +251,48 @@ public class JPEGFactoryTest
         assertTrue(colorCount(ximage.getSoftMask().getImage()) >= 16);
 
         doWritePDF(document, ximage, testResultsDir, "jpeg-4bargb.pdf");
+    }
+
+    /**
+     * Tests USHORT_555_RGB JPEGFactory#createFromImage(PDDocument document, BufferedImage
+     * image), see also PDFBOX-4674.
+     * @throws java.io.IOException
+     */
+    @Test
+    public void testCreateFromImageUSHORT_555_RGB() throws IOException
+    {
+        // workaround Open JDK bug
+        // http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7044758
+        if (System.getProperty("java.runtime.name").equals("OpenJDK Runtime Environment")
+            && (System.getProperty("java.specification.version").equals("1.6")
+            || System.getProperty("java.specification.version").equals("1.7")
+            || System.getProperty("java.specification.version").equals("1.8")))
+        {
+            return;
+        }
+
+        PDDocument document = new PDDocument();
+        Bitmap image = BitmapFactory.decodeStream(testContext.getAssets().open(
+            "pdfbox/com/tom_roush/pdfbox/pdmodel/graphics/image/jpeg.jpg"));
+
+        // create an USHORT_555_RGB image
+        int width = image.getWidth();
+        int height = image.getHeight();
+        Bitmap rgbImage = image.copy(Bitmap.Config.RGB_565, true);
+
+        for (int x = 0; x < rgbImage.getWidth(); ++x)
+        {
+            for (int y = 0; y < rgbImage.getHeight(); ++y)
+            {
+                rgbImage.setPixel(x, y, (rgbImage.getPixel(x, y) & 0xFFFFFF) | ((y / 10 * 10) << 24));
+            }
+        }
+
+        PDImageXObject ximage = JPEGFactory.createFromImage(document, rgbImage);
+        validate(ximage, 8, width, height, "jpg", PDDeviceRGB.INSTANCE.getName());
+        assertNull(ximage.getSoftMask());
+
+        doWritePDF(document, ximage, testResultsDir, "jpeg-ushort555rgb.pdf");
     }
 
     // check whether it is possible to extract the jpeg stream exactly
