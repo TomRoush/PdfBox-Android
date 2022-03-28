@@ -81,19 +81,23 @@ public final class PDDeviceGray extends PDDeviceColorSpace
 
         int width = raster.getWidth();
         int height = raster.getHeight();
+        int[] imgPixels = new int[width];
 
         Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        int[] outPixels = new int[width];
 
         int gray;
         int rgb;
         for (int y = 0; y < height; y++)
         {
+            raster.getPixels(imgPixels, 0, width, 0, y, width, 1);
             for (int x = 0; x < width; x++)
             {
-                gray = Color.alpha(raster.getPixel(x, y));
+                gray = Color.alpha(imgPixels[x]);
                 rgb = Color.argb(255, gray, gray, gray);
-                image.setPixel(x, y, rgb);
+                outPixels[x] = rgb;
             }
+            image.setPixels(outPixels, 0, width, 0, y, width, 1);
         }
 
         return image;
