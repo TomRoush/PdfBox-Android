@@ -32,6 +32,7 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.common.PDRange;
+import com.tom_roush.pdfbox.rendering.WrapPaint;
 import com.tom_roush.pdfbox.util.Matrix;
 
 /**
@@ -76,12 +77,16 @@ public class PDShadingType4 extends PDTriangleBasedShadingType
         getCOSObject().setInt(COSName.BITS_PER_FLAG, bitsPerFlag);
     }
 
-//    public Paint toPaint(Matrix matrix) TODO: PdfBox-Android
+    @Override
+    public WrapPaint toPaint(Matrix matrix)
+    {
+        return new Type4ShadingPaint(this, matrix);
+    }
 
     @SuppressWarnings("squid:S1166")
     @Override
     List<ShadedTriangle> collectTriangles(AffineTransform xform, Matrix matrix)
-        throws IOException
+            throws IOException
     {
         int bitsPerFlag = getBitsPerFlag();
         COSDictionary dict = getCOSObject();
@@ -154,6 +159,11 @@ public class PDShadingType4 extends PDTriangleBasedShadingType
                             }
                             p2 = readVertex(mciis, maxSrcCoord, maxSrcColor, rangeX, rangeY, colRange,
                                 matrix, xform);
+                            if (isAllVertexsZero(p0, p1, p2))
+                            {
+                                // EOFException is not thrown in PdfBox-Android, so manually check and throw
+                                throw new EOFException("end");
+                            }
                             ps = new PointF[] { p0.point, p1.point, p2.point };
                             cs = new float[][] { p0.color, p1.color, p2.color };
                             list.add(new ShadedTriangle(ps, cs));
@@ -197,5 +207,20 @@ public class PDShadingType4 extends PDTriangleBasedShadingType
             mciis.close();
         }
         return list;
+    }
+
+    /**
+     * check whether the read vertex is all zero
+     *
+     * @param p0
+     * @param p1
+     * @param p2
+     *
+     * @return
+     */
+    private boolean isAllVertexsZero(Vertex p0, Vertex p1, Vertex p2)
+    {
+        return p0.point.x + p0.point.y == 0 && p1.point.x + p1.point.y == 0 &&
+            p2.point.x + p2.point.y == 0;
     }
 }

@@ -31,6 +31,7 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.common.PDRange;
+import com.tom_roush.pdfbox.rendering.WrapPaint;
 import com.tom_roush.pdfbox.util.Matrix;
 
 /**
@@ -75,7 +76,11 @@ public class PDShadingType5 extends PDTriangleBasedShadingType
         getCOSObject().setInt(COSName.VERTICES_PER_ROW, verticesPerRow);
     }
 
-//    public Paint toPaint(Matrix matrix) TODO: PdfBox-Android
+    @Override
+    public WrapPaint toPaint(Matrix matrix)
+    {
+        return new Type5ShadingPaint(this, matrix);
+    }
 
     @SuppressWarnings("squid:S1166")
     @Override

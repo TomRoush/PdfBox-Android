@@ -124,7 +124,11 @@ class CoonsPatch extends Patch
     private List<ShadedTriangle> getTriangles()
     {
         // 4 edges are 4 cubic Bezier curves
-        CoordinateColorPair[][] patchCC = new CoordinateColorPair[][]{}; // TODO: PdfBox-Android
+        CubicBezierCurve eC1 = new CubicBezierCurve(controlPoints[0], level[0]);
+        CubicBezierCurve eC2 = new CubicBezierCurve(controlPoints[1], level[0]);
+        CubicBezierCurve eD1 = new CubicBezierCurve(controlPoints[2], level[1]);
+        CubicBezierCurve eD2 = new CubicBezierCurve(controlPoints[3], level[1]);
+        CoordinateColorPair[][] patchCC = getPatchCoordinatesColor(eC1, eC2, eD1, eD2);
         return getShadedTriangles(patchCC);
     }
 
@@ -161,5 +165,54 @@ class CoonsPatch extends Patch
      the rule to calculate the coordinate is defined in page 195 of PDF32000_2008.pdf, the rule to calculate the
      corresponding color is bilinear interpolation
      */
-//   private CoordinateColorPair[][] getPatchCoordinatesColor(CubicBezierCurve c1, CubicBezierCurve c2, CubicBezierCurve d1, CubicBezierCurve d2)
+    private CoordinateColorPair[][] getPatchCoordinatesColor(CubicBezierCurve c1, CubicBezierCurve c2, CubicBezierCurve d1, CubicBezierCurve d2)
+    {
+        PointF[] curveC1 = c1.getCubicBezierCurve();
+        PointF[] curveC2 = c2.getCubicBezierCurve();
+        PointF[] curveD1 = d1.getCubicBezierCurve();
+        PointF[] curveD2 = d2.getCubicBezierCurve();
+
+        int numberOfColorComponents = cornerColor[0].length;
+        int szV = curveD1.length;
+        int szU = curveC1.length;
+
+        CoordinateColorPair[][] patchCC = new CoordinateColorPair[szV][szU];
+
+        double stepV = (double) 1 / (szV - 1);
+        double stepU = (double) 1 / (szU - 1);
+        double v = -stepV;
+        for (int i = 0; i < szV; i++)
+        {
+            // v and u are the assistant parameters
+            v += stepV;
+            double u = -stepU;
+            for (int j = 0; j < szU; j++)
+            {
+                u += stepU;
+                double scx = (1 - v) * curveC1[j].x + v * curveC2[j].x;
+                double scy = (1 - v) * curveC1[j].y + v * curveC2[j].y;
+                double sdx = (1 - u) * curveD1[i].x + u * curveD2[i].x;
+                double sdy = (1 - u) * curveD1[i].y + u * curveD2[i].y;
+                double sbx = (1 - v) * ((1 - u) * controlPoints[0][0].x + u * controlPoints[0][3].x)
+                    + v * ((1 - u) * controlPoints[1][0].x + u * controlPoints[1][3].x);
+                double sby = (1 - v) * ((1 - u) * controlPoints[0][0].y + u * controlPoints[0][3].y)
+                    + v * ((1 - u) * controlPoints[1][0].y + u * controlPoints[1][3].y);
+
+                double sx = scx + sdx - sbx;
+                double sy = scy + sdy - sby;
+                // the above code in this for loop defines the patch surface (coordinates)
+
+                PointF tmpC = new PointF((float)sx, (float)sy);
+
+                float[] paramSC = new float[numberOfColorComponents];
+                for (int ci = 0; ci < numberOfColorComponents; ci++)
+                {
+                    paramSC[ci] = (float) ((1 - v) * ((1 - u) * cornerColor[0][ci] + u * cornerColor[3][ci])
+                        + v * ((1 - u) * cornerColor[1][ci] + u * cornerColor[2][ci])); // bilinear interpolation
+                }
+                patchCC[i][j] = new CoordinateColorPair(tmpC, paramSC);
+            }
+        }
+        return patchCC;
+    }
 }

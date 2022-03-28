@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.rendering.WrapPaint;
 import com.tom_roush.pdfbox.util.Matrix;
 
 /**
@@ -46,7 +47,11 @@ public class PDShadingType6 extends PDMeshBasedShadingType
         return PDShading.SHADING_TYPE6;
     }
 
-//    public Paint toPaint(Matrix matrix) TODO: PdfBox-Android
+    @Override
+    public WrapPaint toPaint(Matrix matrix)
+    {
+        return new Type6ShadingPaint(this, matrix);
+    }
 
     @Override
     protected Patch generatePatch(PointF[] points, float[][] color)

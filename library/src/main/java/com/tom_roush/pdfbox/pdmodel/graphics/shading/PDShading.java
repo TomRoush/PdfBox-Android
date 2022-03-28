@@ -29,6 +29,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.function.PDFunction;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.rendering.WrapPaint;
 import com.tom_roush.pdfbox.util.Matrix;
 
 /**
@@ -436,5 +437,12 @@ public abstract class PDShading implements COSObjectable
         return returnValues;
     }
 
-//    public abstract Paint toPaint(Matrix matrix); TODO: PdfBox-Android
+    /**
+     * Returns an AWT paint which corresponds to this shading
+     *
+     * @param matrix the pattern matrix concatenated with that of the parent content stream,
+     *               this matrix which maps the pattern's internal coordinate system to user space
+     * @return an AWT Paint instance
+     */
+    public abstract WrapPaint toPaint(Matrix matrix);
 }
