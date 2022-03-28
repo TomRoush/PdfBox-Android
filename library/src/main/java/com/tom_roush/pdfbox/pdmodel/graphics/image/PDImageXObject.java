@@ -134,7 +134,8 @@ public final class PDImageXObject extends PDXObject implements PDImage
                 is = stream.createInputStream();
                 DecodeResult decodeResult = is.getDecodeResult();
                 stream.getCOSObject().addAll(decodeResult.getParameters());
-//                this.colorSpace = decodeResult.getJPXColorSpace(); TODO: PdfBox-Android
+                // getJPXColorSpace would be null in most cases
+                this.colorSpace = decodeResult.getJPXColorSpace();
             }
             finally
             {
