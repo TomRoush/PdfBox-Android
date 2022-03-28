@@ -69,16 +69,18 @@ public final class CCITTFactory
 
         int height = image.getHeight();
         int width = image.getWidth();
+        int[] pixels = new int[width];
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         MemoryCacheImageOutputStream mcios = new MemoryCacheImageOutputStream(bos);
 
         for (int y = 0; y < height; ++y)
         {
+            image.getPixels(pixels, 0, width, 0, y, width, 1);
             for (int x = 0; x < width; ++x)
             {
                 // flip bit to avoid having to set /BlackIs1
-                mcios.writeBits(~(image.getPixel(x, y) & 1), 1);
+                mcios.writeBits(~(pixels[x] & 1), 1);
             }
             if (mcios.getBitOffset() != 0)
             {
