@@ -537,77 +537,120 @@ public final class PDImageXObject extends PDXObject implements PDImage
         return SampledImageReader.getRGBImage(this, null);
     }
 
-    // explicit mask: RGB + Binary -> ARGB
-    // soft mask: RGB + Gray -> ARGB
-    private Bitmap applyMask(Bitmap image, Bitmap mask,
-        boolean isSoft, float[] matte)
+    /**
+     * explicit mask: RGB + Binary -> ARGB
+     * soft mask: RGB + Gray -> ARGB
+     *
+     * @param image The image to apply the mask to as alpha channel.
+     * @param mask A mask image in 8 bit Gray. Even for a stencil mask image due to
+     * {@link #getOpaqueImage()} and {@link SampledImageReader}'s {@code from1Bit()} special
+     * handling of DeviceGray.
+     * @param isSoft {@code true} if a soft mask. If not stencil mask, then alpha will be inverted
+     * by this method.
+     * @param matte an optional RGB matte if a soft mask.
+     * @return an ARGB image (can be the altered original image)
+     */
+    private Bitmap applyMask(Bitmap image, Bitmap mask, boolean isSoft, float[] matte)
     {
         if (mask == null)
         {
             return image;
         }
+        final int width = Math.max(image.getWidth(), mask.getWidth());
+        final int height = Math.max(image.getHeight(), mask.getHeight());
 
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        // scale mask to fit image, or image to fit mask, whichever is larger
+        // scale mask to fit image, or image to fit mask, whichever is larger.
+        // also make sure that mask is 8 bit gray and image is ARGB as this
+        // is what needs to be returned.
         if (mask.getWidth() < width || mask.getHeight() < height)
         {
             mask = scaleImage(mask, width, height);
         }
-        else if (mask.getWidth() > width || mask.getHeight() > height)
+        if (image.getWidth() < width || image.getHeight() < height)
         {
-            width = mask.getWidth();
-            height = mask.getHeight();
             image = scaleImage(image, width, height);
         }
-
-        // compose to ARGB
-        Bitmap masked = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        int[] outPixels = new int[width];
-
-        int rgb;
-        int alphaPixel;
-        int alpha;
-        int[] imgPixels = new int[width];
-        int[] maskPixels = new int[width];
-        for (int y = 0; y < height; y++)
-        {
-            image.getPixels(imgPixels, 0, width, 0, y, width, 1);
-            mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
-            for (int x = 0; x < width; x++)
-            {
-                rgb = imgPixels[x];
-                int r = Color.red(rgb);
-                int g = Color.green(rgb);
-                int b = Color.blue(rgb);
-                alphaPixel = maskPixels[x];
-                if (isSoft)
-                {
-                    alpha = Color.alpha(alphaPixel);
-                    if (matte != null && Float.compare(alpha, 0) != 0)
-                    {
-                        r = clampColor(((r / 255F - matte[0]) / (alpha / 255F) + matte[0]) * 255);
-                        g = clampColor(((g / 255F - matte[1]) / (alpha / 255F) + matte[1]) * 255);
-                        b = clampColor(((b / 255F - matte[2]) / (alpha / 255F) + matte[2]) * 255);
-                    }
-                }
-                else
-                {
-                    alpha = 255 - Color.alpha(alphaPixel);
-                }
-
-                outPixels[x] = Color.argb(alpha, r, g, b);
-            }
-            masked.setPixels(outPixels, 0, width, 0, y, width, 1);
+        if(image.getConfig() != Bitmap.Config.ARGB_8888 || !image.isMutable()) {
+            image = image.copy(Bitmap.Config.ARGB_8888, true);
         }
+        int[] pixels = new int[width];
+        int[] maskPixels = new int[width];
 
-        return masked;
+        // compose alpha into ARGB image, either:
+        // - very fast by direct bit combination if not a soft mask and a 8 bit alpha source.
+        // - fast by letting the sample model do a bulk band operation if no matte is set.
+        // - slow and complex by matte calculations on individual pixel components.
+        if(!isSoft && image.getByteCount() == mask.getByteCount()){
+            for(int y = 0; y < height; y++){
+                image.getPixels(pixels, 0, width, 0, y, width, 1);
+                mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
+                for(int i = 0, c = width; c > 0; i++, c--){
+                    pixels[i] = pixels[i] & 0xffffff | ~maskPixels[i] & 0xff000000;
+                }
+                image.setPixels(pixels, 0, width, 0, y, width, 1);
+            }
+        }
+        else if(matte == null){
+            for (int y = 0; y < height; y++) {
+                image.getPixels(pixels, 0, width, 0, y, width, 1);
+                mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
+                for (int x = 0; x < width; x++) {
+                    if (!isSoft) {
+                        maskPixels[x] ^= -1;
+                    }
+                    pixels[x] = pixels[x] & 0xffffff | maskPixels[x] & 0xff000000;
+                }
+                image.setPixels(pixels, 0, width, 0, y, width, 1);
+            }
+        }
+        else {
+            // Original code is to clamp component and alpha to [0f, 1f] as matte is,
+            // and later expand to [0; 255] again (with rounding).
+            // component = 255f * ((component / 255f - matte) / (alpha / 255f) + matte)
+            //           = (255 * component - 255 * 255f * matte) / alpha + 255f * matte
+            // There is a clearly visible factor 255 for most components in above formula,
+            // i.e. max value is 255 * 255: 16 bits + sign.
+            // Let's use faster fixed point integer arithmetics with Q16.15,
+            // introducing neglible errors (0.001%).
+            // Note: For "correct" rounding we increase the final matte value (m0h, m1h, m2h) by
+            // a half an integer.
+            final int fraction = 15;
+            final int factor = 255 << fraction;
+            final int m0 = Math.round(factor * matte[0]) * 255;
+            final int m1 = Math.round(factor * matte[1]) * 255;
+            final int m2 = Math.round(factor * matte[2]) * 255;
+            final int m0h = m0 / 255 + (1 << fraction - 1);
+            final int m1h = m1 / 255 + (1 << fraction - 1);
+            final int m2h = m2 / 255 + (1 << fraction - 1);
+            for (int y = 0; y < height; y++) {
+                image.getPixels(pixels, 0, width, 0, y, width, 1);
+                mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
+                for (int x = 0; x < width; x++) {
+                    int a = Color.alpha(maskPixels[x]);
+                    if (a == 0){
+                        pixels[x] = pixels[x] & 0xffffff;
+                        continue;
+                    }
+                    int rgb = pixels[x];
+                    int r = Color.red(rgb);
+                    int g = Color.green(rgb);
+                    int b = Color.blue(rgb);
+                    r = clampColor(((r * factor - m0) / a + m0h) >> fraction);
+                    g = clampColor(((g * factor - m1) / a + m1h) >> fraction);
+                    b = clampColor(((b * factor - m2) / a + m2h) >> fraction);
+                    pixels[x] = Color.argb(a, r, g, b);
+                }
+                image.setPixels(pixels, 0, width, 0, y, width, 1);
+            }
+        }
+        return image;
     }
 
-    private int clampColor(float color)
-    {
-        return Float.valueOf(color < 0 ? 0 : (color > 255 ? 255 : color)).intValue();
+    private int clampColor(float color) {
+        // Float.valueOf is no need and it is too slow
+        if (color <= 0) return 0;
+        else if (color >= 255) return 255;
+        return (int) color;
     }
 
     /**
