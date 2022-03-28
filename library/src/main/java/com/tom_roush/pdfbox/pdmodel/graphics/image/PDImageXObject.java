@@ -564,39 +564,42 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
         // compose to ARGB
         Bitmap masked = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        int[] outPixels = new int[width];
 
         int rgb;
-        int rgba;
         int alphaPixel;
         int alpha;
+        int[] imgPixels = new int[width];
+        int[] maskPixels = new int[width];
         for (int y = 0; y < height; y++)
         {
+            image.getPixels(imgPixels, 0, width, 0, y, width, 1);
+            mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
             for (int x = 0; x < width; x++)
             {
-                rgb = image.getPixel(x, y);
-
-                alphaPixel = mask.getPixel(x, y);
+                rgb = imgPixels[x];
+                int r = Color.red(rgb);
+                int g = Color.green(rgb);
+                int b = Color.blue(rgb);
+                alphaPixel = maskPixels[x];
                 if (isSoft)
                 {
                     alpha = Color.alpha(alphaPixel);
                     if (matte != null && Float.compare(alpha, 0) != 0)
                     {
-                        rgb = Color.rgb(
-                            clampColor(((Color.red(rgb) / 255F - matte[0]) / (alpha / 255F) + matte[0]) * 255),
-                            clampColor(((Color.green(rgb) / 255F - matte[1]) / (alpha / 255F) + matte[1]) * 255),
-                            clampColor(((Color.blue(rgb) / 255F - matte[2]) / (alpha / 255F) + matte[2]) * 255)
-                        );
+                        r = clampColor(((r / 255F - matte[0]) / (alpha / 255F) + matte[0]) * 255);
+                        g = clampColor(((g / 255F - matte[1]) / (alpha / 255F) + matte[1]) * 255);
+                        b = clampColor(((b / 255F - matte[2]) / (alpha / 255F) + matte[2]) * 255);
                     }
                 }
                 else
                 {
                     alpha = 255 - Color.alpha(alphaPixel);
                 }
-                rgba = Color.argb(alpha, Color.red(rgb), Color.green(rgb),
-                    Color.blue(rgb));
 
-                masked.setPixel(x, y, rgba);
+                outPixels[x] = Color.argb(alpha, r, g, b);
             }
+            masked.setPixels(outPixels, 0, width, 0, y, width, 1);
         }
 
         return masked;
