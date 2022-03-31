@@ -124,7 +124,6 @@ public final class IOUtils
      * <p>An exception is only returned if the IOException passed in is null.
      *
      * @param closeable to be closed
-     * @param logger the logger to be used so that logging appears under that log instance
      * @param resourceName the name to appear in the log output
      * @param initialException if set, this exception will be returned even where there is another
      * exception while closing the IO resource * @return the IOException is there was any but only
