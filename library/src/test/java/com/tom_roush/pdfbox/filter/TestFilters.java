@@ -100,7 +100,7 @@ public class TestFilters
                     // Skip filters that don't currently support roundtripping
                     if( filter instanceof DCTFilter ||
                         filter instanceof CCITTFaxFilter ||
-//                        filter instanceof JPXFilter ||
+                        filter instanceof JPXFilter ||
 //                        filter instanceof JBIG2Filter || TODO: PdfBox-Android
                         filter instanceof RunLengthDecodeFilter )
                     {

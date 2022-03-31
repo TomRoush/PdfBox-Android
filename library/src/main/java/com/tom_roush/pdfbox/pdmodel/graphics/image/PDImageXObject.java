@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.SoftReference;
+import java.util.Arrays;
 import java.util.List;
 
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -126,15 +127,33 @@ public final class PDImageXObject extends PDXObject implements PDImage
         super(stream, COSName.IMAGE);
         this.resources = resources;
         List<COSName> filters = stream.getFilters();
+        // JPX would be decode twice in rending. here is no need. just to ensure no parameters is missing.
         if (filters != null && !filters.isEmpty() && COSName.JPX_DECODE.equals(filters.get(filters.size()-1)))
         {
+            // skip decode jpx is no parameters is missing. see PDFBOX-5375 PDFBOX-3340
+            List<COSName> requireKeys = Arrays.asList(COSName.WIDTH, COSName.HEIGHT, COSName.COLORSPACE);
+            boolean needDecode = false;
+            COSStream cos = stream.getCOSObject();
+            for (COSName k : requireKeys)
+            {
+                if (!cos.containsKey(k))
+                {
+                    needDecode = true;
+                    break;
+                }
+            }
+            if (!needDecode)
+            {
+                return;
+            }
             COSInputStream is = null;
             try
             {
                 is = stream.createInputStream();
                 DecodeResult decodeResult = is.getDecodeResult();
                 stream.getCOSObject().addAll(decodeResult.getParameters());
-//                this.colorSpace = decodeResult.getJPXColorSpace(); TODO: PdfBox-Android
+                // getJPXColorSpace would be null in most cases
+                this.colorSpace = decodeResult.getJPXColorSpace();
             }
             finally
             {
