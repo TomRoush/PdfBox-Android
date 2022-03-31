@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.SoftReference;
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 
@@ -135,13 +134,18 @@ public final class PDImageXObject extends PDXObject implements PDImage
             List<COSName> requireKeys = Arrays.asList(COSName.WIDTH, COSName.HEIGHT, COSName.COLORSPACE);
             boolean needDecode = false;
             COSStream cos = stream.getCOSObject();
-            for(COSName k : requireKeys){
-                if(!cos.containsKey(k)){
+            for (COSName k : requireKeys)
+            {
+                if (!cos.containsKey(k))
+                {
                     needDecode = true;
                     break;
                 }
             }
-            if(!needDecode)return;
+            if (!needDecode)
+            {
+                return;
+            }
             COSInputStream is = null;
             try
             {
