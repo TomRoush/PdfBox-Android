@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +29,7 @@ import java.util.Set;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.util.DateConverter;
+import com.tom_roush.pdfbox.util.SmallMap;
 
 /**
  * This class represents a dictionary where name/value pairs reside.
@@ -45,7 +45,7 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
     /**
      * The name-value pairs of this dictionary. The pairs are kept in the order they were added to the dictionary.
      */
-    protected Map<COSName, COSBase> items = new LinkedHashMap<COSName, COSBase>();
+    protected Map<COSName, COSBase> items = new SmallMap<COSName, COSBase>();
 
     /**
      * Constructor.

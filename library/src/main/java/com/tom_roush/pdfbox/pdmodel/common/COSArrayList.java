@@ -43,6 +43,10 @@ public class COSArrayList<E> implements List<E>
     private final COSArray array;
     private final List<E> actual;
 
+    // indicates that the list has been filtered
+    // i.e. the number of entries in array and actual differ 
+    private boolean isFiltered = false;
+
     private COSDictionary parentDict;
     private COSName dictKey;
 
@@ -56,7 +60,15 @@ public class COSArrayList<E> implements List<E>
     }
 
     /**
-     * Constructor.
+     * Create the COSArrayList specifing the List and the backing COSArray.
+     *
+     * <p>User of this constructor need to ensure that the entries in the List and
+     * the backing COSArray are matching i.e. the COSObject of the List entry is
+     * included in the COSArray.
+     *
+     * <p>If the number of entries in the List and the COSArray differ
+     * it is assumed that the List has been filtered. In that case the COSArrayList
+     * shall only be used for reading purposes and no longer for updating.
      *
      * @param actualList The list of standard java objects
      * @param cosArray The COS array object to sync to.
@@ -65,6 +77,12 @@ public class COSArrayList<E> implements List<E>
     {
         actual = actualList;
         array = cosArray;
+
+        // if the number of entries differs this may come from a filter being
+        // applied at the PDModel level 
+        if (actual.size() != array.size()) {
+            isFiltered = true;
+        }
     }
 
     /**
@@ -200,16 +218,17 @@ public class COSArrayList<E> implements List<E>
     @Override
     public boolean remove(Object o)
     {
+
+        if (isFiltered) {
+            throw new UnsupportedOperationException("removing entries from a filtered List is not permitted");
+        }
+
         boolean retval = true;
         int index = actual.indexOf( o );
         if( index >= 0 )
         {
-            retval = actual.remove( o );
-
-            if (o instanceof COSObjectable) {
-                COSBase cosBase = ((COSObjectable) o).getCOSObject();
-                retval = array.remove(cosBase);
-            }
+            actual.remove( index );
+            array.remove( index );
         }
         else
         {
@@ -233,6 +252,10 @@ public class COSArrayList<E> implements List<E>
     @Override
     public boolean addAll(Collection<? extends E> c)
     {
+        if (isFiltered) {
+            throw new UnsupportedOperationException("Apping to a filtered List is not permitted");
+        }
+
         //when adding if there is a parentDict then change the item
         //in the dictionary from a single item to an array.
         if( parentDict != null && c.size() > 0)
@@ -252,6 +275,11 @@ public class COSArrayList<E> implements List<E>
     @Override
     public boolean addAll(int index, Collection<? extends E> c)
     {
+
+        if (isFiltered) {
+            throw new UnsupportedOperationException("Inserting to a filtered List is not permitted");
+        }
+
         //when adding if there is a parentDict then change the item
         //in the dictionary from a single item to an array.
         if( parentDict != null && c.size() > 0)
@@ -491,7 +519,19 @@ public class COSArrayList<E> implements List<E>
     @Override
     public boolean removeAll(Collection<?> c)
     {
-        array.removeAll( toCOSObjectList( c ) );
+        for (Iterator iterator = c.iterator(); iterator.hasNext();)
+        {
+            COSBase itemCOSBase = ((COSObjectable)iterator.next()).getCOSObject();
+            // remove all indirect objects too by dereferencing them
+            // before doing the comparison
+            for (int i=array.size()-1; i>=0; i--)
+            {
+                if (itemCOSBase.equals(array.getObject(i)))
+                {
+                    array.remove(i);
+                }
+            }
+        }
         return actual.removeAll( c );
     }
 
@@ -501,7 +541,19 @@ public class COSArrayList<E> implements List<E>
     @Override
     public boolean retainAll(Collection<?> c)
     {
-        array.retainAll( toCOSObjectList( c ) );
+        for (Iterator iterator = c.iterator(); iterator.hasNext();)
+        {
+            COSBase itemCOSBase = ((COSObjectable)iterator.next()).getCOSObject();
+            // remove all indirect objects too by dereferencing them
+            // before doing the comparison
+            for (int i=array.size()-1; i>=0; i--)
+            {
+                if (!itemCOSBase.equals(array.getObject(i)))
+                {
+                    array.remove(i);
+                }
+            }
+        }
         return actual.retainAll( c );
     }
 
@@ -555,6 +607,11 @@ public class COSArrayList<E> implements List<E>
     @Override
     public E set(int index, E element)
     {
+
+        if (isFiltered) {
+            throw new UnsupportedOperationException("Replacing an element in a filtered List is not permitted");
+        }
+
         if( element instanceof String )
         {
             COSString item = new COSString( (String)element );
@@ -581,6 +638,10 @@ public class COSArrayList<E> implements List<E>
     @Override
     public void add(int index, E element)
     {
+        if (isFiltered) {
+            throw new UnsupportedOperationException("Adding an element in a filtered List is not permitted");
+        }
+
         //when adding if there is a parentDict then change the item
         //in the dictionary from a single item to an array.
         if( parentDict != null )
@@ -607,9 +668,12 @@ public class COSArrayList<E> implements List<E>
     @Override
     public E remove(int index)
     {
-        E toBeRemoved = actual.get(index);
-        remove(toBeRemoved);
-        return toBeRemoved;
+        if (isFiltered) {
+            throw new UnsupportedOperationException("removing entries from a filtered List is not permitted");
+        }
+
+        array.remove(index);
+        return actual.remove(index);
     }
 
     /**

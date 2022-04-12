@@ -1421,9 +1421,15 @@ abstract class PDAbstractContentStream implements Closeable
      * Writes a real number to the content stream.
      * @param real
      * @throws java.io.IOException
+     * @throws IllegalArgumentException if the parameter is not a finite number
      */
     protected void writeOperand(float real) throws IOException
     {
+        if (Float.isInfinite(real) || Float.isNaN(real))
+        {
+            throw new IllegalArgumentException(real + " is not a finite number");
+        }
+
         int byteCount = NumberFormatUtil.formatFloatFast(real, formatDecimal.getMaximumFractionDigits(), formatBuffer);
 
         if (byteCount == -1)

@@ -42,7 +42,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Test flatten different forms and compare with rendering.
  *
- * The tests are currently disabled to not run within the CI environment
+ * Some of the tests are currently disabled to not run within the CI environment
  * as the test results need manual inspection. Enable as needed.
  *
  */
@@ -70,7 +70,7 @@ public class PDAcroFormFlattenTest
    /*
     * PDFBOX-142 Filled template.
     */
-   @Test
+   // @Test
    public void testFlattenPDFBOX142() throws IOException
    {
       String sourceUrl = "https://issues.apache.org/jira/secure/attachment/12742551/Testformular1.pdf";
@@ -130,7 +130,7 @@ public class PDAcroFormFlattenTest
    /*
     * PDFBOX-3083 Filled template rotated.
     */
-   @Test
+   // @Test
    public void testFlattenPDFBOX3083() throws IOException
    {
       String sourceUrl = "https://issues.apache.org/jira/secure/attachment/12770263/mypdf.pdf";
@@ -202,7 +202,7 @@ public class PDAcroFormFlattenTest
    /*
     * PDFBOX-3587 Empty template.
     */
-   @Test
+   // @Test
    public void testFlattenOpenOfficeForm() throws IOException
    {
       String sourceUrl = "https://issues.apache.org/jira/secure/attachment/12839977/OpenOfficeForm.pdf";
@@ -214,7 +214,7 @@ public class PDAcroFormFlattenTest
    /*
     * PDFBOX-3587 Filled template.
     */
-   @Test
+   // @Test
    public void testFlattenOpenOfficeFormFilled() throws IOException
    {
       String sourceUrl = "https://issues.apache.org/jira/secure/attachment/12840280/OpenOfficeForm_filled.pdf";
@@ -226,7 +226,7 @@ public class PDAcroFormFlattenTest
    /**
     * PDFBOX-4157 Filled template.
     */
-   @Test
+   // @Test
    public void testFlattenPDFBox4157() throws IOException
    {
       String sourceUrl = "https://issues.apache.org/jira/secure/attachment/12976553/PDFBOX-4157-filled.pdf";
@@ -238,7 +238,7 @@ public class PDAcroFormFlattenTest
    /**
     * PDFBOX-4172 Filled template.
     */
-   @Test
+   // @Test
    public void testFlattenPDFBox4172() throws IOException
    {
       String sourceUrl = "https://issues.apache.org/jira/secure/attachment/12976552/PDFBOX-4172-filled.pdf";
@@ -250,7 +250,7 @@ public class PDAcroFormFlattenTest
    /**
     * PDFBOX-4615 Filled template.
     */
-   @Test
+   // @Test
    public void testFlattenPDFBox4615() throws IOException
    {
       String sourceUrl = "https://issues.apache.org/jira/secure/attachment/12976452/resetboundingbox-filled.pdf";
@@ -368,7 +368,7 @@ public class PDAcroFormFlattenTest
 
       for (File testFile : testFiles)
       {
-         if (! new File(OUT_DIR, testFile.getName()).exists())
+         if (!new File(OUT_DIR, testFile.getName()).exists())
          {
             testFile.delete();
          }

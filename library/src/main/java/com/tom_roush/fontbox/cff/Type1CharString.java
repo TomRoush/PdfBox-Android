@@ -38,7 +38,8 @@ import com.tom_roush.harmony.awt.geom.AffineTransform;
 public class Type1CharString
 {
     private Type1CharStringReader font;
-    private final String fontName, glyphName;
+    private final String fontName;
+    private final String glyphName;
     private Path path = null;
     private int width = 0;
     private PointF leftSideBearing = null;
@@ -173,7 +174,7 @@ public class Type1CharString
         }
         else if ("vmoveto".equals(name))
         {
-            if (numbers.size() >= 1)
+            if (!numbers.isEmpty())
             {
                 if (isFlex)
                 {
@@ -188,7 +189,7 @@ public class Type1CharString
         }
         else if ("hmoveto".equals(name))
         {
-            if (numbers.size() >= 1)
+            if (!numbers.isEmpty())
             {
                 if (isFlex)
                 {
@@ -210,14 +211,14 @@ public class Type1CharString
         }
         else if ("hlineto".equals(name))
         {
-            if (numbers.size() >= 1)
+            if (!numbers.isEmpty())
             {
                 rlineTo(numbers.get(0), 0);
             }
         }
         else if ("vlineto".equals(name))
         {
-            if (numbers.size() >= 1)
+            if (!numbers.isEmpty())
             {
                 rlineTo(0, numbers.get(0));
             }
@@ -284,7 +285,7 @@ public class Type1CharString
         }
         else if ("callothersubr".equals(name))
         {
-            if (numbers.size() >= 1)
+            if (!numbers.isEmpty())
             {
                 callothersubr(numbers.get(0).intValue());
             }
@@ -441,7 +442,7 @@ public class Type1CharString
         }
         else
         {
-            path.cubicTo(x1, y1, x2, y2, x3, y3); // TODO: PdfBox-Android Should this be relative?
+            path.cubicTo(x1, y1, x2, y2, x3, y3);
         }
         current.set(x3, y3);
     }

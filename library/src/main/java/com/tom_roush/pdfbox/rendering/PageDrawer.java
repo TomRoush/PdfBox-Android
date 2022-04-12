@@ -65,6 +65,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDTransparencyGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup.RenderState;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentMembershipDictionary;
@@ -757,6 +758,11 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public void drawImage(PDImage pdImage) throws IOException
     {
+        if (pdImage instanceof PDImageXObject &&
+            isHiddenOCG(((PDImageXObject) pdImage).getOptionalContent()))
+        {
+            return;
+        }
         Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
         AffineTransform at = ctm.createAffineTransform();
 
@@ -882,9 +888,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
         // prepare transfer functions (either one per color or one for all) 
         // and maps (actually arrays[256] to be faster) to avoid calculating values several times
-        Integer rMap[];
-        Integer gMap[];
-        Integer bMap[];
+        Integer[] rMap;
+        Integer[] gMap;
+        Integer[] bMap;
         PDFunction rf;
         PDFunction gf;
         PDFunction bf;
@@ -1045,6 +1051,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public void showForm(PDFormXObject form) throws IOException
     {
+        if (isHiddenOCG(form.getOptionalContent()))
+        {
+            return;
+        }
         if (isContentRendered())
         {
             super.showForm(form);
@@ -1066,6 +1076,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public void showTransparencyGroup(PDTransparencyGroup form) throws IOException
     {
+        if (isHiddenOCG(form.getOptionalContent()))
+        {
+            return;
+        }
         if (!isContentRendered())
         {
             return;
