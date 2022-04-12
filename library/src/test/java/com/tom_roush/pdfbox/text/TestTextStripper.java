@@ -64,20 +64,20 @@ import static org.junit.Assert.fail;
  * files and known good output for each.  The default mode of testAll()
  * is to process each *.pdf file in "src/test/resources/input".  An output
  * file is created in "target/test-output" with the same name as the PDF file,
- * plus an additional ".txt" suffix.
+ * plus an additional ".txt" suffix.  
  *
  * The output file is then tested against a known good result file from
  * the input directory (again, with the same name as the tested PDF file,
  * but with the additional ".txt" suffix).  The process is performed both
- * with and without sorting enabled.  The sorted files have a "-sorted.txt"
- * suffix.
+ * with and without sorting enabled.  The sorted files have a "-sorted.txt" 
+ * suffix. 
  *
  * So for the file "src/test/resources/input/hello.pdf", an output file will
  * be generated named "target/test-output/hello.pdf.txt".  Then that file
  * will be compared to the known good file
  * "src/test/resources/input/hello.pdf.txt", if it exists.
  *
- * To support testing with files that are not officially distributed
+ * To support testing with files that are not officially distributed 
  * with PDFBox, this test will also look in the "target/test-input-ext"
  * directory.
  *
@@ -102,22 +102,10 @@ import static org.junit.Assert.fail;
  */
 public class TestTextStripper
 {
+
     private boolean bFail = false;
     private PDFTextStripper stripper = null;
     private static final String ENCODING = "UTF-8";
-
-//    /**
-//     * Test class constructor.
-//     *
-//     * @param name The name of the test class.
-//     *
-//     * @throws IOException If there is an error creating the test.
-//     */
-//    public TestTextStripper(String name) throws IOException
-//    {
-//        stripper = new PDFTextStripper();
-//        stripper.setLineSeparator("\n");
-//    }
 
     /**
      * Test suite setup.
@@ -146,18 +134,17 @@ public class TestTextStripper
      *
      * @param expected Expected string
      * @param actual Actual String
-     *
      * @return <code>true</code> is the strings are both null,
      * or if their contents are the same, otherwise <code>false</code>.
      */
     private boolean stringsEqual(String expected, String actual)
     {
         boolean equals = true;
-        if ((expected == null) && (actual == null))
+        if( (expected == null) && (actual == null) )
         {
             return true;
         }
-        else if (expected != null && actual != null)
+        else if( expected != null && actual != null )
         {
             expected = expected.trim();
             actual = actual.trim();
@@ -165,39 +152,44 @@ public class TestTextStripper
             char[] actualArray = actual.toCharArray();
             int expectedIndex = 0;
             int actualIndex = 0;
-            while (expectedIndex < expectedArray.length && actualIndex < actualArray.length)
+            while( expectedIndex<expectedArray.length && actualIndex<actualArray.length )
             {
-                if (expectedArray[expectedIndex] != actualArray[actualIndex])
+                if( expectedArray[expectedIndex] != actualArray[actualIndex] )
                 {
                     equals = false;
-                    System.out.println("Lines differ at index" + " expected:" + expectedIndex + "-" +
-                        (int)expectedArray[expectedIndex] + " actual:" + actualIndex + "-" +
-                        (int)actualArray[actualIndex]);
+                    System.out.println("Lines differ at index"
+                        + " expected:" + expectedIndex + "-" + (int)expectedArray[expectedIndex]
+                        + " actual:" + actualIndex + "-" + (int)actualArray[actualIndex] );
                     break;
                 }
-                expectedIndex = skipWhitespace(expectedArray, expectedIndex);
-                actualIndex = skipWhitespace(actualArray, actualIndex);
+                expectedIndex = skipWhitespace( expectedArray, expectedIndex );
+                actualIndex = skipWhitespace( actualArray, actualIndex );
                 expectedIndex++;
                 actualIndex++;
             }
-            if (equals)
+            if( equals )
             {
-                if (expectedIndex != expectedArray.length)
+                if( expectedIndex != expectedArray.length )
                 {
                     equals = false;
-                    System.out.println("Expected line is longer at:" + expectedIndex);
+                    System.out.println("Expected line is longer at:" + expectedIndex );
                 }
-                if (actualIndex != actualArray.length)
+                if( actualIndex != actualArray.length )
                 {
                     equals = false;
-                    System.out.println("Actual line is longer at:" + actualIndex);
+                    System.out.println("Actual line is longer at:" + actualIndex );
+                }
+                if (expectedArray.length != actualArray.length)
+                {
+                    equals = false;
+                    System.out.println("Expected lines: " + expectedArray.length + ", actual lines: " + actualArray.length);
                 }
             }
         }
         else
         {
-            equals = (expected == null && actual != null && actual.trim().isEmpty()) ||
-                (actual == null && expected != null && expected.trim().isEmpty());
+            equals = (expected == null && actual != null && actual.trim().isEmpty())
+                || (actual == null && expected != null && expected.trim().isEmpty());
         }
         return equals;
     }
@@ -205,14 +197,14 @@ public class TestTextStripper
     /**
      * If the current index is whitespace then skip any subsequent whitespace.
      */
-    private int skipWhitespace(char[] array, int index)
+    private int skipWhitespace( char[] array, int index )
     {
         //if we are at a space character then skip all space
         //characters, but when all done rollback 1 because stringsEqual
         //will roll forward 1
-        if (array[index] == ' ' || array[index] > 256)
+        if( array[index] == ' ' || array[index] > 256 )
         {
-            while (index < array.length && (array[index] == ' ' || array[index] > 256))
+            while( index < array.length && (array[index] == ' ' || array[index] > 256))
             {
                 index++;
             }
@@ -228,13 +220,12 @@ public class TestTextStripper
      * @param outDir The directory to store the output in
      * @param bLogResult Whether to log the extracted text
      * @param bSort Whether or not the extracted text is sorted
-     *
      * @throws Exception when there is an exception
      */
     public void doTestFile(File inFile, File outDir, boolean bLogResult, boolean bSort)
         throws Exception
     {
-        if (bSort)
+        if(bSort)
         {
             System.out.println("Preparing to parse " + inFile.getName() + " for sorted test");
         }
@@ -259,9 +250,9 @@ public class TestTextStripper
             File diffFile;
             File expectedFile;
 
-            if (bSort)
+            if(bSort)
             {
-                outFile = new File(outDir, inFile.getName() + "-sorted.txt");
+                outFile = new File(outDir,  inFile.getName() + "-sorted.txt");
                 diffFile = new File(outDir, inFile.getName() + "-sorted-diff.txt");
                 expectedFile = new File(inFile.getParentFile(), inFile.getName() + "-sorted.txt");
             }
@@ -278,14 +269,14 @@ public class TestTextStripper
             OutputStream os = new FileOutputStream(outFile);
             try
             {
-                os.write(0xEF);
-                os.write(0xBB);
-                os.write(0xBF);
+                os.write (0xEF);
+                os.write (0xBB);
+                os.write (0xBF);
 
                 Writer writer = new BufferedWriter(new OutputStreamWriter(os, ENCODING));
                 try
                 {
-                    //Allows for sorted tests
+                    //Allows for sorted tests 
                     stripper.setSortByPosition(bSort);
                     stripper.writeText(document, writer);
                 }
@@ -316,20 +307,20 @@ public class TestTextStripper
 
             boolean localFail = false;
 
-            LineNumberReader expectedReader = new LineNumberReader(
-                new InputStreamReader(new FileInputStream(expectedFile), ENCODING));
-            LineNumberReader actualReader = new LineNumberReader(
-                new InputStreamReader(new FileInputStream(outFile), ENCODING));
+            LineNumberReader expectedReader =
+                new LineNumberReader(new InputStreamReader(new FileInputStream(expectedFile), ENCODING));
+            LineNumberReader actualReader =
+                new LineNumberReader(new InputStreamReader(new FileInputStream(outFile), ENCODING));
 
             while (true)
             {
                 String expectedLine = expectedReader.readLine();
-                while (expectedLine != null && expectedLine.trim().length() == 0)
+                while( expectedLine != null && expectedLine.trim().length() == 0 )
                 {
                     expectedLine = expectedReader.readLine();
                 }
                 String actualLine = actualReader.readLine();
-                while (actualLine != null && actualLine.trim().length() == 0)
+                while( actualLine != null && actualLine.trim().length() == 0 )
                 {
                     actualLine = actualReader.readLine();
                 }
@@ -337,8 +328,9 @@ public class TestTextStripper
                 {
                     this.bFail = true;
                     localFail = true;
-                    System.out.println("FAILURE: Line mismatch for file " + inFile.getName() + " (sort = " +
-                        bSort + ")" + " at expected line: " + expectedReader.getLineNumber() +
+                    System.out.println("FAILURE: Line mismatch for file " + inFile.getName() +
+                        " (sort = "+bSort+")" +
+                        " at expected line: " + expectedReader.getLineNumber() +
                         " at actual line: " + actualReader.getLineNumber() +
                         "\nexpected line was: \"" + expectedLine + "\"" +
                         "\nactual line was:   \"" + actualLine + "\"" + "\n");
@@ -347,7 +339,7 @@ public class TestTextStripper
                     //break;
                 }
 
-                if (expectedLine == null || actualLine == null)
+                if( expectedLine == null || actualLine==null)
                 {
                     break;
                 }
@@ -372,21 +364,21 @@ public class TestTextStripper
                 {
                     if (delta instanceof ChangeDelta)
                     {
-                        ChangeDelta cdelta = (ChangeDelta)delta;
+                        ChangeDelta cdelta = (ChangeDelta) delta;
                         diffPS.println("Org: " + cdelta.getOriginal());
                         diffPS.println("New: " + cdelta.getRevised());
                         diffPS.println();
                     }
                     else if (delta instanceof DeleteDelta)
                     {
-                        DeleteDelta ddelta = (DeleteDelta)delta;
+                        DeleteDelta ddelta = (DeleteDelta) delta;
                         diffPS.println("Org: " + ddelta.getOriginal());
                         diffPS.println("New: " + ddelta.getRevised());
                         diffPS.println();
                     }
                     else if (delta instanceof InsertDelta)
                     {
-                        InsertDelta idelta = (InsertDelta)delta;
+                        InsertDelta idelta = (InsertDelta) delta;
                         diffPS.println("Org: " + idelta.getOriginal());
                         diffPS.println("New: " + idelta.getRevised());
                         diffPS.println();
@@ -412,8 +404,7 @@ public class TestTextStripper
         String line = "";
         try
         {
-            BufferedReader in = new BufferedReader(
-                new InputStreamReader(new FileInputStream(file), ENCODING));
+            BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(file), ENCODING));
             while ((line = in.readLine()) != null)
             {
                 lines.add(line);
@@ -429,7 +420,7 @@ public class TestTextStripper
 
     private int findOutlineItemDestPageNum(PDDocument doc, PDOutlineItem oi) throws IOException
     {
-        PDPageDestination pageDest = (PDPageDestination)oi.getDestination();
+        PDPageDestination pageDest = (PDPageDestination) oi.getDestination();
 
         // two methods to get the page index, the result should be identical!
         int indexOfPage = doc.getPages().indexOf(oi.findDestinationPage(doc));
@@ -453,8 +444,7 @@ public class TestTextStripper
     @Test
     public void testStripByOutlineItems() throws IOException, URISyntaxException
     {
-        PDDocument doc = PDDocument.load(
-            new File(TestPDPageTree.class.getResource("/pdfbox/com/tom_roush/pdfbox/pdmodel/with_outline.pdf").toURI()));
+        PDDocument doc = PDDocument.load(new File(TestPDPageTree.class.getResource("/pdfbox/com/tom_roush/pdfbox/pdmodel/with_outline.pdf").toURI()));
         PDDocumentOutline outline = doc.getDocumentCatalog().getDocumentOutline();
         Iterable<PDOutlineItem> children = outline.children();
         Iterator<PDOutlineItem> it = children.iterator();
@@ -472,10 +462,21 @@ public class TestTextStripper
         assertFalse(textFull.isEmpty());
 
         String expectedTextFull =
-            "First level 1\n" + "First level 2\n" + "Fist level 3\n" + "Some content\n" +
-                "Some other content\n" + "Second at level 1\n" + "Second level 2\n" + "Content\n" +
-                "Third level 1\n" + "Third level 2\n" + "Third level 3\n" + "Content\n" +
-                "Fourth level 1\n" + "Content\n" + "Content\n";
+            "First level 1\n"
+                + "First level 2\n"
+                + "Fist level 3\n"
+                + "Some content\n"
+                + "Some other content\n"
+                + "Second at level 1\n"
+                + "Second level 2\n"
+                + "Content\n"
+                + "Third level 1\n"
+                + "Third level 2\n"
+                + "Third level 3\n"
+                + "Content\n"
+                + "Fourth level 1\n"
+                + "Content\n"
+                + "Content\n";
         assertEquals(expectedTextFull, textFull.replaceAll("\r", ""));
 
         // this should grab 0-based pages 2 and 3, i.e. 1-based pages 3 and 4
@@ -487,8 +488,13 @@ public class TestTextStripper
         assertFalse(textoi23.equals(textFull));
 
         String expectedTextoi23 =
-            "Second at level 1\n" + "Second level 2\n" + "Content\n" + "Third level 1\n" +
-                "Third level 2\n" + "Third level 3\n" + "Content\n";
+            "Second at level 1\n"
+                + "Second level 2\n"
+                + "Content\n"
+                + "Third level 1\n"
+                + "Third level 2\n"
+                + "Third level 3\n"
+                + "Content\n";
         assertEquals(expectedTextoi23, textoi23.replaceAll("\r", ""));
 
         // this should grab 0-based pages 2 and 3, i.e. 1-based pages 3 and 4
@@ -512,7 +518,10 @@ public class TestTextStripper
         assertFalse(textoi2.equals(textoi23));
         assertFalse(textoi23.equals(textFull));
 
-        String expectedTextoi2 = "Second at level 1\n" + "Second level 2\n" + "Content\n";
+        String expectedTextoi2 =
+            "Second at level 1\n"
+                + "Second level 2\n"
+                + "Content\n";
         assertEquals(expectedTextoi2, textoi2.replaceAll("\r", ""));
 
 
@@ -538,7 +547,6 @@ public class TestTextStripper
 
     /**
      * Process each file in the specified directory.
-     *
      * @param inDir Input directory search for PDF files in.
      * @param outDir Output directory where the temp files will be created.
      */

@@ -34,6 +34,8 @@ import com.tom_roush.pdfbox.io.RandomAccessRead;
 import com.tom_roush.pdfbox.io.ScratchFile;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentInformation;
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline;
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import com.tom_roush.pdfbox.util.DateConverter;
 
 import org.junit.Before;
@@ -343,6 +345,41 @@ public class TestPDFParser
         File testPdf = new File(TARGETPDFDIR, "PDFBOX-4339.pdf");
         assumeTrue(testPdf.exists());
         PDDocument.load(testPdf).close();
+    }
+
+    /**
+     * Test parsing the "WXMDXCYRWFDCMOSFQJ5OAJIAFXYRZ5OA.pdf" file, which is susceptible to
+     * regression.
+     *
+     * @throws IOException
+     */
+//    TODO: PdfBox-Android - provide test file
+    @Test
+    public void testPDFBox4153() throws IOException
+    {
+        File testPdf = new File(TARGETPDFDIR, "PDFBOX-4153-WXMDXCYRWFDCMOSFQJ5OAJIAFXYRZ5OA.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument doc = PDDocument.load(testPdf);
+        PDDocumentOutline documentOutline = doc.getDocumentCatalog().getDocumentOutline();
+        PDOutlineItem firstChild = documentOutline.getFirstChild();
+        assertEquals("Main Menu", firstChild.getTitle());
+        doc.close();
+    }
+
+    /**
+     * Test that PDFBOX-4490 has 3 pages.
+     *
+     * @throws IOException
+     */
+//    TODO: PdfBox-Android - provide test file
+    @Test
+    public void testPDFBox4490() throws IOException
+    {
+        File testPdf = new File(TARGETPDFDIR, "PDFBOX-4490.pdf");
+        assumeTrue(testPdf.exists());
+        PDDocument doc = PDDocument.load(testPdf);
+        assertEquals(3, doc.getNumberOfPages());
+        doc.close();
     }
 
     private void executeParserTest(RandomAccessRead source, MemoryUsageSetting memUsageSetting) throws IOException

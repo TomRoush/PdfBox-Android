@@ -38,7 +38,7 @@ public class AlignmentTest
     private static final String NAME_OF_PDF = "AlignmentTests.pdf";
     private static final String TEST_VALUE = "sdfASDF1234äöü";
 
-    Context testContext;
+    private Context testContext;
 
     private PDDocument document;
     private PDAcroForm acroForm;

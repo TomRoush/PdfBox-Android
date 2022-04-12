@@ -29,6 +29,7 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSNull;
 import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.util.Charsets;
 
@@ -144,11 +145,10 @@ public class ContentStreamWriter
             output.write(COSWriter.ARRAY_OPEN);
             for( int i=0; i<array.size(); i++ )
             {
-                writeObject( array.get( i ) );
-                output.write( SPACE );
+                writeObject(array.get(i));
             }
-
-            output.write( COSWriter.ARRAY_CLOSE );
+            output.write(COSWriter.ARRAY_CLOSE);
+            output.write(SPACE);
         }
         else if( o instanceof COSDictionary )
         {
@@ -158,10 +158,8 @@ public class ContentStreamWriter
             {
                 if (entry.getValue() != null)
                 {
-                    writeObject( entry.getKey() );
-                    output.write( SPACE );
-                    writeObject( entry.getValue() );
-                    output.write( SPACE );
+                    writeObject(entry.getKey());
+                    writeObject(entry.getValue());
                 }
             }
             output.write( COSWriter.DICT_CLOSE );
@@ -173,6 +171,7 @@ public class ContentStreamWriter
             if (op.getName().equals(OperatorName.BEGIN_INLINE_IMAGE))
             {
                 output.write(OperatorName.BEGIN_INLINE_IMAGE.getBytes(Charsets.ISO_8859_1));
+                output.write(EOL);
                 COSDictionary dic = op.getImageParameters();
                 for( COSName key : dic.keySet() )
                 {
@@ -194,6 +193,11 @@ public class ContentStreamWriter
                 output.write( op.getName().getBytes(Charsets.ISO_8859_1) );
                 output.write( EOL );
             }
+        }
+        else if (o instanceof COSNull)
+        {
+            output.write("null".getBytes(Charsets.ISO_8859_1));
+            output.write(SPACE);
         }
         else
         {
