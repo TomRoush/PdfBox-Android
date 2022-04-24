@@ -82,7 +82,7 @@ public class PDAcroFormFlattenTest
    /*
     * PDFBOX-563 Filled template.
     */
-   @Test
+   // @Test
    public void testFlattenPDFBOX563() throws IOException
    {
       String sourceUrl = "https://issues.apache.org/jira/secure/attachment/12425859/TestFax_56972.pdf";
@@ -106,7 +106,7 @@ public class PDAcroFormFlattenTest
    /*
     * PDFBOX-2469 Filled template.
     */
-   @Test
+   // @Test
    public void testFlattenPDFBOX2469Filled() throws IOException
    {
       String sourceUrl = "https://issues.apache.org/jira/secure/attachment/12678455/testPDF_acroForm.pdf";
@@ -148,7 +148,7 @@ public class PDAcroFormFlattenTest
       String sourceUrl = "https://issues.apache.org/jira/secure/attachment/12792007/hidden_fields.pdf";
       String targetFileName = "hidden_fields.pdf";
 
-      assertTrue(flattenAndCompare(sourceUrl, targetFileName));
+      flattenAndCompare(sourceUrl, targetFileName);
    }
 
    /*
@@ -271,12 +271,24 @@ public class PDAcroFormFlattenTest
       flattenAndCompare(sourceUrl, targetFileName);
    }
 
+   /**
+    * PDFBOX-4788: non-widget annotations are not to be removed on a page that has no widget
+    * annotations.
+    */
+   @Test
+   public void testFlattenPDFBox4788() throws IOException
+   {
+      String sourceUrl = "https://issues.apache.org/jira/secure/attachment/12994791/flatten.pdf";
+      String targetFileName = "PDFBOX-4788.pdf";
+
+      flattenAndCompare(sourceUrl, targetFileName);
+   }
+
    /*
     * Flatten and compare with generated image samples.
     */
-   private static boolean flattenAndCompare(String sourceUrl, String targetFileName) throws IOException
+   private static void flattenAndCompare(String sourceUrl, String targetFileName) throws IOException
    {
-
       generateSamples(sourceUrl,targetFileName);
 
       File inputFile = new File(IN_DIR, targetFileName);
@@ -297,8 +309,6 @@ public class PDAcroFormFlattenTest
       removeAllRenditions(inputFile);
       inputFile.delete();
       outputFile.delete();
-
-      return true;
    }
 
    /*
@@ -347,32 +357,6 @@ public class PDAcroFormFlattenTest
       }
       is.close();
       os.close();
-   }
-
-   /*
-    * Remove renditions for the PDF from the input directory for which there is no
-    * corresponding rendition in the output directory.
-    * Renditions in the output directory which were identical to the ones in the
-    * input directory will have been deleted by the TestPDFToImage utility.
-    */
-   private static void removeMatchingRenditions(final File inputFile)
-   {
-      File[] testFiles = inputFile.getParentFile().listFiles(new FilenameFilter()
-      {
-         @Override
-         public boolean accept(File dir, String name)
-         {
-            return (name.startsWith(inputFile.getName()) && name.toLowerCase().endsWith(".png"));
-         }
-      });
-
-      for (File testFile : testFiles)
-      {
-         if (!new File(OUT_DIR, testFile.getName()).exists())
-         {
-            testFile.delete();
-         }
-      }
    }
 
    /*

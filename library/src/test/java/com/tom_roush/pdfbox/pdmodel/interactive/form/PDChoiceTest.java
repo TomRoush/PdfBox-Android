@@ -23,7 +23,6 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,7 +58,7 @@ public class PDChoiceTest
         PDChoice choiceField = new PDListBox(acroForm);
 
         assertEquals(choiceField.getFieldType(), choiceField.getCOSObject().getNameAsString(COSName.FT));
-        assertEquals(choiceField.getFieldType(), "Ch");
+        assertEquals("Ch", choiceField.getFieldType());
         assertFalse(choiceField.isCombo());
     }
 
@@ -69,7 +68,7 @@ public class PDChoiceTest
         PDChoice choiceField = new PDComboBox(acroForm);
 
         assertEquals(choiceField.getFieldType(), choiceField.getCOSObject().getNameAsString(COSName.FT));
-        assertEquals(choiceField.getFieldType(), "Ch");
+        assertEquals("Ch", choiceField.getFieldType());
         assertTrue(choiceField.isCombo());
     }
 

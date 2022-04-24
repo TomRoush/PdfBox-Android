@@ -299,7 +299,7 @@ final class SampledImageReader
             for (int y = 0; y < starty + scanHeight; y++)
             {
                 int x = 0;
-                int readLen = iis.read(buff);
+                int readLen = (int) IOUtils.populateBuffer(iis, buff);
                 if (y < starty || y % currentSubsampling > 0)
                 {
                     continue;
@@ -390,7 +390,7 @@ final class SampledImageReader
             int i = 0;
             for (int y = 0; y < starty + scanHeight; ++y)
             {
-                input.read(tempBytes);
+                IOUtils.populateBuffer(input, tempBytes);
                 if (y < starty || y % currentSubsampling > 0)
                 {
                     continue;

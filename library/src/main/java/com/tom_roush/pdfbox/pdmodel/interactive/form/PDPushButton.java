@@ -19,6 +19,7 @@ package com.tom_roush.pdfbox.pdmodel.interactive.form;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 
@@ -84,6 +85,12 @@ public class PDPushButton extends PDButton
     public String getValueAsString()
     {
         return getValue();
+    }
+
+    @Override
+    public Set<String> getOnValues()
+    {
+        return Collections.emptySet();
     }
 
     @Override

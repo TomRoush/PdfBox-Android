@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 
@@ -163,7 +164,7 @@ public class PDFontTest
         doc = PDDocument.load(outputFile);
 
         font = (PDType1Font) doc.getPage(0).getResources().getFont(COSName.getPDFName("F1"));
-        Assert.assertEquals(font.getEncoding(), WinAnsiEncoding.INSTANCE);
+        Assert.assertEquals(WinAnsiEncoding.INSTANCE, font.getEncoding());
 
         for (char c : text.toCharArray())
         {
@@ -276,5 +277,49 @@ public class PDFontTest
         doc.save(baos);
         doc.close();
         return baos.toByteArray();
+    }
+
+    /**
+     * Check that font can be deleted after usage.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testDeleteFont() throws IOException
+    {
+        File tempFontFile = new File(OUT_DIR, "LiberationSans-Regular.ttf");
+        File tempPdfFile = new File(OUT_DIR, "testDeleteFont.pdf");
+        String text = "Test PDFBOX-4823";
+
+        InputStream is = testContext.getAssets().open("com/tom_roush/pdfbox/resources/ttf/LiberationSans-Regular.ttf");
+
+        OutputStream os = new FileOutputStream(tempFontFile);
+        IOUtils.copy(is, os);
+        is.close();
+        os.close();
+
+        PDDocument doc = new PDDocument();
+        PDPage page = new PDPage();
+        doc.addPage(page);
+        PDPageContentStream cs = new PDPageContentStream(doc, page);
+        PDFont font1 = PDType0Font.load(doc, tempFontFile);
+        cs.beginText();
+        cs.setFont(font1, 50);
+        cs.newLineAtOffset(50, 700);
+        cs.showText(text);
+        cs.endText();
+        cs.close();
+        doc.save(tempPdfFile);
+        doc.close();
+
+        Assert.assertTrue(tempFontFile.delete());
+
+        doc = PDDocument.load(tempPdfFile);
+        PDFTextStripper stripper = new PDFTextStripper();
+        String extractedText = stripper.getText(doc);
+        Assert.assertEquals(text, extractedText.trim());
+        doc.close();
+
+        Assert.assertTrue(tempPdfFile.delete());
     }
 }

@@ -345,7 +345,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     }
 
     @Override
-    protected void showFontGlyph(Matrix textRenderingMatrix, PDFont font, int code, String unicode,
+    protected void showFontGlyph(Matrix textRenderingMatrix, PDFont font, int code,
         Vector displacement) throws IOException
     {
         AffineTransform at = textRenderingMatrix.createAffineTransform();
@@ -428,13 +428,13 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
     @Override
     protected void showType3Glyph(Matrix textRenderingMatrix, PDType3Font font, int code,
-        String unicode, Vector displacement) throws IOException
+        Vector displacement) throws IOException
     {
         PDGraphicsState state = getGraphicsState();
         RenderingMode renderingMode = state.getTextState().getRenderingMode();
         if (!RenderingMode.NEITHER.equals(renderingMode))
         {
-            super.showType3Glyph(textRenderingMatrix, font, code, unicode, displacement);
+            super.showType3Glyph(textRenderingMatrix, font, code, displacement);
         }
     }
 
@@ -763,6 +763,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         {
             return;
         }
+        if (!isContentRendered())
+        {
+            return;
+        }
         Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
         AffineTransform at = ctm.createAffineTransform();
 
@@ -857,10 +861,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //            awtPaint = applySoftMaskToPaint(awtPaint, softMask);
 //            graphics.setPaint(awtPaint);
             RectF unitRect = new RectF(0, 0, 1, 1);
-            if (isContentRendered())
-            {
 //            graphics.fill(at.createTransformedShape(unitRect));
-            }
         }
         else
         {
@@ -874,10 +875,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             int height = image.getHeight();
             imageTransform.scale(1.0 / width, -1.0 / height);
             imageTransform.translate(0, -height);
-            if (isContentRendered())
-            {
-                canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
-            }
+
+            canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
         }
     }
 
@@ -1520,17 +1519,19 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             visibles.add(!isHiddenOCG(prop));
         }
         COSName visibilityPolicy = ocmd.getVisibilityPolicy();
+        // visible if any of the entries in OCGs are OFF
         if (COSName.ANY_OFF.equals(visibilityPolicy))
         {
             for (boolean visible : visibles)
             {
                 if (!visible)
                 {
-                    return true;
+                    return false;
                 }
             }
-            return false;
+            return true;
         }
+        // visible only if all of the entries in OCGs are ON
         if (COSName.ALL_ON.equals(visibilityPolicy))
         {
             for (boolean visible : visibles)
@@ -1542,17 +1543,19 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             }
             return false;
         }
+        // visible only if all of the entries in OCGs are OFF
         if (COSName.ALL_OFF.equals(visibilityPolicy))
         {
             for (boolean visible : visibles)
             {
                 if (visible)
                 {
-                    return false;
+                    return true;
                 }
             }
-            return true;
+            return false;
         }
+        // visible if any of the entries in OCGs are ON
         // AnyOn is default
         for (boolean visible : visibles)
         {

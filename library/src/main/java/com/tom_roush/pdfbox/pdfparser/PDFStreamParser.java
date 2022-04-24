@@ -18,7 +18,6 @@ package com.tom_roush.pdfbox.pdfparser;
 
 import android.util.Log;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,6 +34,7 @@ import com.tom_roush.pdfbox.cos.COSNull;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.io.RandomAccessBuffer;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
 
 /**
@@ -96,7 +96,7 @@ public class PDFStreamParser extends BaseParser
      */
     public PDFStreamParser(byte[] bytes) throws IOException
     {
-        super(new InputStreamSource(new ByteArrayInputStream(bytes)));
+        super(new RandomAccessSource(new RandomAccessBuffer(bytes)));
     }
 
     /**

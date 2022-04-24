@@ -15,14 +15,19 @@
  */
 package com.tom_roush.pdfbox.multipdf;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 
 import com.tom_roush.harmony.awt.AWTColor;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream.AppendMode;
+import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
 
 import junit.framework.TestCase;
 
@@ -98,5 +103,30 @@ public class PDFCloneUtilityTest extends TestCase
         PDDocument.load(new File(TESTDIR + CLONESRC), (String)null).close();
         PDDocument.load(new File(TESTDIR + CLONEDST)).close();
         PDDocument.load(new File(TESTDIR + CLONEDST), (String)null).close();
+    }
+
+    /**
+     * PDFBOX-4814: this tests merging a direct and an indirect COSDictionary, when "target" is
+     * indirect in cloneMerge().
+     *
+     * @throws IOException
+     */
+    public void testDirectIndirect() throws IOException
+    {
+        PDDocument doc1 = new PDDocument();
+
+        doc1.addPage(new PDPage());
+        doc1.getDocumentCatalog().setOCProperties(new PDOptionalContentProperties());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        doc1.save(baos);
+        PDDocument doc2 = PDDocument.load(baos.toByteArray());
+        PDFMergerUtility merger = new PDFMergerUtility();
+        // The OCProperties is a direct object here, but gets saved as an indirect object.
+        assertTrue(doc1.getDocumentCatalog().getCOSObject().getItem(COSName.OCPROPERTIES) instanceof COSDictionary);
+        assertTrue(doc2.getDocumentCatalog().getCOSObject().getItem(COSName.OCPROPERTIES) instanceof COSObject);
+        merger.appendDocument(doc2, doc1);
+        assertEquals(2, doc2.getNumberOfPages());
+        doc2.close();
+        doc1.close();
     }
 }
