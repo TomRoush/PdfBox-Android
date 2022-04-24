@@ -21,6 +21,7 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.rendering.WrapPaint;
 import com.tom_roush.pdfbox.util.Matrix;
 
 /**
@@ -98,5 +99,8 @@ public class PDShadingType1 extends PDShading
         getCOSObject().setItem(COSName.DOMAIN, newDomain);
     }
 
-//    public Paint toPaint(Matrix matrix) TODO: PdfBox-Android
+    @Override
+    public WrapPaint toPaint(Matrix matrix){
+        return new Type1ShadingPaint(this, matrix);
+    }
 }

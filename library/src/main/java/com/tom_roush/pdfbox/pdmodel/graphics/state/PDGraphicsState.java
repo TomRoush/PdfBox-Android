@@ -29,6 +29,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
+import com.tom_roush.pdfbox.util.GraphicsUtil;
 import com.tom_roush.pdfbox.util.Matrix;
 
 /**
@@ -76,13 +77,7 @@ public class PDGraphicsState implements Cloneable
      */
     public PDGraphicsState(PDRectangle page)
     {
-//        clippingPath = new Area(new GeneralPath(page.toGeneralPath()));TODO: PdfBox-Android
-        RectF bounds = new RectF();
-        page.toGeneralPath().computeBounds(bounds, true);
-        clippingPath = new Region();
-        Rect boundsRounded = new Rect();
-        bounds.round(boundsRounded);
-        clippingPath.setPath(page.toGeneralPath(), new Region(boundsRounded));
+        clippingPath = GraphicsUtil.getPathRegion(page.toGeneralPath());
     }
 
     /**
@@ -600,25 +595,16 @@ public class PDGraphicsState implements Cloneable
      */
     public void intersectClippingPath(Path path)
     {
-        RectF bounds = new RectF();
-        path.computeBounds(bounds, true);
-        Region r = new Region();
-        Rect boundsRounded = new Rect();
-        bounds.round(boundsRounded);
-        r.setPath(path, new Region(boundsRounded));
-        intersectClippingPath(r);
-        // TODO: PdfBox-Android Verify correct behavior
+        intersectClippingPath(GraphicsUtil.getPathRegion(path));
     }
 
     /**
      * Modify the current clipping path by intersecting it with the given path.
      * @param area area to intersect with the clipping path
      */
-    public void intersectClippingPath(Region area)
-    {
+    public void intersectClippingPath(Region area) {
         // lazy cloning of clipping path for performance
-        if (!isClippingPathDirty)
-        {
+        if (!isClippingPathDirty) {
             // deep copy (can't use clone() as it performs only a shallow copy)
             Region cloned = new Region(area);
 //            cloned.add(clippingPath);
@@ -636,8 +622,7 @@ public class PDGraphicsState implements Cloneable
      *
      * @return The current clipping path.
      */
-    public Region getCurrentClippingPath()
-    {
+    public Region getCurrentClippingPath(){
         return clippingPath;
     }
 

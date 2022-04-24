@@ -16,12 +16,20 @@
  */
 package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
+import android.graphics.PointF;
+import android.graphics.RectF;
+
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.rendering.WrapPaint;
+import com.tom_roush.pdfbox.util.Matrix;
+
+import java.io.IOException;
 
 /**
  * Resources for a shading type 6 (Coons Patch Mesh).
  */
-public class PDShadingType6 extends PDShadingType4
+public class PDShadingType6 extends PDMeshBasedShadingType
 {
     /**
      * Constructor using the given shading dictionary.
@@ -39,9 +47,21 @@ public class PDShadingType6 extends PDShadingType4
         return PDShading.SHADING_TYPE6;
     }
 
-//    @Override
-//    public Paint toPaint(Matrix matrix)
-//    {
-//        return new Type6ShadingPaint(this, matrix);
-//    }TODO: PdfBox-Android
+    @Override
+    public WrapPaint toPaint(Matrix matrix)
+    {
+        return new Type6ShadingPaint(this, matrix);
+    }
+
+    @Override
+    protected Patch generatePatch(PointF[] points, float[][] color)
+    {
+        return new CoonsPatch(points, color);
+    }
+
+    @Override
+    public RectF getBounds(AffineTransform xform, Matrix matrix) throws IOException
+    {
+        return getBounds(xform, matrix, 12);
+    }
 }

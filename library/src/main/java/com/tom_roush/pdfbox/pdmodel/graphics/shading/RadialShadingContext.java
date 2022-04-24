@@ -1,0 +1,313 @@
+package com.tom_roush.pdfbox.pdmodel.graphics.shading;
+
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.Rect;
+import android.util.Log;
+
+import com.tom_roush.harmony.awt.geom.AffineTransform;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBoolean;
+import com.tom_roush.pdfbox.rendering.PaintContext;
+import com.tom_roush.pdfbox.util.Matrix;
+
+import java.io.IOException;
+
+public class RadialShadingContext extends ShadingContext implements PaintContext {
+
+    private PDShadingType3 radialShadingType;
+
+    private final float[] coords;
+    private final float[] domain;
+    private final boolean[] extend;
+    private final double x1x0;
+    private final double y1y0;
+    private final double r1r0;
+    private final double r0pow2;
+    private final float d1d0;
+    private final double denom;
+
+    private final int factor;
+    private final int[] colorTable;
+
+    private AffineTransform rat;
+
+
+    /**
+     * Constructor creates an instance to be used for fill operations.
+     *
+     * @param shading the shading type to be used
+     * @param xform transformation for user to device space
+     * @param matrix the pattern matrix concatenated with that of the parent content stream
+     * @param deviceBounds the bounds of the area to paint, in device units
+     * @throws IOException if there is an error getting the color space or doing color conversion.
+     */
+    public RadialShadingContext(PDShadingType3 shading, AffineTransform xform, Matrix matrix, Rect deviceBounds)
+            throws IOException
+    {
+        super(shading, xform, matrix);
+        this.radialShadingType = shading;
+        coords = shading.getCoords().toFloatArray();
+
+        // domain values
+        if (this.radialShadingType.getDomain() != null)
+        {
+            domain = shading.getDomain().toFloatArray();
+        }
+        else
+        {
+            // set default values
+            domain = new float[] { 0, 1 };
+        }
+
+        // extend values
+        COSArray extendValues = shading.getExtend();
+        if (extendValues != null)
+        {
+            extend = new boolean[2];
+            extend[0] = ((COSBoolean) extendValues.getObject(0)).getValue();
+            extend[1] = ((COSBoolean) extendValues.getObject(1)).getValue();
+        }
+        else
+        {
+            // set default values
+            extend = new boolean[] { false, false };
+        }
+        // calculate some constants to be used in getRaster
+        x1x0 = coords[3] - coords[0];
+        y1y0 = coords[4] - coords[1];
+        r1r0 = coords[5] - coords[2];
+        r0pow2 = Math.pow(coords[2], 2);
+        denom = Math.pow(x1x0, 2) + Math.pow(y1y0, 2) - Math.pow(r1r0, 2);
+        d1d0 = domain[1] - domain[0];
+
+        try
+        {
+            // get inverse transform to be independent of current user / device space
+            // when handling actual pixels in getRaster()
+            rat = matrix.createAffineTransform().createInverse();
+            rat.concatenate(xform.createInverse());
+        }
+        catch (AffineTransform.NoninvertibleTransformException ex)
+        {
+            Log.e("Pdfbox-Android", ex.getMessage() + ", matrix: " + matrix, ex);
+            rat = new AffineTransform();
+        }
+
+        // shading space -> device space
+        AffineTransform shadingToDevice = (AffineTransform)xform.clone();
+        shadingToDevice.concatenate(matrix.createAffineTransform());
+
+        // worst case for the number of steps is opposite diagonal corners, so use that
+        double dist = Math.sqrt(Math.pow(deviceBounds.right - deviceBounds.left, 2) +
+                Math.pow(deviceBounds.bottom - deviceBounds.top, 2));
+        factor = (int) Math.ceil(dist);
+
+        // build the color table for the given number of steps
+        colorTable = calcColorTable();
+    }
+
+    /**
+     * Calculate the color on the line that connects two circles' centers and store the result in an
+     * array.
+     *
+     * @return an array, index denotes the relative position, the corresponding value the color
+     */
+    private int[] calcColorTable() throws IOException
+    {
+        int[] map = new int[factor + 1];
+        if (factor == 0 || d1d0 == 0)
+        {
+            float[] values = radialShadingType.evalFunction(domain[0]);
+            map[0] = convertToRGB(values);
+        }
+        else
+        {
+            for (int i = 0; i <= factor; i++)
+            {
+                float t = domain[0] + d1d0 * i / factor;
+                float[] values = radialShadingType.evalFunction(t);
+                map[i] = convertToRGB(values);
+            }
+        }
+        return map;
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        radialShadingType = null;
+    }
+
+    @Override
+    public Bitmap.Config getColorModel() {
+        return super.getColorModel();
+    }
+
+    @Override
+    public Bitmap getRaster(int x, int y, int w, int h) {
+        // create writable raster
+        Bitmap raster = Bitmap.createBitmap(w, h, getColorModel());
+        int[] data = new int[w * h];
+        float inputValue = -1;
+        boolean useBackground;
+        float[] values = new float[2];
+        for (int j = 0; j < h; j++)
+        {
+            for (int i = 0; i < w; i++)
+            {
+                values[0] = x + i;
+                values[1] = y + j;
+                rat.transform(values, 0, values, 0, 1);
+                useBackground = false;
+                float[] inputValues = calculateInputValues(values[0], values[1]);
+                if (Float.isNaN(inputValues[0]) && Float.isNaN(inputValues[1]))
+                {
+                    if (getBackground() == null)
+                    {
+                        continue;
+                    }
+                    useBackground = true;
+                }
+                else
+                {
+                    // choose 1 of the 2 values
+                    if (inputValues[0] >= 0 && inputValues[0] <= 1)
+                    {
+                        // both values are in the range -> choose the larger one
+                        if (inputValues[1] >= 0 && inputValues[1] <= 1)
+                        {
+                            inputValue = Math.max(inputValues[0], inputValues[1]);
+                        }
+                        // first value is in the range, the second not -> choose first value
+                        else
+                        {
+                            inputValue = inputValues[0];
+                        }
+                    }
+                    else
+                    {
+                        // first value is not in the range,
+                        // but the second -> choose second value
+                        if (inputValues[1] >= 0 && inputValues[1] <= 1)
+                        {
+                            inputValue = inputValues[1];
+                        }
+                        // both are not in the range
+                        else
+                        {
+                            if (extend[0] && extend[1])
+                            {
+                                inputValue = Math.max(inputValues[0], inputValues[1]);
+                            }
+                            else if (extend[0])
+                            {
+                                inputValue = inputValues[0];
+                            }
+                            else if (extend[1])
+                            {
+                                inputValue = inputValues[1];
+                            }
+                            else if (getBackground() != null)
+                            {
+                                useBackground = true;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                    }
+                    // input value is out of range
+                    if (inputValue > 1)
+                    {
+                        // extend shading if extend[1] is true and nonzero radius
+                        if (extend[1] && coords[5] > 0)
+                        {
+                            inputValue = 1;
+                        }
+                        else
+                        {
+                            if (getBackground() == null)
+                            {
+                                continue;
+                            }
+                            useBackground = true;
+                        }
+                    }
+                    // input value is out of range
+                    else if (inputValue < 0)
+                    {
+                        // extend shading if extend[0] is true and nonzero radius
+                        if (extend[0] && coords[2] > 0)
+                        {
+                            inputValue = 0;
+                        }
+                        else
+                        {
+                            if (getBackground() == null)
+                            {
+                                continue;
+                            }
+                            useBackground = true;
+                        }
+                    }
+                }
+                int value;
+                if (useBackground)
+                {
+                    // use the given background color values
+                    value = getRgbBackground();
+                }
+                else
+                {
+                    int key = (int) (inputValue * factor);
+                    value = colorTable[key];
+                }
+                int index = j * w + i;
+                int r = value & 255;
+                value >>= 8;
+                int g = value & 255;
+                value >>= 8;
+                int b = value & 255;
+                data[index] = Color.argb(255, r, g, b);
+            }
+        }
+        raster.setPixels(data, 0, w, 0, 0, w, h);
+        return raster;
+    }
+
+
+    private float[] calculateInputValues(double x, double y)
+    {
+        // According to Adobes Technical Note #5600 we have to do the following
+        //
+        // x0, y0, r0 defines the start circle x1, y1, r1 defines the end circle
+        //
+        // The parametric equations for the center and radius of the gradient fill circle moving
+        // between the start circle and the end circle as a function of s are as follows:
+        //
+        // xc(s) = x0 + s * (x1 - x0) yc(s) = y0 + s * (y1 - y0) r(s) = r0 + s * (r1 - r0)
+        //
+        // Given a geometric coordinate position (x, y) in or along the gradient fill, the
+        // corresponding value of s can be determined by solving the quadratic constraint equation:
+        //
+        // [x - xc(s)]2 + [y - yc(s)]2 = [r(s)]2
+        //
+        // The following code calculates the 2 possible values of s
+        //
+        double p = -(x - coords[0]) * x1x0 - (y - coords[1]) * y1y0 - coords[2] * r1r0;
+        double q = (Math.pow(x - coords[0], 2) + Math.pow(y - coords[1], 2) - r0pow2);
+        double root = Math.sqrt(p * p - denom * q);
+        float root1 = (float) ((-p + root) / denom);
+        float root2 = (float) ((-p - root) / denom);
+        if (denom < 0)
+        {
+            return new float[] { root1, root2 };
+        }
+        else
+        {
+            return new float[] { root2, root1 };
+        }
+    }
+}
