@@ -173,9 +173,19 @@ public class GlyphSubstitutionTable extends TTFTable
             {
                 // catch corrupt file
                 // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#flTbl
-                Log.w("PdfBox-Android", "FeatureRecord array not alphabetically sorted by FeatureTag: " +
-                    featureRecord.featureTag + " < " + prevFeatureTag);
-                return new FeatureRecord[0];
+                if (featureRecord.featureTag.matches("\\w{4}") && prevFeatureTag.matches("\\w{4}"))
+                {
+                    // ArialUni.ttf has many warnings but isn't corrupt, so we assume that only
+                    // strings with trash characters indicate real corruption
+                    Log.d("PdfBox-Android", "FeatureRecord array not alphabetically sorted by FeatureTag: " +
+                        featureRecord.featureTag + " < " + prevFeatureTag);
+                }
+                else
+                {
+                    Log.w("PdfBox-Android", "FeatureRecord array not alphabetically sorted by FeatureTag: " +
+                        featureRecord.featureTag + " < " + prevFeatureTag);
+                    return new FeatureRecord[0];
+                }
             }
             featureOffsets[i] = data.readUnsignedShort();
             featureRecords[i] = featureRecord;
@@ -406,14 +416,15 @@ public class GlyphSubstitutionTable extends TTFTable
         for (LangSysTable langSysTable : langSysTables)
         {
             int required = langSysTable.requiredFeatureIndex;
-            if (required != 0xffff) // if no required features = 0xFFFF
+            if (required != 0xffff && required < featureList.length) // if no required features = 0xFFFF
             {
                 result.add(featureList[required]);
             }
             for (int featureIndex : langSysTable.featureIndices)
             {
-                if (enabledFeatures == null
-                    || enabledFeatures.contains(featureList[featureIndex].featureTag))
+                if (featureIndex < featureList.length &&
+                    (enabledFeatures == null ||
+                        enabledFeatures.contains(featureList[featureIndex].featureTag)))
                 {
                     result.add(featureList[featureIndex]);
                 }

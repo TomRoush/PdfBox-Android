@@ -76,6 +76,9 @@ public abstract class SecurityHandler
     /** indicates if the Metadata have to be decrypted of not. */
     private boolean decryptMetadata;
 
+    /** Can be used to allow stateless AES encryption */
+    private SecureRandom customSecureRandom;
+
     // PDFBOX-4453, PDFBOX-4477: Originally this was just a Set. This failed in rare cases
     // when a decrypted string was identical to an encrypted string.
     // Because COSString.equals() checks the contents, decryption was then skipped.
@@ -130,6 +133,16 @@ public abstract class SecurityHandler
     protected void setStreamFilterName(COSName streamFilterName)
     {
         this.streamFilterName = streamFilterName;
+    }
+
+    /**
+     * Set the custom SecureRandom.
+     *
+     * @param customSecureRandom the custom SecureRandom for AES encryption
+     */
+    public void setCustomSecureRandom(SecureRandom customSecureRandom)
+    {
+        this.customSecureRandom = customSecureRandom;
     }
 
     /**
@@ -361,7 +374,7 @@ public abstract class SecurityHandler
         if (decrypt)
         {
             // read IV from stream
-            int ivSize = data.read(iv);
+            int ivSize = (int) IOUtils.populateBuffer(data, iv);
             if (ivSize == -1)
             {
                 return false;
@@ -376,7 +389,7 @@ public abstract class SecurityHandler
         else
         {
             // generate random IV and write to stream
-            SecureRandom rnd = new SecureRandom();
+            SecureRandom rnd = getSecureRandom();
             rnd.nextBytes(iv);
             output.write(iv);
         }
@@ -384,9 +397,23 @@ public abstract class SecurityHandler
     }
 
     /**
+     * Returns a SecureRandom If customSecureRandom is not defined, instantiate a new SecureRandom
+     *
+     * @return SecureRandom
+     */
+    private SecureRandom getSecureRandom()
+    {
+        if (customSecureRandom != null)
+        {
+            return customSecureRandom;
+        }
+        return new SecureRandom();
+    }
+
+    /**
      * This will dispatch to the correct method.
      *
-     * @param obj The object to decrypt.
+     * @param obj    The object to decrypt.
      * @param objNum The object number.
      * @param genNum The object generation Number.
      *
@@ -459,7 +486,7 @@ public abstract class SecurityHandler
             // PDFBOX-3229 check case where metadata is not encrypted despite /EncryptMetadata missing
             InputStream is = stream.createRawInputStream();
             byte buf[] = new byte[10];
-            is.read(buf);
+            IOUtils.populateBuffer(is, buf);
             is.close();
             if (Arrays.equals(buf, "<?xpacket ".getBytes(Charsets.ISO_8859_1)))
             {

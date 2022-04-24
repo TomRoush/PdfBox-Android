@@ -19,9 +19,10 @@ package com.tom_roush.fontbox.cff;
 import android.util.Log;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * This class represents a converter for a mapping into a Type 1 sequence.
@@ -120,7 +121,7 @@ public class Type1CharStringParser
                 Integer numArgs = (Integer)sequence.remove(sequence.size()-1);
 
                 // othersubrs 0-3 have their own semantics
-                Stack<Integer> results = new Stack<Integer>();
+                Deque<Integer> results = new ArrayDeque<Integer>();
                 switch (othersubrNum)
                 {
                     case 0:

@@ -16,6 +16,8 @@
  */
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -34,6 +36,7 @@ import com.tom_roush.fontbox.ttf.OpenTypeFont;
 import com.tom_roush.fontbox.ttf.TTFParser;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.fontbox.type1.Type1Font;
+import com.tom_roush.pdfbox.android.PDFBoxConfig;
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
 /**
@@ -482,6 +485,10 @@ final class FontMapperImpl implements FontMapper
         FontInfo info = fontInfoByName.get(postScriptName);
         if (info != null && info.getFormat() == format)
         {
+            if (PDFBoxConfig.isDebugEnabled())
+            {
+                Log.d("PdfBox-Android", String.format("getFont('%s','%s') returns %s", format, postScriptName, info));
+            }
             return info;
         }
         return null;
@@ -528,6 +535,10 @@ final class FontMapperImpl implements FontMapper
                 FontMatch bestMatch = queue.poll();
                 if (bestMatch != null)
                 {
+                    if (PDFBoxConfig.isDebugEnabled())
+                    {
+                        Log.d("PdfBox-Android", "Best match for '" + baseFont + "': " + bestMatch.info);
+                    }
                     FontBoxFont font = bestMatch.info.getFont();
                     if (font instanceof OpenTypeFont)
                     {
@@ -682,6 +693,11 @@ final class FontMapperImpl implements FontMapper
             long CHINESE_TRADITIONAL = 1 << 20;
             long KOREAN_JOHAB = 1 << 21;
 
+            if ("MalgunGothic-Semilight".equals(info.getPostScriptName()))
+            {
+                // PDFBOX-4793 and PDF.js 10699: This font has only Korean, but has bits 17-21 set.
+                codePageRange &= ~(JIS_JAPAN | CHINESE_SIMPLIFIED | CHINESE_TRADITIONAL);
+            }
             if (cidSystemInfo.getOrdering().equals("GB1") &&
                 (codePageRange & CHINESE_SIMPLIFIED) == CHINESE_SIMPLIFIED)
             {
@@ -700,8 +716,8 @@ final class FontMapperImpl implements FontMapper
             else
             {
                 return cidSystemInfo.getOrdering().equals("Korea1") &&
-                    (codePageRange & KOREAN_WANSUNG) == KOREAN_WANSUNG ||
-                    (codePageRange & KOREAN_JOHAB) == KOREAN_JOHAB;
+                    ((codePageRange & KOREAN_WANSUNG) == KOREAN_WANSUNG ||
+                        (codePageRange & KOREAN_JOHAB) == KOREAN_JOHAB);
             }
         }
     }

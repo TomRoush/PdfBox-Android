@@ -118,11 +118,6 @@ public class PDCIDFontType2 extends PDCIDFont
                         Log.w("PdfBox-Android", "Found CFF/OTF but expected embedded TTF font " + fd.getFontName());
                     }
                 }
-                catch (NullPointerException e) // TTF parser is buggy
-                {
-                    fontIsDamaged = true;
-                    Log.w("PdfBox-Android", "Could not read embedded OTF for font " + getBaseFont(), e);
-                }
                 catch (IOException e)
                 {
                     fontIsDamaged = true;

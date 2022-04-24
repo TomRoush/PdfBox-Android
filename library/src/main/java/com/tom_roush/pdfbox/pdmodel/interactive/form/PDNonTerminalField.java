@@ -29,7 +29,6 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.COSArrayList;
-import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.fdf.FDFField;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 
@@ -89,17 +88,13 @@ public class PDNonTerminalField extends PDField
         List<PDField> children = getChildren();
         for (int i = 0; fdfKids != null && i < fdfKids.size(); i++)
         {
-            for (COSObjectable pdKid : children)
+            for (PDField pdChild : children)
             {
-                if (pdKid instanceof PDField)
+                FDFField fdfChild = fdfKids.get(i);
+                String fdfName = fdfChild.getPartialFieldName();
+                if (fdfName != null && fdfName.equals(pdChild.getPartialName()))
                 {
-                    PDField pdChild = (PDField) pdKid;
-                    FDFField fdfChild = fdfKids.get(i);
-                    String fdfName = fdfChild.getPartialFieldName();
-                    if (fdfName != null && fdfName.equals(pdChild.getPartialName()))
-                    {
-                        pdChild.importFDF(fdfChild);
-                    }
+                    pdChild.importFDF(fdfChild);
                 }
             }
         }
