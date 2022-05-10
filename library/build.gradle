@@ -13,12 +13,10 @@ android {
     compileOptions.encoding = 'UTF-8'
 
     defaultConfig {
+        testInstrumentationRunnerArguments notAnnotation: 'androidx.test.filters.FlakyTest'
         minSdkVersion Integer.parseInt(project.ANDROID_BUILD_MIN_SDK_VERSION)
         targetSdkVersion Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
-        versionName project.VERSION_NAME
-        versionCode Integer.parseInt(project.VERSION_CODE)
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunnerArgument "notAnnotation", "androidx.test.filters.FlakyTest"
     }
 
     buildTypes {
@@ -27,9 +25,6 @@ android {
         }
     }
 
-    lintOptions {
-        abortOnError false
-    }
 
     testOptions {
         unitTests.returnDefaultValues = true
@@ -43,6 +38,10 @@ android {
             assets.srcDirs = ['src/test/resources']
         }
     }
+    lint {
+        abortOnError false
+    }
+    namespace 'com.tom_roush.pdfbox'
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
