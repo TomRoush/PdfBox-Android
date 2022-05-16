@@ -19,6 +19,7 @@ package com.tom_roush.pdfbox.pdmodel.common.function;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import com.tom_roush.harmony.javax.imageio.stream.ImageInputStream;
 import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageInputStream;
@@ -389,7 +390,8 @@ public class PDFunctionType0 extends PDFunction
                     // PDF spec 1.7 p.171:
                     // Each sample value is represented as a sequence of BitsPerSample bits. 
                     // Successive values are adjacent in the bit stream; there is no padding at byte boundaries.
-                    ImageInputStream mciis = new MemoryCacheImageInputStream(getPDStream().createInputStream());
+                    InputStream inputStream = getPDStream().createInputStream();
+                    ImageInputStream mciis = new MemoryCacheImageInputStream(inputStream);
                     for (int i = 0; i < arraySize; i++)
                     {
                         for (int k = 0; k < nOut; k++)
@@ -400,6 +402,7 @@ public class PDFunctionType0 extends PDFunction
                         index++;
                     }
                     mciis.close();
+                    inputStream.close();
                 }
                 catch (IOException exception)
                 {

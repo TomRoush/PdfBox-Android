@@ -18,6 +18,7 @@ package com.tom_roush.pdfbox.pdmodel.font;
 
 import android.util.Log;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -115,21 +116,15 @@ final class FontMapperImpl implements FontMapper
         try
         {
             String ttfName = "com/tom_roush/pdfbox/resources/ttf/LiberationSans-Regular.ttf";
-            InputStream ttfStream = null;
+            InputStream ttfStream;
             if (PDFBoxResourceLoader.isReady())
             {
                 ttfStream = PDFBoxResourceLoader.getStream(ttfName);
             }
-
-            if (ttfStream == null)
+            else
             {
-                // Fallback
-                ttfStream = FontMapper.class.getResourceAsStream("/" + ttfName);
-            }
-
-            if (ttfStream == null)
-            {
-                throw new IOException("Error loading resource: " + ttfName);
+                ttfStream =
+                    new BufferedInputStream(FontMapper.class.getResourceAsStream("/" + ttfName));
             }
             TTFParser ttfParser = new TTFParser();
             lastResortFont = ttfParser.parse(ttfStream);

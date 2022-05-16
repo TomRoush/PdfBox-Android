@@ -16,6 +16,7 @@
  */
 package com.tom_roush.fontbox.cmap;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -122,27 +123,27 @@ public class CMapParser
 
                 if (previousToken != null)
                 {
-                    if (op.op.equals("usecmap"))
+                    if (op.op.equals("usecmap") && previousToken instanceof LiteralName)
                     {
                         parseUsecmap((LiteralName) previousToken, result);
                     }
-                    else if (op.op.equals("begincodespacerange"))
+                    else if (op.op.equals("begincodespacerange") && previousToken instanceof Number)
                     {
                         parseBegincodespacerange((Number) previousToken, cmapStream, result);
                     }
-                    else if (op.op.equals("beginbfchar"))
+                    else if (op.op.equals("beginbfchar") && previousToken instanceof Number)
                     {
                         parseBeginbfchar((Number) previousToken, cmapStream, result);
                     }
-                    else if (op.op.equals("beginbfrange"))
+                    else if (op.op.equals("beginbfrange") && previousToken instanceof Number)
                     {
                         parseBeginbfrange((Number) previousToken, cmapStream, result);
                     }
-                    else if (op.op.equals("begincidchar"))
+                    else if (op.op.equals("begincidchar") && previousToken instanceof Number)
                     {
                         parseBegincidchar((Number) previousToken, cmapStream, result);
                     }
-                    else if (op.op.equals("begincidrange"))
+                    else if (op.op.equals("begincidrange") && previousToken instanceof Integer)
                     {
                         parseBegincidrange((Integer) previousToken, cmapStream, result);
                     }
@@ -452,12 +453,7 @@ public class CMapParser
             return PDFBoxResourceLoader.getStream("com/tom_roush/fontbox/resources/cmap/" + name);
         }
 
-        InputStream is = getClass().getResourceAsStream("/com/tom_roush/fontbox/resources/cmap/" + name);
-        if (is == null)
-        {
-            throw new IOException("Error: Could not find referenced cmap stream " + name);
-        }
-        return is;
+        return new BufferedInputStream(getClass().getResourceAsStream("/com/tom_roush/fontbox/resources/cmap/" + name));
     }
 
     private Object parseNextToken(PushbackInputStream is) throws IOException
