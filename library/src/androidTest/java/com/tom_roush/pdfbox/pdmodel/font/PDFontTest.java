@@ -18,6 +18,7 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -28,10 +29,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.tom_roush.fontbox.ttf.TTFParser;
+import com.tom_roush.fontbox.ttf.TrueTypeCollection;
 import com.tom_roush.fontbox.ttf.TrueTypeFont;
+import com.tom_roush.fontbox.util.autodetect.FontFileFinder;
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.android.TestResourceGenerator;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -203,6 +209,53 @@ public class PDFontTest
         catch (IllegalArgumentException ex)
         {
         }
+    }
+
+    @Test
+    public void testFullEmbeddingTTC() throws IOException
+    {
+        FontFileFinder fff = new FontFileFinder();
+        TrueTypeCollection ttc = null;
+        for (URI uri : fff.find())
+        {
+            if (uri.getPath().endsWith(".ttc"))
+            {
+                File file = new File(uri);
+                 Log.i("PdfBox-Android", "TrueType collection file: " + file);
+                ttc = new TrueTypeCollection(file);
+                break;
+            }
+        }
+        if (ttc == null)
+        {
+             Log.i("PdfBox-Android", "testFullEmbeddingTTC skipped, no .ttc files available");
+            return;
+        }
+
+        final List<String> names = new ArrayList<String>();
+        ttc.processAllFonts(new TrueTypeCollection.TrueTypeFontProcessor()
+        {
+            @Override
+            public void process(TrueTypeFont ttf) throws IOException
+            {
+                 Log.i("PdfBox-Android", "TrueType font in collection: " + ttf.getName());
+                names.add(ttf.getName());
+            }
+        });
+
+        TrueTypeFont ttf = ttc.getFontByName(names.get(0)); // take the first one
+         Log.i("PdfBox-Android", "TrueType font used for test: " + ttf.getName());
+
+        try
+        {
+            PDType0Font.load(new PDDocument(), ttf, false);
+        }
+        catch (IOException ex)
+        {
+            Assert.assertEquals("Full embedding of TrueType font collections not supported", ex.getMessage());
+            return;
+        }
+        Assert.fail("should have thrown IOException");
     }
 
     private void testPDFBox3826checkFonts(byte[] byteArray, File fontFile) throws IOException

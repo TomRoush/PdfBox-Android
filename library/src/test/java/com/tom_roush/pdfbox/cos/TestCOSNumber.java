@@ -78,11 +78,37 @@ public abstract class TestCOSNumber extends TestCOSBase
             {
                 // PASS
             }
-
+            // PDFBOX-2569: some numbers start with "+"
+            assertEquals(COSNumber.get("1"), COSNumber.get("+1"));
+            assertEquals(COSNumber.get("123"), COSNumber.get("+123"));
         }
         catch (IOException e)
         {
             fail("Failed to convert a number " + e.getMessage());
         }
     }
+
+    /**
+     * PDFBOX-4895: large number, too big for a long leads to a null value.
+     *
+     * @throws IOException
+     */
+    public void testLargeNumber() throws IOException
+    {
+        assertNull(COSNumber.get("18446744073307448448"));
+        assertNull(COSNumber.get("-18446744073307448448"));
+    }
+
+    public void testInvalidNumber()
+    {
+        try
+        {
+            COSNumber.get("18446744073307F448448");
+            fail("Was expecting an IOException");
+        }
+        catch (IOException e)
+        {
+        }
+    }
+
 }

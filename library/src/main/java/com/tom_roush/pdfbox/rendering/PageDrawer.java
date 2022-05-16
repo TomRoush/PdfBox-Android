@@ -772,11 +772,12 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
         if (!pdImage.getInterpolate())
         {
-            boolean isScaledUp = pdImage.getWidth() < Math.round(at.getScaleX()) ||
-                pdImage.getHeight() < Math.round(at.getScaleY());
-
             // if the image is scaled down, we use smooth interpolation, eg PDFBOX-2364
             // only when scaled up do we use nearest neighbour, eg PDFBOX-2302 / mori-cvpr01.pdf
+            // PDFBOX-4930: we use the sizes of the ARGB image. These can be different
+            // than the original sizes of the base image, when the mask is bigger.
+            boolean isScaledUp = pdImage.getImage().getWidth() < Math.round(at.getScaleX()) ||
+                pdImage.getImage().getHeight() < Math.round(at.getScaleY());
             if (isScaledUp)
             {
 //                graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
@@ -850,18 +851,16 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
         setClip();
         AffineTransform imageTransform = new AffineTransform(at);
+        int width = image.getWidth();
+        int height = image.getHeight();
+        imageTransform.scale(1.0 / width, -1.0 / height);
+        imageTransform.translate(0, -height);
+
         PDSoftMask softMask = getGraphicsState().getSoftMask();
         if( softMask != null )
         {
-            imageTransform.scale(1, -1);
-            imageTransform.translate(0, -1);
-//            Paint awtPaint = new TexturePaint(image,
-//                new Rectangle2D.Double(imageTransform.getTranslateX(), imageTransform.getTranslateY(),
-//                    imageTransform.getScaleX(), imageTransform.getScaleY()));
-//            awtPaint = applySoftMaskToPaint(awtPaint, softMask);
-//            graphics.setPaint(awtPaint);
-            RectF unitRect = new RectF(0, 0, 1, 1);
-//            graphics.fill(at.createTransformedShape(unitRect));
+            RectF rectangle = new RectF(0, 0, width, height);
+//            Paint awtPaint; TODO: PdfBox-Android
         }
         else
         {
@@ -870,11 +869,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
                 image = applyTransferFunction(image, transfer);
             }
-
-            int width = image.getWidth();
-            int height = image.getHeight();
-            imageTransform.scale(1.0 / width, -1.0 / height);
-            imageTransform.translate(0, -height);
 
             canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
         }

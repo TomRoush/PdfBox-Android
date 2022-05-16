@@ -204,6 +204,66 @@ public class TestCOSFloat extends TestCOSNumber
 
     }
 
+    public void testVerySmallValues() throws IOException
+    {
+        double smallValue = Float.MIN_VALUE / 10d;
+
+        assertEquals("Test must be performed with a value smaller than Float.MIN_VALUE.", -1,
+            Double.compare(smallValue, Float.MIN_VALUE));
+
+        // 1.4012984643248171E-46
+        String asString = String.valueOf(smallValue);
+        COSFloat cosFloat = new COSFloat(asString);
+        assertEquals(0.0f, cosFloat.floatValue());
+
+        // 0.00000000000000000000000000000000000000000000014012984643248171
+        asString = new BigDecimal(asString).toPlainString();
+        cosFloat = new COSFloat(asString);
+        assertEquals(0.0f, cosFloat.floatValue());
+
+        smallValue *= -1;
+
+        // -1.4012984643248171E-46
+        asString = String.valueOf(smallValue);
+        cosFloat = new COSFloat(asString);
+        assertEquals(0.0f, cosFloat.floatValue());
+
+        // -0.00000000000000000000000000000000000000000000014012984643248171
+        asString = new BigDecimal(asString).toPlainString();
+        cosFloat = new COSFloat(asString);
+        assertEquals(0.0f, cosFloat.floatValue());
+    }
+
+    public void testVeryLargeValues() throws IOException
+    {
+        double largeValue = Float.MAX_VALUE * 10d;
+
+        assertEquals("Test must be performed with a value larger than Float.MAX_VALUE.", 1,
+            Double.compare(largeValue, Float.MIN_VALUE));
+
+        // 1.4012984643248171E-46
+        String asString = String.valueOf(largeValue);
+        COSFloat cosFloat = new COSFloat(asString);
+        assertEquals(Float.MAX_VALUE, cosFloat.floatValue());
+
+        // 0.00000000000000000000000000000000000000000000014012984643248171
+        asString = new BigDecimal(asString).toPlainString();
+        cosFloat = new COSFloat(asString);
+        assertEquals(Float.MAX_VALUE, cosFloat.floatValue());
+
+        largeValue *= -1;
+
+        // -1.4012984643248171E-46
+        asString = String.valueOf(largeValue);
+        cosFloat = new COSFloat(asString);
+        assertEquals(-Float.MAX_VALUE, cosFloat.floatValue());
+
+        // -0.00000000000000000000000000000000000000000000014012984643248171
+        asString = new BigDecimal(asString).toPlainString();
+        cosFloat = new COSFloat(asString);
+        assertEquals(-Float.MAX_VALUE, cosFloat.floatValue());
+    }
+
     @Override
     public void testIntValue()
     {
