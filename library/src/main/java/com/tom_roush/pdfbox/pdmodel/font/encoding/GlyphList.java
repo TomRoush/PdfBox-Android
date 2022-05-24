@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.io.IOUtils;
 
 /**
  * PostScript glyph list, maps glyph names to sequences of Unicode characters.
@@ -45,25 +46,31 @@ public final class GlyphList
      */
     private static GlyphList load(String filename, int numberOfEntries)
     {
-        String path = "com/tom_roush/pdfbox/resources/glyphlist/";
+        String path = "com/tom_roush/pdfbox/resources/glyphlist/" + filename;
+        InputStream resourceAsStream = null;
         try
         {
-            String resourcePath = path + filename;
-            InputStream resourceStream;
             if (PDFBoxResourceLoader.isReady())
             {
-                resourceStream = PDFBoxResourceLoader.getStream(resourcePath);
+                resourceAsStream = PDFBoxResourceLoader.getStream(path);
             }
             else
             {
-                // Fallback
-                resourceStream = GlyphList.class.getResourceAsStream("/" + resourcePath);
+                resourceAsStream = GlyphList.class.getResourceAsStream("/" + path);
             }
-            return new GlyphList(resourceStream, numberOfEntries);
+            if (resourceAsStream == null)
+            {
+                throw new IOException("GlyphList '" + path + "' not found");
+            }
+            return new GlyphList(resourceAsStream, numberOfEntries);
         }
         catch (IOException e)
         {
             throw new RuntimeException(e);
+        }
+        finally
+        {
+            IOUtils.closeQuietly(resourceAsStream);
         }
     }
 

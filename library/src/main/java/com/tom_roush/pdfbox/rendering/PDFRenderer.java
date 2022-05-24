@@ -64,6 +64,8 @@ public class PDFRenderer
 
     private Bitmap pageImage;
 
+    private float imageDownscalingOptimizationThreshold = 0.5f;
+
     /**
      * Creates a new PDFRenderer.
      * @param document the document to render
@@ -137,6 +139,29 @@ public class PDFRenderer
     public void setDefaultDestination(RenderDestination defaultDestination)
     {
         this.defaultDestination = defaultDestination;
+    }
+
+    /**
+     *
+     * @return get the image downscaling optimization threshold. See
+     * {@link #getImageDownscalingOptimizationThreshold()} for details.
+     */
+    public float getImageDownscalingOptimizationThreshold()
+    {
+        return imageDownscalingOptimizationThreshold;
+    }
+
+    /**
+     * Set the image downscaling optimization threshold. This must be a value between 0 and 1. When
+     * rendering downscaled images and rendering hints are set to bicubic+quality and the scaling is
+     * smaller than the threshold, a more quality-optimized but slower method will be used. The
+     * default is 0.5 which is a good compromise.
+     *
+     * @param imageDownscalingOptimizationThreshold
+     */
+    public void setImageDownscalingOptimizationThreshold(float imageDownscalingOptimizationThreshold)
+    {
+        this.imageDownscalingOptimizationThreshold = imageDownscalingOptimizationThreshold;
     }
 
     /**
@@ -276,8 +301,9 @@ public class PDFRenderer
         transform(canvas, page, scale, scale);
 
         // the end-user may provide a custom PageDrawer
-        PageDrawerParameters parameters = new PageDrawerParameters(this, page, subsamplingAllowed,
-            destination);
+        PageDrawerParameters parameters =
+            new PageDrawerParameters(this, page, subsamplingAllowed, destination,
+                imageDownscalingOptimizationThreshold);
         PageDrawer drawer = createPageDrawer(parameters);
         drawer.drawPage(paint, canvas, page.getCropBox());
 
@@ -352,7 +378,7 @@ public class PDFRenderer
     }
 
     /**
-     * Renders a given page to an AWT Graphics2D instance.
+     * Renders a given page to a Canvas instance.
      *
      * @param pageIndex the zero-based index of the page to be converted
      * @param paint the Paint that will be used to draw the page
@@ -374,8 +400,9 @@ public class PDFRenderer
         canvas.drawRect(0, 0, cropBox.getWidth(), cropBox.getHeight(), paint);
 
         // the end-user may provide a custom PageDrawer
-        PageDrawerParameters parameters = new PageDrawerParameters(this, page, subsamplingAllowed,
-            destination);
+        PageDrawerParameters parameters =
+            new PageDrawerParameters(this, page, subsamplingAllowed, destination,
+                imageDownscalingOptimizationThreshold);
         PageDrawer drawer = createPageDrawer(parameters);
         drawer.drawPage(paint, canvas, cropBox);
     }

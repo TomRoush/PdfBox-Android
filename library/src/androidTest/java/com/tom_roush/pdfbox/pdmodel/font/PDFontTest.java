@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -221,14 +222,14 @@ public class PDFontTest
             if (uri.getPath().endsWith(".ttc"))
             {
                 File file = new File(uri);
-                 Log.i("PdfBox-Android", "TrueType collection file: " + file);
+                Log.i("PdfBox-Android", "TrueType collection file: " + file);
                 ttc = new TrueTypeCollection(file);
                 break;
             }
         }
         if (ttc == null)
         {
-             Log.i("PdfBox-Android", "testFullEmbeddingTTC skipped, no .ttc files available");
+            Log.i("PdfBox-Android", "testFullEmbeddingTTC skipped, no .ttc files available");
             return;
         }
 
@@ -238,13 +239,13 @@ public class PDFontTest
             @Override
             public void process(TrueTypeFont ttf) throws IOException
             {
-                 Log.i("PdfBox-Android", "TrueType font in collection: " + ttf.getName());
+                Log.i("PdfBox-Android", "TrueType font in collection: " + ttf.getName());
                 names.add(ttf.getName());
             }
         });
 
         TrueTypeFont ttf = ttc.getFontByName(names.get(0)); // take the first one
-         Log.i("PdfBox-Android", "TrueType font used for test: " + ttf.getName());
+        Log.i("PdfBox-Android", "TrueType font used for test: " + ttf.getName());
 
         try
         {
@@ -256,6 +257,25 @@ public class PDFontTest
             return;
         }
         Assert.fail("should have thrown IOException");
+    }
+
+    /**
+     * Test using broken Type1C font.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testPDFox5048() throws IOException
+    {
+        InputStream is = new URL("https://issues.apache.org/jira/secure/attachment/13017227/stringwidth.pdf").openStream();
+        PDDocument doc = PDDocument.load(is);
+        PDPage page = doc.getPage(0);
+        PDFont font = page.getResources().getFont(COSName.getPDFName("F70"));
+        Assert.assertTrue(font.isDamaged());
+        Assert.assertEquals(0f, font.getHeight(0), 0);
+        Assert.assertEquals(0f, font.getStringWidth("Pa"), 0);
+        doc.close();
+        is.close();
     }
 
     private void testPDFBox3826checkFonts(byte[] byteArray, File fontFile) throws IOException

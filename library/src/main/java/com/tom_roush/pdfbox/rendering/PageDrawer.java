@@ -137,6 +137,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     private int nestedHiddenOCGCount;
 
     private final RenderDestination destination;
+    private final float imageDownscalingOptimizationThreshold;
 
     static final int JAVA_VERSION = PageDrawer.getJavaVersion();
 
@@ -164,6 +165,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         this.renderer = parameters.getRenderer();
         this.subsamplingAllowed = parameters.isSubsamplingAllowed();
         this.destination = parameters.getDestination();
+        this.imageDownscalingOptimizationThreshold =
+            parameters.getImageDownscalingOptimizationThreshold();
     }
 
     /**
@@ -577,6 +580,13 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         paint.setStrokeWidth(lineWidth);
         paint.setStrokeCap(state.getLineCap());
         paint.setStrokeJoin(state.getLineJoin());
+        float miterLimit = state.getMiterLimit();
+        if (miterLimit < 1)
+        {
+            Log.w("PdfBox-Android", "Miter limit must be >= 1, value " + miterLimit + " is ignored");
+            miterLimit = 10;
+        }
+        paint.setStrokeMiter(miterLimit);
         if (dashArray != null)
         {
             paint.setPathEffect(new DashPathEffect(dashArray, phaseStart));
@@ -741,17 +751,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public void endPath()
     {
-//        if (clipWindingRule != null)
-//        {
-//            linePath.setFillType(clipWindingRule);
-//            getGraphicsState().intersectClippingPath(linePath);
-//
-//            // PDFBOX-3836: lastClip needs to be reset, because after intersection it is still the same
-//            // object, thus setClip() would believe that it is cached.
-//            lastClip = null;
-//
-//            clipWindingRule = null;
-//        } TODO: PdfBox-Android causes rendering issues
+//        TODO: PdfBox-Android adding clipping causes rendering issues
         linePath.reset();
     }
 

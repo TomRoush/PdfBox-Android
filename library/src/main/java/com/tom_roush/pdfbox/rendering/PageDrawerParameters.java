@@ -32,17 +32,20 @@ public final class PageDrawerParameters
     private final PDPage page;
     private final boolean subsamplingAllowed;
     private final RenderDestination destination;
+    private final float imageDownscalingOptimizationThreshold;
 
     /**
      * Package-private constructor.
      */
     PageDrawerParameters(PDFRenderer renderer, PDPage page, boolean subsamplingAllowed,
-        RenderDestination destination)
+        RenderDestination destination,
+        float imageDownscalingOptimizationThreshold)
     {
         this.renderer = renderer;
         this.page = page;
         this.subsamplingAllowed = subsamplingAllowed;
         this.destination = destination;
+        this.imageDownscalingOptimizationThreshold = imageDownscalingOptimizationThreshold;
     }
 
     /**
@@ -75,5 +78,15 @@ public final class PageDrawerParameters
     public RenderDestination getDestination()
     {
         return this.destination;
+    }
+
+    /**
+     *
+     * @return the imageDownscalingOptimizationThreshold
+     */
+
+    public float getImageDownscalingOptimizationThreshold()
+    {
+        return imageDownscalingOptimizationThreshold;
     }
 }

@@ -57,6 +57,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -880,12 +881,12 @@ public class PDFMergerUtilityTest
                             COSBase item = kdict.getItem(COSName.OBJ);
                             if (item instanceof COSObject)
                             {
-                                assertTrue("Annotation page is not in the page tree: " + item, pageTree.indexOf(page) != -1);
+                                Assert.assertNotEquals("Annotation page is not in the page tree: " + item, -1, pageTree.indexOf(page));
                             }
                             else
                             {
                                 // don't display because of stack overflow
-                                assertTrue("Annotation page is not in the page tree", pageTree.indexOf(page) != -1);
+                                Assert.assertNotEquals("Annotation page is not in the page tree", -1, pageTree.indexOf(page));
                             }
                         }
                     }
@@ -971,7 +972,7 @@ public class PDFMergerUtilityTest
         PDPage page = structureElement.getPage();
         if (page != null)
         {
-            assertTrue("Page is not in the page tree", pageTree.indexOf(page) != -1);
+            Assert.assertNotEquals("Page is not in the page tree", -1, pageTree.indexOf(page));
         }
     }
 }

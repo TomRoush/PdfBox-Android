@@ -19,8 +19,7 @@ package com.tom_roush.pdfbox.pdmodel.interactive.form;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.URL;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -40,6 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -102,40 +102,7 @@ public class PDAcroFormTest
 
     // testFlattenWidgetNoRef is an instrumentation test
 
-    @Test
-    public void testFlattenSpecificFieldsOnly() throws IOException
-    {
-        File file = new File(OUT_DIR, "AlignmentTests-flattened-specificFields.pdf");
-
-        List<PDField> fieldsToFlatten = new ArrayList<PDField>();
-
-        PDDocument testPdf = null;
-        try
-        {
-            testPdf = PDDocument.load(new File(IN_DIR, "AlignmentTests.pdf"));
-            PDAcroForm acroFormToFlatten = testPdf.getDocumentCatalog().getAcroForm();
-            int numFieldsBeforeFlatten = acroFormToFlatten.getFields().size();
-            int numWidgetsBeforeFlatten = countWidgets(testPdf);
-
-            fieldsToFlatten.add(acroFormToFlatten.getField("AlignLeft-Border_Small-Filled"));
-            fieldsToFlatten.add(acroFormToFlatten.getField("AlignLeft-Border_Medium-Filled"));
-            fieldsToFlatten.add(acroFormToFlatten.getField("AlignLeft-Border_Wide-Filled"));
-            fieldsToFlatten.add(acroFormToFlatten.getField("AlignLeft-Border_Wide_Clipped-Filled"));
-
-            acroFormToFlatten.flatten(fieldsToFlatten, true);
-            int numFieldsAfterFlatten = acroFormToFlatten.getFields().size();
-            int numWidgetsAfterFlatten = countWidgets(testPdf);
-
-            assertEquals(numFieldsBeforeFlatten, numFieldsAfterFlatten + fieldsToFlatten.size());
-            assertEquals(numWidgetsBeforeFlatten, numWidgetsAfterFlatten + fieldsToFlatten.size());
-
-            testPdf.save(file);
-        }
-        finally
-        {
-            IOUtils.closeQuietly(testPdf);
-        }
-    }
+    // testFlattenSpecificFieldsOnly is an instrumentation test
 
     /*
      * Test that we do not modify an AcroForm with missing resource information
@@ -205,6 +172,40 @@ public class PDAcroFormTest
             return;
         }
     }
+
+    /*
+     * Test that we don't add missing ressouce information to an AcroForm
+     * when accessing the AcroForm on the PD level with fix ups being set to
+     * false
+     * (PDFBOX-5000)
+     */
+    @Test
+    public void testDontAddMissingInformationOnAcroFormAccess()
+    {
+        try
+        {
+            byte[] pdfBytes =  createAcroFormWithMissingResourceInformation();
+            PDDocument pdfDocument = PDDocument.load(pdfBytes);
+            PDDocumentCatalog documentCatalog = pdfDocument.getDocumentCatalog();
+
+            // this call shall skip triggering the generation of missing information
+            PDAcroForm theAcroForm = documentCatalog.getAcroForm(null);
+
+            // ensure that the missing information has not been generated
+            // DA entry
+            assertEquals("", theAcroForm.getDefaultAppearance());
+            // Resources
+            assertNull(theAcroForm.getDefaultResources());
+            pdfDocument.close();
+        }
+        catch (IOException e)
+        {
+            System.err.println("Couldn't create test document, test skipped");
+            return;
+        }
+    }
+
+
 
     /**
      * PDFBOX-4235: a bad /DA string should not result in an NPE.
@@ -304,6 +305,40 @@ public class PDAcroFormTest
         assertNotEquals(PDType1Font.ZAPF_DINGBATS, zadb);
         doc.close();
     }
+
+    /**
+     * PDFBOX-3777 Illegal Fields definition COSDictionary instead of Array
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testIllegalFieldsDefinition() throws IOException
+    {
+        String sourceUrl = "https://issues.apache.org/jira/secure/attachment/12866226/D1790B.PDF";
+
+        PDDocument testPdf = null;
+        try
+        {
+            testPdf = PDDocument.load(new URL(sourceUrl).openStream());
+            PDDocumentCatalog catalog = testPdf.getDocumentCatalog();
+            boolean thrown = false;
+            try
+            {
+                catalog.getAcroForm();
+            }
+            catch (Exception e)
+            {
+                thrown = true;
+            }
+            assertFalse("There shall be no exception when getting the AcroForm", thrown);
+        }
+        finally
+        {
+            IOUtils.closeQuietly(testPdf);
+        }
+    }
+
+
 
     @After
     public void tearDown() throws IOException

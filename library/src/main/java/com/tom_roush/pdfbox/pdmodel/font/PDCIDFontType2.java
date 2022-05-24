@@ -206,7 +206,11 @@ public class PDCIDFontType2 extends PDCIDFont
         // Acrobat allows bad PDFs to use Unicode CMaps here instead of CID CMaps, see PDFBOX-1283
         if (!cMap.hasCIDMappings() && cMap.hasUnicodeMappings())
         {
-            return cMap.toUnicode(code).codePointAt(0); // actually: code -> CID
+            String unicode = cMap.toUnicode(code);
+            if (unicode != null)
+            {
+                return unicode.codePointAt(0); // actually: code -> CID
+            }
         }
 
         return cMap.toCID(code);
@@ -234,7 +238,14 @@ public class PDCIDFontType2 extends PDCIDFont
                 // Acrobat allows non-embedded GIDs - todo: can we find a test PDF for this?
                 Log.w("PdfBox-Android", "Using non-embedded GIDs in font " + getName());
                 int cid = codeToCID(code);
-                return cid2gid[cid];
+                if (cid < cid2gid.length)
+                {
+                    return cid2gid[cid];
+                }
+                else
+                {
+                    return 0;
+                }
             }
             else
             {

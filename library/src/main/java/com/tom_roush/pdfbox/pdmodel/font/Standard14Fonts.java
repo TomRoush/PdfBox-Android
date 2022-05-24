@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
 import com.tom_roush.fontbox.afm.AFMParser;
 import com.tom_roush.fontbox.afm.FontMetrics;
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
@@ -116,15 +115,20 @@ final class Standard14Fonts
     private static void loadMetrics(String fontName) throws IOException
     {
         String resourceName = "com/tom_roush/pdfbox/resources/afm/" + fontName + ".afm";
-        InputStream afmStream;
+        InputStream resourceAsStream = null;
         if (PDFBoxResourceLoader.isReady())
         {
-            afmStream = new BufferedInputStream(PDFBoxResourceLoader.getStream(resourceName));
+            resourceAsStream = PDFBoxResourceLoader.getStream(resourceName);
         }
         else
         {
-            afmStream = new BufferedInputStream(PDType1Font.class.getResourceAsStream("/" + resourceName));
+            resourceAsStream = PDType1Font.class.getResourceAsStream("/" + resourceName);
         }
+        if (resourceAsStream == null)
+        {
+            throw new IOException("resource '" + resourceName + "' not found");
+        }
+        InputStream afmStream = new BufferedInputStream(resourceAsStream);
         try
         {
             AFMParser parser = new AFMParser(afmStream);

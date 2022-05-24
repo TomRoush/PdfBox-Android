@@ -64,10 +64,12 @@ public abstract class SecurityHandler
     // see 7.6.2, page 58, PDF 32000-1:2008
     private static final byte[] AES_SALT = { (byte) 0x73, (byte) 0x41, (byte) 0x6c, (byte) 0x54 };
 
-    /** The length in bits of the secret key used to encrypt the document. */
+    /**
+     * The length in bits of the secret key used to encrypt the document. Will become private in 3.0.
+     */
     protected int keyLength = DEFAULT_KEY_LENGTH;
 
-    /** The encryption key that will used to encrypt / decrypt.*/
+    /** The encryption key that will used to encrypt / decrypt. Will become private in 3.0. */
     protected byte[] encryptionKey;
 
     /** The RC4 implementation used for cryptographic functions. */
@@ -88,6 +90,8 @@ public abstract class SecurityHandler
         Collections.newSetFromMap(new IdentityHashMap<COSBase, Boolean>());
 
     private boolean useAES;
+
+    private ProtectionPolicy protectionPolicy = null;
 
     /**
      * The access permission granted to the current user for the document. These
@@ -704,5 +708,74 @@ public abstract class SecurityHandler
      *
      * @return true if a protection policy has been set.
      */
-    public abstract boolean hasProtectionPolicy();
+    public boolean hasProtectionPolicy()
+    {
+        return protectionPolicy != null;
+    }
+
+    /**
+     * Returns the set {@link ProtectionPolicy} or null.
+     *
+     * @return The set {@link ProtectionPolicy}.
+     */
+    protected ProtectionPolicy getProtectionPolicy()
+    {
+        return protectionPolicy;
+    }
+
+    /**
+     * Sets the {@link ProtectionPolicy} to the given value.
+     * @param protectionPolicy The {@link ProtectionPolicy}, that shall be set.
+     */
+    protected void setProtectionPolicy(ProtectionPolicy protectionPolicy)
+    {
+        this.protectionPolicy = protectionPolicy;
+    }
+
+    /**
+     * Returns the current encryption key data.
+     *
+     * @return The current encryption key data.
+     */
+    public byte[] getEncryptionKey()
+    {
+        return encryptionKey;
+    }
+
+    /**
+     * Sets the current encryption key data.
+     *
+     * @param encryptionKey The encryption key data to set.
+     */
+    public void setEncryptionKey(byte[] encryptionKey)
+    {
+        this.encryptionKey = encryptionKey;
+    }
+
+    /**
+     * Computes the version number of the {@link SecurityHandler} based on the encryption key
+     * length. See PDF Spec 1.6 p 93 and
+     * <a href="https://www.adobe.com/content/dam/acom/en/devnet/pdf/adobe_supplement_iso32000.pdf">PDF
+     * 1.7 Supplement ExtensionLevel: 3</a> and
+     * <a href="http://intranet.pdfa.org/wp-content/uploads/2016/08/ISO_DIS_32000-2-DIS4.pdf">PDF
+     * Spec 2.0</a>.
+     *
+     * @return The computed version number.
+     */
+    protected int computeVersionNumber()
+    {
+        if (keyLength == 40)
+        {
+            return 1;
+        }
+        else if (keyLength == 128 && protectionPolicy.isPreferAES())
+        {
+            return 4;
+        }
+        else if (keyLength == 256)
+        {
+            return 5;
+        }
+        return 2;
+    }
 }

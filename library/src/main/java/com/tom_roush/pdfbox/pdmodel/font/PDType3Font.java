@@ -21,6 +21,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import com.tom_roush.fontbox.FontBoxFont;
 import com.tom_roush.fontbox.util.BoundingBox;
@@ -145,9 +146,14 @@ public class PDType3Font extends PDSimpleFont
     {
         int firstChar = dict.getInt(COSName.FIRST_CHAR, -1);
         int lastChar = dict.getInt(COSName.LAST_CHAR, -1);
-        if (!getWidths().isEmpty() && code >= firstChar && code <= lastChar)
+        List<Float> widths = getWidths();
+        if (!widths.isEmpty() && code >= firstChar && code <= lastChar)
         {
-            Float w = getWidths().get(code - firstChar);
+            if (code - firstChar >= widths.size())
+            {
+                return 0;
+            }
+            Float w = widths.get(code - firstChar);
             return w == null ? 0 : w;
         }
         else
@@ -351,7 +357,7 @@ public class PDType3Font extends PDSimpleFont
     {
         if (charProcs == null)
         {
-            charProcs = (COSDictionary) dict.getDictionaryObject(COSName.CHAR_PROCS);
+            charProcs = dict.getCOSDictionary(COSName.CHAR_PROCS);
         }
         return charProcs;
     }
@@ -365,10 +371,14 @@ public class PDType3Font extends PDSimpleFont
     public PDType3CharProc getCharProc(int code)
     {
         String name = getEncoding().getName(code);
-        COSBase base = getCharProcs().getDictionaryObject(COSName.getPDFName(name));
-        if (base instanceof COSStream)
+        if (getCharProcs() == null)
         {
-            return new PDType3CharProc(this, (COSStream) base);
+            return null;
+        }
+        COSStream stream = getCharProcs().getCOSStream(COSName.getPDFName(name));
+        if (stream != null)
+        {
+            return new PDType3CharProc(this, stream);
         }
         return null;
     }

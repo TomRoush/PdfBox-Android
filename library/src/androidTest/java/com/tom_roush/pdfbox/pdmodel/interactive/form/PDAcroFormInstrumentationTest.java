@@ -22,10 +22,15 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
 import com.tom_roush.pdfbox.rendering.TestRendering;
 
@@ -100,5 +105,62 @@ public class PDAcroFormInstrumentationTest
         testRendering.render(file);
     }
 
+    @Test
+    public void testFlattenSpecificFieldsOnly() throws IOException
+    {
+        File file = new File(OUT_DIR, "AlignmentTests-flattened-specificFields.pdf");
+
+        List<PDField> fieldsToFlatten = new ArrayList<PDField>();
+
+        PDDocument testPdf = null;
+        try
+        {
+            testPdf = PDDocument.load(testContext.getAssets().open(IN_DIR + "/" + "AlignmentTests.pdf"));
+            PDAcroForm acroFormToFlatten = testPdf.getDocumentCatalog().getAcroForm();
+            int numFieldsBeforeFlatten = acroFormToFlatten.getFields().size();
+            int numWidgetsBeforeFlatten = countWidgets(testPdf);
+
+            fieldsToFlatten.add(acroFormToFlatten.getField("AlignLeft-Border_Small-Filled"));
+            fieldsToFlatten.add(acroFormToFlatten.getField("AlignLeft-Border_Medium-Filled"));
+            fieldsToFlatten.add(acroFormToFlatten.getField("AlignLeft-Border_Wide-Filled"));
+            fieldsToFlatten.add(acroFormToFlatten.getField("AlignLeft-Border_Wide_Clipped-Filled"));
+
+            acroFormToFlatten.flatten(fieldsToFlatten, true);
+            int numFieldsAfterFlatten = acroFormToFlatten.getFields().size();
+            int numWidgetsAfterFlatten = countWidgets(testPdf);
+
+            assertEquals(numFieldsBeforeFlatten, numFieldsAfterFlatten + fieldsToFlatten.size());
+            assertEquals(numWidgetsBeforeFlatten, numWidgetsAfterFlatten + fieldsToFlatten.size());
+
+            testPdf.save(file);
+        }
+        finally
+        {
+            IOUtils.closeQuietly(testPdf);
+        }
+    }
+
+    private int countWidgets(PDDocument documentToTest)
+    {
+        int count = 0;
+        for (PDPage page : documentToTest.getPages())
+        {
+            try
+            {
+                for (PDAnnotation annotation : page.getAnnotations())
+                {
+                    if (annotation instanceof PDAnnotationWidget)
+                    {
+                        count ++;
+                    }
+                }
+            }
+            catch (IOException e)
+            {
+                // ignoring
+            }
+        }
+        return count;
+    }
 }
 

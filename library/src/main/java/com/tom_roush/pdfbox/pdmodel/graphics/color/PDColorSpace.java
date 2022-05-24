@@ -313,6 +313,10 @@ public abstract class PDColorSpace implements COSObjectable
      */
     public abstract Bitmap toRGBImage(Bitmap raster) throws IOException;
 
+//    public abstract BufferedImage toRawImage(WritableRaster raster) throws IOException; TODO: PdfBox-Android
+
+//    protected final BufferedImage toRawImage(WritableRaster raster, ColorSpace awtColorSpace) TODO: PdfBox-Android
+
 //    protected BufferedImage toRGBImageAWT(WritableRaster raster, ColorSpace colorSpace) TODO: PdfBox-Android
 
     @Override

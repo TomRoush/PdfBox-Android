@@ -916,6 +916,11 @@ public abstract class BaseParser
                     {
                         seqSource.unread(badString.getBytes(ISO_8859_1));
                     }
+                    else
+                    {
+                        Log.w("PdfBox-Android", "Skipped unexpected dir object = '" + badString + "' at offset "
+                            + seqSource.getPosition());
+                    }
                 }
         }
         return null;

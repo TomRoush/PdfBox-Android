@@ -16,6 +16,8 @@
  */
 package com.tom_roush.pdfbox.pdmodel;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +35,8 @@ import com.tom_roush.pdfbox.pdmodel.common.PDMetadata;
 import com.tom_roush.pdfbox.pdmodel.common.PDPageLabels;
 import com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDMarkInfo;
 import com.tom_roush.pdfbox.pdmodel.documentinterchange.logicalstructure.PDStructureTreeRoot;
+import com.tom_roush.pdfbox.pdmodel.fixup.AcroFormDefaultFixup;
+import com.tom_roush.pdfbox.pdmodel.fixup.PDDocumentFixup;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDOutputIntent;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionFactory;
@@ -55,6 +59,7 @@ public class PDDocumentCatalog implements COSObjectable
 {
     private final COSDictionary root;
     private final PDDocument document;
+    private PDDocumentFixup acroFormFixupApplied;
     private PDAcroForm cachedAcroForm;
 
     /**
@@ -102,6 +107,34 @@ public class PDDocumentCatalog implements COSObjectable
      */
     public PDAcroForm getAcroForm()
     {
+        return getAcroForm(new AcroFormDefaultFixup(document));
+    }
+
+    /**
+     * Get the documents AcroForm. This will return null if no AcroForm is part of the document.
+     *
+     * Dependent on setting <code>acroFormFixup</code> some fixing/changes will be done to the AcroForm.
+     * If you need to ensure that there are no fixes applied call <code>getAcroForm</code> with <code>null</code>.
+     *
+     * Using <code>getAcroForm(PDDocumentFixup acroFormFixup)</code> might change the original content and
+     * subsequent calls with <code>getAcroForm(null)</code> will return the changed content.
+     *
+     * @param acroFormFixup the fix up action or null
+     * @return The document's AcroForm.
+     */
+    public PDAcroForm getAcroForm(PDDocumentFixup acroFormFixup)
+    {
+        if (acroFormFixup != null && acroFormFixup != acroFormFixupApplied)
+        {
+            acroFormFixup.apply();
+            cachedAcroForm = null;
+            acroFormFixupApplied =  acroFormFixup;
+        }
+        else if (acroFormFixupApplied != null)
+        {
+            Log.d("PdfBox-Android", "AcroForm content has already been retrieved with fixes applied - original content changed because of that");
+        }
+
         if (cachedAcroForm == null)
         {
             COSDictionary dict = (COSDictionary)root.getDictionaryObject(COSName.ACRO_FORM);

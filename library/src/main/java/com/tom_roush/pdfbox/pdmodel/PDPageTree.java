@@ -20,10 +20,12 @@ import android.util.Log;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.Set;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -168,10 +170,12 @@ public class PDPageTree implements COSObjectable, Iterable<PDPage>
     private final class PageIterator implements Iterator<PDPage>
     {
         private final Queue<COSDictionary> queue = new ArrayDeque<COSDictionary>();
+        private Set<COSDictionary> set = new HashSet<COSDictionary>();
 
         private PageIterator(COSDictionary node)
         {
             enqueueKids(node);
+            set = null; // release memory, we don't use this anymore
         }
 
         private void enqueueKids(COSDictionary node)
@@ -181,6 +185,16 @@ public class PDPageTree implements COSObjectable, Iterable<PDPage>
                 List<COSDictionary> kids = getKids(node);
                 for (COSDictionary kid : kids)
                 {
+                    if (set.contains(kid))
+                    {
+                        // PDFBOX-5009, PDFBOX-3953: prevent stack overflow with malformed PDFs
+                        Log.e("PdfBox-Android", "This page tree node has already been visited");
+                        continue;
+                    }
+                    else if (kid.containsKey(COSName.KIDS))
+                    {
+                        set.add(kid);
+                    }
                     enqueueKids(kid);
                 }
             }
@@ -223,7 +237,9 @@ public class PDPageTree implements COSObjectable, Iterable<PDPage>
      *
      * @param index zero-based index
      *
-     * @return the page at the given index.
+     * @throws IllegalStateException if the requested index isn't found or doesn't point to a valid
+     * page dictionary
+     * @throws IndexOutOfBoundsException if the requested index is higher than the page count
      */
     public PDPage get(int index)
     {
@@ -256,6 +272,8 @@ public class PDPageTree implements COSObjectable, Iterable<PDPage>
      * @param node page tree node to search
      * @param encountered number of pages encountered so far
      * @return COS dictionary of the Page object
+     * @throws IllegalStateException if the requested page number isn't found
+     * @throws IndexOutOfBoundsException if the requested page number is higher than the page count
      */
     private COSDictionary get(int pageNum, COSDictionary node, int encountered)
     {

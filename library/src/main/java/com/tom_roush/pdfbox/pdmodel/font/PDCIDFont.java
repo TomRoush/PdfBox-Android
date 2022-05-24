@@ -16,6 +16,8 @@
  */
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -78,7 +80,13 @@ public abstract class PDCIDFont implements COSObjectable, PDFontLike, PDVectorFo
             int counter = 0;
             while (counter < size)
             {
-                COSNumber firstCode = (COSNumber) wArray.getObject(counter++);
+                COSBase firstCodeBase = wArray.getObject(counter++);
+                if (!(firstCodeBase instanceof COSNumber))
+                {
+                    Log.w("PdfBox-Android", "Expected a number array member, got " + firstCodeBase);
+                    continue;
+                }
+                COSNumber firstCode = (COSNumber) firstCodeBase;
                 COSBase next = wArray.getObject(counter++);
                 if (next instanceof COSArray)
                 {
@@ -87,14 +95,29 @@ public abstract class PDCIDFont implements COSObjectable, PDFontLike, PDVectorFo
                     int arraySize = array.size();
                     for (int i = 0; i < arraySize; i++)
                     {
-                        COSNumber width = (COSNumber) array.getObject(i);
-                        widths.put(startRange + i, width.floatValue());
+                        COSBase widthBase = array.getObject(i);
+                        if (widthBase instanceof COSNumber)
+                        {
+                            COSNumber width = (COSNumber) widthBase;
+                            widths.put(startRange + i, width.floatValue());
+                        }
+                        else
+                        {
+                            Log.w("PdfBox-Android", "Expected a number array member, got " + widthBase);
+                        }
                     }
                 }
                 else
                 {
-                    COSNumber secondCode = (COSNumber) next;
-                    COSNumber rangeWidth = (COSNumber) wArray.getObject(counter++);
+                    COSBase secondCodeBase = next;
+                    COSBase rangeWidthBase = wArray.getObject(counter++);
+                    if (!(secondCodeBase instanceof COSNumber) || !(rangeWidthBase instanceof COSNumber))
+                    {
+                        Log.w("PdfBox-Android", "Expected two numbers, got " + secondCodeBase + " and " + rangeWidthBase);
+                        continue;
+                    }
+                    COSNumber secondCode = (COSNumber) secondCodeBase;
+                    COSNumber rangeWidth = (COSNumber) rangeWidthBase;
                     int startRange = firstCode.intValue();
                     int endRange = secondCode.intValue();
                     float width = rangeWidth.floatValue();
