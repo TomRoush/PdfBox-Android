@@ -404,7 +404,7 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
         beadRectangles = new ArrayList<PDRectangle>();
         for (PDThreadBead bead : page.getThreadBeads())
         {
-            if (bead == null)
+            if (bead == null || bead.getRectangle() == null)
             {
                 // can't skip, because of null entry handling in processTextPosition()
                 beadRectangles.add(null);
@@ -684,6 +684,16 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
                             .endsWith(wordSeparator))))
                     {
                         line.add(LineItem.getWordSeparator());
+                    }
+                    // if there is at least the equivalent of one space
+                    // between the last character and the current one,
+                    // reset the max line height as the font size may have completely changed
+                    if (Math.abs(position.getX()
+                        - lastPosition.getTextPosition().getX()) > (wordSpacing + deltaSpace))
+                    {
+                        maxYForLine = MAX_Y_FOR_LINE_RESET_VALUE;
+                        maxHeightForLine = MAX_HEIGHT_FOR_LINE_RESET_VALUE;
+                        minYTopForLine = MIN_Y_TOP_FOR_LINE_RESET_VALUE;
                     }
                 }
                 if (positionY >= maxYForLine)

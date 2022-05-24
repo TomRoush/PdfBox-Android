@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.util.Calendar;
 
 import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -302,6 +303,22 @@ public class PDSignature implements COSObjectable
             ary[i] = byteRange.getInt(i);
         }
         return ary;
+    }
+
+    /**
+     * Returns the /Contents string as a byte array, i.e. the embedded signature between the
+     * byterange gap.
+     *
+     * @return a byte array containing the signature, or an empty array if there isn't any.
+     */
+    public byte[] getContents()
+    {
+        COSBase base = dictionary.getDictionaryObject(COSName.CONTENTS);
+        if (base instanceof COSString)
+        {
+            return ((COSString) base).getBytes();
+        }
+        return new byte[0];
     }
 
     /**

@@ -51,16 +51,22 @@ class PlainText
      */
     PlainText(String textValue)
     {
-        List<String> parts = Arrays.asList(textValue.replaceAll("\t", " ").split("\\r\\n|\\n|\\r|\\u2028|\\u2029"));
         paragraphs = new ArrayList<Paragraph>();
-        for (String part : parts)
+        if (textValue.isEmpty()) {
+            paragraphs.add(new Paragraph(""));
+        }
+        else
         {
-            // Acrobat prints a space for an empty paragraph
-            if (part.length() == 0)
+            List<String> parts = Arrays.asList(textValue.replaceAll("\t", " ").split("\\r\\n|\\n|\\r|\\u2028|\\u2029"));
+            for (String part : parts)
             {
-                part = " ";
+                // Acrobat prints a space for an empty paragraph
+                if (part.length() == 0)
+                {
+                    part = " ";
+                }
+                paragraphs.add(new Paragraph(part));
             }
-            paragraphs.add(new Paragraph(part));
         }
     }
 
@@ -200,7 +206,7 @@ class PlainText
                     while (true)
                     {
                         splitOffset--;
-                        String substring = word.trim().substring(0, splitOffset);
+                        String substring = word.substring(0, splitOffset);
                         float substringWidth = font.getStringWidth(substring) * scale;
                         if (substringWidth < width)
                         {

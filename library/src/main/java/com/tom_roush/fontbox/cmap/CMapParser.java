@@ -245,7 +245,14 @@ public class CMapParser
             }
             byte[] startRange = (byte[]) nextToken;
             byte[] endRange = (byte[]) parseNextToken(cmapStream);
-            result.addCodespaceRange(new CodespaceRange(startRange, endRange));
+            try
+            {
+                result.addCodespaceRange(new CodespaceRange(startRange, endRange));
+            }
+            catch (IllegalArgumentException ex)
+            {
+                throw new IOException(ex);
+            }
         }
     }
 
@@ -575,6 +582,11 @@ public class CMapParser
                         if (multiplyer == 16)
                         {
                             bufferIndex++;
+                            if (bufferIndex >= tokenParserByteBuffer.length)
+                            {
+                                throw new IOException("cmap token ist larger than buffer size " +
+                                    tokenParserByteBuffer.length);
+                            }
                             tokenParserByteBuffer[bufferIndex] = 0;
                             multiplyer = 1;
                         }

@@ -44,6 +44,10 @@ public interface PDImage extends COSObjectable
      */
     Bitmap getImage() throws IOException;
 
+//    WritableRaster getRawRaster() throws IOException; TODO: PdfBox-Android
+
+//    BufferedImage getRawImage() throws IOException; TODO: PdfBox-Android
+
     /**
      * Returns the content of this image as an AWT buffered image with an (A)RGB colored space. Only
      * the subregion specified is rendered, and is subsampled by advancing the specified amount of

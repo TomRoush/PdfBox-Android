@@ -37,6 +37,8 @@ import com.tom_roush.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 
+import org.junit.Assert;
+
 import junit.framework.TestCase;
 
 import static com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage.validate;
@@ -182,7 +184,7 @@ public class CCITTFactoryTest extends TestCase
     {
         PDDocument document = new PDDocument();
         Bitmap bim = Bitmap.createBitmap(343, 287, Bitmap.Config.ALPHA_8);
-        assertTrue((bim.getWidth() / 8) * 8 != bim.getWidth()); // not mult of 8
+        Assert.assertNotEquals((bim.getWidth() / 8) * 8, bim.getWidth()); // not mult of 8
         int col = 0;
         for (int x = 0; x < bim.getWidth(); ++x)
         {

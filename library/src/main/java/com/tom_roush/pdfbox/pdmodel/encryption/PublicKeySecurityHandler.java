@@ -44,11 +44,9 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
-
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DEROctetString;
@@ -85,8 +83,6 @@ public final class PublicKeySecurityHandler extends SecurityHandler
     private static final String SUBFILTER4 = "adbe.pkcs7.s4";
     private static final String SUBFILTER5 = "adbe.pkcs7.s5";
 
-    private PublicKeyProtectionPolicy policy = null;
-
     /**
      * Constructor.
      */
@@ -97,12 +93,12 @@ public final class PublicKeySecurityHandler extends SecurityHandler
     /**
      * Constructor used for encryption.
      *
-     * @param p The protection policy.
+     * @param publicKeyProtectionPolicy The protection policy.
      */
-    public PublicKeySecurityHandler(PublicKeyProtectionPolicy p)
+    public PublicKeySecurityHandler(PublicKeyProtectionPolicy publicKeyProtectionPolicy)
     {
-        policy = p;
-        this.keyLength = policy.getEncryptionKeyLength();
+        setProtectionPolicy(publicKeyProtectionPolicy);
+        setKeyLength(publicKeyProtectionPolicy.getEncryptionKeyLength());
     }
 
     /**
@@ -127,13 +123,19 @@ public final class PublicKeySecurityHandler extends SecurityHandler
         if (!(decryptionMaterial instanceof PublicKeyDecryptionMaterial))
         {
             throw new IOException(
-                "Provided decryption material is not compatible with the document");
+                "Provided decryption material is not compatible with the document - "
+                    + "did you pass a null keyStore?");
         }
 
         setDecryptMetadata(encryption.isEncryptMetaData());
-        if (encryption.getLength() != 0)
+        PDCryptFilterDictionary defaultCryptFilterDictionary = encryption.getDefaultCryptFilterDictionary();
+        if (defaultCryptFilterDictionary != null && defaultCryptFilterDictionary.getLength() != 0)
         {
-            this.keyLength = encryption.getLength();
+            setKeyLength(defaultCryptFilterDictionary.getLength());
+        }
+        else if (encryption.getLength() != 0)
+        {
+            setKeyLength(encryption.getLength());
         }
 
         PublicKeyDecryptionMaterial material = (PublicKeyDecryptionMaterial) decryptionMaterial;
@@ -154,11 +156,14 @@ public final class PublicKeySecurityHandler extends SecurityHandler
             byte[] envelopedData = null;
 
             // the bytes of each recipient in the recipients array
-            COSArray array = (COSArray) encryption.getCOSObject().getItem(COSName.RECIPIENTS);
+            COSArray array = encryption.getCOSObject().getCOSArray(COSName.RECIPIENTS);
+            if (array == null && defaultCryptFilterDictionary != null)
+            {
+                array = defaultCryptFilterDictionary.getCOSObject().getCOSArray(COSName.RECIPIENTS);
+            }
             if (array == null)
             {
-                PDCryptFilterDictionary defaultCryptFilterDictionary = encryption.getDefaultCryptFilterDictionary();
-                array = (COSArray) defaultCryptFilterDictionary.getCOSObject().getItem(COSName.RECIPIENTS);
+                throw new IOException("/Recipients entry is missing in encryption dictionary");
             }
             byte[][] recipientFieldsBytes = new byte[array.size()][];
             //TODO encryption.getRecipientsLength() and getRecipientStringAt() should be deprecated
@@ -240,12 +245,18 @@ public final class PublicKeySecurityHandler extends SecurityHandler
             byte[] mdResult;
             if (encryption.getVersion() == 4 || encryption.getVersion() == 5)
             {
-                mdResult = MessageDigests.getSHA256().digest(sha1Input);
+                if (encryption.getVersion() == 4)
+                {
+                    mdResult = MessageDigests.getSHA1().digest(sha1Input);
+                }
+                else
+                {
+                    mdResult = MessageDigests.getSHA256().digest(sha1Input);
+                }
 
                 // detect whether AES encryption is used. This assumes that the encryption algo is 
                 // stored in the PDCryptFilterDictionary
                 // However, crypt filters are used only when V is 4 or 5.
-                PDCryptFilterDictionary defaultCryptFilterDictionary = encryption.getDefaultCryptFilterDictionary();
                 if (defaultCryptFilterDictionary != null)
                 {
                     COSName cryptFilterMethod = defaultCryptFilterDictionary.getCryptFilterMethod();
@@ -259,8 +270,8 @@ public final class PublicKeySecurityHandler extends SecurityHandler
             }
 
             // we have the encryption key ...
-            encryptionKey = new byte[this.keyLength / 8];
-            System.arraycopy(mdResult, 0, encryptionKey, 0, this.keyLength / 8);
+            setEncryptionKey(new byte[getKeyLength() / 8]);
+            System.arraycopy(mdResult, 0, getEncryptionKey(), 0, getKeyLength() / 8);
         }
         catch (CMSException e)
         {
@@ -319,7 +330,7 @@ public final class PublicKeySecurityHandler extends SecurityHandler
             }
 
             dictionary.setFilter(FILTER);
-            dictionary.setLength(this.keyLength);
+            dictionary.setLength(getKeyLength());
             int version = computeVersionNumber();
             dictionary.setVersion(version);
 
@@ -368,22 +379,27 @@ public final class PublicKeySecurityHandler extends SecurityHandler
             }
 
             byte[] mdResult;
-            if (version == 4 || version == 5)
+            switch (version)
             {
-                dictionary.setSubFilter(SUBFILTER5);
-                mdResult = MessageDigests.getSHA256().digest(shaInput);
-                COSName aesVName = version == 5 ? COSName.AESV3 : COSName.AESV2;
-                prepareEncryptionDictAES(dictionary, aesVName, recipientsFields);
-            }
-            else
-            {
-                dictionary.setSubFilter(SUBFILTER4);
-                mdResult = MessageDigests.getSHA1().digest(shaInput);
-                dictionary.setRecipients(recipientsFields);
+                case 4:
+                    dictionary.setSubFilter(SUBFILTER5);
+                    mdResult = MessageDigests.getSHA1().digest(shaInput);
+                    prepareEncryptionDictAES(dictionary, COSName.AESV2, recipientsFields);
+                    break;
+                case 5:
+                    dictionary.setSubFilter(SUBFILTER5);
+                    mdResult = MessageDigests.getSHA256().digest(shaInput);
+                    prepareEncryptionDictAES(dictionary, COSName.AESV3, recipientsFields);
+                    break;
+                default:
+                    dictionary.setSubFilter(SUBFILTER4);
+                    mdResult = MessageDigests.getSHA1().digest(shaInput);
+                    dictionary.setRecipients(recipientsFields);
+                    break;
             }
 
-            this.encryptionKey = new byte[this.keyLength/8];
-            System.arraycopy(mdResult, 0, this.encryptionKey, 0, this.keyLength/8);
+            setEncryptionKey(new byte[getKeyLength() / 8]);
+            System.arraycopy(mdResult, 0, getEncryptionKey(), 0, getKeyLength() / 8);
 
             doc.setEncryptionDictionary(dictionary);
             doc.getDocument().setEncryptionDictionary(dictionary.getCOSObject());
@@ -394,35 +410,11 @@ public final class PublicKeySecurityHandler extends SecurityHandler
         }
     }
 
-    /**
-     * Computes the version number of the StandardSecurityHandler based on the encryption key
-     * length. See PDF Spec 1.6 p 93 and
-     * <a href="https://www.adobe.com/content/dam/acom/en/devnet/pdf/adobe_supplement_iso32000.pdf">PDF
-     * 1.7 Supplement ExtensionLevel: 3</a>
-     *
-     * @return The computed version number.
-     */
-    private int computeVersionNumber()
-    {
-        switch (keyLength)
-        {
-            case 40:
-                return 1;
-            case 128:
-                return 2; // prefer RC4 (AES 128 doesn't work yet)
-            //return 4; // prefer AES
-            case 256:
-                return 5;
-            default:
-                throw new IllegalArgumentException("key length must be 40, 128 or 256");
-        }
-    }
-
     private void prepareEncryptionDictAES(PDEncryption encryptionDictionary, COSName aesVName, byte[][] recipients)
     {
         PDCryptFilterDictionary cryptFilterDictionary = new PDCryptFilterDictionary();
         cryptFilterDictionary.setCryptFilterMethod(aesVName);
-        cryptFilterDictionary.setLength(keyLength);
+        cryptFilterDictionary.setLength(getKeyLength());
         COSArray array = new COSArray();
         for (byte[] recipient : recipients)
         {
@@ -439,8 +431,9 @@ public final class PublicKeySecurityHandler extends SecurityHandler
 
     private byte[][] computeRecipientsField(byte[] seed) throws GeneralSecurityException, IOException
     {
-        byte[][] recipientsField = new byte[policy.getNumberOfRecipients()][];
-        Iterator<PublicKeyRecipient> it = policy.getRecipientsIterator();
+        PublicKeyProtectionPolicy protectionPolicy = (PublicKeyProtectionPolicy) getProtectionPolicy();
+        byte[][] recipientsField = new byte[protectionPolicy.getNumberOfRecipients()][];
+        Iterator<PublicKeyRecipient> it = protectionPolicy.getRecipientsIterator();
         int i = 0;
 
         while(it.hasNext())
@@ -463,12 +456,8 @@ public final class PublicKeySecurityHandler extends SecurityHandler
             pkcs7input[23] = one;
 
             ASN1Primitive obj = createDERForRecipient(pkcs7input, certificate);
-
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-            ASN1OutputStream k = ASN1OutputStream.create(baos, ASN1Encoding.DER);
-
-            k.writeObject(obj);
+            obj.encodeTo(baos, ASN1Encoding.DER);
 
             recipientsField[i] = baos.toByteArray();
 
@@ -562,14 +551,5 @@ public final class PublicKeySecurityHandler extends SecurityHandler
         DEROctetString octets = new DEROctetString(cipher.doFinal(abyte0));
         RecipientIdentifier recipientId = new RecipientIdentifier(serial);
         return new KeyTransRecipientInfo(recipientId, algorithmId, octets);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean hasProtectionPolicy()
-    {
-        return policy != null;
     }
 }

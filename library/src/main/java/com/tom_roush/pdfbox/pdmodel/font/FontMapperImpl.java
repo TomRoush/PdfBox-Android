@@ -59,45 +59,50 @@ final class FontMapperImpl implements FontMapper
     {
         // substitutes for standard 14 fonts
         substitutes.put("Courier",
-            Arrays.asList("CourierNew", "CourierNewPSMT", "LiberationMono", "NimbusMonL-Regu",
-                "DroidSansMono"));
+            new ArrayList<String>(Arrays.asList("CourierNew", "CourierNewPSMT", "LiberationMono",
+                "NimbusMonL-Regu", "DroidSansMono")));
         substitutes.put("Courier-Bold",
-            Arrays.asList("CourierNewPS-BoldMT", "CourierNew-Bold", "LiberationMono-Bold",
-                "NimbusMonL-Bold", "DroidSansMono"));
+            new ArrayList<String>(Arrays.asList("CourierNewPS-BoldMT", "CourierNew-Bold",
+                "LiberationMono-Bold", "NimbusMonL-Bold", "DroidSansMono")));
         substitutes.put("Courier-Oblique",
-            Arrays.asList("CourierNewPS-ItalicMT","CourierNew-Italic",
-                "LiberationMono-Italic", "NimbusMonL-ReguObli", "DroidSansMono"));
+            new ArrayList<String>(Arrays.asList("CourierNewPS-ItalicMT","CourierNew-Italic",
+                "LiberationMono-Italic", "NimbusMonL-ReguObli", "DroidSansMono")));
         substitutes.put("Courier-BoldOblique",
-            Arrays.asList("CourierNewPS-BoldItalicMT","CourierNew-BoldItalic",
-                "LiberationMono-BoldItalic", "NimbusMonL-BoldObli", "DroidSansMono"));
+            new ArrayList<String>(Arrays.asList("CourierNewPS-BoldItalicMT",
+                "CourierNew-BoldItalic", "LiberationMono-BoldItalic",
+                "NimbusMonL-BoldObli", "DroidSansMono")));
         substitutes.put("Helvetica",
-            Arrays.asList("ArialMT", "Arial", "LiberationSans", "NimbusSanL-Regu", "Roboto-Regular"));
+            new ArrayList<String>(Arrays.asList("ArialMT", "Arial", "LiberationSans",
+                "NimbusSanL-Regu", "Roboto-Regular")));
         substitutes.put("Helvetica-Bold",
-            Arrays.asList("Arial-BoldMT", "Arial-Bold", "LiberationSans-Bold",
-                "NimbusSanL-Bold", "Roboto-Bold"));
+            new ArrayList<String>(Arrays.asList("Arial-BoldMT", "Arial-Bold",
+                "LiberationSans-Bold", "NimbusSanL-Bold", "Roboto-Bold")));
         substitutes.put("Helvetica-Oblique",
-            Arrays.asList("Arial-ItalicMT", "Arial-Italic", "Helvetica-Italic",
-                "LiberationSans-Italic", "NimbusSanL-ReguItal", "Roboto-Italic"));
+            new ArrayList<String>(Arrays.asList("Arial-ItalicMT", "Arial-Italic",
+                "Helvetica-Italic", "LiberationSans-Italic", "NimbusSanL-ReguItal", "Roboto-Italic")));
         substitutes.put("Helvetica-BoldOblique",
-            Arrays.asList("Arial-BoldItalicMT", "Helvetica-BoldItalic",
-                "LiberationSans-BoldItalic", "NimbusSanL-BoldItal", "Roboto-BoldItalic"));
+            new ArrayList<String>(Arrays.asList("Arial-BoldItalicMT", "Helvetica-BoldItalic",
+                "LiberationSans-BoldItalic", "NimbusSanL-BoldItal", "Roboto-BoldItalic")));
         substitutes.put("Times-Roman",
-            Arrays.asList("TimesNewRomanPSMT", "TimesNewRoman", "TimesNewRomanPS",
-                "LiberationSerif", "NimbusRomNo9L-Regu", "DroidSerif-Regular", "Roboto-Regular"));
+            new ArrayList<String>(Arrays.asList("TimesNewRomanPSMT", "TimesNewRoman",
+                "TimesNewRomanPS", "LiberationSerif", "NimbusRomNo9L-Regu", "Roboto-Regular")));
         substitutes.put("Times-Bold",
-            Arrays.asList("TimesNewRomanPS-BoldMT", "TimesNewRomanPS-Bold",
+            new ArrayList<String>(Arrays.asList("TimesNewRomanPS-BoldMT", "TimesNewRomanPS-Bold",
                 "TimesNewRoman-Bold", "LiberationSerif-Bold",
-                "NimbusRomNo9L-Medi", "DroidSerif-Bold", "Roboto-Bold"));
+                "NimbusRomNo9L-Medi", "DroidSerif-Bold", "Roboto-Bold")));
         substitutes.put("Times-Italic",
-            Arrays.asList("TimesNewRomanPS-ItalicMT", "TimesNewRomanPS-Italic",
-                "TimesNewRoman-Italic", "LiberationSerif-Italic",
-                "NimbusRomNo9L-ReguItal", "DroidSerif-Italic", "Roboto-Italic"));
+            new ArrayList<String>(Arrays.asList("TimesNewRomanPS-ItalicMT",
+                "TimesNewRomanPS-Italic", "TimesNewRoman-Italic", "LiberationSerif-Italic",
+                "NimbusRomNo9L-ReguItal", "DroidSerif-Italic", "Roboto-Italic")));
         substitutes.put("Times-BoldItalic",
-            Arrays.asList("TimesNewRomanPS-BoldItalicMT", "TimesNewRomanPS-BoldItalic",
-                "TimesNewRoman-BoldItalic", "LiberationSerif-BoldItalic",
-                "NimbusRomNo9L-MediItal", "DroidSerif-BoldItalic", "Roboto-BoldItalic"));
-        substitutes.put("Symbol", Arrays.asList("Symbol", "SymbolMT", "StandardSymL"));
-        substitutes.put("ZapfDingbats", Arrays.asList("ZapfDingbatsITC", "Dingbats", "MS-Gothic"));
+            new ArrayList<String>(Arrays.asList("TimesNewRomanPS-BoldItalicMT",
+                "TimesNewRomanPS-BoldItalic", "TimesNewRoman-BoldItalic",
+                "LiberationSerif-BoldItalic", "NimbusRomNo9L-MediItal", "DroidSerif-BoldItalic", "Roboto-BoldItalic")));
+        substitutes.put("Symbol",
+            new ArrayList<String>(Arrays.asList("Symbol", "SymbolMT", "StandardSymL")));
+        substitutes.put("ZapfDingbats", new ArrayList<String>(
+            Arrays.asList("ZapfDingbatsITCbyBT-Regular", "ZapfDingbatsITC", "Dingbats",
+                "MS-Gothic")));
         // TODO: PdfBox-Android load extra fonts? (DroidSerif for times and a symbol font)
 
         // Acrobat also uses alternative names for Standard 14 fonts, which we map to those above
@@ -116,16 +121,20 @@ final class FontMapperImpl implements FontMapper
         try
         {
             String ttfName = "com/tom_roush/pdfbox/resources/ttf/LiberationSans-Regular.ttf";
-            InputStream ttfStream;
+            InputStream resourceAsStream;
             if (PDFBoxResourceLoader.isReady())
             {
-                ttfStream = PDFBoxResourceLoader.getStream(ttfName);
+                resourceAsStream = PDFBoxResourceLoader.getStream(ttfName);
             }
             else
             {
-                ttfStream =
-                    new BufferedInputStream(FontMapper.class.getResourceAsStream("/" + ttfName));
+                resourceAsStream = FontMapper.class.getResourceAsStream("/" + ttfName);
             }
+            if (resourceAsStream == null)
+            {
+                throw new IOException("resource '" + ttfName + "' not found");
+            }
+            InputStream ttfStream = new BufferedInputStream(resourceAsStream);
             TTFParser ttfParser = new TTFParser();
             lastResortFont = ttfParser.parse(ttfStream);
         }

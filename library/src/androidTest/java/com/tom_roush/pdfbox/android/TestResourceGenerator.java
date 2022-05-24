@@ -11,20 +11,36 @@ import com.tom_roush.pdfbox.io.IOUtils;
 
 public class TestResourceGenerator
 {
-    public static File downloadTestResource(File targetDir, String targetName, String url) {
+    public static File downloadTestResource(File targetDir, String targetName, String url)
+    {
         File resourceFile = new File(targetDir, targetName);
         if (!resourceFile.exists())
         {
+
             try
             {
                 Log.i("PdfBox-Android", "Resource file not cached, Downloading file " + targetName);
-                InputStream urlStream = new URL(url).openStream();
-                IOUtils.copy(urlStream, new FileOutputStream(resourceFile));
+                return copyStreamToFile(targetDir, targetName, new URL(url).openStream());
             }
             catch (Exception e)
             {
                 Log.w("PdfBox-Android", "Unable to download test file. Test will be skipped");
             }
+        }
+        return resourceFile;
+    }
+
+    public static File copyStreamToFile(File targetDir, String targetName, InputStream is)
+    {
+        File resourceFile = new File(targetDir, targetName);
+        try
+        {
+            Log.i("PdfBox-Android", "Resource file not cached, Downloading file " + targetName);
+            IOUtils.copy(is, new FileOutputStream(resourceFile));
+        }
+        catch (Exception e)
+        {
+            Log.w("PdfBox-Android", "Unable to download test file. Test will be skipped");
         }
         return resourceFile;
     }

@@ -105,7 +105,7 @@ public class LosslessFactoryTest
 //        BufferedImage bitonalImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY); TODO: PdfBox-Android
 
         // avoid multiple of 8 to test padding
-//        assertFalse(bitonalImage.getWidth() % 8 == 0);
+//        Assert.assertNotEquals(0, bitonalImage.getWidth() % 8);
 
 //        g = bitonalImage.getGraphics();
 //        g.drawImage(image, 0, 0, null);

@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -93,6 +94,38 @@ public class PDButtonTest
         assertEquals("Btn", buttonField.getFieldType());
         assertTrue(buttonField.isRadioButton());
         assertFalse(buttonField.isPushButton());
+    }
+
+    @Test
+    public void changeRadioButtonToPushButton()
+    {
+        PDButton buttonField = new PDRadioButton(acroForm);
+
+        assertEquals(buttonField.getFieldType(), buttonField.getCOSObject().getNameAsString(COSName.FT));
+        assertEquals("Btn", buttonField.getFieldType());
+        assertTrue(buttonField.isRadioButton());
+        assertFalse(buttonField.isPushButton());
+
+        // change to push button
+        buttonField.setPushButton(true);
+        assertFalse(buttonField.isRadioButton());
+        assertTrue(buttonField.isPushButton());
+    }
+
+    @Test
+    public void changePushButtonToRadioButton()
+    {
+        PDButton buttonField = new PDPushButton(acroForm);
+
+        assertEquals(buttonField.getFieldType(), buttonField.getCOSObject().getNameAsString(COSName.FT));
+        assertEquals("Btn", buttonField.getFieldType());
+        assertTrue(buttonField.isPushButton());
+        assertFalse(buttonField.isRadioButton());
+
+        // change to push button
+        buttonField.setRadioButton(true);
+        assertFalse(buttonField.isPushButton());
+        assertTrue(buttonField.isRadioButton());
     }
 
     @Test
@@ -172,14 +205,12 @@ public class PDButtonTest
             radioButton.setValue("c");
 
             // test that the old behavior is now invalid
-            assertFalse("This shall no longer be 2", "2".equals(radioButton.getValueAsString()));
-            assertFalse("This shall no longer be 2", "2".equals(radioButton.getWidgets().get(2).getCOSObject().getNameAsString(COSName.AS)));
+            assertNotEquals("This shall no longer be 2", "2", radioButton.getValueAsString());
+            assertNotEquals("This shall no longer be 2", "2", radioButton.getWidgets().get(2).getCOSObject().getNameAsString(COSName.AS));
 
             // test for the correct behavior
-            assertTrue("This shall be c", "c".equals(radioButton.getValueAsString()));
-            assertTrue("This shall be c", "c".equals(radioButton.getWidgets().get(2).getCOSObject().getNameAsString(COSName.AS)));
-
-
+            assertEquals("This shall be c", "c", radioButton.getValueAsString());
+            assertEquals("This shall be c", "c", radioButton.getWidgets().get(2).getCOSObject().getNameAsString(COSName.AS));
         }
         catch (IOException e)
         {
