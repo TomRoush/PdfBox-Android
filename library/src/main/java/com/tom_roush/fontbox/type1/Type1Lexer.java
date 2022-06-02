@@ -361,12 +361,11 @@ class Type1Lexer
                 sb.append(c);
             }
         }
-        String regular = sb.toString();
-        if (regular.length() == 0)
+        if (sb.length() == 0)
         {
             return null;
         }
-        return regular;
+        return sb.toString();
     }
 
     /**
@@ -439,8 +438,8 @@ class Type1Lexer
                         String num = String.valueOf(new char[] { c1, getChar(), getChar() });
                         try
                         {
-                            Integer code = Integer.parseInt(num, 8);
-                            sb.append((char) (int) code);
+                            int code = Integer.parseInt(num, 8);
+                            sb.append((char) code);
                         }
                         catch (NumberFormatException ex)
                         {

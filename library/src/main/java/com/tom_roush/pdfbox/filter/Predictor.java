@@ -112,12 +112,12 @@ public final class Predictor
                             if (((sub + left) & 1) == 0)
                             {
                                 // reset bit
-                                actline[p] = (byte) (actline[p] & ~(1 << bit));
+                                actline[p] &= ~(1 << bit);
                             }
                             else
                             {
                                 // set bit
-                                actline[p] = (byte) (actline[p] | (1 << bit));
+                                actline[p] |= 1 << bit;
                             }
                         }
                     }
@@ -268,7 +268,8 @@ public final class Predictor
         private final boolean predictorPerRow;
 
         // data buffers
-        private byte[] currentRow, lastRow;
+        private byte[] currentRow;
+        private byte[] lastRow;
         // amount of data in the current row
         private int currentRowData = 0;
         // was the per-row predictor value read for the current row being processed

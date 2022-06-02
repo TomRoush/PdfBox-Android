@@ -17,6 +17,7 @@
 
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +30,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
 
@@ -265,5 +267,53 @@ public class TestFontEmbedding
         PDDocument document = PDDocument.load(file);
         PDFTextStripper stripper = new PDFTextStripper();
         return stripper.getText(document);
+    }
+
+    /**
+     * Test that an embedded and subsetted font can be reused.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testReuseEmbeddedSubsettedFont() throws IOException
+    {
+        String text1 = "The quick brown fox";
+        String text2 = "xof nworb kciuq ehT";
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PDDocument document = new PDDocument();
+        PDPage page = new PDPage();
+        document.addPage(page);
+        InputStream input = PDFont.class.getResourceAsStream(
+            "/com/tom_roush/pdfbox/resources/ttf/LiberationSans-Regular.ttf");
+        PDType0Font font = PDType0Font.load(document, input);
+        PDPageContentStream stream = new PDPageContentStream(document, page);
+        stream.beginText();
+        stream.setFont(font, 20);
+        stream.newLineAtOffset(50, 600);
+        stream.showText(text1);
+        stream.endText();
+        stream.close();
+        document.save(baos);
+        document.close();
+        // Append, while reusing the font subset
+        document = PDDocument.load(baos.toByteArray());
+        page = document.getPage(0);
+        font = (PDType0Font) page.getResources().getFont(COSName.getPDFName("F1"));
+        stream = new PDPageContentStream(document, page, AppendMode.APPEND, true);
+        stream.beginText();
+        stream.setFont(font, 20);
+        stream.newLineAtOffset(250, 600);
+        stream.showText(text2);
+        stream.endText();
+        stream.close();
+        baos.reset();
+        document.save(baos);
+        document.close();
+        // Test that both texts are there
+        document = PDDocument.load(baos.toByteArray());
+        PDFTextStripper stripper = new PDFTextStripper();
+        String extractedText = stripper.getText(document);
+        assertEquals(text1 + " " + text2, extractedText.trim());
+        document.close();
     }
 }

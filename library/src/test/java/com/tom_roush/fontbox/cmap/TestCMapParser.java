@@ -18,6 +18,7 @@ package com.tom_roush.fontbox.cmap;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import junit.framework.TestCase;
 
@@ -37,11 +38,7 @@ public class TestCMapParser extends TestCase
      */
     public void testLookup() throws IOException
     {
-        final String resourceDir = "src/test/resources/fontbox/cmap";
-        File inDir = new File(resourceDir);
-
-        CMapParser parser = new CMapParser();
-        CMap cMap = parser.parse(new File(inDir, "CMapTest"));
+        CMap cMap = new CMapParser().parse(new File("src/test/resources/fontbox/cmap", "CMapTest"));
 
         // char mappings
         byte[] bytes1 = {0, 1};
@@ -90,11 +87,7 @@ public class TestCMapParser extends TestCase
 
     public void testIdentity() throws IOException
     {
-        final String resourceDir = "src/main/assets/com/tom_roush/fontbox/resources/cmap";
-        File inDir = new File(resourceDir);
-
-        CMapParser parser = new CMapParser();
-        CMap cMap = parser.parse(new File(inDir, "Identity-H"));
+        CMap cMap = new CMapParser().parsePredefined("Identity-H");
 
         assertEquals("Indentity-H CID 65", 65, cMap.toCID(65));
         assertEquals("Indentity-H CID 12345", 12345, cMap.toCID(12345));
@@ -103,11 +96,7 @@ public class TestCMapParser extends TestCase
 
     public void testUniJIS_UCS2_H() throws IOException
     {
-        final String resourceDir = "src/main/assets/com/tom_roush/fontbox/resources/cmap";
-        File inDir = new File(resourceDir);
-
-        CMapParser parser = new CMapParser();
-        CMap cMap = parser.parse(new File(inDir, "UniJIS-UCS2-H"));
+        CMap cMap = new CMapParser().parsePredefined("UniJIS-UCS2-H");
 
         assertEquals("UniJIS-UCS2-H CID 65 -> 34", 34, cMap.toCID(65));
     }
@@ -150,9 +139,56 @@ public class TestCMapParser extends TestCase
 
         assertEquals("bytes 02 32 from bfrange <0232> <0432> <0041>", "A", cMap.toUnicode(0x232));
 
-        // check border values
+        // check border values for non strict mode
+        assertNotNull(cMap.toUnicode(0x2F0));
+        assertNotNull(cMap.toUnicode(0x2F1));
+
+        // use strict mode
+        cMap = new CMapParser(true)
+            .parse(new File("src/test/resources/fontbox/cmap", "CMapMalformedbfrange2"));
+        // check border values for strict mode
         assertNotNull(cMap.toUnicode(0x2F0));
         assertNull(cMap.toUnicode(0x2F1));
+    }
+
+    public void testPredefinedMap() throws IOException
+    {
+        CMap cMap = new CMapParser().parsePredefined("Adobe-Korea1-UCS2");
+        assertNotNull("Failed to parse predefined CMap Adobe-Korea1-UCS2", cMap);
+
+        assertEquals("wrong CMap name", "Adobe-Korea1-UCS2", cMap.getName());
+        assertEquals("wrong WMode", 0, cMap.getWMode());
+        assertFalse(cMap.hasCIDMappings());
+        assertTrue(cMap.hasUnicodeMappings());
+
+        cMap = new CMapParser().parsePredefined("Identity-V");
+        assertNotNull("Failed to parse predefined CMap Identity-V", cMap);
+    }
+
+    public void testIdentitybfrange() throws IOException
+    {
+        // use strict mode
+        CMap cMap = new CMapParser(true)
+            .parse(new File("src/test/resources/fontbox/cmap", "Identitybfrange"));
+        assertEquals("wrong CMap name", "Adobe-Identity-UCS", cMap.getName());
+
+        Charset UTF_16BE = Charset.forName("UTF-16BE");
+
+        byte[] bytes = new byte[] { 0, 0x48 };
+        assertEquals("Indentity 0x0048", new String(bytes, UTF_16BE), cMap.toUnicode(0x0048));
+
+        bytes = new byte[] { 0x30, 0x39 };
+        assertEquals("Indentity 0x3039", new String(bytes, UTF_16BE), cMap.toUnicode(0x3039));
+
+        // check border values for strict mode
+        bytes = new byte[] { 0x30, (byte) 0xFF };
+        assertEquals("Indentity 0x30FF", new String(bytes, UTF_16BE), cMap.toUnicode(0x30FF));
+        // check border values for strict mode
+        bytes = new byte[] { 0x31, 0x00 };
+        assertEquals("Indentity 0x3100", new String(bytes, UTF_16BE), cMap.toUnicode(0x3100));
+
+        bytes = new byte[] { (byte) 0xFF, (byte) 0xFF };
+        assertEquals("Indentity 0xFFFF", new String(bytes, UTF_16BE), cMap.toUnicode(0xFFFF));
 
     }
 

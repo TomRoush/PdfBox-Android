@@ -18,5 +18,5 @@ package com.tom_roush.pdfbox.pdmodel.fixup;
 
 public interface PDDocumentFixup
 {
-   public void apply();
+   void apply();
 }  	

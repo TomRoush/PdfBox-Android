@@ -428,7 +428,7 @@ public class PDFMergerUtility
             // - all FileInputStreams are closed
             // - there's a way to see which errors occurred
 
-            List<PDDocument> tobeclosed = new ArrayList<PDDocument>();
+            List<PDDocument> tobeclosed = new ArrayList<PDDocument>(sources.size());
 
             try
             {
@@ -594,9 +594,9 @@ public class PDFMergerUtility
             }
         }
 
-        if (destNames != null)
+        if (destNames != null && destNames.getCOSObject().containsKey(COSName.ID_TREE))
         {
-            // found in 054080.pdf from PDFBOX-4417 and doesn't belong there
+            // found in 001031.pdf from PDFBOX-4417 and doesn't belong there
             destNames.getCOSObject().removeItem(COSName.ID_TREE);
             Log.w("PdfBox-Android", "Removed /IDTree from /Names dictionary, doesn't belong there");
         }
@@ -1548,7 +1548,7 @@ public class PDFMergerUtility
             page.setStructParents(page.getStructParents() + structParentOffset);
         }
         List<PDAnnotation> annots = page.getAnnotations();
-        List<PDAnnotation> newannots = new ArrayList<PDAnnotation>();
+        List<PDAnnotation> newannots = new ArrayList<PDAnnotation>(annots.size());
         for (PDAnnotation annot : annots)
         {
             if (annot.getStructParent() >= 0)

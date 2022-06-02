@@ -18,5 +18,5 @@ package com.tom_roush.pdfbox.pdmodel.fixup.processor;
 
 public interface PDDocumentProcessor
 {
-   public void process();
-}  	
+   void process();
+}

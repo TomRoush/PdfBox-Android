@@ -325,15 +325,15 @@ public class Type2CharString extends Type1CharString
             if (horizontal)
             {
                 addCommand(Arrays.asList(numbers.get(0), 0,
-                    numbers.get(1), numbers.get(2), last ? numbers.get(4)
-                        : 0, numbers.get(3)),
+                        numbers.get(1), numbers.get(2), last ? numbers.get(4)
+                            : 0, numbers.get(3)),
                     new CharStringCommand(8));
             }
             else
             {
                 addCommand(Arrays.asList(0, numbers.get(0),
-                    numbers.get(1), numbers.get(2), numbers.get(3),
-                    last ? numbers.get(4) : 0),
+                        numbers.get(1), numbers.get(2), numbers.get(3),
+                        last ? numbers.get(4) : 0),
                     new CharStringCommand(8));
             }
             numbers = numbers.subList(last ? 5 : 4, numbers.size());
@@ -358,8 +358,8 @@ public class Type2CharString extends Type1CharString
             else
             {
                 addCommand(Arrays.asList(first ? numbers.get(0) : 0, numbers.get(first ? 1 : 0), numbers
-                        .get(first ? 2 : 1), numbers.get(first ? 3 : 2),
-                    0, numbers.get(first ? 4 : 3)),
+                            .get(first ? 2 : 1), numbers.get(first ? 3 : 2),
+                        0, numbers.get(first ? 4 : 3)),
                     new CharStringCommand(8));
             }
             numbers = numbers.subList(first ? 5 : 4, numbers.size());
@@ -382,8 +382,9 @@ public class Type2CharString extends Type1CharString
 
     private static <E> List<List<E>> split(List<E> list, int size)
     {
-        List<List<E>> result = new ArrayList<List<E>>();
-        for (int i = 0; i < list.size() / size; i++)
+        int listSize = list.size() / size;
+        List<List<E>> result = new ArrayList<List<E>>(listSize);
+        for (int i = 0; i < listSize; i++)
         {
             result.add(list.subList(i * size, (i + 1) * size));
         }

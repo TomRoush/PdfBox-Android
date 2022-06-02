@@ -253,7 +253,7 @@ public class COSArrayList<E> implements List<E>
     public boolean addAll(Collection<? extends E> c)
     {
         if (isFiltered) {
-            throw new UnsupportedOperationException("Apping to a filtered List is not permitted");
+            throw new UnsupportedOperationException("Adding to a filtered List is not permitted");
         }
 
         //when adding if there is a parentDict then change the item
@@ -497,7 +497,7 @@ public class COSArrayList<E> implements List<E>
 
     private List<COSBase> toCOSObjectList( Collection<?> list )
     {
-        List<COSBase> cosObjects = new ArrayList<COSBase>();
+        List<COSBase> cosObjects = new ArrayList<COSBase>(list.size());
         for (Object next : list)
         {
             if( next instanceof String )
