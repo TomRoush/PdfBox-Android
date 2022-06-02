@@ -555,6 +555,11 @@ public final class StandardSecurityHandler extends SecurityHandler
 
             byte[] oHash = new byte[32];
             byte[] oValidationSalt = new byte[8];
+            if (owner.length < 40)
+            {
+                // PDFBOX-5104
+                throw new IOException("Owner password is too short");
+            }
             System.arraycopy(owner, 0, oHash, 0, 32);
             System.arraycopy(owner, 32, oValidationSalt, 0, 8);
 
@@ -706,6 +711,10 @@ public final class StandardSecurityHandler extends SecurityHandler
 
         if (isOwnerPassword)
         {
+            if (oe == null)
+            {
+                throw new IOException("/Encrypt/OE entry is missing");
+            }
             byte[] oKeySalt = new byte[8];
             System.arraycopy(o, 40, oKeySalt, 0, 8);
 
@@ -722,6 +731,10 @@ public final class StandardSecurityHandler extends SecurityHandler
         }
         else
         {
+            if (ue == null)
+            {
+                throw new IOException("/Encrypt/UE entry is missing");
+            }
             byte[] uKeySalt = new byte[8];
             System.arraycopy(u, 40, uKeySalt, 0, 8);
 

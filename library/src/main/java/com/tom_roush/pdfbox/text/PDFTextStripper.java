@@ -241,10 +241,7 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
         {
             charactersByArticle.clear();
         }
-        if (characterListMapping != null)
-        {
-            characterListMapping.clear();
-        }
+        characterListMapping.clear();
     }
 
     /**

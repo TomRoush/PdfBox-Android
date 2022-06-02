@@ -160,13 +160,13 @@ class AppearanceGeneratorHelper {
         value = getFormattedValue(apValue);
 
         // Treat multiline field values in single lines as single lime values.
-        // This is in line with how Adobe Reader behaves when enetring text
+        // This is in line with how Adobe Reader behaves when entering text
         // interactively but NOT how it behaves when the field value has been
         // set programmatically and Reader is forced to generate the appearance
         // using PDAcroForm.setNeedAppearances
         // see PDFBOX-3911
         if (field instanceof PDTextField && !((PDTextField) field).isMultiline()) {
-            value = apValue.replaceAll("\\u000D\\u000A|[\\u000A\\u000B\\u000C\\u000D\\u0085\\u2028\\u2029]", " ");
+            value = value.replaceAll("\\u000D\\u000A|[\\u000A\\u000B\\u000C\\u000D\\u0085\\u2028\\u2029]", " ");
         }
 
         for (PDAnnotationWidget widget : field.getWidgets()) {
@@ -240,7 +240,7 @@ class AppearanceGeneratorHelper {
                 ScriptingHandler scriptingHandler = field.getAcroForm().getScriptingHandler();
                 return scriptingHandler.format((PDActionJavaScript) field.getActions().getF(), apValue);
             } else {
-                Log.i("PdfBox-Android", "Field contains a formatting action but no SriptingHandler has been supplied - formatted value might be incorrect");
+                Log.i("PdfBox-Android", "Field contains a formatting action but no ScriptingHandler has been supplied - formatted value might be incorrect");
                 return apValue;
             }
         }

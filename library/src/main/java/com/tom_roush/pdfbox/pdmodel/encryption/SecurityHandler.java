@@ -507,6 +507,12 @@ public abstract class SecurityHandler
         {
             encryptData(objNum, genNum, encryptedStream, output, true /* decrypt */);
         }
+        catch (IOException ex)
+        {
+            Log.e("PdfBox-Android", ex.getClass().getSimpleName() + " thrown when decrypting object " +
+                objNum + " " + genNum + " obj");
+            throw ex;
+        }
         finally
         {
             output.close();

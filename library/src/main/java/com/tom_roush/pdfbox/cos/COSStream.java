@@ -296,20 +296,31 @@ public class COSStream extends COSDictionary implements Closeable
      */
     private List<Filter> getFilterList() throws IOException
     {
-        List<Filter> filterList = new ArrayList<Filter>();
+        List<Filter> filterList;
         COSBase filters = getFilters();
         if (filters instanceof COSName)
         {
+            filterList = new ArrayList<Filter>(1);
             filterList.add(FilterFactory.INSTANCE.getFilter((COSName)filters));
         }
         else if (filters instanceof COSArray)
         {
             COSArray filterArray = (COSArray)filters;
+            filterList = new ArrayList<Filter>(filterArray.size());
             for (int i = 0; i < filterArray.size(); i++)
             {
-                COSName filterName = (COSName)filterArray.get(i);
-                filterList.add(FilterFactory.INSTANCE.getFilter(filterName));
+                COSBase base = filterArray.get(i);
+                if (!(base instanceof COSName))
+                {
+                    throw new IOException("Forbidden type in filter array: " +
+                        (base == null ? "null" : base.getClass().getName()));
+                }
+                filterList.add(FilterFactory.INSTANCE.getFilter((COSName) base));
             }
+        }
+        else
+        {
+            filterList = new ArrayList<Filter>();
         }
         return filterList;
     }

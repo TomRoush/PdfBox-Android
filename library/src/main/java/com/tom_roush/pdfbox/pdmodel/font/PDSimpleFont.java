@@ -322,17 +322,24 @@ public abstract class PDSimpleFont extends PDFont
         if (getStandard14AFM() != null)
         {
             String nameInAFM = getEncoding().getName(code);
-            if ("nbspace".equals(nameInAFM))
-            {
-                // PDFBOX-4944: nbspace is missing in AFM files,
-                // but PDF specification tells "it is typographically the same as SPACE"
-                nameInAFM = "space";
-            }
 
             // the Adobe AFMs don't include .notdef, but Acrobat uses 250, test with PDFBOX-2334
             if (".notdef".equals(nameInAFM))
             {
                 return 250f;
+            }
+
+            if ("nbspace".equals(nameInAFM))
+            {
+                // PDFBOX-4944: nbspace is missing in AFM files,
+                // but PDF specification tells "it shall be typographically the same as SPACE"
+                nameInAFM = "space";
+            }
+            else if ("sfthyphen".equals(nameInAFM))
+            {
+                // PDFBOX-5115: sfthyphen is missing in AFM files,
+                // but PDF specification tells "it shall be typographically the same as hyphen"
+                nameInAFM = "hyphen";
             }
 
             return getStandard14AFM().getCharacterWidth(nameInAFM);
