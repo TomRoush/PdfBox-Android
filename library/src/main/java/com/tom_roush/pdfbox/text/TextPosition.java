@@ -90,8 +90,7 @@ public final class TextPosition
         this.endX = endX;
         this.endY = endY;
 
-        int rotationAngle = pageRotation;
-        this.rotation = rotationAngle;
+        this.rotation = pageRotation;
 
         this.maxHeight = maxHeight;
         this.pageHeight = pageHeight;
@@ -105,14 +104,14 @@ public final class TextPosition
         this.fontSize = fontSize;
         this.fontSizePt = fontSizeInPt;
 
-        x = getXRot(rotationAngle);
-        if (rotationAngle == 0 || rotationAngle == 180)
+        x = getXRot(rotation);
+        if (rotation == 0 || rotation == 180)
         {
-            y = this.pageHeight - getYLowerLeftRot(rotationAngle);
+            y = this.pageHeight - getYLowerLeftRot(rotation);
         }
         else
         {
-            y = this.pageWidth - getYLowerLeftRot(rotationAngle);
+            y = this.pageWidth - getYLowerLeftRot(rotation);
         }
     }
 
@@ -667,7 +666,7 @@ public final class TextPosition
     private void insertDiacritic(int i, TextPosition diacritic)
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(unicode.substring(0, i));
+        sb.append(unicode, 0, i);
 
         float[] widths2 = new float[widths.length + 1];
         System.arraycopy(widths, 0, widths2, 0, i);
@@ -680,7 +679,7 @@ public final class TextPosition
         widths2[i + 1] = 0;
 
         // get the rest of the string
-        sb.append(unicode.substring(i + 1, unicode.length()));
+        sb.append(unicode.substring(i + 1));
         System.arraycopy(widths, i + 1, widths2, i + 2, widths.length - i - 1);
 
         unicode = sb.toString();

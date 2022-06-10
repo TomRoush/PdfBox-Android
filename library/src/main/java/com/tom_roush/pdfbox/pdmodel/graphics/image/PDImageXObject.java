@@ -130,7 +130,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         this.resources = resources;
         List<COSName> filters = stream.getFilters();
         // JPX would be decode twice in rending. here is no need. just to ensure no parameters is missing.
-        if (filters != null && !filters.isEmpty() && COSName.JPX_DECODE.equals(filters.get(filters.size()-1)))
+        if (filters != null && !filters.isEmpty() && COSName.JPX_DECODE.equals(filters.get(filters.size() - 1)))
         {
             // skip decode jpx is no parameters is missing. see PDFBOX-5375 PDFBOX-3340
             List<COSName> requireKeys = Arrays.asList(COSName.WIDTH, COSName.HEIGHT, COSName.COLORSPACE);
@@ -581,7 +581,8 @@ public final class PDImageXObject extends PDXObject implements PDImage
         {
             mask = scaleImage(mask, width, height);
         }
-        else if (mask.getWidth() > width || mask.getHeight() > height)
+
+        if (mask.getWidth() > width || mask.getHeight() > height)
         {
             width = mask.getWidth();
             height = mask.getHeight();
@@ -590,50 +591,46 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
         // compose to ARGB
         Bitmap masked = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        int[] outPixels = new int[width];
+        int[] destRow = new int[width];
 
-        int rgb;
-        int alphaPixel;
-        int alpha;
-        int[] imgPixels = new int[width];
-        int[] maskPixels = new int[width];
+        int r, g, b, alpha;
+        int[] alphaRow = new int[width];
+        int[] rgbaRow = new int[width];
         for (int y = 0; y < height; y++)
         {
-            image.getPixels(imgPixels, 0, width, 0, y, width, 1);
-            mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
+            image.getPixels(rgbaRow, 0, width, 0, y, width, 1);
+            mask.getPixels(alphaRow, 0, width, 0, y, width, 1);
             for (int x = 0; x < width; x++)
             {
-                rgb = imgPixels[x];
-                int r = Color.red(rgb);
-                int g = Color.green(rgb);
-                int b = Color.blue(rgb);
-                alphaPixel = maskPixels[x];
+                r = Color.red(rgbaRow[x]);
+                g = Color.green(rgbaRow[x]);
+                b = Color.blue(rgbaRow[x]);
                 if (isSoft)
                 {
-                    alpha = Color.alpha(alphaPixel);
-                    if (matte != null && Float.compare(alpha, 0) != 0)
+                    alpha = Color.alpha(alphaRow[x]);
+                    if (matte != null && alpha != 0)
                     {
-                        r = clampColor(((r / 255F - matte[0]) / (alpha / 255F) + matte[0]) * 255);
-                        g = clampColor(((g / 255F - matte[1]) / (alpha / 255F) + matte[1]) * 255);
-                        b = clampColor(((b / 255F - matte[2]) / (alpha / 255F) + matte[2]) * 255);
+                        float k = alpha / 255F;
+                        r = clampColor(((r / 255f - matte[0]) / k + matte[0]) * 255);
+                        g = clampColor(((g / 255f - matte[1]) / k + matte[1]) * 255);
+                        b = clampColor(((b / 255f - matte[2]) / k + matte[2]) * 255);
                     }
                 }
                 else
                 {
-                    alpha = 255 - Color.alpha(alphaPixel);
+                    alpha = 255 - Color.alpha(alphaRow[x]);
                 }
 
-                outPixels[x] = Color.argb(alpha, r, g, b);
+                destRow[x] = Color.argb(alpha, r, g, b);
             }
-            masked.setPixels(outPixels, 0, width, 0, y, width, 1);
+            masked.setPixels(destRow, 0, width, 0, y, width, 1);
         }
-
         return masked;
     }
 
     private int clampColor(float color)
     {
-        return Float.valueOf(color < 0 ? 0 : (color > 255 ? 255 : color)).intValue();
+        return color < 0 ? 0 : (color > 255 ? 255 : Math.round(color));
     }
 
     /**

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 
 /**
@@ -113,13 +114,11 @@ public class PDFTextStripperByArea extends PDFTextStripper
      */
     public void extractRegions( PDPage page ) throws IOException
     {
-        for (String region : regions)
+        for (String regionName : regions)
         {
             setStartPage(getCurrentPageNo());
             setEndPage(getCurrentPageNo());
-            //reset the stored text for the region so this class
-            //can be reused.
-            String regionName = region;
+            // reset the stored text for the region so this class can be reused.
             ArrayList<List<TextPosition>> regionCharactersByArticle = new ArrayList<List<TextPosition>>();
             regionCharactersByArticle.add( new ArrayList<TextPosition>() );
             regionCharacterList.put( regionName, regionCharactersByArticle );

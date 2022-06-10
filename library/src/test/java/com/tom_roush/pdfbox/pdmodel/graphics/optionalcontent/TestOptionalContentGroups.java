@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.tom_roush.harmony.awt.AWTColor;
@@ -30,9 +31,12 @@ import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
+import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDMarkedContent;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentProperties.BaseState;
+import com.tom_roush.pdfbox.text.PDFMarkedContentExtractor;
+import com.tom_roush.pdfbox.text.TextPosition;
 
 import junit.framework.TestCase;
 
@@ -198,11 +202,42 @@ public class TestOptionalContentGroups extends TestCase
             assertTrue(nameSet.contains("background"));
             assertTrue(nameSet.contains("enabled"));
             assertTrue(nameSet.contains("disabled"));
+
+            PDFMarkedContentExtractor extractor = new PDFMarkedContentExtractor();
+            extractor.processPage(page);
+            List<PDMarkedContent> markedContents = extractor.getMarkedContents();
+            assertEquals("oc1", markedContents.get(0).getTag());
+            assertEquals("PDF 1.5: Optional Content Groups"
+                    + "You should see a green textline, but no red text line.",
+                textPositionListToString(markedContents.get(0).getContents()));
+            assertEquals("oc2", markedContents.get(1).getTag());
+            assertEquals("This is from an enabled layer. If you see this, that's good.",
+                textPositionListToString(markedContents.get(1).getContents()));
+            assertEquals("oc3", markedContents.get(2).getTag());
+            assertEquals("This is from a disabled layer. If you see this, that's NOT good!",
+                textPositionListToString(markedContents.get(2).getContents()));
         }
         finally
         {
             doc.close();
         }
+    }
+
+    /**
+     * Convert a list of TextPosition objects to a string.
+     *
+     * @param contents list of TextPosition objects.
+     * @return
+     */
+    private String textPositionListToString(List<Object> contents)
+    {
+        StringBuilder sb = new StringBuilder();
+        for (Object o : contents)
+        {
+            TextPosition tp = (TextPosition) o;
+            sb.append(tp.getUnicode());
+        }
+        return sb.toString();
     }
 
     public void testOCGsWithSameNameCanHaveDifferentVisibility() throws Exception

@@ -105,7 +105,7 @@ public class PDBorderStyleDictionary implements COSObjectable
      */
     public void setWidth(float w)
     {
-        // PDFBOX-3929 workaround 
+        // PDFBOX-3929 workaround
         if (w == (int) w)
         {
             getCOSObject().setInt(COSName.W, (int) w);
@@ -159,12 +159,7 @@ public class PDBorderStyleDictionary implements COSObjectable
      */
     public void setDashStyle(COSArray dashArray)
     {
-        COSArray array = null;
-        if (dashArray != null)
-        {
-            array = dashArray;
-        }
-        getCOSObject().setItem(COSName.D, array);
+        getCOSObject().setItem(COSName.D, dashArray);
     }
 
     /**

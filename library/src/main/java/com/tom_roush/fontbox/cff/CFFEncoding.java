@@ -16,9 +16,6 @@
  */
 package com.tom_roush.fontbox.cff;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.tom_roush.fontbox.encoding.Encoding;
 
 /**
@@ -29,30 +26,11 @@ import com.tom_roush.fontbox.encoding.Encoding;
  */
 public abstract class CFFEncoding extends Encoding
 {
-    private final Map<Integer, String> codeToName = new HashMap<Integer, String>(250);
-
     /**
      * Package-private constructor for subclasses.
      */
     CFFEncoding()
     {
-    }
-
-    /**
-     * Returns the name of the glyph for the given character code.
-     *
-     * @param code character code
-     * @return PostScript glyph name
-     */
-    @Override
-    public String getName(int code)
-    {
-        String name = codeToName.get(code);
-        if (name == null)
-        {
-            return ".notdef";
-        }
-        return name;
     }
 
     /**
@@ -62,7 +40,6 @@ public abstract class CFFEncoding extends Encoding
      */
     public void add(int code, int sid, String name)
     {
-        codeToName.put(code, name);
         addCharacterEncoding(code, name);
     }
 
@@ -71,8 +48,6 @@ public abstract class CFFEncoding extends Encoding
      */
     protected void add(int code, int sid)
     {
-        String name = CFFStandardString.getName(sid);
-        codeToName.put(code, name);
-        addCharacterEncoding(code, name);
+        addCharacterEncoding(code, CFFStandardString.getName(sid));
     }
 }

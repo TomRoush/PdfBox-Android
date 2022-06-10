@@ -22,18 +22,21 @@ import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
+import com.tom_roush.pdfbox.android.TestResourceGenerator;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
-import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -45,6 +48,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Unit tests for JPEGFactory
@@ -293,6 +297,34 @@ public class JPEGFactoryTest
         assertNull(ximage.getSoftMask());
 
         doWritePDF(document, ximage, testResultsDir, "jpeg-ushort555rgb.pdf");
+    }
+
+    /**
+     * PDFBOX-5137 and PDFBOX-5196: check that numFrameComponents and not numScanComponents is used
+     * to determine the color space.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testPDFBox5137() throws IOException
+    {
+        File cacheDir = new File(testContext.getCacheDir(), "imgs");
+        cacheDir.mkdirs();
+        File imgFile = TestResourceGenerator.downloadTestResource(cacheDir, "PDFBOX-5196-lotus.jpg", "https://issues.apache.org/jira/secure/attachment/13025718/lotus.jpg");
+        assumeTrue(imgFile.exists());
+
+        InputStream is = new FileInputStream(imgFile);
+        byte[] ba = IOUtils.toByteArray(is);
+        is.close();
+
+        PDDocument document = new PDDocument();
+
+        PDImageXObject ximage = JPEGFactory.createFromByteArray(document, ba);
+
+        validate(ximage, 8, 500, 500, "jpg", PDDeviceRGB.INSTANCE.getName());
+
+        doWritePDF(document, ximage, testResultsDir, "PDFBOX-5196-lotus.pdf");
+        checkJpegStream(testResultsDir, "PDFBOX-5196-lotus.pdf", new ByteArrayInputStream(ba));
     }
 
     // check whether it is possible to extract the jpeg stream exactly

@@ -29,6 +29,7 @@ import java.util.Locale;
 import com.tom_roush.harmony.awt.AWTColor;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
+import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNumber;
@@ -161,7 +162,8 @@ abstract class PDAbstractContentStream implements Closeable
             }
             else
             {
-                Log.w("PdfBox-Android", "attempting to use subset font " + font.getName() + " without proper context");
+                Log.w("PdfBox-Android", "Using the subsetted font '" + font.getName() +
+                    "' without a PDDocument context; call subset() before saving");
             }
         }
 
@@ -449,11 +451,12 @@ abstract class PDAbstractContentStream implements Closeable
         sb.append("/");
         sb.append(inlineImage.getColorSpace().getName());
 
-        if (inlineImage.getDecode() != null && inlineImage.getDecode().size() > 0)
+        COSArray decodeArray = inlineImage.getDecode();
+        if (decodeArray != null && decodeArray.size() > 0)
         {
             sb.append("\n /D ");
             sb.append("[");
-            for (COSBase base : inlineImage.getDecode())
+            for (COSBase base : decodeArray)
             {
                 sb.append(((COSNumber) base).intValue());
                 sb.append(" ");

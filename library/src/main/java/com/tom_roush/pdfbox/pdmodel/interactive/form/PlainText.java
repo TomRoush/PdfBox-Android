@@ -21,7 +21,6 @@ import java.text.AttributedString;
 import java.text.BreakIterator;
 import java.text.AttributedCharacterIterator.Attribute;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
@@ -51,13 +50,15 @@ class PlainText
      */
     PlainText(String textValue)
     {
-        paragraphs = new ArrayList<Paragraph>();
-        if (textValue.isEmpty()) {
+        if (textValue.isEmpty())
+        {
+            paragraphs = new ArrayList<Paragraph>(1);
             paragraphs.add(new Paragraph(""));
         }
         else
         {
-            List<String> parts = Arrays.asList(textValue.replaceAll("\t", " ").split("\\r\\n|\\n|\\r|\\u2028|\\u2029"));
+            String[] parts = textValue.replace('\t', ' ').split("\\r\\n|\\n|\\r|\\u2028|\\u2029");
+            paragraphs = new ArrayList<Paragraph>(parts.length);
             for (String part : parts)
             {
                 // Acrobat prints a space for an empty paragraph
@@ -262,16 +263,18 @@ class PlainText
         {
             final float scale = fontSize/FONTSCALE;
             float calculatedWidth = 0f;
+            int indexOfWord = 0;
             for (Word word : words)
             {
                 calculatedWidth = calculatedWidth +
                     (Float) word.getAttributes().getIterator().getAttribute(TextAttribute.WIDTH);
                 String text = word.getText();
-                if (words.indexOf(word) == words.size() -1 && Character.isWhitespace(text.charAt(text.length()-1)))
+                if (indexOfWord == words.size() -1 && Character.isWhitespace(text.charAt(text.length()-1)))
                 {
                     float whitespaceWidth = font.getStringWidth(text.substring(text.length()-1)) * scale;
                     calculatedWidth = calculatedWidth - whitespaceWidth;
                 }
+                ++indexOfWord;
             }
             return calculatedWidth;
         }

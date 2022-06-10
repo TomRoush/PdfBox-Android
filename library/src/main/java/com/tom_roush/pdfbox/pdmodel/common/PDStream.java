@@ -16,6 +16,8 @@
  */
 package com.tom_roush.pdfbox.pdmodel.common;
 
+import android.util.Log;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,6 +26,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -138,10 +141,7 @@ public class PDStream implements COSObjectable
             {
                 output.close();
             }
-            if (input != null)
-            {
-                input.close();
-            }
+            input.close();
         }
     }
 
@@ -267,8 +267,14 @@ public class PDStream implements COSObjectable
                 else
                 {
                     Filter filter = FilterFactory.INSTANCE.getFilter(nextFilter);
-                    filter.decode(is, os, stream, i);
-                    IOUtils.closeQuietly(is);
+                    try
+                    {
+                        filter.decode(is, os, stream, i);
+                    }
+                    finally
+                    {
+                        IOUtils.closeQuietly(is);
+                    }
                     is = new ByteArrayInputStream(os.toByteArray());
                     os.reset();
                 }
@@ -343,42 +349,57 @@ public class PDStream implements COSObjectable
      */
     public List<Object> getDecodeParms() throws IOException
     {
-        List<Object> retval = null;
+        // See PDF Ref 1.5 implementation note 7, the DP is sometimes used instead.
+        return internalGetDecodeParams(COSName.DECODE_PARMS, COSName.DP);
+    }
 
-        COSBase dp = stream.getDictionaryObject(COSName.DECODE_PARMS);
-        if (dp == null)
-        {
-            // See PDF Ref 1.5 implementation note 7, the DP is sometimes used
-            // instead.
-            dp = stream.getDictionaryObject(COSName.DP);
-        }
+    /**
+     * Get the list of decode parameters. Each entry in the list will refer to
+     * an entry in the filters list.
+     *
+     * @return The list of decode parameters.
+     * @throws IOException if there is an error retrieving the parameters.
+     */
+    public List<Object> getFileDecodeParams() throws IOException
+    {
+        return internalGetDecodeParams(COSName.F_DECODE_PARMS, null);
+    }
+
+    private List<Object> internalGetDecodeParams(COSName name1, COSName name2) throws IOException
+    {
+        COSBase dp = stream.getDictionaryObject(name1, name2);
         if (dp instanceof COSDictionary)
         {
-            Map<?, ?> map = COSDictionaryMap
-                .convertBasicTypesToMap((COSDictionary) dp);
-            retval = new COSArrayList<Object>(map, dp, stream,
-                COSName.DECODE_PARMS);
+            Map<?, ?> map = COSDictionaryMap.convertBasicTypesToMap((COSDictionary) dp);
+            return new COSArrayList<Object>(map, dp, stream, name1);
         }
-        else if (dp instanceof COSArray)
+
+        if (dp instanceof COSArray)
         {
             COSArray array = (COSArray) dp;
             List<Object> actuals = new ArrayList<Object>(array.size());
             for (int i = 0; i < array.size(); i++)
             {
-                actuals.add(COSDictionaryMap
-                    .convertBasicTypesToMap((COSDictionary) array
-                        .getObject(i)));
+                COSBase base = array.getObject(i);
+                if (base instanceof COSDictionary)
+                {
+                    actuals.add(COSDictionaryMap.convertBasicTypesToMap((COSDictionary) base));
+                }
+                else
+                {
+                    Log.w("PdfBox-Android", "Expected COSDictionary, got " + base + ", ignored");
+                }
             }
-            retval = new COSArrayList<Object>(actuals, array);
+            return new COSArrayList<Object>(actuals, array);
         }
 
-        return retval;
+        return null;
     }
 
     /**
-     * This will set the list of decode parameterss.
+     * This will set the list of decode parameters.
      *
-     * @param decodeParams The list of decode parameterss.
+     * @param decodeParams The list of decode parameters.
      */
     public void setDecodeParms(List<?> decodeParams)
     {
@@ -445,49 +466,13 @@ public class PDStream implements COSObjectable
     }
 
     /**
-     * Get the list of decode parameters. Each entry in the list will refer to
-     * an entry in the filters list.
-     *
-     * @return The list of decode parameters.
-     * @throws IOException if there is an error retrieving the parameters.
-     */
-    public List<Object> getFileDecodeParams() throws IOException
-    {
-        List<Object> retval = null;
-
-        COSBase dp = stream.getDictionaryObject(COSName.F_DECODE_PARMS);
-        if (dp instanceof COSDictionary)
-        {
-            Map<?, ?> map = COSDictionaryMap
-                .convertBasicTypesToMap((COSDictionary) dp);
-            retval = new COSArrayList<Object>(map, dp, stream,
-                COSName.F_DECODE_PARMS);
-        }
-        else if (dp instanceof COSArray)
-        {
-            COSArray array = (COSArray) dp;
-            List<Object> actuals = new ArrayList<Object>(array.size());
-            for (int i = 0; i < array.size(); i++)
-            {
-                actuals.add(COSDictionaryMap
-                    .convertBasicTypesToMap((COSDictionary) array
-                        .getObject(i)));
-            }
-            retval = new COSArrayList<Object>(actuals, array);
-        }
-
-        return retval;
-    }
-
-    /**
      * This will set the list of decode params.
      *
      * @param decodeParams The list of decode params.
      */
     public void setFileDecodeParams(List<?> decodeParams)
     {
-        stream.setItem("FDecodeParams",
-            COSArrayList.converterToCOSArray(decodeParams));
+        stream.setItem(COSName.F_DECODE_PARMS, COSArrayList.converterToCOSArray(decodeParams));
     }
 
     /**
@@ -498,12 +483,11 @@ public class PDStream implements COSObjectable
      */
     public byte[] toByteArray() throws IOException
     {
-        ByteArrayOutputStream output = new ByteArrayOutputStream();
         InputStream is = null;
         try
         {
             is = createInputStream();
-            IOUtils.copy(is, output);
+            return IOUtils.toByteArray(is);
         }
         finally
         {
@@ -512,7 +496,6 @@ public class PDStream implements COSObjectable
                 is.close();
             }
         }
-        return output.toByteArray();
     }
 
     /**

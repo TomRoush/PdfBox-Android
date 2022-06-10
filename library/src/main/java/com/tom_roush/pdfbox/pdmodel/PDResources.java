@@ -31,14 +31,14 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDFontFactory;
-import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
-import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
+import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.pattern.PDAbstractPattern;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
-import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 
 /**
  * A set of resources available at the page/pages/stream level.
@@ -203,7 +203,7 @@ public final class PDResources implements COSObjectable
         }
 
         // we can't cache PDPattern, because it holds page resources, see PDFBOX-2370
-        if (cache != null /*&& !(colorSpace instanceof PDPattern)*/) // TODO: PdfBox-Android
+        if (cache != null && indirect != null /*&& !(colorSpace instanceof PDPattern)*/) // TODO: PdfBox-Android
         {
             cache.put(indirect, colorSpace);
         }
@@ -249,7 +249,7 @@ public final class PDResources implements COSObjectable
             extGState = new PDExtendedGraphicsState((COSDictionary) base);
         }
 
-        if (cache != null)
+        if (cache != null && indirect != null)
         {
             cache.put(indirect, extGState);
         }
@@ -285,7 +285,7 @@ public final class PDResources implements COSObjectable
             shading = PDShading.create((COSDictionary) base);
         }
 
-        if (cache != null)
+        if (cache != null && indirect != null)
         {
             cache.put(indirect, shading);
         }
@@ -321,7 +321,7 @@ public final class PDResources implements COSObjectable
             pattern = PDAbstractPattern.create((COSDictionary) base, getResourceCache());
         }
 
-        if (cache != null)
+        if (cache != null && indirect != null)
         {
             cache.put(indirect, pattern);
         }
@@ -355,7 +355,7 @@ public final class PDResources implements COSObjectable
             propertyList = PDPropertyList.create((COSDictionary) base);
         }
 
-        if (cache != null)
+        if (cache != null && indirect != null)
         {
             cache.put(indirect, propertyList);
         }
@@ -424,7 +424,7 @@ public final class PDResources implements COSObjectable
         {
             xobject = PDXObject.createXObject(value, this);
         }
-        if (cache != null && isAllowedCache(xobject))
+        if (cache != null && indirect != null && isAllowedCache(xobject))
         {
             cache.put(indirect, xobject);
         }

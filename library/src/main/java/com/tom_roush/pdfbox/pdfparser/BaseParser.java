@@ -282,11 +282,14 @@ public abstract class BaseParser
         COSName key = parseCOSName();
         COSBase value = parseCOSDictionaryValue();
         skipSpaces();
-
         if (value == null)
         {
             Log.w("PdfBox-Android", "Bad dictionary declaration at offset " + seqSource.getPosition());
             return false;
+        }
+        else if (value instanceof COSInteger && !((COSInteger)value).isValid())
+        {
+            Log.w("PdfBox-Android", "Skipped out of range number value at offset " + seqSource.getPosition());
         }
         else
         {
@@ -648,13 +651,18 @@ public abstract class BaseParser
             else
             {
                 //it could be a bad object in the array which is just skipped
-                Log.w("PdfBox-Android", "Corrupt object reference at offset " +
-                    seqSource.getPosition() + ", start offset: " + startPosition);
-
+                Log.w("PdfBox-Android", "Corrupt array element at offset "
+                    + seqSource.getPosition() + ", start offset: " + startPosition);
+                String isThisTheEnd = readString();
+                // return immediately if a corrupt element is followed by another array
+                // to avoid a possible infinite recursion as most likely the whole array is corrupted
+                if (isThisTheEnd.isEmpty() && seqSource.peek() == '[')
+                {
+                    return po;
+                }
+                seqSource.unread(isThisTheEnd.getBytes(ISO_8859_1));
                 // This could also be an "endobj" or "endstream" which means we can assume that
                 // the array has ended.
-                String isThisTheEnd = readString();
-                seqSource.unread(isThisTheEnd.getBytes(ISO_8859_1));
                 if(ENDOBJ_STRING.equals(isThisTheEnd) || ENDSTREAM_STRING.equals(isThisTheEnd))
                 {
                     return po;
@@ -678,7 +686,7 @@ public abstract class BaseParser
     {
         return ch == ASCII_SPACE || ch == ASCII_CR || ch == ASCII_LF || ch == 9 || ch == '>' ||
             ch == '<' || ch == '[' || ch =='/' || ch ==']' || ch ==')' || ch =='(' ||
-            ch == 0 || ch == '\f';
+            ch == 0 || ch == '\f' || ch == '%';
     }
 
     /**
@@ -841,17 +849,7 @@ public abstract class BaseParser
                 // check for second left bracket
                 c = (char) seqSource.peek();
                 seqSource.unread(leftBracket);
-                if(c == '<')
-                {
-
-                    COSDictionary retval = parseCOSDictionary();
-                    skipSpaces();
-                    return retval;
-                }
-                else
-                {
-                    return parseCOSString();
-                }
+                return c == '<' ? parseCOSDictionary() : parseCOSString();
             case '[':
                 // array
                 return parseCOSArray();
@@ -896,31 +894,30 @@ public abstract class BaseParser
                 {
                     return parseCOSNumber();
                 }
+                // This is not suppose to happen, but we will allow for it
+                // so we are more compatible with POS writers that don't
+                // follow the spec
+                long startOffset = seqSource.getPosition();
+                String badString = readString();
+                if (badString.isEmpty())
+                {
+                    int peek = seqSource.peek();
+                    // we can end up in an infinite loop otherwise
+                    throw new IOException(
+                        "Unknown dir object c='" + c + "' cInt=" + (int) c + " peek='" + (char) peek
+                            + "' peekInt=" + peek + " at offset " + seqSource.getPosition()
+                            + " (start offset: " + startOffset + ")");
+                }
+
+                // if it's an endstream/endobj, we want to put it back so the caller will see it
+                if (ENDOBJ_STRING.equals(badString) || ENDSTREAM_STRING.equals(badString))
+                {
+                    seqSource.unread(badString.getBytes(ISO_8859_1));
+                }
                 else
                 {
-                    //This is not suppose to happen, but we will allow for it
-                    //so we are more compatible with POS writers that don't
-                    //follow the spec
-                    String badString = readString();
-                    if (badString.isEmpty())
-                    {
-                        int peek = seqSource.peek();
-                        // we can end up in an infinite loop otherwise
-                        throw new IOException( "Unknown dir object c='" + c +
-                            "' cInt=" + (int)c + " peek='" + (char)peek
-                            + "' peekInt=" + peek + " at offset " + seqSource.getPosition() );
-                    }
-
-                    // if it's an endstream/endobj, we want to put it back so the caller will see it
-                    if(ENDOBJ_STRING.equals(badString) || ENDSTREAM_STRING.equals(badString))
-                    {
-                        seqSource.unread(badString.getBytes(ISO_8859_1));
-                    }
-                    else
-                    {
-                        Log.w("PdfBox-Android", "Skipped unexpected dir object = '" + badString + "' at offset "
-                            + seqSource.getPosition());
-                    }
+                    Log.w("PdfBox-Android", "Skipped unexpected dir object = '" + badString + "' at offset "
+                        + seqSource.getPosition() + " (start offset: " + startOffset + ")");
                 }
         }
         return null;
