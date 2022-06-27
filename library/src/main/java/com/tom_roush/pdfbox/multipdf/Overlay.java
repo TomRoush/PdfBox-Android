@@ -39,6 +39,7 @@ import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.PDPageTree;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
@@ -367,17 +368,19 @@ public class Overlay implements Closeable
     private void processPages(PDDocument document) throws IOException
     {
         int pageCounter = 0;
-        for (PDPage page : document.getPages())
+        PDPageTree pageTree = document.getPages();
+        int numberOfPages = pageTree.getCount();
+        for (PDPage page : pageTree)
         {
             pageCounter++;
-            COSDictionary pageDictionary = page.getCOSObject();
-            COSBase originalContent = pageDictionary.getDictionaryObject(COSName.CONTENTS);
-            COSArray newContentArray = new COSArray();
-            LayoutPage layoutPage = getLayoutPage(pageCounter, document.getNumberOfPages());
+            LayoutPage layoutPage = getLayoutPage(pageCounter, numberOfPages);
             if (layoutPage == null)
             {
                 continue;
             }
+            COSDictionary pageDictionary = page.getCOSObject();
+            COSBase originalContent = pageDictionary.getDictionaryObject(COSName.CONTENTS);
+            COSArray newContentArray = new COSArray();
             switch (position)
             {
                 case FOREGROUND:

@@ -168,7 +168,7 @@ public final class PDPageContentStream implements Closeable
      * @param appendContent Indicates whether content will be overwritten. If false all previous
      *                      content is deleted.
      * @param compress Tell if the content stream should compress the page contents.
-     * @param resetContext Tell if the graphic context should be reseted. You should use this when
+     * @param resetContext Tell if the graphic context should be reset. You should use this when
      * appending to an existing stream, because the existing stream may have changed graphic
      * properties (e.g. scaling, rotation).
      * @throws IOException If there is an error writing to the page contents.
@@ -831,11 +831,12 @@ public final class PDPageContentStream implements Closeable
         sb.append("/");
         sb.append(inlineImage.getColorSpace().getName());
 
-        if (inlineImage.getDecode() != null && inlineImage.getDecode().size() > 0)
+        COSArray decodeArray = inlineImage.getDecode();
+        if (decodeArray != null && decodeArray.size() > 0)
         {
             sb.append("\n /D ");
             sb.append("[");
-            for (COSBase base : inlineImage.getDecode())
+            for (COSBase base : decodeArray)
             {
                 sb.append(((COSNumber) base).intValue());
                 sb.append(" ");

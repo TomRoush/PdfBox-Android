@@ -265,7 +265,7 @@ class Type1Lexer
             buffer.reset();
             return null;
         }
-        else
+        else if (c != 'e' && c != 'E')
         {
             // integer
             buffer.position(buffer.position() -1);
@@ -278,7 +278,7 @@ class Type1Lexer
             sb.append(c);
             c = getChar();
         }
-        else
+        else if (c != 'e' && c != 'E')
         {
             // failure
             buffer.reset();
@@ -293,7 +293,7 @@ class Type1Lexer
         }
 
         // optional E
-        if (c == 'E')
+        if (c == 'E' || c == 'e')
         {
             sb.append(c);
             c = getChar();

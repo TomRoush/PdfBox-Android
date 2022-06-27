@@ -32,7 +32,6 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNull;
 import com.tom_roush.pdfbox.cos.COSNumber;
-import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.io.RandomAccessBuffer;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
@@ -194,16 +193,6 @@ public class PDFStreamParser extends BaseParser
                 {
                     return Operator.getOperator(next);
                 }
-            case 'R':
-                String line = readString();
-                if( line.equals( "R" ) )
-                {
-                    return new COSObject(null);
-                }
-                else
-                {
-                    return Operator.getOperator(line);
-                }
             case '0':
             case '1':
             case '2':
@@ -256,6 +245,12 @@ public class PDFStreamParser extends BaseParser
                     while ((nextToken = parseNextToken()) instanceof COSName)
                     {
                         Object value = parseNextToken();
+                        if (!(value instanceof COSBase))
+                        {
+                            Log.w("PdfBox-Android", "Unexpected token in inline image dictionary at offset " +
+                                seqSource.getPosition());
+                            break;
+                        }
                         imageParams.setItem((COSName) nextToken, (COSBase) value);
                     }
                     // final token will be the image data, maybe??
@@ -316,8 +311,8 @@ public class PDFStreamParser extends BaseParser
                 return COSNull.NULL;
             default:
                 // we must be an operator
-                String operator = readOperator();
-                if (operator.trim().length() > 0)
+                String operator = readOperator().trim();
+                if (operator.length() > 0)
                 {
                     return Operator.getOperator(operator);
                 }

@@ -46,7 +46,7 @@ public class Splitter
     private int endPage = Integer.MAX_VALUE;
     private List<PDDocument> destinationDocuments;
 
-    private int currentPageNumber = 0;
+    private int currentPageNumber;
 
     private MemoryUsageSetting memoryUsageSetting = null;
 
@@ -61,7 +61,7 @@ public class Splitter
     /**
      * Set the memory setting.
      *
-     * @param memoryUsageSetting
+     * @param memoryUsageSetting The memory setting.
      */
     public void setMemoryUsageSetting(MemoryUsageSetting memoryUsageSetting)
     {
@@ -73,12 +73,16 @@ public class Splitter
      *
      * @param document The document to split.
      *
-     * @return A list of all the split documents.
+     * @return A list of all the split documents. These should all be saved before closing any
+     * documents, including the source document. Any further operations should be made after
+     * reloading them, to avoid problems due to resource sharing.
      *
      * @throws IOException If there is an IOError
      */
     public List<PDDocument> split(PDDocument document) throws IOException
     {
+        // reset the currentPageNumber for a case if the split method will be used several times
+        currentPageNumber = 0;
         destinationDocuments = new ArrayList<PDDocument>();
         sourceDocument = document;
         processPages();
@@ -239,13 +243,10 @@ public class Splitter
             {
                 PDAnnotationLink link = (PDAnnotationLink)annotation;
                 PDDestination destination = link.getDestination();
-                if (destination == null && link.getAction() != null)
+                PDAction action = link.getAction();
+                if (destination == null && action instanceof PDActionGoTo)
                 {
-                    PDAction action = link.getAction();
-                    if (action instanceof PDActionGoTo)
-                    {
-                        destination = ((PDActionGoTo)action).getDestination();
-                    }
+                    destination = ((PDActionGoTo) action).getDestination();
                 }
                 if (destination instanceof PDPageDestination)
                 {

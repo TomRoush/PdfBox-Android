@@ -18,6 +18,7 @@ package com.tom_roush.pdfbox.cos;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import org.junit.Assert;
@@ -47,4 +48,5 @@ public class TestCOSName
         Assert.assertEquals(special, catalogDict.getString(special));
         document.close();
     }
+
 }

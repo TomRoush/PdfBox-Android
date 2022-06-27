@@ -188,7 +188,6 @@ final class SampledImageReader
         final int width = (int) Math.ceil(clipped.width() / subsampling);
         final int height = (int) Math.ceil(clipped.height() / subsampling);
         final int bitsPerComponent = pdImage.getBitsPerComponent();
-        final float[] decode = getDecodeArray(pdImage);
 
         if (width <= 0 || height <= 0 || pdImage.getWidth() <= 0 || pdImage.getHeight() <= 0)
         {
@@ -208,12 +207,12 @@ final class SampledImageReader
             // in depth to 8bpc as they will be drawn to TYPE_INT_RGB images anyway. All code
             // in PDColorSpace#toRGBImage expects an 8-bit range, i.e. 0-255.
             final float[] defaultDecode = pdImage.getColorSpace().getDefaultDecode(8);
+            final float[] decode = getDecodeArray(pdImage);
             if (pdImage.getSuffix() != null && pdImage.getSuffix().equals("jpg") && subsampling == 1)
             {
                 return BitmapFactory.decodeStream(pdImage.createInputStream());
             }
-            else if (bitsPerComponent == 8 && Arrays.equals(decode, defaultDecode) &&
-                colorKey == null)
+            else if (bitsPerComponent == 8 && colorKey == null && Arrays.equals(decode, defaultDecode))
             {
                 // convert image, faster path for non-decoded, non-colormasked 8-bit images
                 return from8bit(pdImage, clipped, subsampling, width, height);

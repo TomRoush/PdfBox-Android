@@ -281,9 +281,14 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         return Color.rgb(r, g, b);
     }
 
-    // sets the clipping path using caching for performance, we track lastClip manually because
-    // Graphics2D#getClip() returns a new object instead of the same one passed to setClip
-    private void setClip()
+    /**
+     * Sets the clipping path using caching for performance. We track lastClip manually because
+     * {@link Graphics2D#getClip()} returns a new object instead of the same one passed to
+     * {@link Graphics2D#setClip(java.awt.Shape) setClip()}. You may need to call this if you
+     * override {@link #showGlyph(Matrix, PDFont, int, Vector) showGlyph()}. See
+     * <a href="https://issues.apache.org/jira/browse/PDFBOX-5093">PDFBOX-5093</a> for more.
+     */
+    protected final void setClip()
     {
         Region clippingPath = getGraphicsState().getCurrentClippingPath();
         if (clippingPath != lastClip)
@@ -334,6 +339,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             // PDFBOX-4150: this is much faster than using textClippingArea.add(new Area(glyph))
             // https://stackoverflow.com/questions/21519007/fast-union-of-shapes-in-java
             Path path = new Path();
+            path.setFillType(Path.FillType.WINDING);
             for (Path shape : textClippings)
             {
                 path.addPath(shape);
@@ -534,9 +540,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         return getColor(getGraphicsState().getStrokingColor());
     }
 
-//    private Paint getNonStrokingPaint() throws IOException TODO: PdfBox-Android
+//    protected final Paint getNonStrokingPaint() throws IOException TODO: PdfBox-Android
 
-    private int getNonStrokingColor() throws IOException
+    protected final int getNonStrokingColor() throws IOException
     {
         return getColor(getGraphicsState().getNonStrokingColor());
     }
@@ -556,27 +562,17 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
 
         PDLineDashPattern dashPattern = state.getLineDashPattern();
+        // PDFBOX-5168: show an all-zero dash array line invisible like Adobe does
+        // must do it here because getDashArray() sets minimum width because of JVM bugs
+        float[] dashArray = dashPattern.getDashArray();
+        if (isAllZeroDash(dashArray))
+        {
+            return;
+        }
         float phaseStart = dashPattern.getPhase();
-        float[] dashArray = getDashArray(dashPattern);
+        dashArray = getDashArray(dashPattern);
         phaseStart = transformWidth(phaseStart);
 
-        // empty dash array is illegal
-        // avoid also infinite and NaN values (PDFBOX-3360)
-        if (dashArray.length == 0 || Float.isInfinite(phaseStart) || Float.isNaN(phaseStart))
-        {
-            dashArray = null;
-        }
-        else
-        {
-            for (int i = 0; i < dashArray.length; ++i)
-            {
-                if (Float.isInfinite(dashArray[i]) || Float.isNaN(dashArray[i]))
-                {
-                    dashArray = null;
-                    break;
-                }
-            }
-        }
         paint.setStrokeWidth(lineWidth);
         paint.setStrokeCap(state.getLineCap());
         paint.setStrokeJoin(state.getLineJoin());
@@ -593,9 +589,38 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
     }
 
+    private boolean isAllZeroDash(float[] dashArray)
+    {
+        if (dashArray.length > 0)
+        {
+            for (int i = 0; i < dashArray.length; ++i)
+            {
+                if (dashArray[i] != 0)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     private float[] getDashArray(PDLineDashPattern dashPattern)
     {
         float[] dashArray = dashPattern.getDashArray();
+        int phase = dashPattern.getPhase();
+        // avoid empty, infinite and NaN values (PDFBOX-3360)
+        if (dashArray.length == 0 || Float.isInfinite(phase) || Float.isNaN(phase))
+        {
+            return null;
+        }
+        for (int i = 0; i < dashArray.length; ++i)
+        {
+            if (Float.isInfinite(dashArray[i]) || Float.isNaN(dashArray[i]))
+            {
+                return null;
+            }
+        }
         if (JAVA_VERSION < 10)
         {
             float scalingFactorX = new Matrix(xform).getScalingFactorX();
@@ -988,15 +1013,32 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         // get the transformed BBox and intersect with current clipping path
         // need to do it here and not in shading getRaster() because it may have been rotated
         PDRectangle bbox = shading.getBBox();
+//        Area area;
         if (bbox != null)
         {
-//            Area bboxArea = new Area(bbox.transform(ctm));
-//            bboxArea.intersect(getGraphicsState().getCurrentClippingPath());
-//            graphics.fill(bboxArea);
+//            area = new Area(bbox.transform(ctm));
+//            area.intersect(getGraphicsState().getCurrentClippingPath());
         }
         else
         {
-//            graphics.fill(getGraphicsState().getCurrentClippingPath());
+            RectF bounds = shading.getBounds(new AffineTransform(), ctm);
+            if (bounds != null)
+            {
+                bounds.union((float)Math.floor(bounds.left - 1),
+                    (float)Math.floor(bounds.top - 1));
+                bounds.union((float)Math.ceil(bounds.right + 1),
+                    (float)Math.ceil(bounds.bottom + 1));
+//                area = new Area(bounds);
+//                area.intersect(getGraphicsState().getCurrentClippingPath());
+            }
+            else
+            {
+//                area = getGraphicsState().getCurrentClippingPath();
+            }
+        }
+        if (isContentRendered())
+        {
+//            graphics.fill(area);
         }
     }
 
@@ -1259,9 +1301,15 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 {
                     // Use the current page as the parent group.
                     backdropImage = renderer.getPageImage();
-                    needsBackdrop = backdropImage != null;
-//                    backdropX = minX;
-//                    backdropY = (backdropImage != null) ? (backdropImage.getHeight() - maxY) : 0;
+                    if (backdropImage == null)
+                    {
+                        needsBackdrop = false;
+                    }
+                    else
+                    {
+//                        backdropX = minX;
+//                        backdropY = backdropImage.getHeight() - maxY;
+                    }
                 }
                 else
                 {

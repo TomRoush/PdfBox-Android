@@ -26,7 +26,6 @@ import com.tom_roush.pdfbox.contentstream.PDContentStream;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
-import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdfparser.PDFStreamParser;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
@@ -99,11 +98,7 @@ public final class PDType3CharProc implements COSObjectable, PDContentStream
         Object token = parser.parseNextToken();
         while (token != null)
         {
-            if (token instanceof COSObject)
-            {
-                arguments.add(((COSObject) token).getObject());
-            }
-            else if (token instanceof Operator)
+            if (token instanceof Operator)
             {
                 if (((Operator) token).getName().equals("d1") && arguments.size() == 6)
                 {
@@ -154,11 +149,7 @@ public final class PDType3CharProc implements COSObjectable, PDContentStream
         Object token = parser.parseNextToken();
         while (token != null)
         {
-            if (token instanceof COSObject)
-            {
-                arguments.add(((COSObject) token).getObject());
-            }
-            else if (token instanceof Operator)
+            if (token instanceof Operator)
             {
                 return parseWidth((Operator) token, arguments);
             }

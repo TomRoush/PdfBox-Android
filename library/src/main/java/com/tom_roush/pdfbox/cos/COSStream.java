@@ -18,7 +18,6 @@ package com.tom_roush.pdfbox.cos;
 
 import android.util.Log;
 
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -390,22 +389,23 @@ public class COSStream extends COSDictionary implements Closeable
      */
     public String toTextString()
     {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
         InputStream input = null;
+        byte[] array;
         try
         {
             input = createInputStream();
-            IOUtils.copy(input, out);
+            array = IOUtils.toByteArray(input);
         }
         catch (IOException e)
         {
+            Log.d("PdfBox-Android", "An exception occurred trying to get the content - returning empty string instead", e);
             return "";
         }
         finally
         {
             IOUtils.closeQuietly(input);
         }
-        COSString string = new COSString(out.toByteArray());
+        COSString string = new COSString(array);
         return string.getString();
     }
 
