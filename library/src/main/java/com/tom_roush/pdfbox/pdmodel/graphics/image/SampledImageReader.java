@@ -359,8 +359,8 @@ final class SampledImageReader
         try
         {
             final int inputWidth;
-            final int startx;
-            final int starty;
+            int startx;
+            int starty;
             final int scanWidth;
             final int scanHeight;
             if (options.isFilterSubsampled())
@@ -383,49 +383,70 @@ final class SampledImageReader
                 scanHeight = clipped.height();
             }
             final int numComponents = pdImage.getColorSpace().getNumberOfComponents();
-            // get the raster's underlying byte buffer
-            int[] banks = new int[width * height];
-//            byte[][] banks = ((DataBufferByte) raster.getDataBuffer()).getBankData();
-            byte[] tempBytes = new byte[numComponents * inputWidth];
-            // compromise between memory and time usage:
-            // reading the whole image consumes too much memory
-            // reading one pixel at a time makes it slow in our buffering infrastructure 
-            int i = 0;
-            for (int y = 0; y < starty + scanHeight; ++y)
+            if (startx == 0 && starty == 0 && scanWidth == width && scanHeight == height)
             {
-                IOUtils.populateBuffer(input, tempBytes);
-                if (y < starty || y % currentSubsampling > 0)
-                {
-                    continue;
-                }
-
-                for (int x = startx; x < startx + scanWidth; x += currentSubsampling)
-                {
-                    int tempBytesIdx = x * numComponents;
-                    if (numComponents == 3)
-                    {
-                        banks[i] = Color.argb(255, tempBytes[tempBytesIdx] & 0xFF,
-                            tempBytes[tempBytesIdx + 1] & 0xFF, tempBytes[tempBytesIdx + 2] & 0xFF);
-                    }
-                    else if (numComponents == 1)
-                    {
-                        int in = tempBytes[tempBytesIdx] & 0xFF;
-                        banks[i] = Color.argb(in, in, in, in);
-                    }
-                    ++i;
-                }
+                // we just need to copy all sample data, then convert to RGB image.
+                return createBitmapFromRawStream(input, inputWidth, numComponents, currentSubsampling);
             }
-            Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            raster.setPixels(banks, 0, width, 0 ,0, width, height);
-
-            // use the color space to convert the image to RGB
-//            return pdImage.getColorSpace().toRGBImage(raster); TODO: PdfBox-Android
-            return raster;
+            else
+            {
+                Bitmap origin = createBitmapFromRawStream(input, inputWidth, numComponents,
+                    currentSubsampling);
+                if (currentSubsampling > 1)
+                {
+                    startx /= currentSubsampling;
+                    starty /= currentSubsampling;
+                }
+                return Bitmap.createBitmap(origin, startx, starty, width, height);
+            }
         }
         finally
         {
             IOUtils.closeQuietly(input);
         }
+    }
+
+    private static Bitmap createBitmapFromRawStream(InputStream input, int originalWidth, int numComponents,
+        int sampleSize) throws IOException
+    {
+        byte[] bytes = IOUtils.toByteArray(input);
+        int originalHeight = bytes.length / numComponents / originalWidth;
+        if (numComponents == 1)
+        {
+            byte[] result = new byte[originalWidth * originalHeight * 4];
+            for (int i = originalWidth * originalHeight - 1; i >= 0; i--)
+            {
+                int to = i * 4;
+                result[to + 3] = bytes[i];
+                result[to] = bytes[i];
+                result[to + 1] = bytes[i];
+                result[to + 2] = bytes[i];
+            }
+            bytes = result;
+        }
+        else if (numComponents == 3)
+        {
+            byte[] result = new byte[originalWidth * originalHeight * 4];
+            for (int i = originalWidth * originalHeight - 1; i >= 0; i--)
+            {
+                int to = i * 4;
+                int from = i * 3;
+                result[to + 3] = (byte)255;
+                result[to] = bytes[from];
+                result[to + 1] = bytes[from + 1];
+                result[to + 2] = bytes[from + 2];
+            }
+            bytes = result;
+        }
+        Bitmap bitmap = Bitmap.createBitmap(originalWidth, originalHeight, Bitmap.Config.ARGB_8888);
+        bitmap.copyPixelsFromBuffer(ByteBuffer.wrap(bytes));
+        if (sampleSize > 1)
+        {
+            int width = originalWidth / sampleSize;
+            int height = originalHeight / sampleSize;
+            bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
+        }
+        return bitmap;
     }
 
     // slower, general-purpose image conversion from any image format
