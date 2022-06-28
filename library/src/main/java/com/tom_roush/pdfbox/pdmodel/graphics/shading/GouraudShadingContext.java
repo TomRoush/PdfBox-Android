@@ -1,10 +1,23 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
 import android.graphics.Point;
 import android.graphics.Rect;
-
-import com.tom_roush.harmony.awt.geom.AffineTransform;
-import com.tom_roush.pdfbox.util.Matrix;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,8 +25,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GouraudShadingContext extends TriangleBasedShadingContext{
+import com.tom_roush.harmony.awt.geom.AffineTransform;
+import com.tom_roush.pdfbox.util.Matrix;
 
+/**
+ * Shades Gouraud triangles for Type4ShadingContext and Type5ShadingContext.
+ *
+ * @author Tilman Hausherr
+ * @author Shaola Ren
+ */
+abstract class GouraudShadingContext extends TriangleBasedShadingContext
+{
     /**
      * triangle list.
      */
@@ -28,7 +50,7 @@ public class GouraudShadingContext extends TriangleBasedShadingContext{
      * @throws IOException if something went wrong
      */
     protected GouraudShadingContext(PDShading shading, AffineTransform xform,
-                                    Matrix matrix) throws IOException
+        Matrix matrix) throws IOException
     {
         super(shading, xform, matrix);
     }

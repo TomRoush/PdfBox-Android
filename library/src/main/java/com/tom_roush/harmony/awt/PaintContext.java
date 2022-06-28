@@ -14,36 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.tom_roush.pdfbox.pdmodel.graphics.shading;
+package com.tom_roush.harmony.awt;
 
-import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.harmony.awt.Paint;
-import com.tom_roush.pdfbox.util.Matrix;
+import android.graphics.Bitmap;
 
 /**
- * Resources for a radial shading.
+ * PaintContext
  */
-public class PDShadingType3 extends PDShadingType2
+public interface PaintContext
 {
-    /**
-     * Constructor using the given shading dictionary.
-     *
-     * @param shadingDictionary the dictionary for this shading
-     */
-    public PDShadingType3(COSDictionary shadingDictionary)
-    {
-        super(shadingDictionary);
-    }
+    void dispose();
 
-    @Override
-    public int getShadingType()
-    {
-        return PDShading.SHADING_TYPE3;
-    }
+    Bitmap.Config getColorModel();
 
-    @Override
-    public Paint toPaint(Matrix matrix)
-    {
-        return new RadialShadingPaint(this, matrix);
-    }
+    Bitmap getRaster(int x, int y, int w, int h);
 }

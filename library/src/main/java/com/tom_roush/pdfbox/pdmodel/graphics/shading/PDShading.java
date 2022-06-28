@@ -20,6 +20,7 @@ import android.graphics.RectF;
 
 import java.io.IOException;
 
+import com.tom_roush.harmony.awt.Paint;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -29,7 +30,6 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.function.PDFunction;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
-import com.tom_roush.pdfbox.rendering.WrapPaint;
 import com.tom_roush.pdfbox.util.Matrix;
 
 /**
@@ -444,5 +444,5 @@ public abstract class PDShading implements COSObjectable
      *               this matrix which maps the pattern's internal coordinate system to user space
      * @return an AWT Paint instance
      */
-    public abstract WrapPaint toPaint(Matrix matrix);
+    public abstract Paint toPaint(Matrix matrix);
 }

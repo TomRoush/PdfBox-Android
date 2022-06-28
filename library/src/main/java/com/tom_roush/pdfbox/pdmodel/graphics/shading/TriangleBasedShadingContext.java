@@ -1,3 +1,18 @@
+/*
+ * Copyright 2014 The Apache Software Foundation.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
 import android.graphics.Bitmap;
@@ -6,28 +21,36 @@ import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 
-import com.tom_roush.harmony.awt.geom.AffineTransform;
-import com.tom_roush.pdfbox.rendering.PaintContext;
-import com.tom_roush.pdfbox.util.Matrix;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-abstract class TriangleBasedShadingContext extends ShadingContext implements PaintContext {
+import com.tom_roush.harmony.awt.PaintContext;
+import com.tom_roush.harmony.awt.geom.AffineTransform;
+import com.tom_roush.pdfbox.util.Matrix;
 
+/**
+ * Intermediate class extended by the shading types 4,5,6 and 7 that contains the common methods
+ * used by these classes.
+ *
+ * @author Shaola Ren
+ * @author Tilman Hausherr
+ */
+abstract class TriangleBasedShadingContext extends ShadingContext implements PaintContext
+{
     // map of pixels within triangles to their RGB color
     private Map<Point, Integer> pixelTable;
+
     /**
      * Constructor.
      *
      * @param shading the shading type to be used
-     * @param xform   transformation for user to device space
-     * @param matrix  the pattern matrix concatenated with that of the parent content stream
-     * @throws IOException if there is an error getting the color space
-     *                             or doing background color conversion.
+     * @param xform transformation for user to device space
+     * @param matrix the pattern matrix concatenated with that of the parent content stream
+     * @throws IOException if there is an error getting the color space or doing background color conversion.
      */
-    public TriangleBasedShadingContext(PDShading shading, AffineTransform xform, Matrix matrix) throws IOException {
+    TriangleBasedShadingContext(PDShading shading, AffineTransform xform, Matrix matrix) throws IOException
+    {
         super(shading, xform, matrix);
     }
 
@@ -50,7 +73,7 @@ abstract class TriangleBasedShadingContext extends ShadingContext implements Pai
      * Get the points from the triangles, calculate their color and add point-color mappings.
      */
     protected void calcPixelTable(List<ShadedTriangle> triangleList, Map<Point, Integer> map,
-                                  Rect deviceBounds) throws IOException
+        Rect deviceBounds) throws IOException
     {
         for (ShadedTriangle tri : triangleList)
         {
@@ -86,11 +109,11 @@ abstract class TriangleBasedShadingContext extends ShadingContext implements Pai
                 // "fatten" triangle by drawing the borders with Bresenham's line algorithm
                 // Inspiration: Raph Levien in http://bugs.ghostscript.com/show_bug.cgi?id=219588
                 Point p0 = new Point((int) Math.round(tri.corner[0].x),
-                        (int) Math.round(tri.corner[0].y));
+                    (int) Math.round(tri.corner[0].y));
                 Point p1 = new Point((int) Math.round(tri.corner[1].x),
-                        (int) Math.round(tri.corner[1].y));
+                    (int) Math.round(tri.corner[1].y));
                 Point p2 = new Point((int) Math.round(tri.corner[2].x),
-                        (int) Math.round(tri.corner[2].y));
+                    (int) Math.round(tri.corner[2].y));
                 Line l1 = new Line(p0, p1, tri.color[0], tri.color[1]);
                 Line l2 = new Line(p1, p2, tri.color[1], tri.color[2]);
                 Line l3 = new Line(p2, p0, tri.color[2], tri.color[0]);
@@ -129,17 +152,20 @@ abstract class TriangleBasedShadingContext extends ShadingContext implements Pai
     abstract boolean isDataEmpty();
 
     @Override
-    public void dispose() {
-        super.dispose();
-    }
-
-    @Override
-    public Bitmap.Config getColorModel() {
+    public final Bitmap.Config getColorModel()
+    {
         return super.getColorModel();
     }
 
     @Override
-    public Bitmap getRaster(int x, int y, int w, int h) {
+    public void dispose()
+    {
+        super.dispose();
+    }
+
+    @Override
+    public final Bitmap getRaster(int x, int y, int w, int h)
+    {
         Bitmap raster = Bitmap.createBitmap(w, h, getColorModel());
         int[] data = new int[w * h];
         if (!isDataEmpty() || getBackground() != null)

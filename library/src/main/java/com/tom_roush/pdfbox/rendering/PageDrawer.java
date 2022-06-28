@@ -22,7 +22,6 @@ import android.graphics.Color;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.DashPathEffect;
-import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -40,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.tom_roush.harmony.awt.PaintContext;
+import com.tom_roush.harmony.awt.Paint;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.contentstream.PDFGraphicsStreamEngine;
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -287,7 +288,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         Path.FillType savedClipWindingRule = clipWindingRule;
         clipWindingRule = Path.FillType.WINDING;
 
-        Region savedLastClips = lastClip; // FIXME: PdfBox-Android
+        Region savedLastClips = lastClip;
         lastClip = null;
         Path savedInitialClip = initialClip;
         initialClip = null;
@@ -461,7 +462,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 {
                     paint.setColor(getNonStrokingColor());
                     setClip();
-                    paint.setStyle(Paint.Style.FILL);
+                    paint.setStyle(android.graphics.Paint.Style.FILL);
                     canvas.drawPath(path, paint);
                 }
 
@@ -470,7 +471,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                     paint.setColor(getStrokingColor());
                     setStroke();
                     setClip();
-                    paint.setStyle(Paint.Style.STROKE);
+                    paint.setStyle(android.graphics.Paint.Style.STROKE);
                     canvas.drawPath(path, paint);
                 }
             }
@@ -574,7 +575,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         linePath.close();
     }
 
-    private WrapPaint applySoftMaskToPaint(WrapPaint parentPaint, PDSoftMask softMask) throws IOException
+    private Paint applySoftMaskToPaint(Paint parentPaint, PDSoftMask softMask) throws IOException
     {
         if (softMask == null || softMask.getGroup() == null)
         {
@@ -610,7 +611,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
         else if (COSName.LUMINOSITY.equals(softMask.getSubType()))
         {
-            // convert color bitmap to gray bitmap FIXME: PdfBox-Android
+            // convert color bitmap to gray bitmap
             gray = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.RGB_565);
             Canvas c = new Canvas(gray);
             android.graphics.Paint paint = new android.graphics.Paint();
@@ -636,7 +637,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         AffineTransform at = new AffineTransform(xform);
         at.scale(1.0 / xformScalingFactorX, 1.0 / xformScalingFactorY);
 
-        RectF originalBounds = new RectF(0, 0, gray.getWidth(), gray.getHeight()); // FIXME: PdfBox-Android
+        RectF originalBounds = new RectF(0, 0, gray.getWidth(), gray.getHeight());
         RectF transformedBounds = new RectF();
         Path orgPath = new Path();
         orgPath.addRect(originalBounds, Path.Direction.CW);
@@ -772,7 +773,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         if (isContentRendered())
         {
             setStroke();
-            paint.setStyle(Paint.Style.STROKE);
+            paint.setStyle(android.graphics.Paint.Style.STROKE);
             paint.setColor(getStrokingColor());
             setClip();
             canvas.drawPath(linePath, paint);
@@ -1211,9 +1212,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             }
         }
         if (!area.isEmpty())
-        {// FIXME: PdfBox-Android
+        {
             canvas.clipPath(area.getBoundaryPath());
-            WrapPaint maskPaint = applySoftMaskToPaint(shading.toPaint(ctm), getGraphicsState().getSoftMask());
+            Paint maskPaint = applySoftMaskToPaint(shading.toPaint(ctm), getGraphicsState().getSoftMask());
             Rect drawArea = area.getBounds();
             PaintContext ctx = maskPaint.createContext(drawArea, xform);
             Bitmap bitmap = ctx.getRaster(drawArea.left, drawArea.top, drawArea.width(), drawArea.height());
@@ -1516,7 +1517,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 // backdropImage must be included in group image but not in group alpha.
                 Rect dest = new Rect(0, 0, width, height);
                 Rect src = new Rect(backdropX, backdropY, backdropX + width, backdropY + height);
-                g.drawBitmap(backdropImage, src, dest, null); // FIXME: PdfBox-Android
+                g.drawBitmap(backdropImage, src, dest, null);
             }
             if (isSoftMask && backdropColor != null)
             {

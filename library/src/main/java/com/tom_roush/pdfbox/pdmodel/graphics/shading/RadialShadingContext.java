@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
 import android.graphics.Bitmap;
@@ -5,16 +21,25 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.util.Log;
 
-import com.tom_roush.harmony.awt.geom.AffineTransform;
-import com.tom_roush.pdfbox.cos.COSArray;
-import com.tom_roush.pdfbox.cos.COSBoolean;
-import com.tom_roush.pdfbox.rendering.PaintContext;
-import com.tom_roush.pdfbox.util.Matrix;
-
 import java.io.IOException;
 
-public class RadialShadingContext extends ShadingContext implements PaintContext {
+import com.tom_roush.harmony.awt.PaintContext;
+import com.tom_roush.harmony.awt.geom.AffineTransform;
+import com.tom_roush.harmony.awt.geom.AffineTransform.NoninvertibleTransformException;
+import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBoolean;
+import com.tom_roush.pdfbox.pdmodel.common.function.PDFunction;
+import com.tom_roush.pdfbox.util.Matrix;
 
+/**
+ * PaintContext for radial shading.
+ *
+ * Performance improvement done as part of GSoC2014, Tilman Hausherr is the mentor.
+ *
+ * @author Shaola Ren
+ */
+public class RadialShadingContext extends ShadingContext implements PaintContext
+{
     private PDShadingType3 radialShadingType;
 
     private final float[] coords;
@@ -42,8 +67,9 @@ public class RadialShadingContext extends ShadingContext implements PaintContext
      * @param deviceBounds the bounds of the area to paint, in device units
      * @throws IOException if there is an error getting the color space or doing color conversion.
      */
-    public RadialShadingContext(PDShadingType3 shading, AffineTransform xform, Matrix matrix, Rect deviceBounds)
-            throws IOException
+    public RadialShadingContext(PDShadingType3 shading,
+        AffineTransform xform, Matrix matrix, Rect deviceBounds)
+        throws IOException
     {
         super(shading, xform, matrix);
         this.radialShadingType = shading;
@@ -88,9 +114,9 @@ public class RadialShadingContext extends ShadingContext implements PaintContext
             rat = matrix.createAffineTransform().createInverse();
             rat.concatenate(xform.createInverse());
         }
-        catch (AffineTransform.NoninvertibleTransformException ex)
+        catch (NoninvertibleTransformException ex)
         {
-            Log.e("Pdfbox-Android", ex.getMessage() + ", matrix: " + matrix, ex);
+            Log.e("PdfBox-Android", ex.getMessage() + ", matrix: " + matrix, ex);
             rat = new AffineTransform();
         }
 
@@ -100,7 +126,7 @@ public class RadialShadingContext extends ShadingContext implements PaintContext
 
         // worst case for the number of steps is opposite diagonal corners, so use that
         double dist = Math.sqrt(Math.pow(deviceBounds.right - deviceBounds.left, 2) +
-                Math.pow(deviceBounds.bottom - deviceBounds.top, 2));
+            Math.pow(deviceBounds.bottom - deviceBounds.top, 2));
         factor = (int) Math.ceil(dist);
 
         // build the color table for the given number of steps
@@ -134,23 +160,26 @@ public class RadialShadingContext extends ShadingContext implements PaintContext
     }
 
     @Override
-    public void dispose() {
+    public void dispose()
+    {
         super.dispose();
         radialShadingType = null;
     }
 
     @Override
-    public Bitmap.Config getColorModel() {
+    public Bitmap.Config getColorModel()
+    {
         return super.getColorModel();
     }
 
     @Override
-    public Bitmap getRaster(int x, int y, int w, int h) {
+    public Bitmap getRaster(int x, int y, int w, int h)
+    {
         // create writable raster
         Bitmap raster = Bitmap.createBitmap(w, h, getColorModel());
-        int[] data = new int[w * h];
         float inputValue = -1;
         boolean useBackground;
+        int[] data = new int[w * h];
         float[] values = new float[2];
         for (int j = 0; j < h; j++)
         {
@@ -309,5 +338,39 @@ public class RadialShadingContext extends ShadingContext implements PaintContext
         {
             return new float[] { root2, root1 };
         }
+    }
+
+    /**
+     * Returns the coords values.
+     */
+    public float[] getCoords()
+    {
+        return coords;
+    }
+
+    /**
+     * Returns the domain values.
+     */
+    public float[] getDomain()
+    {
+        return domain;
+    }
+
+    /**
+     * Returns the extend values.
+     */
+    public boolean[] getExtend()
+    {
+        return extend;
+    }
+
+    /**
+     * Returns the function.
+     *
+     * @throws java.io.IOException if we were not able to create the function.
+     */
+    public PDFunction getFunction() throws IOException
+    {
+        return radialShadingType.getFunction();
     }
 }

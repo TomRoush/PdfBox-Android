@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.tom_roush.harmony.awt.Paint;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.harmony.javax.imageio.stream.ImageInputStream;
 import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageInputStream;
@@ -31,7 +32,6 @@ import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.common.PDRange;
-import com.tom_roush.pdfbox.rendering.WrapPaint;
 import com.tom_roush.pdfbox.util.Matrix;
 
 /**
@@ -77,7 +77,7 @@ public class PDShadingType5 extends PDTriangleBasedShadingType
     }
 
     @Override
-    public WrapPaint toPaint(Matrix matrix)
+    public Paint toPaint(Matrix matrix)
     {
         return new Type5ShadingPaint(this, matrix);
     }

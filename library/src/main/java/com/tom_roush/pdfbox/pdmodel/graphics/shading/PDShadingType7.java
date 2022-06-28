@@ -21,9 +21,9 @@ import android.graphics.RectF;
 
 import java.io.IOException;
 
+import com.tom_roush.harmony.awt.Paint;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSDictionary;
-import com.tom_roush.pdfbox.rendering.WrapPaint;
 import com.tom_roush.pdfbox.util.Matrix;
 
 /**
@@ -48,7 +48,7 @@ public class PDShadingType7 extends PDMeshBasedShadingType
     }
 
     @Override
-    public WrapPaint toPaint(Matrix matrix)
+    public Paint toPaint(Matrix matrix)
     {
         return new Type7ShadingPaint(this, matrix);
     }

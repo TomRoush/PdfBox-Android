@@ -224,54 +224,6 @@ public class AffineTransform implements Cloneable, Serializable
         return type;
     }
 
-
-    /**
-     * Returns the x-scaling factor of this matrix. This is calculated from the scale and shear.
-     *
-     * @return The x-scaling factor.
-     */
-    public double getScalingFactorX()
-    {
-        /**
-         * BM: if the trm is rotated, the calculation is a little more complicated
-         *
-         * The rotation matrix multiplied with the scaling matrix is:
-         * (   x   0   0)    ( cos  sin  0)    ( x*cos x*sin   0)
-         * (   0   y   0) *  (-sin  cos  0)  = (-y*sin y*cos   0)
-         * (   0   0   1)    (   0    0  1)    (     0     0   1)
-         *
-         * So, if you want to deduce x from the matrix you take
-         * M(0,0) = x*cos and M(0,1) = x*sin and use the theorem of Pythagoras
-         *
-         * sqrt(M(0,0)^2+M(0,1)^2) =
-         * sqrt(x2*cos2+x2*sin2) =
-         * sqrt(x2*(cos2+sin2)) = <- here is the trick cos2+sin2 is one
-         * sqrt(x2) =
-         * abs(x)
-         */
-        if (m10 != 0.0f)
-        {
-            return (float) Math.sqrt(Math.pow(m00, 2) +
-                    Math.pow(m10, 2));
-        }
-        return m00;
-    }
-
-    /**
-     * Returns the y-scaling factor of this matrix. This is calculated from the scale and shear.
-     *
-     * @return The y-scaling factor.
-     */
-    public double getScalingFactorY()
-    {
-        if (m01 != 0.0f)
-        {
-            return (float) Math.sqrt(Math.pow(m01, 2) +
-                    Math.pow(m11, 2));
-        }
-        return m11;
-    }
-
     public double getScaleX()
     {
         return m00;

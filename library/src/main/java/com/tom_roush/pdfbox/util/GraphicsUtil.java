@@ -23,14 +23,14 @@ import android.graphics.Region;
 
 public class GraphicsUtil
 {
-   public static Region getPathRegion(Path path)
-   {
-      RectF bounds = new RectF();
-      path.computeBounds(bounds, true);
-      Region outRegion = new Region();
-      Rect boundsRounded = new Rect();
-      bounds.round(boundsRounded);
-      outRegion.setPath(path, new Region(boundsRounded));
-      return outRegion;
-   }
+    public static Region getPathRegion(Path path)
+    {
+        RectF bounds = new RectF();
+        path.computeBounds(bounds, true);
+        Region outRegion = new Region();
+        Rect boundsRounded = new Rect();
+        bounds.round(boundsRounded);
+        outRegion.setPath(path, new Region(boundsRounded));
+        return outRegion;
+    }
 }
