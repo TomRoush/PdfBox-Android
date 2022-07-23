@@ -512,7 +512,7 @@ public abstract class PDFStreamEngine
             if (token instanceof Operator)
             {
                 processOperator((Operator) token, arguments);
-                arguments = new ArrayList<COSBase>();
+                arguments.clear();
             }
             else
             {
@@ -542,13 +542,14 @@ public abstract class PDFStreamEngine
         else
         {
             resources = currentPage.getResources();
+
+            // resources are required in PDF
+            if (resources == null)
+            {
+                resources = new PDResources();
+            }
         }
 
-        // resources are required in PDF
-        if (resources == null)
-        {
-            resources = new PDResources();
-        }
         return parentResources;
     }
 
@@ -568,8 +569,9 @@ public abstract class PDFStreamEngine
     {
         if (rectangle != null)
         {
-            Path clip = rectangle.transform(getGraphicsState().getCurrentTransformationMatrix());
-            getGraphicsState().intersectClippingPath(clip);
+            PDGraphicsState graphicsState = getGraphicsState();
+            Path clip = rectangle.transform(graphicsState.getCurrentTransformationMatrix());
+            graphicsState.intersectClippingPath(clip);
         }
     }
 
@@ -651,10 +653,14 @@ public abstract class PDFStreamEngine
                 byte[] string = ((COSString)obj).getBytes();
                 showText(string);
             }
+            else if (obj instanceof COSArray)
+            {
+                Log.e("PdfBox-Android", "Nested arrays are not allowed in an array for TJ operation:" + obj);
+            }
             else
             {
-                throw new IOException("Unknown type " + obj.getClass().getSimpleName() +
-                    " in array for TJ operation:" + obj);
+                throw new IOException("Unknown type " + obj.getClass().getSimpleName()
+                    + " in array for TJ operation:" + obj);
             }
         }
     }
@@ -894,7 +900,7 @@ public abstract class PDFStreamEngine
     }
 
     /**
-     * Called when a a marked content group ends
+     * Called when a marked content group ends
      */
     public void endMarkedContentSequence()
     {

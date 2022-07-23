@@ -239,7 +239,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
     public static PDImageXObject createFromFileByExtension(File file, PDDocument doc) throws IOException
     {
         String name = file.getName();
-        int dot = file.getName().lastIndexOf('.');
+        int dot = name.lastIndexOf('.');
         if (dot == -1)
         {
             throw new IllegalArgumentException("Image type not supported: " + name);
@@ -480,24 +480,25 @@ public final class PDImageXObject extends PDXObject implements PDImage
             }
         }
 
-        // get image as RGB
-        Bitmap image = SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask());
-
+        // get RGB image w/o reference because applyMask might modify it, take long time and a lot of memory.
+        final Bitmap image;
+        final PDImageXObject softMask = getSoftMask();
+        final PDImageXObject mask = getMask();
         // soft mask (overrides explicit mask)
-        PDImageXObject softMask = getSoftMask();
         if (softMask != null)
         {
-            float[] matte = extractMatte(softMask);
-            image = applyMask(image, softMask.getOpaqueImage(), true, matte);
+            image = applyMask(SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask()),
+                softMask.getOpaqueImage(), softMask.getInterpolate(), true, extractMatte(softMask));
+        }
+        // explicit mask - to be applied only if /ImageMask true
+        else if (mask != null && mask.isStencil())
+        {
+            image = applyMask(SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask()),
+                mask.getOpaqueImage(), mask.getInterpolate(), false, null);
         }
         else
         {
-            // explicit mask - to be applied only if /ImageMask true
-            PDImageXObject mask = getMask();
-            if (mask != null && mask.isStencil())
-            {
-                image = applyMask(image, mask.getOpaqueImage(), false, null);
-            }
+            image = SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask());
         }
 
         if (region == null && subsampling <= cachedImageSubsampling)
@@ -568,12 +569,14 @@ public final class PDImageXObject extends PDXObject implements PDImage
      * @param mask A mask image in 8 bit Gray. Even for a stencil mask image due to
      * {@link #getOpaqueImage()} and {@link SampledImageReader}'s {@code from1Bit()} special
      * handling of DeviceGray.
+     * @param interpolateMask interpolation flag of the mask image.
      * @param isSoft {@code true} if a soft mask. If not stencil mask, then alpha will be inverted
      * by this method.
      * @param matte an optional RGB matte if a soft mask.
      * @return an ARGB image (can be the altered original image)
      */
-    private Bitmap applyMask(Bitmap image, Bitmap mask, boolean isSoft, float[] matte)
+    private Bitmap applyMask(Bitmap image, Bitmap mask, boolean interpolateMask,
+        boolean isSoft, float[] matte)
     {
         if (mask == null)
         {
@@ -588,11 +591,16 @@ public final class PDImageXObject extends PDXObject implements PDImage
         // is what needs to be returned.
         if (mask.getWidth() < width || mask.getHeight() < height)
         {
-            mask = scaleImage(mask, width, height);
+            mask = scaleImage(mask, width, height, interpolateMask);
         }
+        if (mask.getConfig() != Bitmap.Config.ALPHA_8 || !image.isMutable())
+        {
+            mask = mask.copy(Bitmap.Config.ALPHA_8, true);
+        }
+
         if (image.getWidth() < width || image.getHeight() < height)
         {
-            image = scaleImage(image, width, height);
+            image = scaleImage(image, width, height, getInterpolate());
         }
         if (image.getConfig() != Bitmap.Config.ARGB_8888 || !image.isMutable())
         {
@@ -682,26 +690,17 @@ public final class PDImageXObject extends PDXObject implements PDImage
         return image;
     }
 
-    private int clampColor(float color)
+    private static int clampColor(int color)
     {
-        // Float.valueOf is no need and it is too slow
-        if (color <= 0)
-        {
-            return 0;
-        }
-        else if (color >= 255)
-        {
-            return 255;
-        }
-        return (int)color;
+        return color < 0 ? 0 : color > 255 ? 255 : color;
     }
 
     /**
      * High-quality image scaling.
      */
-    private Bitmap scaleImage(Bitmap image, int width, int height)
+    private Bitmap scaleImage(Bitmap image, int width, int height, boolean interpolate)
     {
-        return Bitmap.createScaledBitmap(image, width, height, true);
+        return Bitmap.createScaledBitmap(image, width, height, !interpolate);
     }
 
     /**

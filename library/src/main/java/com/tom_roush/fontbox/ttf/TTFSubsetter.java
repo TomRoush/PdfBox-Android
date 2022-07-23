@@ -476,10 +476,10 @@ public final class TTFSubsetter
         hasAddedCompoundReferences = true;
 
         boolean hasNested;
+        GlyphTable g = ttf.getGlyph();
+        long[] offsets = ttf.getIndexToLocation().getOffsets();
         do
         {
-            GlyphTable g = ttf.getGlyph();
-            long[] offsets = ttf.getIndexToLocation().getOffsets();
             InputStream is = ttf.getOriginalData();
             Set<Integer> glyphIdsToAdd = null;
             try
@@ -598,10 +598,7 @@ public final class TTFSubsetter
 
                         // glyphIndex
                         int componentGid = (buf[off] & 0xff) << 8 | buf[off + 1] & 0xff;
-                        if (!glyphIds.contains(componentGid))
-                        {
-                            glyphIds.add(componentGid);
-                        }
+                        glyphIds.add(componentGid);
 
                         int newComponentGid = getNewGlyphId(componentGid);
                         buf[off]   = (byte)(newComponentGid >>> 8);
@@ -877,11 +874,7 @@ public final class TTFSubsetter
         // more info: https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6hmtx.html
         int lastgid = h.getNumberOfHMetrics() - 1;
         // true if lastgid is not in the set: we'll need its width (but not its left side bearing) later
-        boolean needLastGidWidth = false;
-        if (glyphIds.last() > lastgid && !glyphIds.contains(lastgid))
-        {
-            needLastGidWidth = true;
-        }
+        boolean needLastGidWidth = glyphIds.last() > lastgid && !glyphIds.contains(lastgid);
 
         try
         {
@@ -1092,6 +1085,6 @@ public final class TTFSubsetter
 
     private int log2(int num)
     {
-        return (int)Math.round(Math.log(num) / Math.log(2));
+        return (int) Math.floor(Math.log(num) / Math.log(2));
     }
 }

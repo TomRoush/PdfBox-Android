@@ -61,6 +61,16 @@ public enum ImageType
             {
                 return Bitmap.Config.ARGB_8888;
             }
+        },
+
+    /** Blue, Green, Red */
+    BGR
+        {
+            @Override
+            Bitmap.Config toBitmapConfig()
+            {
+                return Bitmap.Config.ARGB_8888;
+            }
         };
 
     abstract Bitmap.Config toBitmapConfig();

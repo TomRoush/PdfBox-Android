@@ -145,7 +145,7 @@ public final class StandardSecurityHandler extends SecurityHandler
         // This is only used with security version 4 and 5.
         if (encryption.getVersion() >= 4) {
             setStreamFilterName(encryption.getStreamFilterName());
-            setStringFilterName(encryption.getStreamFilterName());
+            setStringFilterName(encryption.getStringFilterName());
         }
         setDecryptMetadata(encryption.isEncryptMetaData());
         StandardDecryptionMaterial material = (StandardDecryptionMaterial)decryptionMaterial;
@@ -159,6 +159,28 @@ public final class StandardSecurityHandler extends SecurityHandler
         int dicPermissions = encryption.getPermissions();
         int dicRevision = encryption.getRevision();
         int dicLength = encryption.getVersion() == 1 ? 5 : encryption.getLength() / 8;
+
+        if (encryption.getVersion() == 4 || encryption.getVersion() == 5)
+        {
+            // detect whether AES encryption is used. This assumes that the encryption algo is 
+            // stored in the PDCryptFilterDictionary
+            // However, crypt filters are used only when V is 4 or 5.
+            PDCryptFilterDictionary stdCryptFilterDictionary = encryption.getStdCryptFilterDictionary();
+            if (stdCryptFilterDictionary != null)
+            {
+                COSName cryptFilterMethod = stdCryptFilterDictionary.getCryptFilterMethod();
+                if (COSName.AESV2.equals(cryptFilterMethod))
+                {
+                    dicLength = 128 / 8;
+                    setAES(true);
+                }
+                if (COSName.AESV3.equals(cryptFilterMethod))
+                {
+                    dicLength = 256 / 8;
+                    setAES(true);
+                }
+            }
+        }
 
         byte[] documentIDBytes = getDocumentIDBytes(documentIDArray);
 
@@ -238,21 +260,6 @@ public final class StandardSecurityHandler extends SecurityHandler
         if (dicRevision == 6 || dicRevision == 5)
         {
             validatePerms(encryption, dicPermissions, encryptMetadata);
-        }
-
-        if (encryption.getVersion() == 4 || encryption.getVersion() == 5)
-        {
-            // detect whether AES encryption is used. This assumes that the encryption algo is 
-            // stored in the PDCryptFilterDictionary
-            // However, crypt filters are used only when V is 4 or 5.
-            PDCryptFilterDictionary stdCryptFilterDictionary = encryption.getStdCryptFilterDictionary();
-
-            if (stdCryptFilterDictionary != null)
-            {
-                COSName cryptFilterMethod = stdCryptFilterDictionary.getCryptFilterMethod();
-                setAES(COSName.AESV2.equals(cryptFilterMethod) ||
-                    COSName.AESV3.equals(cryptFilterMethod));
-            }
         }
     }
 
@@ -1070,7 +1077,7 @@ public final class StandardSecurityHandler extends SecurityHandler
             byte[] k = md.digest(input);
 
             byte[] e = null;
-            for (int round = 0; round < 64 || ((int)e[e.length-1] & 0xFF) > round - 32; round++)
+            for (int round = 0; round < 64 || (e[e.length-1] & 0xFF) > round - 32; round++)
             {
                 byte[] k1;
                 if (userKey != null && userKey.length >= 48)

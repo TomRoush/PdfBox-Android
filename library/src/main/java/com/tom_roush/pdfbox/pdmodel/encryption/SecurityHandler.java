@@ -59,7 +59,7 @@ import com.tom_roush.pdfbox.util.Charsets;
  */
 public abstract class SecurityHandler
 {
-    private static final int DEFAULT_KEY_LENGTH = 40;
+    private static final short DEFAULT_KEY_LENGTH = 40;
 
     // see 7.6.2, page 58, PDF 32000-1:2008
     private static final byte[] AES_SALT = { (byte) 0x73, (byte) 0x41, (byte) 0x6c, (byte) 0x54 };
@@ -67,7 +67,7 @@ public abstract class SecurityHandler
     /**
      * The length in bits of the secret key used to encrypt the document. Will become private in 3.0.
      */
-    protected int keyLength = DEFAULT_KEY_LENGTH;
+    protected short keyLength = DEFAULT_KEY_LENGTH;
 
     /** The encryption key that will used to encrypt / decrypt. Will become private in 3.0. */
     protected byte[] encryptionKey;
@@ -75,7 +75,7 @@ public abstract class SecurityHandler
     /** The RC4 implementation used for cryptographic functions. */
     private final RC4Cipher rc4 = new RC4Cipher();
 
-    /** indicates if the Metadata have to be decrypted of not. */
+    /** Indicates if the Metadata have to be decrypted of not. */
     private boolean decryptMetadata;
 
     /** Can be used to allow stateless AES encryption */
@@ -117,6 +117,16 @@ public abstract class SecurityHandler
     protected void setDecryptMetadata(boolean decryptMetadata)
     {
         this.decryptMetadata = decryptMetadata;
+    }
+
+    /**
+     * Returns true if meta data is to be decrypted.
+     *
+     * @return True if meta data has to be decrypted.
+     */
+    public boolean isDecryptMetadata()
+    {
+        return decryptMetadata;
     }
 
     /**
@@ -425,10 +435,6 @@ public abstract class SecurityHandler
      */
     public void decrypt(COSBase obj, long objNum, long genNum) throws IOException
     {
-        if (!(obj instanceof COSString || obj instanceof COSDictionary || obj instanceof COSArray))
-        {
-            return;
-        }
         // PDFBOX-4477: only cache strings and streams, this improves speed and memory footprint
         if (obj instanceof COSString)
         {
@@ -650,7 +656,7 @@ public abstract class SecurityHandler
 
     /**
      * Getter of the property <tt>keyLength</tt>.
-     * @return  Returns the keyLength.
+     * @return Returns the key length in bits.
      */
     public int getKeyLength()
     {
@@ -660,11 +666,11 @@ public abstract class SecurityHandler
     /**
      * Setter of the property <tt>keyLength</tt>.
      *
-     * @param keyLen  The keyLength to set.
+     * @param keyLen The key length to set in bits.
      */
     public void setKeyLength(int keyLen)
     {
-        this.keyLength = keyLen;
+        this.keyLength = (short) keyLen;
     }
 
     /**
