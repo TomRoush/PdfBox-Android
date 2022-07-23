@@ -48,7 +48,7 @@ import com.tom_roush.pdfbox.pdmodel.PDPageTree;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDThreadBead;
-import com.tom_roush.pdfbox.util.QuickSort;
+import com.tom_roush.pdfbox.util.IterativeMergeSort;
 
 /**
  * This class will take a pdf document and strip out all of the text and ignore the formatting and such. Please note; it
@@ -64,7 +64,6 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
 {
     private static float defaultIndentThreshold = 2.0f;
     private static float defaultDropThreshold = 2.5f;
-    private static final boolean useCustomQuickSort;
 
     // enable the ability to set the default indent/drop thresholds
     // with -D system properties:
@@ -108,36 +107,6 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
                 // ignore and use default
             }
         }
-    }
-
-    static
-    {
-        // check if we need to use the custom quicksort algorithm as a
-        // workaround to the PDFBOX-1512 transitivity issue of TextPositionComparator:
-        boolean is16orLess = false;
-        try
-        {
-            String version = System.getProperty("java.specification.version");
-            StringTokenizer st = new StringTokenizer(version, ".");
-            int majorVersion = Integer.parseInt(st.nextToken());
-            int minorVersion = 0;
-            if (st.hasMoreTokens())
-            {
-                minorVersion = Integer.parseInt(st.nextToken());
-            }
-            is16orLess = majorVersion == 1 && minorVersion <= 6;
-        }
-        catch (SecurityException x)
-        {
-            // when run in an applet ignore and use default
-            // assume 1.7 or higher so that quicksort is used
-        }
-        catch (NumberFormatException nfe)
-        {
-            // should never happen, but if it does,
-            // assume 1.7 or higher so that quicksort is used
-        }
-        useCustomQuickSort = !is16orLess;
     }
 
     /**
@@ -530,14 +499,14 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
 
                 // because the TextPositionComparator is not transitive, but
                 // JDK7+ enforces transitivity on comparators, we need to use
-                // a custom quicksort implementation (which is slower, unfortunately).
-                if (useCustomQuickSort)
-                {
-                    QuickSort.sort(textList, comparator);
-                }
-                else
+                // a custom mergesort implementation (which is slower, unfortunately).
+                try
                 {
                     Collections.sort(textList, comparator);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    IterativeMergeSort.sort(textList, comparator);
                 }
             }
 

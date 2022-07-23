@@ -178,8 +178,6 @@ public final class LosslessFactory
                 imageData[byteIdx++] = (byte) (pixel & 0xFF);
                 if (image.hasAlpha())
                 {
-                    // we have the alpha right here, so no need to do it separately
-                    // as done prior April 2018
                     {
                         // write a byte
                         alphaImageData[alphaByteIdx++] = (byte) ((pixel >> 24) & 0xFF);

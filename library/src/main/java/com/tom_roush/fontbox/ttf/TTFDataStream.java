@@ -45,8 +45,7 @@ abstract class TTFDataStream implements Closeable
      */
     public float read32Fixed() throws IOException
     {
-        float retval = 0;
-        retval = readSignedShort();
+        float retval = readSignedShort();
         retval += (readUnsignedShort() / 65536.0);
         return retval;
     }
@@ -299,7 +298,6 @@ abstract class TTFDataStream implements Closeable
      * This will get the original data size that was used for this stream.
      *
      * @return The size of the original data.
-     * @throws IOException If there is an issue reading the data.
      */
     public abstract long getOriginalDataSize();
 }

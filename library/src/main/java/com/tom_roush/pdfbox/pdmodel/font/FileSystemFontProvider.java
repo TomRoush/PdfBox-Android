@@ -88,7 +88,8 @@ final class FileSystemFontProvider extends FontProvider
             this.ulCodePageRange1 = ulCodePageRange1;
             this.ulCodePageRange2 = ulCodePageRange2;
             this.macStyle = macStyle;
-            this.panose = panose != null ? new PDPanoseClassification(panose) : null;
+            this.panose = panose != null && panose.length >= PDPanoseClassification.LENGTH ?
+                new PDPanoseClassification(panose) : null;
             this.parent = parent;
         }
 
@@ -353,7 +354,7 @@ final class FileSystemFontProvider extends FontProvider
         {
             if (PDFBoxConfig.isDebugEnabled())
             {
-                Log.e("PdfBox-Android", "Will search the local system for fonts");
+                Log.d("PdfBox-Android", "Will search the local system for fonts");
             }
 
             // scan the local system for font files

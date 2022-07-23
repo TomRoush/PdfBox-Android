@@ -51,6 +51,7 @@ import com.tom_roush.pdfbox.rendering.PDFRenderer;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -227,11 +228,7 @@ public class PDFontTest
                 break;
             }
         }
-        if (ttc == null)
-        {
-            Log.i("PdfBox-Android", "testFullEmbeddingTTC skipped, no .ttc files available");
-            return;
-        }
+        Assume.assumeTrue("testFullEmbeddingTTC skipped, no .ttc files available", ttc != null);
 
         final List<String> names = new ArrayList<String>();
         ttc.processAllFonts(new TrueTypeCollection.TrueTypeFontProcessor()

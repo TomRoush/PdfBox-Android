@@ -312,10 +312,10 @@ public class Type1CharString
         {
             // end
         }
-        else if ("return".equals(name))
+        else if ("return".equals(name) || "callsubr".equals(name))
         {
             // indicates an invalid charstring
-            Log.w("PdfBox-Android", "Unexpected charstring command: " + command.getKey() + " in glyph " +
+            Log.w("PdfBox-Android", "Unexpected charstring command: " + name + " in glyph " +
                 glyphName + " of font " + fontName);
         }
         else if (name != null)
@@ -371,13 +371,15 @@ public class Type1CharString
             // make the first point relative to the start point
             first.set(first.x - current.x, first.y - current.y);
 
-            rrcurveTo(flexPoints.get(1).x, flexPoints.get(1).y,
-                flexPoints.get(2).x, flexPoints.get(2).y,
-                flexPoints.get(3).x, flexPoints.get(3).y);
+            PointF p1 = flexPoints.get(1);
+            PointF p2 = flexPoints.get(2);
+            PointF p3 = flexPoints.get(3);
+            rrcurveTo(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
 
-            rrcurveTo(flexPoints.get(4).x, flexPoints.get(4).y,
-                flexPoints.get(5).x, flexPoints.get(5).y,
-                flexPoints.get(6).x, flexPoints.get(6).y);
+            PointF p4 = flexPoints.get(4);
+            PointF p5 = flexPoints.get(5);
+            PointF p6 = flexPoints.get(6);
+            rrcurveTo(p4.x, p4.y, p5.x, p5.y, p6.x, p6.y);
 
             flexPoints.clear();
         }
@@ -388,8 +390,7 @@ public class Type1CharString
         }
         else
         {
-            // indicates a PDFBox bug
-            throw new IllegalArgumentException("Unexpected other subroutine: " + num);
+            Log.w("PdfBox-Android", "Invalid callothersubr parameter: " + num);
         }
     }
 

@@ -189,20 +189,19 @@ public final class JPEGFactory
         float quality, int dpi) throws IOException
     {
         // create XObject
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        encodeImageToJPEGStream(image, quality, dpi, baos);
-        ByteArrayInputStream byteStream = new ByteArrayInputStream(baos.toByteArray());
+        byte[] encoded = encodeImageToJPEGStream(image, quality, dpi);
+        ByteArrayInputStream encodedByteStream = new ByteArrayInputStream(encoded);
 
-        PDImageXObject pdImage = new PDImageXObject(document, byteStream,
-            COSName.DCT_DECODE, image.getWidth(), image.getHeight(),
-            8,
+        PDImageXObject pdImage = new PDImageXObject(document, encodedByteStream, COSName.DCT_DECODE,
+            image.getWidth(), image.getHeight(), 8,
             PDDeviceRGB.INSTANCE
         );
 
-        // alpha -> soft mask
+        // extract alpha channel (if any)
         if (image.hasAlpha())
         {
-            PDImage xAlpha = createAlphaFromARGBImage(document, image);
+            // alpha -> soft mask
+            PDImage xAlpha = JPEGFactory.createAlphaFromARGBImage(document, image);
             pdImage.getCOSObject().setItem(COSName.SMASK, xAlpha);
         }
 
@@ -238,29 +237,6 @@ public final class JPEGFactory
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int bpc;
-        //        if (image.getTransparency() == Transparency.BITMASK)
-        //        {
-        //            bpc = 1;
-        //            MemoryCacheImageOutputStream mcios = new MemoryCacheImageOutputStream(bos);
-        //            int width = alphaRaster.getSampleModel().getWidth();
-        //            int p = 0;
-        //            for (int pixel : pixels)
-        //            {
-        //                mcios.writeBit(pixel);
-        //                ++p;
-        //                if (p % width == 0)
-        //                {
-        //                    while (mcios.getBitOffset() != 0)
-        //                    {
-        //                        mcios.writeBit(0);
-        //                    }
-        //                }
-        //            }
-        //            mcios.flush();
-        //            mcios.close();
-        //        }
-        //        else
-        //        {
         bpc = 8;
         for (int pixel : pixels)
         {
@@ -268,9 +244,8 @@ public final class JPEGFactory
         }
         //        }
 
-        PDImageXObject pdImage = prepareImageXObject(document, bos.toByteArray(),
+        return prepareImageXObject(document, bos.toByteArray(),
             image.getWidth(), image.getHeight(), bpc, PDDeviceGray.INSTANCE);
-        return pdImage;
     }
 
     /**
@@ -300,47 +275,11 @@ public final class JPEGFactory
             width, height, bitsPerComponent, initColorSpace);
     }
 
-    private static void encodeImageToJPEGStream(Bitmap image, float quality, int dpi,
-        OutputStream out) throws IOException
+    private static byte[] encodeImageToJPEGStream(Bitmap image, float quality, int dpi) throws IOException
     {
-        image.compress(Bitmap.CompressFormat.JPEG, (int)(quality * 100), out);
-    //		// encode to JPEG
-    //		ImageOutputStream ios = null;
-    //		ImageWriter imageWriter = null;
-    //		try
-    //		{
-    //			// find JAI writer
-    //			imageWriter = ImageIO.getImageWritersBySuffix("jpeg").next();
-    //			ios = ImageIO.createImageOutputStream(out);
-    //			imageWriter.setOutput(ios);
-    //			// add compression
-    //			JPEGImageWriteParam jpegParam = (JPEGImageWriteParam)imageWriter.getDefaultWriteParam();
-    //			jpegParam.setCompressionMode(JPEGImageWriteParam.MODE_EXPLICIT);
-    //			jpegParam.setCompressionQuality(quality);
-    //			// add metadata
-    //			ImageTypeSpecifier imageTypeSpecifier = new ImageTypeSpecifier(image);
-    //			IIOMetadata data = imageWriter.getDefaultImageMetadata(imageTypeSpecifier, jpegParam);
-    //			Element tree = (Element)data.getAsTree("javax_imageio_jpeg_image_1.0");
-    //			Element jfif = (Element)tree.getElementsByTagName("app0JFIF").item(0);
-    //			jfif.setAttribute("Xdensity", Integer.toString(dpi));
-    //			jfif.setAttribute("Ydensity", Integer.toString(dpi));
-    //			jfif.setAttribute("resUnits", "1"); // 1 = dots/inch
-    //			// write
-    //			imageWriter.write(data, new IIOImage(image, null, null), jpegParam);
-    //		}
-    //		finally
-    //		{
-    //			// clean up
-    //			IOUtils.closeQuietly(out);
-    //			if (ios != null)
-    //			{
-    //				ios.close();
-    //			}
-    //			if (imageWriter != null)
-    //			{
-    //				imageWriter.dispose();
-    //			}
-    //		} TODO: PdfBox-Android
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        image.compress(Bitmap.CompressFormat.JPEG, (int)(quality * 100), baos);
+        return baos.toByteArray();
     }
 
     // returns a PDColorSpace for a given BufferedImage

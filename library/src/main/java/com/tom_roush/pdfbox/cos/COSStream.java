@@ -333,8 +333,8 @@ public class COSStream extends COSDictionary implements Closeable
     {
         if (isWriting)
         {
-            throw new IllegalStateException("There is an open OutputStream associated with " +
-                "this COSStream. It must be closed before querying" +
+            throw new IllegalStateException("There is an open OutputStream associated with this " +
+                "COSStream. It must be closed before querying the " +
                 "length of this COSStream.");
         }
         return getInt(COSName.LENGTH, 0);
@@ -415,6 +415,14 @@ public class COSStream extends COSDictionary implements Closeable
         return visitor.visitFromStream(this);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Called by PDFBox when the PDDocument is closed, this closes the stream and removes the data.
+     * You will usually not need this.
+     *
+     * @throws IOException
+     */
     @Override
     public void close() throws IOException
     {

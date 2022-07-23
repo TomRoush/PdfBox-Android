@@ -62,19 +62,18 @@ public class DrawObject extends OperatorProcessor
             try
             {
                 context.increaseLevel();
-                if (context.getLevel() > 25)
+                if (context.getLevel() > 50)
                 {
                     Log.e("PdfBox-Android", "recursion is too deep, skipping form XObject");
                     return;
                 }
-                PDFormXObject form = (PDFormXObject) xobject;
-                if (form instanceof PDTransparencyGroup)
+                if (xobject instanceof PDTransparencyGroup)
                 {
-                    context.showTransparencyGroup((PDTransparencyGroup) form);
+                    context.showTransparencyGroup((PDTransparencyGroup) xobject);
                 }
                 else
                 {
-                    context.showForm(form);
+                    context.showForm((PDFormXObject) xobject);
                 }
             }
             finally

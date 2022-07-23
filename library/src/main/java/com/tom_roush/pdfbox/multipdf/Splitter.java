@@ -16,12 +16,18 @@
  */
 package com.tom_roush.pdfbox.multipdf;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.MemoryUsageSetting;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDDocumentInformation;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDAction;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionGoTo;
@@ -75,7 +81,8 @@ public class Splitter
      *
      * @return A list of all the split documents. These should all be saved before closing any
      * documents, including the source document. Any further operations should be made after
-     * reloading them, to avoid problems due to resource sharing.
+     * reloading them, to avoid problems due to resource sharing. For the same reason, they should
+     * not be saved with encryption.
      *
      * @throws IOException If there is an IOError
      */
@@ -211,7 +218,35 @@ public class Splitter
         PDDocument document = memoryUsageSetting == null ?
             new PDDocument() : new PDDocument(memoryUsageSetting);
         document.getDocument().setVersion(getSourceDocument().getVersion());
-        document.setDocumentInformation(getSourceDocument().getDocumentInformation());
+        PDDocumentInformation sourceDocumentInformation = getSourceDocument().getDocumentInformation();
+        if (sourceDocumentInformation != null)
+        {
+            // PDFBOX-5317: Image Capture Plus files where /Root and /Info share the same dictionary
+            // Only copy simple elements to avoid huge files
+            COSDictionary sourceDocumentInformationDictionary = sourceDocumentInformation.getCOSObject();
+            COSDictionary destDocumentInformationDictionary = new COSDictionary();
+            for (COSName key : sourceDocumentInformationDictionary.keySet())
+            {
+                COSBase value = sourceDocumentInformationDictionary.getDictionaryObject(key);
+                if (value instanceof COSDictionary)
+                {
+                    Log.w("PdfBox-Android", "Nested entry for key '" + key.getName()
+                        + "' skipped in document information dictionary");
+                    if (sourceDocument.getDocumentCatalog().getCOSObject() ==
+                        sourceDocument.getDocumentInformation().getCOSObject())
+                    {
+                        Log.w("PdfBox-Android", "/Root and /Info share the same dictionary");
+                    }
+                    continue;
+                }
+                if (COSName.TYPE.equals(key))
+                {
+                    continue; // there is no /Type in the document information dictionary
+                }
+                destDocumentInformationDictionary.setItem(key, value);
+            }
+            document.setDocumentInformation(new PDDocumentInformation(destDocumentInformationDictionary));
+        }
         document.getDocumentCatalog().setViewerPreferences(
             getSourceDocument().getDocumentCatalog().getViewerPreferences());
         return document;
@@ -229,7 +264,11 @@ public class Splitter
         createNewDocumentIfNecessary();
 
         PDPage imported = getDestinationDocument().importPage(page);
-        imported.setResources(page.getResources());
+        if (page.getResources() != null && !page.getCOSObject().containsKey(COSName.RESOURCES))
+        {
+            imported.setResources(page.getResources());
+            Log.i("PdfBox-Android", "Resources imported in Splitter"); // follow-up to warning in importPage
+        }
         // remove page links to avoid copying not needed resources 
         processAnnotations(imported);
     }

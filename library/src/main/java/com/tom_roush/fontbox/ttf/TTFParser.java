@@ -16,6 +16,8 @@
  */
 package com.tom_roush.fontbox.ttf;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -141,7 +143,18 @@ public class TTFParser
             // skip tables with zero length
             if (table != null)
             {
-                font.addTable(table);
+                if (table.getOffset() + table.getLength() > font.getOriginalDataSize())
+                {
+                    // PDFBOX-5285 if we're lucky, this is an "unimportant" table, e.g. vmtx
+                    Log.w("PdfBox-Android", "Skip table '" + table.getTag() +
+                        "' which goes past the file size; offset: " + table.getOffset() +
+                        ", size: " + table.getLength() +
+                        ", font size: " + font.getOriginalDataSize());
+                }
+                else
+                {
+                    font.addTable(table);
+                }
             }
         }
         // parse tables if wanted

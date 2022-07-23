@@ -107,7 +107,7 @@ public class ScratchFile implements Closeable
     public ScratchFile(MemoryUsageSetting memUsageSetting) throws IOException
     {
         maxMainMemoryIsRestricted = (!memUsageSetting.useMainMemory()) || memUsageSetting.isMainMemoryRestricted();
-        useScratchFile = maxMainMemoryIsRestricted ? memUsageSetting.useTempFile() : false;
+        useScratchFile = maxMainMemoryIsRestricted && memUsageSetting.useTempFile();
         scratchFileDirectory = useScratchFile ? memUsageSetting.getTempDir() : null;
 
         if ((scratchFileDirectory != null) && (!scratchFileDirectory.isDirectory()))

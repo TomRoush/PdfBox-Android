@@ -507,9 +507,7 @@ public class PDFMergerUtility
             throw new IOException("Error: destination PDF is closed.");
         }
 
-        PDDocumentCatalog destCatalog = destination.getDocumentCatalog();
         PDDocumentCatalog srcCatalog = source.getDocumentCatalog();
-
         if (isDynamicXfa(srcCatalog.getAcroForm()))
         {
             throw new IOException("Error: can't merge source document containing dynamic XFA form content.");
@@ -529,6 +527,7 @@ public class PDFMergerUtility
         }
 
         int pageIndexOpenActionDest = -1;
+        PDDocumentCatalog destCatalog = destination.getDocumentCatalog();
         if (destCatalog.getOpenAction() == null)
         {
             // PDFBOX-3972: get local dest page index, it must be reassigned after the page cloning
@@ -628,9 +627,14 @@ public class PDFMergerUtility
             {
                 // search last sibling for dest, because /Last entry is sometimes wrong
                 PDOutlineItem destLastOutlineItem = destOutline.getFirstChild();
-                while (destLastOutlineItem.getNextSibling() != null)
+                while (true)
                 {
-                    destLastOutlineItem = destLastOutlineItem.getNextSibling();
+                    PDOutlineItem outlineItem = destLastOutlineItem.getNextSibling();
+                    if (outlineItem == null)
+                    {
+                        break;
+                    }
+                    destLastOutlineItem = outlineItem;
                 }
                 for (PDOutlineItem item : srcOutline.children())
                 {
@@ -653,12 +657,12 @@ public class PDFMergerUtility
             destCatalog.setPageMode(srcPageMode);
         }
 
-        COSDictionary destLabels = destCatalog.getCOSObject().getCOSDictionary(COSName.PAGE_LABELS);
         COSDictionary srcLabels = srcCatalog.getCOSObject().getCOSDictionary(COSName.PAGE_LABELS);
         if (srcLabels != null)
         {
             int destPageCount = destination.getNumberOfPages();
             COSArray destNums;
+            COSDictionary destLabels = destCatalog.getCOSObject().getCOSDictionary(COSName.PAGE_LABELS);
             if (destLabels == null)
             {
                 destLabels = new COSDictionary();
@@ -952,37 +956,32 @@ public class PDFMergerUtility
         PDStructureTreeRoot srcStructTree,
         PDStructureTreeRoot destStructTree) throws IOException
     {
-        COSArray dstKArray = new COSArray();
-        if (destStructTree.getK() != null)
-        {
-            COSBase base = destStructTree.getK();
-            if (base instanceof COSArray)
-            {
-                dstKArray.addAll((COSArray) base);
-            }
-            else if (base instanceof COSDictionary)
-            {
-                dstKArray.add(base);
-            }
-        }
-
+        COSBase srcKEntry = srcStructTree.getK();
         COSArray srcKArray = new COSArray();
-        if (srcStructTree.getK() != null)
+        COSBase clonedSrcKEntry = cloner.cloneForNewDocument(srcKEntry);
+        if (clonedSrcKEntry instanceof COSArray)
         {
-            COSBase base = cloner.cloneForNewDocument(srcStructTree.getK());
-            if (base instanceof COSArray)
-            {
-                srcKArray.addAll((COSArray) base);
-            }
-            else if (base instanceof COSDictionary)
-            {
-                srcKArray.add(base);
-            }
+            srcKArray.addAll((COSArray) clonedSrcKEntry);
+        }
+        else if (clonedSrcKEntry instanceof COSDictionary)
+        {
+            srcKArray.add(clonedSrcKEntry);
         }
 
         if (srcKArray.size() == 0)
         {
             return;
+        }
+
+        COSArray dstKArray = new COSArray();
+        COSBase dstKEntry = destStructTree.getK();
+        if (dstKEntry instanceof COSArray)
+        {
+            dstKArray.addAll((COSArray) dstKEntry);
+        }
+        else if (dstKEntry instanceof COSDictionary)
+        {
+            dstKArray.add(dstKEntry);
         }
 
         if (dstKArray.size() == 1 && dstKArray.getObject(0) instanceof COSDictionary)
@@ -1036,8 +1035,8 @@ public class PDFMergerUtility
                 return false;
             }
             COSDictionary dict = (COSDictionary) base;
-            if (!COSName.DOCUMENT.equals(dict.getCOSName(COSName.S)) &&
-                !COSName.PART.equals(dict.getCOSName(COSName.S)))
+            COSName sEntry = dict.getCOSName(COSName.S);
+            if (!COSName.DOCUMENT.equals(sEntry) && !COSName.PART.equals(sEntry))
             {
                 return false;
             }
@@ -1442,7 +1441,11 @@ public class PDFMergerUtility
                 String fieldName = destField.getPartialName();
                 if (fieldName.startsWith(prefix))
                 {
-                    nextFieldNum = Math.max(nextFieldNum, Integer.parseInt(fieldName.substring(prefixLength)) + 1);
+                    String suffix = fieldName.substring(prefixLength);
+                    if (suffix.matches("\\d+"))
+                    {
+                        nextFieldNum = Math.max(nextFieldNum, Integer.parseInt(suffix) + 1);
+                    }
                 }
             }
 
@@ -1605,17 +1608,19 @@ public class PDFMergerUtility
      */
     private void updateStructParentEntries(PDPage page, int structParentOffset) throws IOException
     {
-        if (page.getStructParents() >= 0)
+        int structParents = page.getStructParents();
+        if (structParents >= 0)
         {
-            page.setStructParents(page.getStructParents() + structParentOffset);
+            page.setStructParents(structParents + structParentOffset);
         }
         List<PDAnnotation> annots = page.getAnnotations();
         List<PDAnnotation> newannots = new ArrayList<PDAnnotation>(annots.size());
         for (PDAnnotation annot : annots)
         {
-            if (annot.getStructParent() >= 0)
+            int structParent = annot.getStructParent();
+            if (structParent >= 0)
             {
-                annot.setStructParent(annot.getStructParent() + structParentOffset);
+                annot.setStructParent(structParent + structParentOffset);
             }
             newannots.add(annot);
         }

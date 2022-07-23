@@ -30,6 +30,7 @@ import java.util.List;
 import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSString;
 import com.tom_roush.pdfbox.pdfparser.PDFStreamParser;
@@ -43,6 +44,7 @@ import com.tom_roush.pdfbox.pdmodel.font.PDType3CharProc;
 import com.tom_roush.pdfbox.pdmodel.font.PDType3Font;
 import com.tom_roush.pdfbox.pdmodel.font.PDVectorFont;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
+import com.tom_roush.pdfbox.pdmodel.interactive.action.PDAction;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionJavaScript;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDFormFieldAdditionalActions;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
@@ -144,6 +146,10 @@ class AppearanceGeneratorHelper {
             {
                 continue;
             }
+            COSDictionary widgetFontDict = widgetResources.getCOSObject()
+                .getCOSDictionary(COSName.FONT);
+            COSDictionary acroFormFontDict = acroFormResources.getCOSObject()
+                .getCOSDictionary(COSName.FONT);
             for (COSName fontResourceName : widgetResources.getFontNames())
             {
                 try
@@ -151,7 +157,9 @@ class AppearanceGeneratorHelper {
                     if (acroFormResources.getFont(fontResourceName) == null)
                     {
                         Log.d("PdfBox-Android", "Adding font resource " + fontResourceName + " from widget to AcroForm");
-                        acroFormResources.put(fontResourceName, widgetResources.getFont(fontResourceName));
+                        // use the COS-object to preserve a possible indirect object reference
+                        acroFormFontDict.setItem(fontResourceName,
+                            widgetFontDict.getItem(fontResourceName));
                     }
                 }
                 catch (IOException e)
@@ -222,6 +230,8 @@ class AppearanceGeneratorHelper {
                 appearanceDict.setNormalAppearance(appearanceStream);
                 // TODO support appearances other than "normal"
             }
+            PDAppearanceCharacteristicsDictionary appearanceCharacteristics =
+                widget.getAppearanceCharacteristics();
 
             /*
              * Adobe Acrobat always recreates the complete appearance stream if there is an
@@ -230,8 +240,9 @@ class AppearanceGeneratorHelper {
              * the entries.
              *
              */
-            if (widget.getAppearanceCharacteristics() != null || appearanceStream.getContentStream().getLength() == 0) {
-                initializeAppearanceContent(widget, appearanceStream);
+            if (appearanceCharacteristics != null || appearanceStream.getContentStream().getLength() == 0)
+            {
+                initializeAppearanceContent(widget, appearanceCharacteristics, appearanceStream);
             }
 
             setAppearanceContent(widget, appearanceStream);
@@ -241,20 +252,26 @@ class AppearanceGeneratorHelper {
         }
     }
 
-    private String getFormattedValue(String apValue) {
+    private String getFormattedValue(String apValue)
+    {
         // format the field value for the appearance if there is scripting support and
         // the field
         // has a format event
         PDFormFieldAdditionalActions actions = field.getActions();
-
-        if (actions != null && actions.getF() != null) {
-            if (field.getAcroForm().getScriptingHandler() != null) {
+        if (actions == null)
+        {
+            return apValue;
+        }
+        PDAction actionF = actions.getF();
+        if (actionF != null)
+        {
+            if (field.getAcroForm().getScriptingHandler() != null)
+            {
                 ScriptingHandler scriptingHandler = field.getAcroForm().getScriptingHandler();
-                return scriptingHandler.format((PDActionJavaScript) field.getActions().getF(), apValue);
-            } else {
-                Log.i("PdfBox-Android", "Field contains a formatting action but no ScriptingHandler has been supplied - formatted value might be incorrect");
-                return apValue;
+                return scriptingHandler.format((PDActionJavaScript) actionF, apValue);
             }
+            Log.i("PdfBox-Android", "Field contains a formatting action but no ScriptingHandler " +
+                "has been supplied - formatted value might be incorrect");
         }
         return apValue;
     }
@@ -318,14 +335,18 @@ class AppearanceGeneratorHelper {
      *
      * @param widget           the field widget
      * @param appearanceStream the appearance stream to be used
+     * @param appearanceCharacteristics the appearance characteristics dictionary from the widget or
+     * null
      * @throws IOException in case we can't write to the appearance stream
      */
-    private void initializeAppearanceContent(PDAnnotationWidget widget, PDAppearanceStream appearanceStream)
-        throws IOException {
+    private void initializeAppearanceContent(PDAnnotationWidget widget,
+        PDAppearanceCharacteristicsDictionary appearanceCharacteristics,
+        PDAppearanceStream appearanceStream)
+        throws IOException
+    {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         PDPageContentStream contents = new PDPageContentStream(field.getAcroForm().getDocument(), appearanceStream,
             output);
-        PDAppearanceCharacteristicsDictionary appearanceCharacteristics = widget.getAppearanceCharacteristics();
 
         // TODO: support more entries like patterns, etc.
         if (appearanceCharacteristics != null) {
@@ -485,8 +506,8 @@ class AppearanceGeneratorHelper {
         float fontScaleY = fontSize / FONTSCALE;
         float fontBoundingBoxAtSize = font.getBoundingBox().getHeight() * fontScaleY;
 
-        float fontCapAtSize = 0;
-        float fontDescentAtSize = 0;
+        float fontCapAtSize;
+        float fontDescentAtSize;
 
         if (font.getFontDescriptor() != null) {
             fontCapAtSize = font.getFontDescriptor().getCapHeight() * fontScaleY;
@@ -502,7 +523,7 @@ class AppearanceGeneratorHelper {
         if (field instanceof PDTextField && ((PDTextField) field).isMultiline()) {
             y = contentRect.getUpperRightY() - fontBoundingBoxAtSize;
         } else {
-            // Adobe shows the text 'shiftet up' in case the caps don't fit into the
+            // Adobe shows the text 'shifted up' in case the caps don't fit into the
             // clipping area
             if (fontCapAtSize > clipRect.getHeight()) {
                 y = clipRect.getLowerLeftY() + -fontDescentAtSize;
@@ -617,11 +638,8 @@ class AppearanceGeneratorHelper {
      */
     private void insertGeneratedCombAppearance(PDPageContentStream contents, PDAppearanceStream appearanceStream,
         PDFont font, float fontSize) throws IOException {
-
-        // TODO: Currently the quadding is not taken into account
-        // so the comb is always filled from left to right.
-
         int maxLen = ((PDTextField) field).getMaxLen();
+        int quadding = field.getQ();
         int numChars = Math.min(value.length(), maxLen);
 
         PDRectangle paddingEdge = applyPadding(appearanceStream.getBBox(), 1);
@@ -635,7 +653,18 @@ class AppearanceGeneratorHelper {
 
         float xOffset = combWidth / 2;
 
-        for (int i = 0; i < numChars; i++) {
+        // add to initial offset if right aligned or centered
+        if (quadding == 2)
+        {
+            xOffset = xOffset + (maxLen - numChars) * combWidth;
+        }
+        else if (quadding == 1)
+        {
+            xOffset = xOffset + (maxLen - numChars) / 2 * combWidth;
+        }
+
+        for (int i = 0; i < numChars; i++)
+        {
             String combString = value.substring(i, i + 1);
             float currCharWidth = font.getStringWidth(combString) / FONTSCALE * fontSize / 2;
 
