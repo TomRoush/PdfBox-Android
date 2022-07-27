@@ -784,7 +784,7 @@ abstract class PDAbstractContentStream implements Closeable
     }
 
     /**
-     * Set the non-stroking color in the DeviceRGB color space. Range is 0..255.
+     * Set the non-stroking color in the DeviceRGB color space. Range is 0..1.
      *
      * @param r The red value.
      * @param g The green value.
@@ -837,7 +837,9 @@ abstract class PDAbstractContentStream implements Closeable
      * @param k The black value.
      * @throws IOException If an IO error occurs while writing to the stream.
      * @throws IllegalArgumentException If the parameters are invalid.
+     * @deprecated Use {@link #setStrokingColor(float, float, float, float) setStrokingColor(c/255f, m/255f, y/255f, k/255f)} instead.
      */
+    @Deprecated
     public void setNonStrokingColor(int c, int m, int y, int k) throws IOException
     {
         if (isOutside255Interval(c) || isOutside255Interval(m) || isOutside255Interval(y) || isOutside255Interval(k))

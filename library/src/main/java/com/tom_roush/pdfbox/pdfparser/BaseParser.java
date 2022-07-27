@@ -165,13 +165,23 @@ public abstract class BaseParser
         }
         if (!(generationNumber instanceof COSInteger))
         {
-            Log.e("PdfBox-Android", "expected number, actual=" + value + " at offset " + genOffset);
+            Log.e("PdfBox-Android", "expected number, actual=" + generationNumber + " at offset " + genOffset);
             return COSNull.NULL;
         }
-        COSObjectKey key = new COSObjectKey(((COSInteger) value).longValue(),
-            ((COSInteger) generationNumber).intValue());
+        long objNumber = ((COSInteger) value).longValue();
+        if (objNumber <= 0)
+        {
+            Log.e("PdfBox-Android", "invalid object number value =" + objNumber + " at offset " + numOffset);
+            return COSNull.NULL;
+        }
+        int genNumber = ((COSInteger) generationNumber).intValue();
+        if (genNumber < 0)
+        {
+            Log.e("PdfBox-Android", "invalid generation number value =" + genNumber + " at offset " + numOffset);
+            return COSNull.NULL;
+        }
         // dereference the object
-        return getObjectFromPool(key);
+        return getObjectFromPool(new COSObjectKey(objNumber, genNumber));
     }
 
     private COSBase getObjectFromPool(COSObjectKey key) throws IOException
@@ -280,6 +290,10 @@ public abstract class BaseParser
     private boolean parseCOSDictionaryNameValuePair(COSDictionary obj) throws IOException
     {
         COSName key = parseCOSName();
+        if (key == null || key.getName().isEmpty())
+        {
+            Log.w("PdfBox-Android", "Empty COSName at offset " + seqSource.getPosition());
+        }
         COSBase value = parseCOSDictionaryValue();
         skipSpaces();
         if (value == null)

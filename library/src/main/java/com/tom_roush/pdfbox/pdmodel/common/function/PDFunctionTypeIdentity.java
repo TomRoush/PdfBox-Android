@@ -17,6 +17,7 @@ package com.tom_roush.pdfbox.pdmodel.common.function;
 
 import java.io.IOException;
 
+import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 
 /**
@@ -30,6 +31,7 @@ public class PDFunctionTypeIdentity extends PDFunction
     public PDFunctionTypeIdentity(COSBase function)
     {
         super(null);
+        //TODO passing null is not good because getCOSObject() can result in an NPE in the base class
     }
 
     @Override
@@ -44,6 +46,12 @@ public class PDFunctionTypeIdentity extends PDFunction
     public float[] eval(float[] input) throws IOException
     {
         return input;
+    }
+
+    @Override
+    protected COSArray getRangeValues()
+    {
+        return null;
     }
 
     /**

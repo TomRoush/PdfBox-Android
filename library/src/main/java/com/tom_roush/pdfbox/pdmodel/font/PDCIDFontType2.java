@@ -319,7 +319,7 @@ public class PDCIDFontType2 extends PDCIDFont
     public float getWidthFromFont(int code) throws IOException
     {
         int gid = codeToGID(code);
-        int width = ttf.getAdvanceWidth(gid);
+        float width = ttf.getAdvanceWidth(gid);
         int unitsPerEM = ttf.getUnitsPerEm();
         if (unitsPerEM != 1000)
         {
@@ -355,10 +355,13 @@ public class PDCIDFontType2 extends PDCIDFont
             if (cid == -1)
             {
                 CMap toUnicodeCMap = parent.getToUnicodeCMap();
-                byte[] codes = toUnicodeCMap.getCodesFromUnicode(Character.toString((char) unicode));
-                if (codes != null)
+                if (toUnicodeCMap != null)
                 {
-                    return codes;
+                    byte[] codes = toUnicodeCMap.getCodesFromUnicode(Character.toString((char) unicode));
+                    if (codes != null)
+                    {
+                        return codes;
+                    }
                 }
                 cid = 0;
             }

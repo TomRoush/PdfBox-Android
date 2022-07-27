@@ -302,15 +302,14 @@ public class COSWriter implements ICOSVisitor, Closeable
                 long highestNumber = doc.getDocument().getHighestXRefObjectNumber();
                 for ( COSObjectKey cosObjectKey : keySet )
                 {
-                    COSBase object = cosDoc.getObjectFromPool(cosObjectKey).getObject();
-                    if (object != null && cosObjectKey!= null && !(object instanceof COSNumber))
-                    {
-                        objectKeys.put(object, cosObjectKey);
-                        keyObject.put(cosObjectKey,object);
-                    }
-
                     if (cosObjectKey != null)
                     {
+                        COSBase object = cosDoc.getObjectFromPool(cosObjectKey).getObject();
+                        if (object != null && !(object instanceof COSNumber))
+                        {
+                            objectKeys.put(object, cosObjectKey);
+                            keyObject.put(cosObjectKey, object);
+                        }
                         long num = cosObjectKey.getNumber();
                         if (num > highestNumber)
                         {
@@ -841,7 +840,8 @@ public class COSWriter implements ICOSVisitor, Closeable
         // subtract 2 bytes because of the enclosing "<>"
         if (signatureBytes.length > signatureLength - 2)
         {
-            throw new IOException("Can't write signature, not enough space");
+            throw new IOException("Can't write signature, not enough space; "
+                + "adjust it with SignatureOptions.setPreferredSignatureSize");
         }
 
         // overwrite the signature Contents in the buffer
