@@ -381,13 +381,27 @@ public class CMapParser
         for (int j = 0; j < cosCount.intValue(); j++)
         {
             Object nextToken = parseNextToken(cmapStream);
+            if (nextToken == null)
+            {
+                throw new IOException("start code missing");
+            }
             if (nextToken instanceof Operator)
             {
                 checkExpectedOperator((Operator) nextToken, "endbfrange", "bfrange");
                 break;
             }
             byte[] startCode = (byte[]) nextToken;
-            byte[] endCode = (byte[]) parseNextToken(cmapStream);
+            nextToken = parseNextToken(cmapStream);
+            if (nextToken == null)
+            {
+                throw new IOException("end code missing");
+            }
+            if (nextToken instanceof Operator)
+            {
+                checkExpectedOperator((Operator) nextToken, "endbfrange", "bfrange");
+                break;
+            }
+            byte[] endCode = (byte[]) nextToken;
             int start = CMap.toInt(startCode, startCode.length);
             int end = CMap.toInt(endCode, endCode.length);
             // end has to be bigger than start or equal
@@ -670,13 +684,20 @@ public class CMapParser
                 }
                 is.unread(nextByte);
                 String value = buffer.toString();
-                if (value.indexOf('.') >= 0)
+                try
                 {
-                    retval = Double.valueOf(value);
+                    if (value.indexOf('.') >= 0)
+                    {
+                        retval = Double.valueOf(value);
+                    }
+                    else
+                    {
+                        retval = Integer.valueOf(value);
+                    }
                 }
-                else
+                catch (NumberFormatException ex)
                 {
-                    retval = Integer.valueOf(value);
+                    throw new IOException("Invalid number '" + value + "'", ex);
                 }
                 break;
             }

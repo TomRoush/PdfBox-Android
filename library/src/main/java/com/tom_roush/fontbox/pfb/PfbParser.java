@@ -77,7 +77,7 @@ public class PfbParser
     private int[] lengths;
 
     // sample (pfb-file)
-    // 00000000 80 01 8b 15  00 00 25 21  50 53 2d 41  64 6f 62 65
+    // 00000000 80 01 8b 15  00 00 25 21  50 53 2d 41  64 6f 62 65  
     //          ......%!PS-Adobe
 
 
@@ -132,7 +132,10 @@ public class PfbParser
      */
     private void parsePfb(final byte[] pfb) throws IOException
     {
-
+        if (pfb.length < PFB_HEADER_LENGTH)
+        {
+            throw new IOException("PFB header missing");
+        }
         ByteArrayInputStream in = new ByteArrayInputStream(pfb);
         pfbdata = new byte[pfb.length - PFB_HEADER_LENGTH];
         lengths = new int[PFB_RECORDS.length];

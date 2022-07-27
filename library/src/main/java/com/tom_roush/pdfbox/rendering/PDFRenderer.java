@@ -247,9 +247,9 @@ public class PDFRenderer
     {
         PDPage page = pageTree.get(pageIndex);
 
-        PDRectangle cropbBox = page.getCropBox();
-        float widthPt = cropbBox.getWidth();
-        float heightPt = cropbBox.getHeight();
+        PDRectangle cropBox = page.getCropBox();
+        float widthPt = cropBox.getWidth();
+        float heightPt = cropBox.getHeight();
 
         // PDFBOX-4306 avoid single blank pixel line on the right or on the bottom
         int widthPx = (int) Math.max(Math.floor(widthPt * scale), 1);
@@ -268,7 +268,7 @@ public class PDFRenderer
         if (imageType != ImageType.ARGB && hasBlendMode(page))
         {
             // PDFBOX-4095: if the PDF has blending on the top level, draw on transparent background
-            // Inpired from PDF.js: if a PDF page uses any blend modes other than Normal, 
+            // Inspired from PDF.js: if a PDF page uses any blend modes other than Normal,
             // PDF.js renders everything on a fully transparent RGBA canvas. 
             // Finally when the page has been rendered, PDF.js draws the RGBA canvas on a white canvas.
             bimType = Bitmap.Config.ARGB_8888;
@@ -306,14 +306,14 @@ public class PDFRenderer
         canvas.drawRect(0, 0, image.getWidth(), image.getHeight(), paint);
         paint.reset();
 
-        transform(canvas, page, scale, scale);
+        transform(canvas, page.getRotation(), cropBox, scale, scale);
 
         // the end-user may provide a custom PageDrawer
         PageDrawerParameters parameters =
             new PageDrawerParameters(this, page, subsamplingAllowed, destination,
                 imageDownscalingOptimizationThreshold);
         PageDrawer drawer = createPageDrawer(parameters);
-        drawer.drawPage(paint, canvas, page.getCropBox());
+        drawer.drawPage(paint, canvas, cropBox);
 
         if (image.getConfig() != imageType.toBitmapConfig())
         {
@@ -402,9 +402,8 @@ public class PDFRenderer
         PDPage page = pageTree.get(pageIndex);
         // TODO need width/height calculations? should these be in PageDrawer?
 
-        transform(canvas, page, scaleX, scaleY);
-
         PDRectangle cropBox = page.getCropBox();
+        transform(canvas, page.getRotation(), cropBox, scaleX, scaleY);
         canvas.drawRect(0, 0, cropBox.getWidth(), cropBox.getHeight(), paint);
 
         // the end-user may provide a custom PageDrawer
@@ -427,15 +426,13 @@ public class PDFRenderer
     }
 
     // scale rotate translate
-    private void transform(Canvas canvas, PDPage page, float scaleX, float scaleY)
+    private void transform(Canvas canvas, int rotationAngle, PDRectangle cropBox, float scaleX, float scaleY)
     {
         canvas.scale(scaleX, scaleY);
 
         // TODO should we be passing the scale to PageDrawer rather than messing with Graphics?
-        int rotationAngle = page.getRotation();
         if (rotationAngle != 0)
         {
-            PDRectangle cropBox = page.getCropBox();
             float translateX = 0;
             float translateY = 0;
             switch (rotationAngle)
@@ -479,16 +476,15 @@ public class PDFRenderer
         for (COSName name : resources.getExtGStateNames())
         {
             PDExtendedGraphicsState extGState = resources.getExtGState(name);
-            if (extGState == null)
+            if (extGState != null)
             {
-                // can happen if key exists but no value 
+                // extGState null can happen if key exists but no value
                 // see PDFBOX-3950-23EGDHXSBBYQLKYOKGZUOVYVNE675PRD.pdf
-                continue;
-            }
-            BlendMode blendMode = extGState.getBlendMode();
-            if (blendMode != BlendMode.NORMAL)
-            {
-                return true;
+                BlendMode blendMode = extGState.getBlendMode();
+                if (blendMode != BlendMode.NORMAL)
+                {
+                    return true;
+                }
             }
         }
         return false;

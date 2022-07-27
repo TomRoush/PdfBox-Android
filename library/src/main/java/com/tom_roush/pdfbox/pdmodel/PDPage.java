@@ -125,7 +125,7 @@ public class PDPage implements COSObjectable, PDContentStream
         {
             streams.add(new PDStream((COSStream) base));
         }
-        else if (base instanceof COSArray && ((COSArray) base).size() > 0)
+        else if (base instanceof COSArray)
         {
             COSArray array = (COSArray)base;
             for (int i = 0; i < array.size(); i++)
@@ -678,26 +678,27 @@ public class PDPage implements COSObjectable, PDContentStream
     public List<PDAnnotation> getAnnotations(AnnotationFilter annotationFilter) throws IOException
     {
         COSBase base = page.getDictionaryObject(COSName.ANNOTS);
-        if (base instanceof COSArray)
+        if (!(base instanceof COSArray))
         {
-            COSArray annots = (COSArray) base;
-            List<PDAnnotation> actuals = new ArrayList<PDAnnotation>();
-            for (int i = 0; i < annots.size(); i++)
-            {
-                COSBase item = annots.getObject(i);
-                if (item == null)
-                {
-                    continue;
-                }
-                PDAnnotation createdAnnotation = PDAnnotation.createAnnotation(item);
-                if (annotationFilter.accept(createdAnnotation))
-                {
-                    actuals.add(createdAnnotation);
-                }
-            }
-            return new COSArrayList<PDAnnotation>(actuals, annots);
+            return new COSArrayList<PDAnnotation>(page, COSName.ANNOTS);
         }
-        return new COSArrayList<PDAnnotation>(page, COSName.ANNOTS);
+
+        COSArray annots = (COSArray) base;
+        List<PDAnnotation> actuals = new ArrayList<PDAnnotation>();
+        for (int i = 0; i < annots.size(); i++)
+        {
+            COSBase item = annots.getObject(i);
+            if (item == null)
+            {
+                continue;
+            }
+            PDAnnotation createdAnnotation = PDAnnotation.createAnnotation(item);
+            if (annotationFilter.accept(createdAnnotation))
+            {
+                actuals.add(createdAnnotation);
+            }
+        }
+        return new COSArrayList<PDAnnotation>(actuals, annots);
     }
 
     /**

@@ -680,25 +680,27 @@ class AppearanceGeneratorHelper {
     }
 
     private void insertGeneratedListboxSelectionHighlight(PDPageContentStream contents,
-        PDAppearanceStream appearanceStream, PDFont font, float fontSize) throws IOException {
-        List<Integer> indexEntries = ((PDListBox) field).getSelectedOptionsIndex();
-        List<String> values = ((PDListBox) field).getValue();
-        List<String> options = ((PDListBox) field).getOptionsExportValues();
+        PDAppearanceStream appearanceStream, PDFont font, float fontSize) throws IOException
+    {
+        PDListBox listBox = (PDListBox) field;
+        List<Integer> indexEntries = listBox.getSelectedOptionsIndex();
+        List<String> values = listBox.getValue();
+        List<String> options = listBox.getOptionsExportValues();
 
-        if (!values.isEmpty() && !options.isEmpty() && indexEntries.isEmpty()) {
+        if (!values.isEmpty() && !options.isEmpty() && indexEntries.isEmpty())
+        {
             // create indexEntries from options
-            indexEntries = new ArrayList<Integer>();
-            for (String v : values) {
+            indexEntries = new ArrayList<Integer>(values.size());
+            for (String v : values)
+            {
                 indexEntries.add(options.indexOf(v));
             }
         }
 
-        // The first entry which shall be presented might be adjusted by the optional TI
-        // key
-        // If this entry is present the first entry to be displayed is the keys value
-        // otherwise
-        // display starts with the first entry in Opt.
-        int topIndex = ((PDListBox) field).getTopIndex();
+        // The first entry which shall be presented might be adjusted by the optional TI key
+        // If this entry is present, the first entry to be displayed is the keys value,
+        // otherwise display starts with the first entry in Opt.
+        int topIndex = listBox.getTopIndex();
 
         float highlightBoxHeight = font.getBoundingBox().getHeight() * fontSize / FONTSCALE;
 
@@ -742,13 +744,15 @@ class AppearanceGeneratorHelper {
         float yTextPos = contentRect.getUpperRightY();
 
         int topIndex = ((PDListBox) field).getTopIndex();
+        float ascent = font.getFontDescriptor().getAscent();
+        float height = font.getBoundingBox().getHeight();
 
         for (int i = topIndex; i < numOptions; i++) {
 
             if (i == topIndex) {
-                yTextPos = yTextPos - font.getFontDescriptor().getAscent() / FONTSCALE * fontSize;
+                yTextPos = yTextPos - ascent / FONTSCALE * fontSize;
             } else {
-                yTextPos = yTextPos - font.getBoundingBox().getHeight() / FONTSCALE * fontSize;
+                yTextPos = yTextPos - height / FONTSCALE * fontSize;
                 contents.beginText();
             }
 

@@ -154,9 +154,7 @@ public class GlyfCompositeDescript extends GlyfDescript
             int n = i - c.getFirstIndex();
             int x = gd.getXCoordinate(n);
             int y = gd.getYCoordinate(n);
-            short x1 = (short) c.scaleX(x, y);
-            x1 += c.getXTranslate();
-            return x1;
+            return (short) (c.scaleX(x, y) + c.getXTranslate());
         }
         return 0;
     }
@@ -174,9 +172,7 @@ public class GlyfCompositeDescript extends GlyfDescript
             int n = i - c.getFirstIndex();
             int x = gd.getXCoordinate(n);
             int y = gd.getYCoordinate(n);
-            short y1 = (short) c.scaleY(x, y);
-            y1 += c.getYTranslate();
-            return y1;
+            return (short) (c.scaleY(x, y) + c.getYTranslate());
         }
         return 0;
     }
@@ -230,7 +226,16 @@ public class GlyfCompositeDescript extends GlyfDescript
         if (contourCount < 0)
         {
             GlyfCompositeComp c = components.get(components.size() - 1);
-            contourCount = c.getFirstContour() + descriptions.get(c.getGlyphIndex()).getContourCount();
+            GlyphDescription gd = descriptions.get(c.getGlyphIndex());
+            if (gd == null)
+            {
+                Log.e("PdfBox-Android", "missing glyph description for index " + c.getGlyphIndex());
+                contourCount = 0;
+            }
+            else
+            {
+                contourCount = c.getFirstContour() + gd.getContourCount();
+            }
         }
         return contourCount;
     }

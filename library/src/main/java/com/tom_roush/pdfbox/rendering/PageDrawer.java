@@ -36,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.contentstream.PDFGraphicsStreamEngine;
@@ -141,8 +140,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
     private final RenderDestination destination;
     private final float imageDownscalingOptimizationThreshold;
-
-    static final int JAVA_VERSION = PageDrawer.getJavaVersion();
 
     /**
      * Default annotations filter, returns all annotations
@@ -632,32 +629,21 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 return null;
             }
         }
-        if (JAVA_VERSION < 10)
+        for (int i = 0; i < dashArray.length; ++i)
         {
-            for (int i = 0; i < dashArray.length; ++i)
+            // apply the CTM
+            float w = transformWidth(dashArray[i]);
+            // minimum line dash width avoids JVM crash,
+            // see PDFBOX-2373, PDFBOX-2929, PDFBOX-3204, PDFBOX-3813
+            // also avoid 0 in array like "[ 0 1000 ] 0 d", see PDFBOX-3724
+            if (xformScalingFactorX < 0.5f)
             {
-                // apply the CTM
-                float w = transformWidth(dashArray[i]);
-                // minimum line dash width avoids JVM crash,
-                // see PDFBOX-2373, PDFBOX-2929, PDFBOX-3204, PDFBOX-3813
-                // also avoid 0 in array like "[ 0 1000 ] 0 d", see PDFBOX-3724
-                if (xformScalingFactorX < 0.5f)
-                {
-                    // PDFBOX-4492
-                    dashArray[i] = Math.max(w, 0.2f);
-                }
-                else
-                {
-                    dashArray[i] = Math.max(w, 0.062f);
-                }
+                // PDFBOX-4492
+                dashArray[i] = Math.max(w, 0.2f);
             }
-        }
-        else
-        {
-            for (int i = 0; i < dashArray.length; ++i)
+            else
             {
-                // apply the CTM
-                dashArray[i] = transformWidth(dashArray[i]);
+                dashArray[i] = Math.max(w, 0.062f);
             }
         }
         return dashArray;
@@ -819,8 +805,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
                 bim = pdImage.getImage();
             }
-            boolean isScaledUp = bim.getWidth() < Math.round(at.getScaleX()) ||
-                bim.getHeight() < Math.round(at.getScaleY());
+            Matrix m = new Matrix(at);
+            boolean isScaledUp = bim.getWidth() < Math.abs(Math.round(m.getScalingFactorX())) ||
+                bim.getHeight() < Math.abs(Math.round(m.getScalingFactorY()));
 
             if (isScaledUp)
             {
@@ -1615,27 +1602,5 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             }
         }
         return true;
-    }
-
-    private static int getJavaVersion()
-    {
-        // strategy from lucene-solr/lucene/core/src/java/org/apache/lucene/util/Constants.java
-        String version = System.getProperty("java.specification.version");
-        final StringTokenizer st = new StringTokenizer(version, ".");
-        try
-        {
-            int major = Integer.parseInt(st.nextToken());
-            int minor = 0;
-            if (st.hasMoreTokens())
-            {
-                minor = Integer.parseInt(st.nextToken());
-            }
-            return major == 1 ? minor : major;
-        }
-        catch (NumberFormatException nfe)
-        {
-            // maybe some new numbering scheme in the 22nd century
-            return 0;
-        }
     }
 }

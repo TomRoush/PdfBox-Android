@@ -314,11 +314,13 @@ public class COSParser extends BaseParser
         COSDictionary trailer = null;
         while (prev > 0)
         {
+            // save expected position for loop detection
+            prevSet.add(prev);
             // seek to xref table
             source.seek(prev);
             // skip white spaces
             skipSpaces();
-            // save current position instead of prev due to skipped spaces
+            // save current position as well due to skipped spaces
             prevSet.add(source.getPosition());
             // -- parse xref
             if (source.peek() == X)
@@ -662,8 +664,9 @@ public class COSParser extends BaseParser
                     if (!parsedObjects.contains(objId))
                     {
                         Long fileOffset = document.getXrefTable().get(objKey);
-                        if (fileOffset == null && isLenient && bfSearchCOSObjectKeyOffsets != null)
+                        if (fileOffset == null && isLenient)
                         {
+                            bfSearchForObjects();
                             fileOffset = bfSearchCOSObjectKeyOffsets.get(objKey);
                             if (fileOffset != null)
                             {
@@ -688,8 +691,9 @@ public class COSParser extends BaseParser
                                 fileOffset = document.getXrefTable().get(key);
                                 if (fileOffset == null || fileOffset <= 0)
                                 {
-                                    if (isLenient && bfSearchCOSObjectKeyOffsets != null)
+                                    if (isLenient)
                                     {
+                                        bfSearchForObjects();
                                         fileOffset = bfSearchCOSObjectKeyOffsets.get(key);
                                         if (fileOffset != null)
                                         {
@@ -824,8 +828,9 @@ public class COSParser extends BaseParser
             Long offsetOrObjstmObNr = document.getXrefTable().get(objKey);
 
             // maybe something is wrong with the xref table -> perform brute force search for all objects
-            if (offsetOrObjstmObNr == null && isLenient && bfSearchCOSObjectKeyOffsets != null)
+            if (offsetOrObjstmObNr == null && isLenient)
             {
+                bfSearchForObjects();
                 offsetOrObjstmObNr = bfSearchCOSObjectKeyOffsets.get(objKey);
                 if (offsetOrObjstmObNr != null)
                 {
@@ -834,19 +839,26 @@ public class COSParser extends BaseParser
                 }
             }
 
-            // sanity test to circumvent loops with broken documents
+            // test to circumvent loops with broken documents
             if (requireExistingNotCompressedObj
                 && ((offsetOrObjstmObNr == null) || (offsetOrObjstmObNr <= 0)))
             {
                 throw new IOException("Object must be defined and must not be compressed object: "
                     + objKey.getNumber() + ":" + objKey.getGeneration());
             }
-
+            // check if some dereferencing is already in progress
+            if (pdfObject.derefencingInProgress())
+            {
+                throw new IOException("Possible recursion detected when dereferencing object "
+                    + objNr + " " + objGenNr);
+            }
+            // change status of COSObject
+            pdfObject.dereferencingStarted();
             // maybe something is wrong with the xref table -> perform brute force search for all objects
             if (offsetOrObjstmObNr == null && isLenient && bfSearchCOSObjectKeyOffsets == null)
             {
                 bfSearchForObjects();
-                if (bfSearchCOSObjectKeyOffsets != null && !bfSearchCOSObjectKeyOffsets.isEmpty())
+                if (!bfSearchCOSObjectKeyOffsets.isEmpty())
                 {
                     Log.d("PdfBox-Android", "Add all new read objects from brute force search to the xref table");
                     Map<COSObjectKey, Long> xrefOffset = document.getXrefTable();
@@ -880,6 +892,8 @@ public class COSParser extends BaseParser
                 // since our object was not found it means object stream was not parsed so far
                 parseObjectStream((int) -offsetOrObjstmObNr);
             }
+            // change status of COSObject
+            pdfObject.dereferencingFinished();
         }
         return pdfObject.getObject();
     }
@@ -1446,6 +1460,7 @@ public class COSParser extends BaseParser
             return true;
         }
         Map<COSObjectKey, COSObjectKey> correctedKeys = new HashMap<COSObjectKey, COSObjectKey>();
+        HashSet<COSObjectKey> validKeys = new HashSet<COSObjectKey>();
         for (Entry<COSObjectKey, Long> objectEntry : xrefOffset.entrySet())
         {
             COSObjectKey objectKey = objectEntry.getKey();
@@ -1454,7 +1469,7 @@ public class COSParser extends BaseParser
             // see type 2 entry in xref stream
             if (objectOffset != null && objectOffset >= 0)
             {
-                COSObjectKey foundObjectKey = findObjectKey(objectKey, objectOffset);
+                COSObjectKey foundObjectKey = findObjectKey(objectKey, objectOffset, xrefOffset);
                 if (foundObjectKey == null)
                 {
                     Log.d("PdfBox-Android", "Stop checking xref offsets as at least one (" + objectKey
@@ -1466,12 +1481,29 @@ public class COSParser extends BaseParser
                     // Generation was fixed - need to update map later, after iteration
                     correctedKeys.put(objectKey, foundObjectKey);
                 }
+                else
+                {
+                    validKeys.add(objectKey);
+                }
+            }
+        }
+        Map<COSObjectKey, Long> correctedPointers = new HashMap<COSObjectKey, Long>();
+        for (Entry<COSObjectKey, COSObjectKey> correctedKeyEntry : correctedKeys.entrySet())
+        {
+            if (!validKeys.contains(correctedKeyEntry.getValue()))
+            {
+                // Only replace entries, if the original entry does not point to a valid object
+                correctedPointers.put(correctedKeyEntry.getValue(), xrefOffset.get(correctedKeyEntry.getKey()));
             }
         }
         for (Entry<COSObjectKey, COSObjectKey> correctedKeyEntry : correctedKeys.entrySet())
         {
-            xrefOffset.put(correctedKeyEntry.getValue(),
-                xrefOffset.remove(correctedKeyEntry.getKey()));
+            // remove old invalid, as some might not be replaced
+            xrefOffset.remove(correctedKeyEntry.getKey());
+        }
+        for (Entry<COSObjectKey, Long> pointer : correctedPointers.entrySet())
+        {
+            xrefOffset.put(pointer.getKey(), pointer.getValue());
         }
         return true;
     }
@@ -1492,7 +1524,7 @@ public class COSParser extends BaseParser
         if (!validateXrefOffsets(xrefOffset))
         {
             bfSearchForObjects();
-            if (bfSearchCOSObjectKeyOffsets != null && !bfSearchCOSObjectKeyOffsets.isEmpty())
+            if (!bfSearchCOSObjectKeyOffsets.isEmpty())
             {
                 Log.d("PdfBox-Android", "Replaced read xref table with the results of a brute force search");
                 xrefOffset.clear();
@@ -1507,11 +1539,12 @@ public class COSParser extends BaseParser
      *
      * @param objectKey the key of object we are looking for
      * @param offset the offset where to look
+     * @param xrefOffset a map with with all known xref entries
      * @return returns the found/fixed object key
      *
      * @throws IOException if something went wrong
      */
-    private COSObjectKey findObjectKey(COSObjectKey objectKey, long offset) throws IOException
+    private COSObjectKey findObjectKey(COSObjectKey objectKey, long offset, Map<COSObjectKey, Long> xrefOffset) throws IOException
     {
         // there can't be any object at the very beginning of a pdf
         if (offset < MINIMUM_SEARCH_OFFSET)
@@ -1521,20 +1554,69 @@ public class COSParser extends BaseParser
         try
         {
             source.seek(offset);
-            // try to read the given object/generation number
-            if (objectKey.getNumber() == readObjectNumber())
+            skipWhiteSpaces();
+            if (source.getPosition() == offset)
             {
-                int genNumber = readGenerationNumber();
-                // finally try to read the object marker
-                readExpectedString(OBJ_MARKER, true);
-                if (genNumber == objectKey.getGeneration())
+                // ensure that at least one whitespace is skipped in front of the object number
+                source.seek(offset - 1);
+                if (source.getPosition() < offset)
                 {
-                    return objectKey;
+                    if (!isDigit())
+                    {
+                        // anything else but a digit may be some garbage of the previous object -> just ignore it
+                        source.read();
+                    }
+                    else
+                    {
+                        long current = source.getPosition();
+                        source.seek(--current);
+                        while (isDigit())
+                            source.seek(--current);
+                        long newObjNr = readObjectNumber();
+                        int newGenNr = readGenerationNumber();
+                        COSObjectKey newObjKey = new COSObjectKey(newObjNr, newGenNr);
+                        Long existingOffset = xrefOffset.get(newObjKey);
+                        // the found object number belongs to another uncompressed object at the same or nearby offset
+                        // something has to be wrong
+                        if (existingOffset != null && existingOffset > 0
+                            && Math.abs(offset - existingOffset) < 10)
+                        {
+                            Log.d("PdfBox-Android", "Found the object " + newObjKey + " instead of " //
+                                + objectKey + " at offset " + offset //
+                                + " - ignoring");
+                            return null;
+                        }
+                        // something seems to be wrong but it's hard to determine what exactly -> simply continue
+                        source.seek(offset);
+                    }
                 }
-                else if (isLenient && genNumber > objectKey.getGeneration())
+            }
+            // try to read the given object/generation number
+            long foundObjectNumber = readObjectNumber();
+            if (objectKey.getNumber() != foundObjectNumber)
+            {
+                Log.w("PdfBox-Android", "found wrong object number. expected [" + objectKey.getNumber() +
+                    "] found [" + foundObjectNumber + "]");
+                if (!isLenient)
                 {
-                    return new COSObjectKey(objectKey.getNumber(), genNumber);
+                    return null;
                 }
+                else
+                {
+                    objectKey = new COSObjectKey(foundObjectNumber, objectKey.getGeneration());
+                }
+            }
+
+            int genNumber = readGenerationNumber();
+            // finally try to read the object marker
+            readExpectedString(OBJ_MARKER, true);
+            if (genNumber == objectKey.getGeneration())
+            {
+                return objectKey;
+            }
+            else if (isLenient && genNumber > objectKey.getGeneration())
+            {
+                return new COSObjectKey(objectKey.getNumber(), genNumber);
             }
         }
         catch (IOException exception)

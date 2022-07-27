@@ -371,19 +371,22 @@ final class FileSystemFontProvider extends FontProvider
                 Log.d("PdfBox-Android", "Found " + files.size() + " fonts on the local system");
             }
 
-            // load cached FontInfo objects
-            List<FSFontInfo> cachedInfos = loadDiskCache(files);
-            if (cachedInfos != null && !cachedInfos.isEmpty())
+            if (!files.isEmpty())
             {
-                fontInfoList.addAll(cachedInfos);
-            }
-            else
-            {
-                Log.w("PdfBox-Android", "Building on-disk font cache, this may take a while");
-                scanFonts(files);
-                saveDiskCache();
-                Log.w("PdfBox-Android", "Finished building on-disk font cache, found " +
-                    fontInfoList.size() + " fonts");
+                // load cached FontInfo objects
+                List<FSFontInfo> cachedInfos = loadDiskCache(files);
+                if (cachedInfos != null && !cachedInfos.isEmpty())
+                {
+                    fontInfoList.addAll(cachedInfos);
+                }
+                else
+                {
+                    Log.w("PdfBox-Android", "Building on-disk font cache, this may take a while");
+                    scanFonts(files);
+                    saveDiskCache();
+                    Log.w("PdfBox-Android", "Finished building on-disk font cache, found " + fontInfoList.size()
+                        + " fonts");
+                }
             }
         }
         catch (AccessControlException e)
