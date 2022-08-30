@@ -56,7 +56,7 @@ abstract class PDMeshBasedShadingType extends PDShadingType4
      */
     @SuppressWarnings({ "squid:S2583", "squid:S1166" })
     final List<Patch> collectPatches(AffineTransform xform, Matrix matrix, int controlPoints)
-            throws IOException
+        throws IOException
     {
         COSDictionary dict = getCOSObject();
         if (!(dict instanceof COSStream))
@@ -110,8 +110,8 @@ abstract class PDMeshBasedShadingType extends PDShadingType4
                 {
                     boolean isFree = (flag == 0);
                     Patch current = readPatch(mciis, isFree, implicitEdge, implicitCornerColor,
-                            maxSrcCoord, maxSrcColor, rangeX, rangeY, colRange, matrix, xform,
-                            controlPoints);
+                        maxSrcCoord, maxSrcColor, rangeX, rangeY, colRange, matrix, xform,
+                        controlPoints);
                     if (current == null)
                     {
                         break;
@@ -120,23 +120,23 @@ abstract class PDMeshBasedShadingType extends PDShadingType4
                     flag = (byte) (mciis.readBits(bitsPerFlag) & 3);
                     switch (flag)
                     {
-                    case 0:
-                        break;
-                    case 1:
-                        implicitEdge = current.getFlag1Edge();
-                        implicitCornerColor = current.getFlag1Color();
-                        break;
-                    case 2:
-                        implicitEdge = current.getFlag2Edge();
-                        implicitCornerColor = current.getFlag2Color();
-                        break;
-                    case 3:
-                        implicitEdge = current.getFlag3Edge();
-                        implicitCornerColor = current.getFlag3Color();
-                        break;
-                    default:
-                        Log.w("PdfBox-Android", "bad flag: " + flag);
-                        break;
+                        case 0:
+                            break;
+                        case 1:
+                            implicitEdge = current.getFlag1Edge();
+                            implicitCornerColor = current.getFlag1Color();
+                            break;
+                        case 2:
+                            implicitEdge = current.getFlag2Edge();
+                            implicitCornerColor = current.getFlag2Color();
+                            break;
+                        case 3:
+                            implicitEdge = current.getFlag3Edge();
+                            implicitCornerColor = current.getFlag3Color();
+                            break;
+                        default:
+                            Log.w("PdfBox-Android", "bad flag: " + flag);
+                            break;
                     }
                 }
                 catch (EOFException ex)
@@ -171,9 +171,9 @@ abstract class PDMeshBasedShadingType extends PDShadingType4
      * @throws IOException when something went wrong
      */
     protected Patch readPatch(ImageInputStream input, boolean isFree, PointF[] implicitEdge,
-            float[][] implicitCornerColor, long maxSrcCoord, long maxSrcColor, PDRange rangeX,
-            PDRange rangeY, PDRange[] colRange, Matrix matrix, AffineTransform xform,
-            int controlPoints) throws IOException
+        float[][] implicitCornerColor, long maxSrcCoord, long maxSrcColor, PDRange rangeX,
+        PDRange rangeY, PDRange[] colRange, Matrix matrix, AffineTransform xform,
+        int controlPoints) throws IOException
     {
         int numberOfColorComponents = getNumberOfColorComponents();
         float[][] color = new float[4][numberOfColorComponents];
@@ -217,7 +217,7 @@ abstract class PDMeshBasedShadingType extends PDShadingType4
                 {
                     long c = input.readBits(getBitsPerComponent());
                     color[i][j] = interpolate(c, maxSrcColor, colRange[j].getMin(),
-                            colRange[j].getMax());
+                        colRange[j].getMax());
                 }
             }
         }
@@ -243,7 +243,7 @@ abstract class PDMeshBasedShadingType extends PDShadingType4
     public abstract RectF getBounds(AffineTransform xform, Matrix matrix) throws IOException;
 
     RectF getBounds(AffineTransform xform, Matrix matrix, int controlPoints)
-            throws IOException
+        throws IOException
     {
         RectF bounds = null;
         for (Patch patch : collectPatches(xform, matrix, controlPoints))
@@ -253,7 +253,7 @@ abstract class PDMeshBasedShadingType extends PDShadingType4
                 if (bounds == null)
                 {
                     bounds = new RectF(shadedTriangle.corner[0].x,
-                            shadedTriangle.corner[0].y, 0, 0);
+                        shadedTriangle.corner[0].y, 0, 0);
                 }
                 bounds.union(shadedTriangle.corner[0].x, shadedTriangle.corner[0].y);
                 bounds.union(shadedTriangle.corner[1].x, shadedTriangle.corner[1].y);

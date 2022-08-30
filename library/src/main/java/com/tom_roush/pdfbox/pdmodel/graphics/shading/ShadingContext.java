@@ -47,7 +47,8 @@ public abstract class ShadingContext
      * @throws java.io.IOException if there is an error getting the color space
      * or doing background color conversion.
      */
-    public ShadingContext(PDShading shading, AffineTransform xform, Matrix matrix) throws IOException
+    public ShadingContext(PDShading shading, AffineTransform xform,
+        Matrix matrix) throws IOException
     {
         this.shading = shading;
         shadingColorSpace = shading.getColorSpace();

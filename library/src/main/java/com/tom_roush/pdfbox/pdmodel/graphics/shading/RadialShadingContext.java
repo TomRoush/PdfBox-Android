@@ -57,7 +57,6 @@ public class RadialShadingContext extends ShadingContext implements PaintContext
 
     private AffineTransform rat;
 
-
     /**
      * Constructor creates an instance to be used for fill operations.
      *
@@ -305,7 +304,6 @@ public class RadialShadingContext extends ShadingContext implements PaintContext
         raster.setPixels(data, 0, w, 0, 0, w, h);
         return raster;
     }
-
 
     private float[] calculateInputValues(double x, double y)
     {

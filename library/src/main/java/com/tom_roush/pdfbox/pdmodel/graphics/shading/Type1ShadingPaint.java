@@ -41,12 +41,6 @@ class Type1ShadingPaint extends ShadingPaint<PDShadingType1>
         super(shading, matrix);
     }
 
-//    @Override
-    public int getTransparency()
-    {
-        return 0;
-    }
-
     @Override
     public PaintContext createContext(Rect deviceBounds, AffineTransform xform)
     {

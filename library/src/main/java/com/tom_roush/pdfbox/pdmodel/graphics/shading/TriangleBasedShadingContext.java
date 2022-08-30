@@ -49,7 +49,8 @@ abstract class TriangleBasedShadingContext extends ShadingContext implements Pai
      * @param matrix the pattern matrix concatenated with that of the parent content stream
      * @throws IOException if there is an error getting the color space or doing background color conversion.
      */
-    TriangleBasedShadingContext(PDShading shading, AffineTransform xform, Matrix matrix) throws IOException
+    TriangleBasedShadingContext(PDShading shading, AffineTransform xform,
+        Matrix matrix) throws IOException
     {
         super(shading, xform, matrix);
     }

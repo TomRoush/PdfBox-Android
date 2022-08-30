@@ -34,6 +34,7 @@ import com.tom_roush.pdfbox.util.Matrix;
  */
 abstract class PatchMeshesShadingContext extends TriangleBasedShadingContext
 {
+
     /**
      * patch list
      */

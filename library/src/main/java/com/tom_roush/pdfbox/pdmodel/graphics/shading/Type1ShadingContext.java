@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import com.tom_roush.harmony.awt.PaintContext;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
+import com.tom_roush.harmony.awt.geom.AffineTransform.NoninvertibleTransformException;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.util.Matrix;
 
@@ -71,7 +72,7 @@ class Type1ShadingContext extends ShadingContext implements PaintContext
             rat.concatenate(matrix.createAffineTransform().createInverse());
             rat.concatenate(xform.createInverse());
         }
-        catch (AffineTransform.NoninvertibleTransformException ex)
+        catch (NoninvertibleTransformException ex)
         {
             Log.e("PdfBox-Android", ex.getMessage() + ", matrix: " + matrix, ex);
             rat = new AffineTransform();

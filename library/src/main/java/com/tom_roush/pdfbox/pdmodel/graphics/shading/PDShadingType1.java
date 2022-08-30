@@ -16,12 +16,12 @@
  */
 package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
+import com.tom_roush.harmony.awt.Paint;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSFloat;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.harmony.awt.Paint;
 import com.tom_roush.pdfbox.util.Matrix;
 
 /**

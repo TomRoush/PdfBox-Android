@@ -86,7 +86,7 @@ public class PDShadingType4 extends PDTriangleBasedShadingType
     @SuppressWarnings("squid:S1166")
     @Override
     List<ShadedTriangle> collectTriangles(AffineTransform xform, Matrix matrix)
-            throws IOException
+        throws IOException
     {
         int bitsPerFlag = getBitsPerFlag();
         COSDictionary dict = getCOSObject();

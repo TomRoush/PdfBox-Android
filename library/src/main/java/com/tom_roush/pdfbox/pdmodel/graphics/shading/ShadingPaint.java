@@ -27,7 +27,6 @@ import com.tom_roush.pdfbox.util.Matrix;
  */
 public abstract class ShadingPaint<T extends PDShading> implements Paint
 {
-
     protected final T shading;
     protected final Matrix matrix;
 

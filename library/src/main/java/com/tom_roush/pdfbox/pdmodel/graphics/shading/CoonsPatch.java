@@ -46,21 +46,21 @@ class CoonsPatch extends Patch
     {
         PointF[][] fourRows = new PointF[4][4];
         fourRows[2] = new PointF[]
-        {
-            points[0], points[1], points[2], points[3]
-        }; // d1
+            {
+                points[0], points[1], points[2], points[3]
+            }; // d1
         fourRows[1] = new PointF[]
-        {
-            points[3], points[4], points[5], points[6]
-        }; // c2
+            {
+                points[3], points[4], points[5], points[6]
+            }; // c2
         fourRows[3] = new PointF[]
-        {
-            points[9], points[8], points[7], points[6]
-        }; // d2
+            {
+                points[9], points[8], points[7], points[6]
+            }; // d2
         fourRows[0] = new PointF[]
-        {
-            points[0], points[11], points[10], points[9]
-        }; // c1
+            {
+                points[0], points[11], points[10], points[9]
+            }; // c1
         return fourRows;
     }
 
@@ -68,14 +68,14 @@ class CoonsPatch extends Patch
     private int[] calcLevel()
     {
         int[] l =
-        {
-            4, 4
-        };
+            {
+                4, 4
+            };
         // if two opposite edges are both lines, there is a possibility to reduce the dividing level
         if (isEdgeALine(controlPoints[0]) && isEdgeALine(controlPoints[1]))
         {
             double lc1 = getLen(controlPoints[0][0], controlPoints[0][3]),
-                    lc2 = getLen(controlPoints[1][0], controlPoints[1][3]);
+                lc2 = getLen(controlPoints[1][0], controlPoints[1][3]);
             // determine the dividing level by the lengths of edges
             if (lc1 > 800 || lc2 > 800)
             {
@@ -99,7 +99,7 @@ class CoonsPatch extends Patch
         if (isEdgeALine(controlPoints[2]) && isEdgeALine(controlPoints[3]))
         {
             double ld1 = getLen(controlPoints[2][0], controlPoints[2][3]),
-                    ld2 = getLen(controlPoints[3][0], controlPoints[3][3]);
+                ld2 = getLen(controlPoints[3][0], controlPoints[3][3]);
             if (ld1 > 800 || ld2 > 800)
             {
                 // keeps init value 4

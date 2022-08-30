@@ -16,8 +16,8 @@
  */
 package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
-import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.harmony.awt.Paint;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.util.Matrix;
 
 /**

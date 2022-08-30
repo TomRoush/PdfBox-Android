@@ -24,6 +24,7 @@ import android.graphics.RectF;
 
 import java.io.IOException;
 
+import com.tom_roush.harmony.awt.AWTColor;
 import com.tom_roush.harmony.awt.Paint;
 import com.tom_roush.harmony.awt.PaintContext;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
@@ -76,12 +77,9 @@ class SoftMask implements Paint
         {
             try
             {
-                int bgColor = backdropColor.toRGB();
-                float red = Color.red(bgColor) / 255F;
-                float green = Color.green(bgColor) / 255F;
-                float blue = Color.blue(bgColor) / 255F;
+                AWTColor color = new AWTColor(backdropColor.toRGB());
                 // http://stackoverflow.com/a/25463098/535646
-                bc = Math.round(299 * red + 587 * green + 114 * blue) / 1000;
+                bc = (299 * color.getRed() + 587 * color.getGreen() + 114 * color.getBlue()) / 1000;
             }
             catch (IOException ex)
             {
@@ -116,9 +114,7 @@ class SoftMask implements Paint
         public Bitmap getRaster(int x1, int y1, int w, int h)
         {
             int[] pixels = new int[w];
-            // getRaster would return a w*h bitmap
             Bitmap origin = context.getRaster(x1, y1, w, h);
-            // mask size should be greater than w*h
             int maskWidth = mask.getWidth();
             int maskHeight = mask.getHeight();
             int[] pixelsMask = new int[maskWidth];
@@ -131,13 +127,15 @@ class SoftMask implements Paint
                 input = new float[1];
             }
 
+            // buffer
             Bitmap output = Bitmap.createBitmap(w, h, getColorModel());
 
             // the soft mask has its own bbox
             x1 = x1 - (int)bboxDevice.left;
             y1 = y1 - (int)bboxDevice.top;
 
-            int pixelInput = 0;
+            int gray;
+            int pixelInput;
             int[] pixelOutput = new int[4];
             for (int y = 0; y < h; y++)
             {
@@ -145,7 +143,7 @@ class SoftMask implements Paint
                 mask.getPixels(pixelsMask, 0, maskWidth, 0, y1 + y, maskWidth, 1);
                 for (int x = 0; x < w; x++)
                 {
-                    pixelInput = pixels[y * w + x];
+                    pixelInput = pixels[x];
 
                     pixelOutput[0] = Color.red(pixelInput);
                     pixelOutput[1] = Color.green(pixelInput);
@@ -153,10 +151,11 @@ class SoftMask implements Paint
                     pixelOutput[3] = Color.alpha(pixelInput);
 
                     // get the alpha value from the gray mask, if within mask bounds
+                    gray = 0;
                     if (x1 + x >= 0 && y1 + y >= 0 && x1 + x < maskWidth && y1 + y < maskHeight)
                     {
-                        int maskColor = pixelsMask[(y1 + y) * maskWidth + x1 + x];
-                        int g = Color.red(maskColor);
+                        gray = pixelsMask[x1 + x];
+                        int g = Color.red(gray);
                         if (transferFunction != null)
                         {
                             // apply transfer function
@@ -191,13 +190,11 @@ class SoftMask implements Paint
                     {
                         pixelOutput[3] = Math.round(pixelOutput[3] * (bc / 255f));
                     }
-                    pixels[y * w + x] = Color.argb(pixelOutput[3], pixelOutput[0], pixelOutput[1],
-                        pixelOutput[2]);
+                    pixels[x] = Color.argb(pixelOutput[3], pixelOutput[0], pixelOutput[1], pixelOutput[2]);
                 }
                 output.setPixels(pixels, 0, w, 0, y, w, 1);
             }
 
-            // buffer
             origin.recycle();
             return output;
         }
@@ -206,6 +203,7 @@ class SoftMask implements Paint
         public void dispose()
         {
             mask.recycle();
+            context.dispose();
         }
     }
 }
