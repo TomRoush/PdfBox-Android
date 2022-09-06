@@ -9,6 +9,7 @@ android {
         targetSdkVersion Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
         versionName project.VERSION_NAME
         versionCode Integer.parseInt(project.VERSION_CODE)
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -31,7 +32,8 @@ android {
 dependencies {
     implementation project(':library')
 //    implementation "com.tom-roush:pdfbox-android:${project.VERSION_NAME}"
-    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation "androidx.multidex:multidex:2.0.1"
+    implementation 'androidx.appcompat:appcompat:1.5.0'
 
     // Optional dependencies
 
