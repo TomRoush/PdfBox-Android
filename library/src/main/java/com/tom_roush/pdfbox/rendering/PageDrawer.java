@@ -277,12 +277,14 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     // returns an integer for color that Android understands from the PDColor
     // TODO: alpha?
     private int getColor(PDColor color) throws IOException {
+        double alphaConstant = this.getGraphicsState().getAlphaConstant();
         PDColorSpace colorSpace = color.getColorSpace();
         float[] floats = colorSpace.toRGB(color.getComponents());
+        int alpha = Long.valueOf(Math.round(alphaConstant * 255.0)).intValue();
         int r = Math.round(floats[0] * 255);
         int g = Math.round(floats[1] * 255);
         int b = Math.round(floats[2] * 255);
-        return Color.rgb(r, g, b);
+        return Color.argb(alpha, r, g, b);
     }
 
     /**
