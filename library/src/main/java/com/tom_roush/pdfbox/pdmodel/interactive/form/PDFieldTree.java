@@ -16,11 +16,18 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
+import android.util.Log;
+
 import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.Set;
+
+import com.tom_roush.pdfbox.cos.COSDictionary;
 
 /**
  * The field tree.
@@ -59,6 +66,11 @@ public class PDFieldTree implements Iterable<PDField>
     {
         private final Queue<PDField> queue = new ArrayDeque<PDField>();
 
+        // PDFBOX-5044: to prevent recursion
+        // must be COSDictionary and not PDField, because PDField is newly created each time
+        private final Set<COSDictionary> set =
+            Collections.newSetFromMap(new IdentityHashMap<COSDictionary, Boolean>());
+
         private FieldIterator(PDAcroForm form)
         {
             List<PDField> fields = form.getFields();
@@ -77,7 +89,7 @@ public class PDFieldTree implements Iterable<PDField>
         @Override
         public PDField next()
         {
-            if (!hasNext())
+            if(!hasNext())
             {
                 throw new NoSuchElementException();
             }
@@ -94,12 +106,21 @@ public class PDFieldTree implements Iterable<PDField>
         private void enqueueKids(PDField node)
         {
             queue.add(node);
+            set.add(node.getCOSObject());
             if (node instanceof PDNonTerminalField)
             {
-                List<PDField> kids = ((PDNonTerminalField)node).getChildren();
+                List<PDField> kids = ((PDNonTerminalField) node).getChildren();
                 for (PDField kid : kids)
                 {
-                    enqueueKids(kid);
+                    if (set.contains(kid.getCOSObject()))
+                    {
+                        Log.e("PdfBox-Android", "Child of field '" + node.getFullyQualifiedName() +
+                            "' already exists elsewhere, ignored to avoid recursion");
+                    }
+                    else
+                    {
+                        enqueueKids(kid);
+                    }
                 }
             }
         }

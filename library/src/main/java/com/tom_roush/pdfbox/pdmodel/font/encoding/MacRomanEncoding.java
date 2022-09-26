@@ -26,10 +26,6 @@ import com.tom_roush.pdfbox.cos.COSName;
  */
 public class MacRomanEncoding extends Encoding
 {
-
-    private static final int CHAR_CODE = 0;
-    private static final int CHAR_NAME = 1;
-
     /**
      * Table of octal character codes and their corresponding names.
      */
@@ -242,7 +238,7 @@ public class MacRomanEncoding extends Encoding
         {0172, "z"},
         {060, "zero"},
         // adding an additional mapping as defined in Appendix D of the pdf spec
-        {0312, "space"}
+        {0312, "nbspace"}
     };
 
     /**

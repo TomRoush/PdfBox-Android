@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+
 import com.tom_roush.pdfbox.filter.Filter;
 import com.tom_roush.pdfbox.io.RandomAccess;
 import com.tom_roush.pdfbox.io.RandomAccessInputStream;
@@ -110,6 +111,10 @@ public final class COSOutputStream extends FilterOutputStream
     @Override
     public void flush() throws IOException
     {
+        if (buffer == null)
+        {
+            super.flush();
+        }
     }
 
     @Override

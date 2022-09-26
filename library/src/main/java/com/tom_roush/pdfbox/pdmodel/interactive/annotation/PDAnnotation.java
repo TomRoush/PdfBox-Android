@@ -80,6 +80,11 @@ public abstract class PDAnnotation implements COSObjectable
      * An annotation flag.
      */
     private static final int FLAG_TOGGLE_NO_VIEW = 1 << 8;
+    /**
+     * An annotation flag.
+     * @see #setLockedContents(boolean)
+     */
+    private static final int FLAG_LOCKED_CONTENTS = 1 << 9;
 
     private final COSDictionary dictionary;
 
@@ -181,8 +186,45 @@ public abstract class PDAnnotation implements COSObjectable
     public PDAnnotation(COSDictionary dict)
     {
         dictionary = dict;
-        dictionary.setItem(COSName.TYPE, COSName.ANNOT);
+        COSBase type = dict.getDictionaryObject(COSName.TYPE);
+        if (type == null)
+        {
+            dictionary.setItem(COSName.TYPE, COSName.ANNOT);
+        }
+        else if (!COSName.ANNOT.equals(type))
+        {
+            Log.w("PdfBox-Android", "Annotation has type " + type + ", further mayhem may follow");
+        }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean equals (Object o) {
+        if (o == this)
+        {
+            return true;
+        }
+
+        if (!(o instanceof PDAnnotation))
+        {
+            return false;
+        }
+
+        COSDictionary toBeCompared = ((PDAnnotation) o).getCOSObject();
+        return toBeCompared.equals(getCOSObject());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int hashCode()
+    {
+        return dictionary.hashCode();
+    }
+
 
     /**
      * The annotation rectangle, defining the location of the annotation on the page in default user space units. This
@@ -507,6 +549,35 @@ public abstract class PDAnnotation implements COSObjectable
     }
 
     /**
+     * Get the LockedContents flag.
+     *
+     * @return The LockedContents flag.
+     * @see #setLockedContents(boolean)
+     */
+    public boolean isLockedContents()
+    {
+        return getCOSObject().getFlag(COSName.F, FLAG_LOCKED_CONTENTS);
+    }
+
+    /**
+     * Set the LockedContents flag. If set, do not allow the contents of the annotation to be
+     * modified by the user. This flag does not restrict deletion of the annotation or changes to
+     * other annotation properties, such as position and size.
+     *
+     * @param lockedContents The new LockedContents flag value.
+     * @see
+     * <a href="https://www.adobe.com/content/dam/acom/en/devnet/acrobat/pdfs/PDF32000_2008.pdf#page=393">PDF
+     * 32000-1:2008 12.5.3, Table 165</a>
+     * @see #isLockedContents()
+     * @see #FLAG_LOCKED_CONTENTS
+     * @since PDF 1.7
+     */
+    public void setLockedContents(boolean lockedContents)
+    {
+        getCOSObject().setFlag(COSName.F, FLAG_LOCKED_CONTENTS, lockedContents);
+    }
+
+    /**
      * Get the "contents" of the field.
      *
      * @return the value of the contents.
@@ -529,7 +600,7 @@ public abstract class PDAnnotation implements COSObjectable
     /**
      * This will retrieve the date and time the annotation was modified.
      *
-     * @return the modified date/time (often in date format, but can be an arbitary string).
+     * @return the modified date/time (often in date format, but can be an arbitrary string).
      */
     public String getModifiedDate()
     {
@@ -631,11 +702,12 @@ public abstract class PDAnnotation implements COSObjectable
     }
 
     /**
-     * This will retrieve the border array. If none is available then it will return the default,
-     * which is [0 0 1]. The array consists of at least three numbers defining the horizontal corner
-     * radius, vertical corner radius, and border width. The array may have a fourth element, an
-     * optional dash array defining a pattern of dashes and gaps that shall be used in drawing the
-     * border. If the array has less than three elements, it will be filled with 0.
+     * This will retrieve the border array. If none is available then it will create and return a
+     * default array, which is [0 0 1]. The array consists of at least three numbers defining the
+     * horizontal corner radius, vertical corner radius, and border width. The array may have a
+     * fourth element, an optional dash array defining a pattern of dashes and gaps that shall be
+     * used in drawing the border. If the array has less than three elements, the original array
+     * will be copied and missing elements with value 0 will be added.
      *
      * @return the border array, never null.
      */
@@ -755,9 +827,11 @@ public abstract class PDAnnotation implements COSObjectable
     }
 
     /**
-     * This will retrieve the corresponding page of this annotation.
+     * This will retrieve the corresponding page of this annotation. See also
+     * <a href="https://stackoverflow.com/a/36894982/535646">this answer</a> about what to do if
+     * the page isn't available.
      *
-     * @return the corresponding page
+     * @return The corresponding page or null if not available.
      */
     public PDPage getPage()
     {

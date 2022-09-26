@@ -18,6 +18,7 @@ package com.tom_roush.pdfbox.text;
 
 import android.util.Log;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -47,7 +48,7 @@ import com.tom_roush.pdfbox.pdmodel.PDPageTree;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem;
 import com.tom_roush.pdfbox.pdmodel.interactive.pagenavigation.PDThreadBead;
-import com.tom_roush.pdfbox.util.QuickSort;
+import com.tom_roush.pdfbox.util.IterativeMergeSort;
 
 /**
  * This class will take a pdf document and strip out all of the text and ignore the formatting and such. Please note; it
@@ -63,7 +64,6 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
 {
     private static float defaultIndentThreshold = 2.0f;
     private static float defaultDropThreshold = 2.5f;
-    private static final boolean useCustomQuickSort;
 
     // enable the ability to set the default indent/drop thresholds
     // with -D system properties:
@@ -107,36 +107,6 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
                 // ignore and use default
             }
         }
-    }
-
-    static
-    {
-        // check if we need to use the custom quicksort algorithm as a
-        // workaround to the PDFBOX-1512 transitivity issue of TextPositionComparator:
-        boolean is16orLess = false;
-        try
-        {
-            String version = System.getProperty("java.specification.version");
-            StringTokenizer st = new StringTokenizer(version, ".");
-            int majorVersion = Integer.parseInt(st.nextToken());
-            int minorVersion = 0;
-            if (st.hasMoreTokens())
-            {
-                minorVersion = Integer.parseInt(st.nextToken());
-            }
-            is16orLess = majorVersion == 1 && minorVersion <= 6;
-        }
-        catch (SecurityException x)
-        {
-            // when run in an applet ignore and use default
-            // assume 1.7 or higher so that quicksort is used
-        }
-        catch (NumberFormatException nfe)
-        {
-            // should never happen, but if it does,
-            // assume 1.7 or higher so that quicksort is used
-        }
-        useCustomQuickSort = !is16orLess;
     }
 
     /**
@@ -216,6 +186,11 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
      * This will return the text of a document. See writeText. <br>
      * NOTE: The document must not be encrypted when coming into this method.
      *
+     * <p>IMPORTANT: By default, text extraction is done in the same sequence as the text in the PDF page content stream.
+     * PDF is a graphic format, not a text format, and unlike HTML, it has no requirements that text one on page
+     * be rendered in a certain order. The order is the one that was determined by the software that created the
+     * PDF. To get text sorted from left to right and top to botton, use {@link #setSortByPosition(boolean)}.
+     *
      * @param doc The document to get the text from.
      * @return The text of the PDF document.
      * @throws IOException if the doc state is invalid or it is encrypted.
@@ -235,10 +210,7 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
         {
             charactersByArticle.clear();
         }
-        if (characterListMapping != null)
-        {
-            characterListMapping.clear();
-        }
+        characterListMapping.clear();
     }
 
     /**
@@ -398,7 +370,7 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
         beadRectangles = new ArrayList<PDRectangle>();
         for (PDThreadBead bead : page.getThreadBeads())
         {
-            if (bead == null)
+            if (bead == null || bead.getRectangle() == null)
             {
                 // can't skip, because of null entry handling in processTextPosition()
                 beadRectangles.add(null);
@@ -527,14 +499,14 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
 
                 // because the TextPositionComparator is not transitive, but
                 // JDK7+ enforces transitivity on comparators, we need to use
-                // a custom quicksort implementation (which is slower, unfortunately).
-                if (useCustomQuickSort)
-                {
-                    QuickSort.sort(textList, comparator);
-                }
-                else
+                // a custom mergesort implementation (which is slower, unfortunately).
+                try
                 {
                     Collections.sort(textList, comparator);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    IterativeMergeSort.sort(textList, comparator);
                 }
             }
 
@@ -670,12 +642,24 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
                     }
                     // test if our TextPosition starts after a new word would be expected to start
                     if (expectedStartOfNextWordX != EXPECTED_START_OF_NEXT_WORD_X_RESET_VALUE
-                        && expectedStartOfNextWordX < positionX &&
-                        // only bother adding a space if the last character was not a space
-                        lastPosition.getTextPosition().getUnicode() != null
-                        && !lastPosition.getTextPosition().getUnicode().endsWith(" "))
+                        && expectedStartOfNextWordX < positionX
+                        // only bother adding a word separator if the last character was not a word separator
+                        && (wordSeparator.isEmpty() || //
+                        (lastPosition.getTextPosition().getUnicode() != null
+                            && !lastPosition.getTextPosition().getUnicode()
+                            .endsWith(wordSeparator))))
                     {
                         line.add(LineItem.getWordSeparator());
+                    }
+                    // if there is at least the equivalent of one space
+                    // between the last character and the current one,
+                    // reset the max line height as the font size may have completely changed
+                    if (Math.abs(position.getX()
+                        - lastPosition.getTextPosition().getX()) > (wordSpacing + deltaSpace))
+                    {
+                        maxYForLine = MAX_Y_FOR_LINE_RESET_VALUE;
+                        maxHeightForLine = MAX_HEIGHT_FOR_LINE_RESET_VALUE;
+                        minYTopForLine = MIN_Y_TOP_FOR_LINE_RESET_VALUE;
                     }
                 }
                 if (positionY >= maxYForLine)
@@ -923,7 +907,7 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
 
             // In the wild, some PDF encoded documents put diacritics (accents on
             // top of characters) into a separate Tj element. When displaying them
-            // graphically, the two chunks get overlayed. With text output though,
+            // graphically, the two chunks get overlaid. With text output though,
             // we need to do the overlay. This code recombines the diacritic with
             // its associated character if the two are consecutive.
             if (textList.isEmpty())
@@ -1844,21 +1828,14 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
         {
             if (PDFBoxResourceLoader.isReady())
             {
-                input = PDFBoxResourceLoader.getStream(path);
+                input = new BufferedInputStream(PDFBoxResourceLoader.getStream(path));
             }
             else
             {
-                input = PDFTextStripper.class.getResourceAsStream("/" + path);
+                input = new BufferedInputStream(PDFTextStripper.class.getResourceAsStream("/" + path));
             }
 
-            if (input != null)
-            {
-                parseBidiFile(input);
-            }
-            else
-            {
-                Log.w("PdfBox-Android", "Could not find '" + path + "', mirroring char map will be empty: ");
-            }
+            parseBidiFile(input);
         }
         catch (IOException e)
         {
@@ -1959,7 +1936,7 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
                 {
                     builder = new StringBuilder(strLength * 2);
                 }
-                builder.append(word.substring(p, q));
+                builder.append(word, p, q);
                 // Some fonts map U+FDF2 differently than the Unicode spec.
                 // They add an extra U+0627 character to compensate.
                 // This removes the extra character for those fonts.
@@ -1983,7 +1960,7 @@ public class PDFTextStripper extends LegacyPDFStreamEngine
         }
         else
         {
-            builder.append(word.substring(p, q));
+            builder.append(word, p, q);
             return handleDirection(builder.toString());
         }
     }

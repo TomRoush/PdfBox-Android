@@ -173,9 +173,19 @@ public class GlyphSubstitutionTable extends TTFTable
             {
                 // catch corrupt file
                 // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#flTbl
-                Log.e("PdfBox-Android", "FeatureRecord array not alphabetically sorted by FeatureTag: " +
-                    featureRecord.featureTag + " < " + prevFeatureTag);
-                return new FeatureRecord[0];
+                if (featureRecord.featureTag.matches("\\w{4}") && prevFeatureTag.matches("\\w{4}"))
+                {
+                    // ArialUni.ttf has many warnings but isn't corrupt, so we assume that only
+                    // strings with trash characters indicate real corruption
+                    Log.d("PdfBox-Android", "FeatureRecord array not alphabetically sorted by FeatureTag: " +
+                        featureRecord.featureTag + " < " + prevFeatureTag);
+                }
+                else
+                {
+                    Log.w("PdfBox-Android", "FeatureRecord array not alphabetically sorted by FeatureTag: " +
+                        featureRecord.featureTag + " < " + prevFeatureTag);
+                    return new FeatureRecord[0];
+                }
             }
             featureOffsets[i] = data.readUnsignedShort();
             featureRecords[i] = featureRecord;
@@ -392,7 +402,7 @@ public class GlyphSubstitutionTable extends TTFTable
      *
      * @param langSysTables The {@code LangSysTable}s indicating {@code FeatureRecord}s to search
      * for
-     * @param enabledFeatures An optional whitelist of feature tags ({@code null} to allow all)
+     * @param enabledFeatures An optional list of feature tags ({@code null} to allow all)
      * @return The indicated {@code FeatureRecord}s
      */
     private List<FeatureRecord> getFeatureRecords(Collection<LangSysTable> langSysTables,
@@ -406,14 +416,15 @@ public class GlyphSubstitutionTable extends TTFTable
         for (LangSysTable langSysTable : langSysTables)
         {
             int required = langSysTable.requiredFeatureIndex;
-            if (required != 0xffff) // if no required features = 0xFFFF
+            if (required != 0xffff && required < featureList.length) // if no required features = 0xFFFF
             {
                 result.add(featureList[required]);
             }
             for (int featureIndex : langSysTable.featureIndices)
             {
-                if (enabledFeatures == null
-                    || enabledFeatures.contains(featureList[featureIndex].featureTag))
+                if (featureIndex < featureList.length &&
+                    (enabledFeatures == null ||
+                        enabledFeatures.contains(featureList[featureIndex].featureTag)))
                 {
                     result.add(featureList[featureIndex]);
                 }
@@ -499,8 +510,8 @@ public class GlyphSubstitutionTable extends TTFTable
 
     /**
      * Apply glyph substitutions to the supplied gid. The applicable substitutions are determined by
-     * the {@code scriptTags} which indicate the language of the gid, and by the
-     * {@code enabledFeatures} which acts as a whitelist.
+     * the {@code scriptTags} which indicate the language of the gid, and by the list of
+     * {@code enabledFeatures}.
      *
      * To ensure that a single gid isn't mapped to multiple substitutions, subsequent invocations
      * with the same gid will return the same result as the first, regardless of script or enabled
@@ -508,7 +519,7 @@ public class GlyphSubstitutionTable extends TTFTable
      *
      * @param gid GID
      * @param scriptTags Script tags applicable to the gid (see {@link OpenTypeScript})
-     * @param enabledFeatures Whitelist of features to apply
+     * @param enabledFeatures list of features to apply
      */
     public int getSubstitution(int gid, String[] scriptTags, List<String> enabledFeatures)
     {

@@ -16,6 +16,7 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.form;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,8 @@ import java.util.List;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
+import com.tom_roush.pdfbox.util.Charsets;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +35,7 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * Test for the PDSignatureField class.
+ *
  */
 public class PDSignatureFieldTest
 {
@@ -52,11 +56,10 @@ public class PDSignatureFieldTest
         sigField.setPartialName("SignatureField");
 
         assertEquals(sigField.getFieldType(), sigField.getCOSObject().getNameAsString(COSName.FT));
-        assertEquals(sigField.getFieldType(), "Sig");
+        assertEquals("Sig", sigField.getFieldType());
 
         assertEquals(COSName.ANNOT, sigField.getCOSObject().getItem(COSName.TYPE));
-        assertEquals(PDAnnotationWidget.SUB_TYPE,
-            sigField.getCOSObject().getNameAsString(COSName.SUBTYPE));
+        assertEquals(PDAnnotationWidget.SUB_TYPE, sigField.getCOSObject().getNameAsString(COSName.SUBTYPE));
 
         // Add the field to the acroform
         List<PDField> fields = new ArrayList<PDField>();
@@ -66,12 +69,28 @@ public class PDSignatureFieldTest
         assertNotNull(acroForm.getField("SignatureField"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected=UnsupportedOperationException.class)
     public void setValueForAbstractedSignatureField() throws IOException
     {
         PDSignatureField sigField = new PDSignatureField(acroForm);
         sigField.setPartialName("SignatureField");
 
-        ((PDField)sigField).setValue("Can't set value using String");
+        ((PDField) sigField).setValue("Can't set value using String");
+    }
+
+    /**
+     * PDFBOX-4822: test get the signature contents.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testGetContents() throws IOException
+    {
+        // Normally, range0 + range1 = position of "<", and range2 = position after ">"
+        PDSignature signature = new PDSignature();
+        signature.setByteRange(new int[]{ 0, 10, 30, 10});
+        byte[] by = "AAAAAAAAAA<313233343536373839>BBBBBBBBBB".getBytes(Charsets.ISO_8859_1);
+        assertEquals("123456789", new String(signature.getContents(by)));
+        assertEquals("123456789", new String(signature.getContents(new ByteArrayInputStream(by))));
     }
 }

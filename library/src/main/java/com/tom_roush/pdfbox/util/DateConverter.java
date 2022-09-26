@@ -142,7 +142,7 @@ public final class DateConverter
             // "yyyymmdd hh:mm:ss", 
             // "yyyymmdd", 
             // "yyyymmddX''00''",  // covers 24 cases 
-            //    (orignally the above ended with '+00''00'''; 
+            //    (originally the above ended with '+00''00'''; 
             //      the first apostrophe quoted the plus, 
             //      '' mapped to a single ', and the ''' was invalid)
         };
@@ -343,8 +343,9 @@ public final class DateConverter
      */
     private static char skipOptionals(String text, ParsePosition where, String optionals)
     {
-        char retval = ' ', currch;
-        while (text != null && where.getIndex() < text.length() &&
+        char retval = ' ';
+        char currch;
+        while (where.getIndex() < text.length() &&
             optionals.indexOf((currch = text.charAt(where.getIndex()))) >= 0)
         {
             retval = (currch != ' ') ? currch : retval;
@@ -441,8 +442,8 @@ public final class DateConverter
         {
             // we parsed a time zone in default format
             int hrSign = (sign == '-' ? -1 : 1);
-            tz.setRawOffset(restrainTZoffset(hrSign * (tzHours * MILLIS_PER_HOUR + tzMin *
-                (long) MILLIS_PER_MINUTE)));
+            tz.setRawOffset(restrainTZoffset(hrSign * (tzHours * (long) MILLIS_PER_HOUR +
+                tzMin * (long) MILLIS_PER_MINUTE)));
             updateZoneId(tz);
         }
         else if ( ! hadGMT)
@@ -540,7 +541,7 @@ public final class DateConverter
         char nextC = skipOptionals(text, where, ".");
         if (nextC == '.')
         {
-            // fractions of a second: skip upto 19 digits
+            // fractions of a second: skip up to 19 digits
             parseTimeField(text, where, 19, 0);
         }
 
@@ -614,7 +615,7 @@ public final class DateConverter
      */
     private static Calendar parseDate(String text, ParsePosition initialWhere)
     {
-        if (text == null || text.isEmpty())
+        if (text == null || text.isEmpty() || "D:".equals(text.trim()))
         {
             return null;
         }

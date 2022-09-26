@@ -103,7 +103,9 @@ public class PDNumberTreeNode implements COSObjectable
     /**
      * Set the children of this number tree.
      *
-     * @param kids The children of this number tree.
+     * @param kids The children of this number tree. These have to be in sorted order. Because of
+     * that, it is usually easier to call {@link #setNumbers(Map)} with a map and pass a single
+     * element list here.
      */
     public void setKids( List<? extends PDNumberTreeNode> kids )
     {
@@ -161,7 +163,6 @@ public class PDNumberTreeNode implements COSObjectable
         return retval;
     }
 
-
     /**
      * This will return a map of numbers.  The key will be a java.lang.Integer, the value will
      * depend on where this class is being used.
@@ -178,7 +179,11 @@ public class PDNumberTreeNode implements COSObjectable
         {
             COSArray numbersArray = (COSArray) numBase;
             indices = new HashMap<Integer, COSObjectable>();
-            for (int i = 0; i < numbersArray.size(); i += 2)
+            if (numbersArray.size() % 2 != 0)
+            {
+                Log.w("PdfBox-Android", "Numbers array has odd size: " + numbersArray.size());
+            }
+            for (int i = 0; i + 1 < numbersArray.size(); i += 2)
             {
                 COSBase base = numbersArray.getObject(i);
                 if (!(base instanceof COSInteger))
@@ -230,7 +235,7 @@ public class PDNumberTreeNode implements COSObjectable
 
     /**
      * Set the numbers for this node. This method will set the appropriate upper and lower limits
-     * based on the keys in the map.
+     * based on the keys in the map and take care of the ordering.
      *
      * @param numbers The map of numbers to objects, or <code>null</code> for nothing.
      */
@@ -274,7 +279,7 @@ public class PDNumberTreeNode implements COSObjectable
     {
         Integer retval = null;
         COSArray arr = (COSArray)node.getDictionaryObject( COSName.LIMITS );
-        if( arr != null && arr.get(0) != null )
+        if( arr != null && arr.get(1) != null )
         {
             retval = arr.getInt( 1 );
         }

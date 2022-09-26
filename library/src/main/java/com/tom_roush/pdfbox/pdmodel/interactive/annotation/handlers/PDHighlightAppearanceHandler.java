@@ -63,18 +63,22 @@ public class PDHighlightAppearanceHandler extends PDAbstractAppearanceHandler
    public void generateNormalAppearance()
    {
       PDAnnotationTextMarkup annotation = (PDAnnotationTextMarkup) getAnnotation();
-      PDRectangle rect = annotation.getRectangle();
       float[] pathsArray = annotation.getQuadPoints();
       if (pathsArray == null)
       {
          return;
       }
-      AnnotationBorder ab = AnnotationBorder.getAnnotationBorder(annotation, annotation.getBorderStyle());
       PDColor color = annotation.getColor();
       if (color == null || color.getComponents().length == 0)
       {
          return;
       }
+      PDRectangle rect = annotation.getRectangle();
+      if (rect == null)
+      {
+         return;
+      }
+      AnnotationBorder ab = AnnotationBorder.getAnnotationBorder(annotation, annotation.getBorderStyle());
 
       // Adjust rectangle even if not empty, see PLPDF.com-MarkupAnnotations.pdf
       //TODO in a class structure this should be overridable
@@ -128,8 +132,6 @@ public class PDHighlightAppearanceHandler extends PDAbstractAppearanceHandler
          r1.setBlendMode(BlendMode.MULTIPLY);
          cs.setGraphicsStateParameters(r0);
          cs.setGraphicsStateParameters(r1);
-         //TODO replace with document.getDocument().createCOSStream()
-         //     or call new PDFormXObject(document)
          PDFormXObject frm1 = new PDFormXObject(createCOSStream());
          PDFormXObject frm2 = new PDFormXObject(createCOSStream());
          frm1.setResources(new PDResources());

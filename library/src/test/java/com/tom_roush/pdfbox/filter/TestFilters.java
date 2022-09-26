@@ -100,7 +100,7 @@ public class TestFilters
                     // Skip filters that don't currently support roundtripping
                     if( filter instanceof DCTFilter ||
                         filter instanceof CCITTFaxFilter ||
-//                        filter instanceof JPXFilter ||
+                        filter instanceof JPXFilter ||
 //                        filter instanceof JBIG2Filter || TODO: PdfBox-Android
                         filter instanceof RunLengthDecodeFilter )
                     {
@@ -137,17 +137,17 @@ public class TestFilters
     }
 
     /**
-     * This will test the LZW filter with the sequence that failed in PDFBOX-1777.
+     * This will test the LZW filter with the sequence that failed in PDFBOX-1977.
      * To check that the test itself is legit, revert LZWFilter.java to rev 1571801,
      * which should fail this test.
      *
      * @throws IOException
      */
     @Test
-    public void testPDFBOX1777() throws IOException
+    public void testPDFBOX1977() throws IOException
     {
         Filter lzwFilter = FilterFactory.INSTANCE.getFilter(COSName.LZW_DECODE);
-        byte[] byteArray = IOUtils.toByteArray(this.getClass().getResourceAsStream("/pdfbox/com/tom_roush/pdfbox/filter/PDFBOX-1777.bin"));
+        byte[] byteArray = IOUtils.toByteArray(this.getClass().getResourceAsStream("/pdfbox/com/tom_roush/pdfbox/filter/PDFBOX-1977.bin"));
         checkEncodeDecode(lzwFilter, byteArray);
     }
 

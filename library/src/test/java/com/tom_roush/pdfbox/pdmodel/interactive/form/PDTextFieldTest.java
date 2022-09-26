@@ -19,15 +19,16 @@ package com.tom_roush.pdfbox.pdmodel.interactive.form;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
-
 import org.junit.Before;
 import org.junit.Test;
+
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 /**
  * Test for the PDSignatureField class.
+ *
  */
 public class PDTextFieldTest
 {
@@ -46,9 +47,8 @@ public class PDTextFieldTest
     {
         PDField textField = new PDTextField(acroForm);
 
-        assertEquals(textField.getFieldType(),
-            textField.getCOSObject().getNameAsString(COSName.FT));
-        assertEquals(textField.getFieldType(), "Tx");
+        assertEquals(textField.getFieldType(), textField.getCOSObject().getNameAsString(COSName.FT));
+        assertEquals("Tx", textField.getFieldType());
     }
 
     @Test
@@ -62,9 +62,9 @@ public class PDTextFieldTest
         PDAnnotationWidget widget = textField.getWidgets().get(0);
 
         assertEquals(COSName.ANNOT, textField.getCOSObject().getItem(COSName.TYPE));
-        assertEquals(PDAnnotationWidget.SUB_TYPE,
-            textField.getCOSObject().getNameAsString(COSName.SUBTYPE));
+        assertEquals(PDAnnotationWidget.SUB_TYPE, textField.getCOSObject().getNameAsString(COSName.SUBTYPE));
 
         assertEquals(widget.getCOSObject(), textField.getCOSObject());
     }
+
 }

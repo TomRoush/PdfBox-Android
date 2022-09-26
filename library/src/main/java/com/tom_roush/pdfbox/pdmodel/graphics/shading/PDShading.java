@@ -16,8 +16,11 @@
  */
 package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
+import android.graphics.RectF;
+
 import java.io.IOException;
 
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -26,6 +29,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.function.PDFunction;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.util.Matrix;
 
 /**
  * A Shading Resource.
@@ -192,6 +196,19 @@ public abstract class PDShading implements COSObjectable
         {
             dictionary.setItem(COSName.BBOX, bBox.getCOSArray());
         }
+    }
+
+    /**
+     * Calculate a bounding rectangle around the areas of this shading context.
+     *
+     * @param xform
+     * @param matrix
+     * @return Bounding rectangle or null, if not supported by this shading type.
+     * @throws java.io.IOException
+     */
+    public RectF getBounds(AffineTransform xform, Matrix matrix) throws IOException
+    {
+        return null;
     }
 
     /**
@@ -403,7 +420,7 @@ public abstract class PDShading implements COSObjectable
             }
         }
         // From the PDF spec:
-        // "If the value returned by the function for a given colour component 
+        // "If the value returned by the function for a given colour component
         // is out of range, it shall be adjusted to the nearest valid value."
         for (int i = 0; i < returnValues.length; ++i)
         {
@@ -419,12 +436,5 @@ public abstract class PDShading implements COSObjectable
         return returnValues;
     }
 
-    /**
-     * Returns an AWT paint which corresponds to this shading
-     *
-     * @param matrix the pattern matrix concatenated with that of the parent content stream,
-     *               this matrix which maps the pattern's internal coordinate system to user space
-     * @return an AWT Paint instance
-     */
 //    public abstract Paint toPaint(Matrix matrix); TODO: PdfBox-Android
 }

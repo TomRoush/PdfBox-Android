@@ -26,7 +26,9 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
@@ -34,8 +36,8 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
-import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -207,6 +209,70 @@ public class PDInlineImageTest
         document = PDDocument.load(pdfFile, (String) null);
         new PDFRenderer(document).renderImage(0);
         document.close();
+    }
+
+    // 3 Tests for PDFBOX-5360 with very small images (the last one based on a comment
+    // by Oliver Schmidtmer at the end of PDFBOX-5340). All images are fully black bars.
+
+    @Test
+    public void testShortCCITT1() throws IOException
+    {
+        byte ba[] = new byte [] { 8, 0x10, 0x20, 0x40, (byte) 0x81, 2, 4, 8, 0x10, 0, 0x40, 4, 0, 0x40, 4, 0, 0x40, 4 };
+        doInlineCcittImage(23, 10, ba);
+    }
+
+    @Test
+    public void testShortCCITT2() throws IOException
+    {
+        byte ba[] = new byte [] { 8, 0x10, 0x20, 0x40, (byte) 0x81, 2, 0, 8, 0, (byte) 0x80, 8, 8, (byte) 0x80, 8, 0, (byte) 0x80};
+        doInlineCcittImage(23, 7, ba);
+    }
+
+    @Test
+    public void testShortCCITT3() throws IOException
+    {
+        byte ba[] = new byte [] { 103, 44, 103, 44, 103, 44, 103, 44, 0, 16, 1, 0, 16, 1, 0, 16, 1, 10};
+        doInlineCcittImage(683, 4, ba);
+    }
+
+    private void doInlineCcittImage(int width, int height, byte[] ba) throws IOException
+    {
+        COSDictionary dict = new COSDictionary();
+        dict.setInt(COSName.W, width);
+        dict.setInt(COSName.H, height);
+        dict.setInt(COSName.BPC, 1);
+        COSArray array = new COSArray();
+        array.add(COSInteger.ONE);
+        array.add(COSInteger.ZERO);
+        dict.setItem(COSName.D, array);
+        dict.setBoolean(COSName.IM, true);
+        dict.setItem(COSName.F, COSName.CCITTFAX_DECODE_ABBREVIATION);
+        COSDictionary dict2 = new COSDictionary();
+        dict2.setInt(COSName.COLUMNS, dict.getInt(COSName.W));
+        dict.setItem(COSName.DP, dict2);
+        PDInlineImage inlineImage = new PDInlineImage(dict, ba, null);
+        assertEquals(true, inlineImage.isStencil());
+        assertEquals(false, inlineImage.isEmpty());
+        assertEquals(false, inlineImage.getInterpolate());
+        assertEquals(dict, inlineImage.getCOSObject());
+        assertEquals(PDDeviceGray.INSTANCE, inlineImage.getColorSpace());
+        assertEquals(1, inlineImage.getBitsPerComponent());
+        assertEquals("tiff", inlineImage.getSuffix());
+        Bitmap bim = inlineImage.getImage();
+        assertEquals(width, bim.getWidth());
+        assertEquals(height, bim.getHeight());
+        assertEquals(inlineImage.getWidth(), bim.getWidth());
+        assertEquals(inlineImage.getHeight(), bim.getHeight());
+        assertEquals(Bitmap.Config.ARGB_8888, bim.getConfig());
+        ByteBuffer dbb = ByteBuffer.allocate(bim.getRowBytes() * height);
+        bim.copyPixelsToBuffer(dbb);
+        byte[] data = dbb.array();
+        assertEquals(bim.getWidth() * bim.getHeight(), data.length / 4);
+        for (int i = 0; i < data.length; ++i)
+        {
+            // Should be all 0, but this is represented by 4 bytes, not 1
+            assertEquals((i - 3) % 4 == 0 ? -1 : 0, data[i]);
+        }
     }
 }
 

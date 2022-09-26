@@ -115,7 +115,7 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
     /**
      * This will add all objects to this array.
      *
-     * @param objectList The objects to add.
+     * @param objectList The list of objects to add.
      */
     public void addAll( COSArray objectList )
     {
@@ -185,7 +185,7 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
      */
     public COSBase getObject( int index )
     {
-        Object obj = objects.get( index );
+        COSBase obj = objects.get( index );
         if( obj instanceof COSObject )
         {
             obj = ((COSObject)obj).getObject();
@@ -194,7 +194,7 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
         {
             obj = null;
         }
-        return (COSBase)obj;
+        return obj;
     }
 
     /**
@@ -433,17 +433,24 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
      * @param object The object to search for.
      * @return The index of the object or -1.
      */
-    public int indexOf( COSBase object )
+    public int indexOf(COSBase object)
     {
-        int retval = -1;
-        for( int i=0; retval < 0 && i<size(); i++ )
+        for (int i = 0; i < size(); i++)
         {
-            if( get( i ).equals( object ) )
+            COSBase item = get(i);
+            if (item == null)
             {
-                retval = i;
+                if (object == null)
+                {
+                    return i;
+                }
+            }
+            else if (item.equals(object))
+            {
+                return i;
             }
         }
-        return retval;
+        return -1;
     }
 
     /**
@@ -455,18 +462,23 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
      */
     public int indexOfObject(COSBase object)
     {
-        int retval = -1;
-        for (int i = 0; retval < 0 && i < this.size(); i++)
+        for (int i = 0; i < this.size(); i++)
         {
             COSBase item = this.get(i);
-            if (item.equals(object) ||
-                item instanceof COSObject && ((COSObject) item).getObject().equals(object))
+            if (item == null)
             {
-                retval = i;
-                break;
+                if (item == object)
+                {
+                    return i;
+                }
+            }
+            else if (item.equals(object)
+                || item instanceof COSObject && ((COSObject) item).getObject().equals(object))
+            {
+                return i;
             }
         }
-        return retval;
+        return -1;
     }
 
     /**
@@ -498,7 +510,7 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
     }
 
     /**
-     * visitor pattern double dispatch method.
+     * Visitor pattern double dispatch method.
      *
      * @param visitor The object to notify when visiting this object.
      * @return any object, depending on the visitor implementation, or null
@@ -539,11 +551,10 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
     public float[] toFloatArray()
     {
         float[] retval = new float[size()];
-        for (int i = 0; i < size(); i++)
+        for (int i = 0; i < retval.length; i++)
         {
             COSBase base = getObject(i);
-            retval[i] =
-                base instanceof COSNumber ? ((COSNumber) base).floatValue() : 0;
+            retval[i] = base instanceof COSNumber ? ((COSNumber) base).floatValue() : 0;
         }
         return retval;
     }
@@ -569,11 +580,6 @@ public class COSArray extends COSBase implements Iterable<COSBase>, COSUpdateInf
      */
     public List<? extends COSBase> toList()
     {
-        List<COSBase> retList = new ArrayList<COSBase>(size());
-        for (int i = 0; i < size(); i++)
-        {
-            retList.add(get(i));
-        }
-        return retList;
+        return new ArrayList<COSBase>(objects);
     }
 }

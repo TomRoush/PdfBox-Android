@@ -25,7 +25,7 @@ import com.tom_roush.pdfbox.cos.COSName;
 /**
  * A PDField factory.
  */
-final class PDFieldFactory
+public final class PDFieldFactory
 {
 
     private static final String FIELD_TYPE_TEXT = "Tx";
@@ -45,10 +45,8 @@ final class PDFieldFactory
      * @param parent the parent node of the node to be created 
      * @return the corresponding PDField instance
      */
-    static PDField createField(PDAcroForm form, COSDictionary field, PDNonTerminalField parent)
+    public static PDField createField(PDAcroForm form, COSDictionary field, PDNonTerminalField parent)
     {
-        String fieldType = findFieldType(field);
-
         // Test if we have a non terminal field first as it might have
         // properties which do apply to other fields
         // A non terminal fields has Kids entries which do have
@@ -68,6 +66,8 @@ final class PDFieldFactory
                 }
             }
         }
+
+        String fieldType = findFieldType(field);
 
         if (FIELD_TYPE_CHOICE.equals(fieldType))
         {

@@ -34,8 +34,8 @@ import java.util.Map.Entry;
  */
 public class CmapSubtable implements CmapLookup
 {
-    private static final long LEAD_OFFSET = 0xD800 - (0x10000 >> 10);
-    private static final long SURROGATE_OFFSET = 0x10000 - (0xD800 << 10) - 0xDC00;
+    private static final long LEAD_OFFSET = 0xD800l - (0x10000 >> 10);
+    private static final long SURROGATE_OFFSET = 0x10000l - (0xD800 << 10) - 0xDC00;
 
     private int platformId;
     private int platformEncodingId;
@@ -220,7 +220,8 @@ public class CmapSubtable implements CmapLookup
         if (startCode < 0 || startCode > 0x0010FFFF || (startCode + numChars) > 0x0010FFFF
             || ((startCode + numChars) >= 0x0000D800 && (startCode + numChars) <= 0x0000DFFF))
         {
-            throw new IOException("Invalid Characters codes");
+            throw new IOException("Invalid character codes, " +
+                String.format("startCode: 0x%X, numChars: %d", startCode, numChars));
 
         }
     }
@@ -234,6 +235,7 @@ public class CmapSubtable implements CmapLookup
      */
     void processSubtype12(TTFDataStream data, int numGlyphs) throws IOException
     {
+        int maxGlyphId = 0;
         long nbGroups = data.readUnsignedInt();
         glyphIdToCharacterCode = newGlyphIdToCharacterCode(numGlyphs);
         characterCodeToGlyphId = new HashMap<Integer, Integer>(numGlyphs);
@@ -251,14 +253,14 @@ public class CmapSubtable implements CmapLookup
             if (firstCode < 0 || firstCode > 0x0010FFFF ||
                 firstCode >= 0x0000D800 && firstCode <= 0x0000DFFF)
             {
-                throw new IOException("Invalid characters codes");
+                throw new IOException("Invalid character code " + String.format("0x%X", firstCode));
             }
 
             if (endCode > 0 && endCode < firstCode ||
                 endCode > 0x0010FFFF ||
                 endCode >= 0x0000D800 && endCode <= 0x0000DFFF)
             {
-                throw new IOException("Invalid characters codes");
+                throw new IOException("Invalid character code " + String.format("0x%X", endCode));
             }
 
             for (long j = 0; j <= endCode - firstCode; ++j)
@@ -275,10 +277,11 @@ public class CmapSubtable implements CmapLookup
                     Log.w("PdfBox-Android", "Format 12 cmap contains character beyond UCS-4");
                 }
 
-                glyphIdToCharacterCode[(int) glyphIndex] = (int) (firstCode + j);
+                maxGlyphId = Math.max(maxGlyphId, (int) glyphIndex);
                 characterCodeToGlyphId.put((int) (firstCode + j), (int) glyphIndex);
             }
         }
+        buildGlyphIdToCharacterCodeLookup(maxGlyphId);
     }
 
     /**
@@ -312,13 +315,13 @@ public class CmapSubtable implements CmapLookup
 
             if (firstCode < 0 || firstCode > 0x0010FFFF || (firstCode >= 0x0000D800 && firstCode <= 0x0000DFFF))
             {
-                throw new IOException("Invalid Characters codes");
+                throw new IOException("Invalid character code " + String.format("0x%X", firstCode));
             }
 
             if ((endCode > 0 && endCode < firstCode) || endCode > 0x0010FFFF
                 || (endCode >= 0x0000D800 && endCode <= 0x0000DFFF))
             {
-                throw new IOException("Invalid Characters codes");
+                throw new IOException("Invalid character code " + String.format("0x%X", endCode));
             }
 
             for (long j = 0; j <= endCode - firstCode; ++j)
@@ -364,7 +367,7 @@ public class CmapSubtable implements CmapLookup
     {
         int firstCode = data.readUnsignedShort();
         int entryCount = data.readUnsignedShort();
-        // skip emtpy tables
+        // skip empty tables
         if (entryCount == 0)
         {
             return;
@@ -410,7 +413,7 @@ public class CmapSubtable implements CmapLookup
             int end = endCount[i];
             int delta = idDelta[i];
             int rangeOffset = idRangeOffset[i];
-            long segmentRangeOffset = idRangeOffsetPosition + (i * 2) + rangeOffset;
+            long segmentRangeOffset = idRangeOffsetPosition + (i * 2L) + rangeOffset;
             if (start != 65535 && end != 65535)
             {
                 for (int j = start; j <= end; j++)
@@ -423,7 +426,7 @@ public class CmapSubtable implements CmapLookup
                     }
                     else
                     {
-                        long glyphOffset = segmentRangeOffset + ((j - start) * 2);
+                        long glyphOffset = segmentRangeOffset + ((j - start) * 2L);
                         data.seek(glyphOffset);
                         int glyphIndex = data.readUnsignedShort();
                         if (glyphIndex != 0)
@@ -637,6 +640,7 @@ public class CmapSubtable implements CmapLookup
      * @deprecated the mapping may be ambiguous, see {@link #getCharCodes(int)}. The first mapped value is returned by
      * default.
      */
+    @Deprecated
     public Integer getCharacterCode(int gid)
     {
         int code = getCharCode(gid);

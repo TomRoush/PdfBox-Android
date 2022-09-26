@@ -14,7 +14,7 @@ Add the following to dependency to `build.gradle`:
 
 ```gradle
 dependencies {
-    implementation 'com.tom-roush:pdfbox-android:2.0.17.0'
+    implementation 'com.tom-roush:pdfbox-android:2.0.25.0'
 }
 ```
 
@@ -26,9 +26,26 @@ PDFBoxResourceLoader.init(getApplicationContext());
 
 An example app is located in the `sample` directory and includes examples of common tasks.
 
+Optional Dependencies
+==============
+
+PdfBox-Android can optionally make use of additional features provided by third-party libraries. These libraries are not included by default to reduce the size of the PdfBox-Android. See the `dependencies` section in the`build.gradle` of the Sample project for examples of including the optional dependencies.
+
+Reading JPX Images
+-------------
+
+Android does not come with native support for handling JPX images. These images can be read using the [JP2Android library](https://github.com/ThalesGroup/JP2ForAndroid). As JPX is not a common image format, this library is not included with PdfBox-Android by default. If the JP2Android library is not on the classpath of your application, JPX images will be ignored and a warning will be logged.
+
+To include the JP2Android library, add the following to your project's Gradle `dependencies` section. Note that this library is available in JCenter only, so you will need to add `jcenter()` to your repository list.
+```gradle
+dependencies {
+    implementation 'com.gemalto.jp2:jp2-android:1.0.3'
+}
+```
+
 Important notes
 ==============
 
--Currently based on PdfBox v2.0.17
+* Currently based on PDFBox v2.0.25
 
--Requires API 19 or greater for full functionality
+* Requires API 19 or greater for full functionality

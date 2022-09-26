@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-/* $Id$ */
+/* $Id: TestIOUtils.java 1665039 2015-03-08 15:54:11Z lehmi $ */
 
 package com.tom_roush.pdfbox.io;
 
@@ -30,6 +30,7 @@ import junit.framework.TestCase;
  */
 public class TestIOUtils extends TestCase
 {
+
     /**
      * Tests {@link IOUtils#populateBuffer(java.io.InputStream, byte[]).
      * @throws IOException if an I/O error occursn
@@ -54,4 +55,5 @@ public class TestIOUtils extends TestCase
         assertEquals(12, count);
         assertEquals(-1, in.read()); //EOD reached
     }
+
 }

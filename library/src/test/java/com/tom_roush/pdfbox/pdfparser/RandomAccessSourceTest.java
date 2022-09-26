@@ -21,6 +21,7 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import com.tom_roush.pdfbox.io.RandomAccessBuffer;
+
 import org.junit.Assert;
 import org.junit.Test;
 

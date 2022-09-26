@@ -105,18 +105,15 @@ public class COSFloat extends COSNumber
             }
         }
         // check for very small values
-        else if (floatValue == 0 && doubleValue != 0)
+        else if (floatValue == 0 && doubleValue != 0 && Math.abs(doubleValue) < Float.MIN_NORMAL)
         {
-            if (Math.abs(doubleValue) < Float.MIN_NORMAL )
-            {
-                floatValue = Float.MIN_NORMAL;
-                floatValue *= doubleValue >= 0  ? 1 : -1;
-                valueReplaced = true;
-            }
+            // values smaller than the smallest possible float value are converted to 0
+            // see PDF spec, chapter 2 of Appendix C Implementation Limits
+            valueReplaced = true;
         }
         if (valueReplaced)
         {
-            value = new BigDecimal(floatValue);
+            value = BigDecimal.valueOf(floatValue);
             valueAsString = removeNullDigits(value.toPlainString());
         }
     }
@@ -149,6 +146,8 @@ public class COSFloat extends COSNumber
      * The value of the double object that this one wraps.
      *
      * @return The double of this object.
+     *
+     * @deprecated will be removed in a future release
      */
     @Override
     public double doubleValue()
@@ -207,7 +206,7 @@ public class COSFloat extends COSNumber
     }
 
     /**
-     * visitor pattern double dispatch method.
+     * Visitor pattern double dispatch method.
      *
      * @param visitor The object to notify when visiting this object.
      * @return any object, depending on the visitor implementation, or null

@@ -30,6 +30,7 @@ public class COSObject extends COSBase implements COSUpdateInfo
     private long objectNumber;
     private int generationNumber;
     private boolean needToBeUpdated;
+    private boolean dereferencingInProgress = false;
 
     /**
      * Constructor.
@@ -101,12 +102,39 @@ public class COSObject extends COSBase implements COSUpdateInfo
     }
 
     /**
+     * Indicates that the dereferencing of the represented indirect object is in progress. It is used to detect a
+     * possible recursion which most likely ends up in a stack overflow.
+     *
+     * @return true if dereferencing is in progress.
+     */
+    public boolean derefencingInProgress()
+    {
+        return dereferencingInProgress;
+    }
+
+    /**
+     * Start dereferencing the represented indirect object.
+     */
+    public void dereferencingStarted()
+    {
+        dereferencingInProgress = true;
+    }
+
+    /**
+     * Dereferencing of the represented indirect object is finished.
+     */
+    public void dereferencingFinished()
+    {
+        dereferencingInProgress = false;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
     public String toString()
     {
-        return "COSObject{" + Long.toString(objectNumber) + ", " + Integer.toString(generationNumber) + "}";
+        return "COSObject{" + objectNumber + ", " + generationNumber + "}";
     }
 
     /**
@@ -155,7 +183,8 @@ public class COSObject extends COSBase implements COSUpdateInfo
     @Override
     public Object accept( ICOSVisitor visitor ) throws IOException
     {
-        return getObject() != null ? getObject().accept( visitor ) : COSNull.NULL.accept( visitor );
+        COSBase object = getObject();
+        return object != null ? object.accept(visitor) : COSNull.NULL.accept(visitor);
     }
 
     /**

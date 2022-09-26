@@ -16,8 +16,10 @@
  */
 package com.tom_roush.pdfbox.contentstream.operator.text;
 
+import java.io.IOException;
 import java.util.List;
 
+import com.tom_roush.pdfbox.contentstream.operator.MissingOperandException;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
@@ -32,9 +34,18 @@ import com.tom_roush.pdfbox.contentstream.operator.OperatorProcessor;
 public class SetTextLeading extends OperatorProcessor
 {
     @Override
-    public void process(Operator operator, List<COSBase> arguments)
+    public void process(Operator operator, List<COSBase> arguments) throws IOException
     {
-        COSNumber leading = (COSNumber)arguments.get( 0 );
+        if (arguments.isEmpty())
+        {
+            throw new MissingOperandException(operator, arguments);
+        }
+        COSBase base = arguments.get(0);
+        if (!(base instanceof COSNumber))
+        {
+            return;
+        }
+        COSNumber leading = (COSNumber) base;
         context.getGraphicsState().getTextState().setLeading( leading.floatValue() );
     }
 

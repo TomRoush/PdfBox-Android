@@ -18,9 +18,12 @@ package com.tom_roush.pdfbox.pdmodel.graphics.state;
 
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.Region;
+
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
@@ -29,6 +32,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
+import com.tom_roush.pdfbox.util.GraphicsUtil;
 import com.tom_roush.pdfbox.util.Matrix;
 
 /**
@@ -39,7 +43,8 @@ import com.tom_roush.pdfbox.util.Matrix;
 public class PDGraphicsState implements Cloneable
 {
     private boolean isClippingPathDirty;
-    private Region clippingPath;
+    private List<Path> clippingPaths = new ArrayList<Path>(1);
+    private Map<Path, Region> clippingCache = new IdentityHashMap<Path, Region>();
     private Matrix currentTransformationMatrix = new Matrix();
     private PDColor strokingColor = PDDeviceGray.INSTANCE.getInitialColor();
     private PDColor nonStrokingColor = PDDeviceGray.INSTANCE.getInitialColor();
@@ -76,13 +81,7 @@ public class PDGraphicsState implements Cloneable
      */
     public PDGraphicsState(PDRectangle page)
     {
-//        clippingPath = new Area(new GeneralPath(page.toGeneralPath()));TODO: PdfBox-Android
-        RectF bounds = new RectF();
-        page.toGeneralPath().computeBounds(bounds, true);
-        clippingPath = new Region();
-        Rect boundsRounded = new Rect();
-        bounds.round(boundsRounded);
-        clippingPath.setPath(page.toGeneralPath(), new Region(boundsRounded));
+        clippingPaths.add(page.toGeneralPath());
     }
 
     /**
@@ -503,7 +502,8 @@ public class PDGraphicsState implements Cloneable
             clone.strokingColor = strokingColor; // immutable
             clone.nonStrokingColor = nonStrokingColor; // immutable
             clone.lineDashPattern = lineDashPattern; // immutable
-            clone.clippingPath = clippingPath; // not cloned, see intersectClippingPath
+            clone.clippingPaths = clippingPaths; // not cloned, see intersectClippingPath
+            clone.clippingCache = clippingCache;
             clone.isClippingPathDirty = false;
             return clone;
         }
@@ -600,35 +600,32 @@ public class PDGraphicsState implements Cloneable
      */
     public void intersectClippingPath(Path path)
     {
-        RectF bounds = new RectF();
-        path.computeBounds(bounds, true);
-        Region r = new Region();
-        Rect boundsRounded = new Rect();
-        bounds.round(boundsRounded);
-        r.setPath(path, new Region(boundsRounded));
-        intersectClippingPath(r);
-        // TODO: PdfBox-Android Verify correct behavior
+        intersectClippingPath(path, true);
     }
 
-    /**
-     * Modify the current clipping path by intersecting it with the given path.
-     * @param area area to intersect with the clipping path
-     */
-    public void intersectClippingPath(Region area)
+    private void intersectClippingPath(Path path, boolean clonePath)
     {
         // lazy cloning of clipping path for performance
         if (!isClippingPathDirty)
         {
-            // deep copy (can't use clone() as it performs only a shallow copy)
-            Region cloned = new Region(area);
-//            cloned.add(clippingPath);
-            clippingPath = cloned;
+            // shallow copy
+            clippingPaths = new ArrayList<Path>(clippingPaths);
 
             isClippingPathDirty = true;
         }
 
-        // intersection as usual
-        clippingPath.op(area, Region.Op.INTERSECT);
+        // add path to current clipping paths, combined later (see getCurrentClippingPath)
+        clippingPaths.add(clonePath ? new Path(path) : path);
+    }
+
+    /**
+     * Modify the current clipping path by intersecting it with the given path.
+     *
+     * @param area area to intersect with the clipping path
+     */
+    public void intersectClippingPath(Region area)
+    {
+        intersectClippingPath(area.getBoundaryPath(), false);
     }
 
     /**
@@ -638,7 +635,41 @@ public class PDGraphicsState implements Cloneable
      */
     public Region getCurrentClippingPath()
     {
-        return clippingPath;
+        if (clippingPaths.size() == 1)
+        {
+            // If there is just a single clipping path, no intersections are needed.
+            Path path = clippingPaths.get(0);
+            Region area = clippingCache.get(path);
+            if (area == null)
+            {
+                area = GraphicsUtil.getPathRegion(path);
+                clippingCache.put(path, area);
+            }
+            return area;
+        }
+        // If there are multiple clipping paths, combine them to a single area.
+        Path clippingPath = new Path(clippingPaths.get(0));
+        for (int i = 1; i < clippingPaths.size(); i++)
+        {
+            clippingPath.op(clippingPaths.get(i), Path.Op.INTERSECT);
+        }
+        Region clippingRegion = GraphicsUtil.getPathRegion(clippingPath);
+        // Replace the list of individual clipping paths with the intersection, and add it to the cache.
+        clippingPaths = new ArrayList<Path>(1);
+        clippingPaths.add(clippingPath);
+        clippingCache.put(clippingPath, clippingRegion);
+        return clippingRegion;
+    }
+
+    /**
+     * This will get the current clipping path, as one or more individual paths. Do not modify the
+     * list or the paths!
+     *
+     * @return The current clipping paths.
+     */
+    public List<Path> getCurrentClippingPaths()
+    {
+        return clippingPaths;
     }
 
 //    public Composite getStrokingJavaComposite() TODO: PdfBox-Android

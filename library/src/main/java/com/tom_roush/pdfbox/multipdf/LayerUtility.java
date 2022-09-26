@@ -21,6 +21,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -140,8 +141,8 @@ public class LayerUtility
         return importPageAsForm(sourceDoc, page);
     }
 
-    private static final Set<String> PAGE_TO_FORM_FILTER = new java.util.HashSet<String>(
-        Arrays.asList(new String[] {"Group", "LastModified", "Metadata"}));
+    private static final Set<String> PAGE_TO_FORM_FILTER =
+        new HashSet<String>(Arrays.asList("Group", "LastModified", "Metadata"));
 
     /**
      * Imports a page from some PDF file as a Form XObject so it can be placed on another page
@@ -169,7 +170,7 @@ public class LayerUtility
         form.setResources(formRes);
 
         //Transfer some values from page to form
-        transferDict(page.getCOSObject(), form.getCOSObject(), PAGE_TO_FORM_FILTER, true);
+        transferDict(page.getCOSObject(), form.getCOSObject(), PAGE_TO_FORM_FILTER);
 
         Matrix matrix = form.getMatrix();
         AffineTransform at = matrix.createAffineTransform();
@@ -278,22 +279,17 @@ public class LayerUtility
         return layer;
     }
 
-    private void transferDict(COSDictionary orgDict, COSDictionary targetDict,
-        Set<String> filter, boolean inclusive) throws IOException
+    private void transferDict(COSDictionary orgDict, COSDictionary targetDict, Set<String> filter)
+        throws IOException
     {
         for (Map.Entry<COSName, COSBase> entry : orgDict.entrySet())
         {
             COSName key = entry.getKey();
-            if (inclusive && !filter.contains(key.getName()))
+            if (!filter.contains(key.getName()))
             {
                 continue;
             }
-            else if (!inclusive && filter.contains(key.getName()))
-            {
-                continue;
-            }
-            targetDict.setItem(key,
-                cloner.cloneForNewDocument(entry.getValue()));
+            targetDict.setItem(key, cloner.cloneForNewDocument(entry.getValue()));
         }
     }
 

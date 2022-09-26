@@ -49,6 +49,8 @@ public abstract class COSNumber extends COSBase
      * This will get the double value of this number.
      *
      * @return The double value of this number.
+     *
+     * @deprecated will be removed in a future release
      */
     public abstract double doubleValue();
 
@@ -82,7 +84,7 @@ public abstract class COSNumber extends COSBase
             char digit = number.charAt(0);
             if ('0' <= digit && digit <= '9')
             {
-                return COSInteger.get(digit - '0');
+                return COSInteger.get((long) digit - '0');
             }
             else if (digit == '-' || digit == '.')
             {
@@ -94,25 +96,45 @@ public abstract class COSNumber extends COSBase
                 throw new IOException("Not a number: " + number);
             }
         }
-        else if (number.indexOf('.') == -1 && (number.toLowerCase().indexOf('e') == -1))
-        {
-            try
-            {
-                if (number.charAt(0) == '+')
-                {
-                    return COSInteger.get(Long.parseLong(number.substring(1)));
-                }
-                return COSInteger.get(Long.parseLong(number));
-            }
-            catch( NumberFormatException e )
-            {
-                // might be a huge number, see PDFBOX-3116
-                return new COSFloat(number);
-            }
-        }
-        else
+        if (isFloat(number))
         {
             return new COSFloat(number);
         }
+        try
+        {
+            if (number.charAt(0) == '+')
+            {
+                // PDFBOX-2569: some numbers start with "+"
+                return COSInteger.get(Long.parseLong(number.substring(1)));
+            }
+            return COSInteger.get(Long.parseLong(number));
+        }
+        catch (NumberFormatException e)
+        {
+            // check if the given string could be a number at all
+            String numberString = number.startsWith("+") || number.startsWith("-")
+                ? number.substring(1) : number;
+            if (!numberString.matches("[0-9]*"))
+            {
+                throw new IOException("Not a number: " + number);
+            }
+            // return a limited COSInteger value which is marked as invalid
+            return number.startsWith("-") ? COSInteger.OUT_OF_RANGE_MIN
+                : COSInteger.OUT_OF_RANGE_MAX;
+        }
+    }
+
+    private static boolean isFloat( String number )
+    {
+        int length = number.length();
+        for (int i = 0; i < length; i++)
+        {
+            char digit = number.charAt(i);
+            if (digit == '.' || digit == 'e')
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

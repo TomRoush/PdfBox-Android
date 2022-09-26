@@ -18,7 +18,6 @@ package com.tom_roush.pdfbox.cos;
 
 import android.util.Log;
 
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -296,20 +295,31 @@ public class COSStream extends COSDictionary implements Closeable
      */
     private List<Filter> getFilterList() throws IOException
     {
-        List<Filter> filterList = new ArrayList<Filter>();
+        List<Filter> filterList;
         COSBase filters = getFilters();
         if (filters instanceof COSName)
         {
+            filterList = new ArrayList<Filter>(1);
             filterList.add(FilterFactory.INSTANCE.getFilter((COSName)filters));
         }
         else if (filters instanceof COSArray)
         {
             COSArray filterArray = (COSArray)filters;
+            filterList = new ArrayList<Filter>(filterArray.size());
             for (int i = 0; i < filterArray.size(); i++)
             {
-                COSName filterName = (COSName)filterArray.get(i);
-                filterList.add(FilterFactory.INSTANCE.getFilter(filterName));
+                COSBase base = filterArray.get(i);
+                if (!(base instanceof COSName))
+                {
+                    throw new IOException("Forbidden type in filter array: " +
+                        (base == null ? "null" : base.getClass().getName()));
+                }
+                filterList.add(FilterFactory.INSTANCE.getFilter((COSName) base));
             }
+        }
+        else
+        {
+            filterList = new ArrayList<Filter>();
         }
         return filterList;
     }
@@ -323,8 +333,8 @@ public class COSStream extends COSDictionary implements Closeable
     {
         if (isWriting)
         {
-            throw new IllegalStateException("There is an open OutputStream associated with " +
-                "this COSStream. It must be closed before querying" +
+            throw new IllegalStateException("There is an open OutputStream associated with this " +
+                "COSStream. It must be closed before querying the " +
                 "length of this COSStream.");
         }
         return getInt(COSName.LENGTH, 0);
@@ -379,22 +389,23 @@ public class COSStream extends COSDictionary implements Closeable
      */
     public String toTextString()
     {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
         InputStream input = null;
+        byte[] array;
         try
         {
             input = createInputStream();
-            IOUtils.copy(input, out);
+            array = IOUtils.toByteArray(input);
         }
         catch (IOException e)
         {
+            Log.d("PdfBox-Android", "An exception occurred trying to get the content - returning empty string instead", e);
             return "";
         }
         finally
         {
             IOUtils.closeQuietly(input);
         }
-        COSString string = new COSString(out.toByteArray());
+        COSString string = new COSString(array);
         return string.getString();
     }
 
@@ -404,6 +415,14 @@ public class COSStream extends COSDictionary implements Closeable
         return visitor.visitFromStream(this);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Called by PDFBox when the PDDocument is closed, this closes the stream and removes the data.
+     * You will usually not need this.
+     *
+     * @throws IOException
+     */
     @Override
     public void close() throws IOException
     {

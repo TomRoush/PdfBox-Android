@@ -16,8 +16,23 @@
  */
 package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
+import android.graphics.PointF;
+import android.util.Log;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import com.tom_roush.harmony.awt.geom.AffineTransform;
+import com.tom_roush.harmony.javax.imageio.stream.ImageInputStream;
+import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageInputStream;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.cos.COSStream;
+import com.tom_roush.pdfbox.pdmodel.common.PDRange;
+import com.tom_roush.pdfbox.util.Matrix;
 
 /**
  * Resources for a shading type 4 (Free-Form Gouraud-Shaded Triangle Mesh).
@@ -61,9 +76,126 @@ public class PDShadingType4 extends PDTriangleBasedShadingType
         getCOSObject().setInt(COSName.BITS_PER_FLAG, bitsPerFlag);
     }
 
-//    @Override
-//    public Paint toPaint(Matrix matrix)
-//    {
-//        return new Type4ShadingPaint(this, matrix);
-//    }TODO: PdfBox-Android
+//    public Paint toPaint(Matrix matrix) TODO: PdfBox-Android
+
+    @SuppressWarnings("squid:S1166")
+    @Override
+    List<ShadedTriangle> collectTriangles(AffineTransform xform, Matrix matrix)
+        throws IOException
+    {
+        int bitsPerFlag = getBitsPerFlag();
+        COSDictionary dict = getCOSObject();
+        if (!(dict instanceof COSStream))
+        {
+            return Collections.emptyList();
+        }
+        PDRange rangeX = getDecodeForParameter(0);
+        PDRange rangeY = getDecodeForParameter(1);
+        if (rangeX == null || rangeY == null ||
+            Float.compare(rangeX.getMin(), rangeX.getMax()) == 0 ||
+            Float.compare(rangeY.getMin(), rangeY.getMax()) == 0)
+        {
+            return Collections.emptyList();
+        }
+        PDRange[] colRange = new PDRange[getNumberOfColorComponents()];
+        for (int i = 0; i < colRange.length; ++i)
+        {
+            colRange[i] = getDecodeForParameter(2 + i);
+            if (colRange[i] == null)
+            {
+                throw new IOException("Range missing in shading /Decode entry");
+            }
+        }
+        List<ShadedTriangle> list = new ArrayList<ShadedTriangle>();
+        long maxSrcCoord = (long) Math.pow(2, getBitsPerCoordinate()) - 1;
+        long maxSrcColor = (long) Math.pow(2, getBitsPerComponent()) - 1;
+        COSStream stream = (COSStream) dict;
+
+        ImageInputStream mciis = new MemoryCacheImageInputStream(stream.createInputStream());
+        try
+        {
+            byte flag = (byte) 0;
+            try
+            {
+                flag = (byte) (mciis.readBits(bitsPerFlag) & 3);
+            }
+            catch (EOFException ex)
+            {
+                Log.e("PdfBox-Android", ex.getMessage(), ex);
+            }
+
+            boolean eof = false;
+            while (!eof)
+            {
+                Vertex p0;
+                Vertex p1;
+                Vertex p2;
+                PointF[] ps;
+                float[][] cs;
+                int lastIndex;
+                try
+                {
+                    switch (flag)
+                    {
+                        case 0:
+                            p0 = readVertex(mciis, maxSrcCoord, maxSrcColor, rangeX, rangeY, colRange,
+                                matrix, xform);
+                            flag = (byte) (mciis.readBits(bitsPerFlag) & 3);
+                            if (flag != 0)
+                            {
+                                Log.e("PdfBox-Android", "bad triangle: " + flag);
+                            }
+                            p1 = readVertex(mciis, maxSrcCoord, maxSrcColor, rangeX, rangeY, colRange,
+                                matrix, xform);
+                            mciis.readBits(bitsPerFlag);
+                            if (flag != 0)
+                            {
+                                Log.e("PdfBox-Android", "bad triangle: " + flag);
+                            }
+                            p2 = readVertex(mciis, maxSrcCoord, maxSrcColor, rangeX, rangeY, colRange,
+                                matrix, xform);
+                            ps = new PointF[] { p0.point, p1.point, p2.point };
+                            cs = new float[][] { p0.color, p1.color, p2.color };
+                            list.add(new ShadedTriangle(ps, cs));
+                            flag = (byte) (mciis.readBits(bitsPerFlag) & 3);
+                            break;
+                        case 1:
+                        case 2:
+                            lastIndex = list.size() - 1;
+                            if (lastIndex < 0)
+                            {
+                                Log.e("PdfBox-Android", "broken data stream: " + list.size());
+                            }
+                            else
+                            {
+                                ShadedTriangle preTri = list.get(lastIndex);
+                                p2 = readVertex(mciis, maxSrcCoord, maxSrcColor, rangeX, rangeY,
+                                    colRange, matrix, xform);
+                                ps = new PointF[] { flag == 1 ? preTri.corner[1] : preTri.corner[0],
+                                    preTri.corner[2],
+                                    p2.point };
+                                cs = new float[][] { flag == 1 ? preTri.color[1] : preTri.color[0],
+                                    preTri.color[2],
+                                    p2.color };
+                                list.add(new ShadedTriangle(ps, cs));
+                                flag = (byte) (mciis.readBits(bitsPerFlag) & 3);
+                            }
+                            break;
+                        default:
+                            Log.w("PdfBox-Android", "bad flag: " + flag);
+                            break;
+                    }
+                }
+                catch (EOFException ex)
+                {
+                    eof = true;
+                }
+            }
+        }
+        finally
+        {
+            mciis.close();
+        }
+        return list;
+    }
 }

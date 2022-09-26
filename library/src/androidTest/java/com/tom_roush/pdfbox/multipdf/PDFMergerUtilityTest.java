@@ -57,6 +57,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import com.tom_roush.pdfbox.pdmodel.interactive.form.PDField;
 import com.tom_roush.pdfbox.rendering.PDFRenderer;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -666,7 +667,7 @@ public class PDFMergerUtilityTest
             }
         }
         br.close();
-        assertEquals(1, count);
+        assertEquals(file.getPath(), 1, count);
     }
 
     /**
@@ -743,6 +744,63 @@ public class PDFMergerUtilityTest
         assertTrue(inFile1.delete());
         assertTrue(inFile2.delete());
         assertTrue(outFile.delete());
+    }
+
+
+    /**
+     * Check that there is a top level Document and Parts below in a merge of 2 documents.
+     *
+     * @throws IOException
+     */
+    public void testPDFBox5198_2() throws IOException
+    {
+        PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
+        pdfMergerUtility.addSource(testContext.getAssets().open(SRCDIR + "/" + "PDFA3A.pdf"));
+        pdfMergerUtility.addSource(testContext.getAssets().open(SRCDIR + "/" + "PDFA3A.pdf"));
+        pdfMergerUtility.setDestinationFileName(TARGETTESTDIR + "PDFA3A-merged2.pdf");
+        pdfMergerUtility.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+
+        checkParts(new File(TARGETTESTDIR + "PDFA3A-merged2.pdf"));
+    }
+
+    /**
+     * Check that there is a top level Document and Parts below in a merge of 3 documents.
+     *
+     * @throws IOException
+     */
+    public void testPDFBox5198_3() throws IOException
+    {
+        PDFMergerUtility pdfMergerUtility = new PDFMergerUtility();
+        pdfMergerUtility.addSource(testContext.getAssets().open(SRCDIR + "/" + "PDFA3A.pdf"));
+        pdfMergerUtility.addSource(testContext.getAssets().open(SRCDIR + "/" + "PDFA3A.pdf"));
+        pdfMergerUtility.addSource(testContext.getAssets().open(SRCDIR + "/" + "PDFA3A.pdf"));
+        pdfMergerUtility.setDestinationFileName(TARGETTESTDIR + "PDFA3A-merged3.pdf");
+        pdfMergerUtility.mergeDocuments(MemoryUsageSetting.setupMainMemoryOnly());
+
+        checkParts(new File(TARGETTESTDIR + "PDFA3A-merged3.pdf"));
+    }
+
+    /**
+     * Check that there is a top level Document and Parts below.
+     * @param file
+     * @throws IOException
+     */
+    private void checkParts(File file) throws IOException
+    {
+        PDDocument doc = PDDocument.load(file);
+        PDStructureTreeRoot structureTreeRoot = doc.getDocumentCatalog().getStructureTreeRoot();
+        COSDictionary topDict = (COSDictionary) structureTreeRoot.getK();
+        assertEquals(COSName.DOCUMENT, topDict.getItem(COSName.S));
+        assertEquals(structureTreeRoot.getCOSObject(), topDict.getCOSDictionary(COSName.P));
+        COSArray kArray = topDict.getCOSArray(COSName.K);
+        assertEquals(doc.getNumberOfPages(), kArray.size());
+        for (int i = 0; i < kArray.size(); ++i)
+        {
+            COSDictionary dict = (COSDictionary) kArray.getObject(i);
+            assertEquals(COSName.PART, dict.getItem(COSName.S));
+            assertEquals(topDict, dict.getCOSDictionary(COSName.P));
+        }
+        doc.close();
     }
 
     private void checkForPageOrphans(PDDocument doc) throws IOException
@@ -880,12 +938,12 @@ public class PDFMergerUtilityTest
                             COSBase item = kdict.getItem(COSName.OBJ);
                             if (item instanceof COSObject)
                             {
-                                assertTrue("Annotation page is not in the page tree: " + item, pageTree.indexOf(page) != -1);
+                                Assert.assertNotEquals("Annotation page is not in the page tree: " + item, -1, pageTree.indexOf(page));
                             }
                             else
                             {
                                 // don't display because of stack overflow
-                                assertTrue("Annotation page is not in the page tree", pageTree.indexOf(page) != -1);
+                                Assert.assertNotEquals("Annotation page is not in the page tree", -1, pageTree.indexOf(page));
                             }
                         }
                     }
@@ -971,7 +1029,7 @@ public class PDFMergerUtilityTest
         PDPage page = structureElement.getPage();
         if (page != null)
         {
-            assertTrue("Page is not in the page tree", pageTree.indexOf(page) != -1);
+            Assert.assertNotEquals("Page is not in the page tree", -1, pageTree.indexOf(page));
         }
     }
 }

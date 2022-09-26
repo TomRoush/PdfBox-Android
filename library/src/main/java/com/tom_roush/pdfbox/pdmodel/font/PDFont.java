@@ -30,7 +30,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.tom_roush.fontbox.afm.FontMetrics;
 import com.tom_roush.fontbox.cmap.CMap;
-import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -118,7 +117,7 @@ public abstract class PDFont implements COSObjectable, PDFontLike
 
     private PDFontDescriptor loadFontDescriptor()
     {
-        COSDictionary fd = (COSDictionary) dict.getDictionaryObject(COSName.FONT_DESC);
+        COSDictionary fd = dict.getCOSDictionary(COSName.FONT_DESC);
         if (fd != null)
         {
             return new PDFontDescriptor(fd);
@@ -159,6 +158,7 @@ public abstract class PDFont implements COSObjectable, PDFontLike
                 {
                     // assume that if encoding is identity, then the reverse is also true
                     cmap = CMapManager.getPredefinedCMap(COSName.IDENTITY_H.getName());
+                    Log.w("PdfBox-Android", "Using predefined identity CMap instead");
                 }
             }
         }
@@ -313,15 +313,6 @@ public abstract class PDFont implements COSObjectable, PDFontLike
      */
     protected abstract float getStandard14Width(int code);
 
-    @Override
-    public abstract float getWidthFromFont(int code) throws IOException;
-
-    @Override
-    public abstract boolean isEmbedded();
-
-    @Override
-    public abstract float getHeight(int code) throws IOException;
-
     /**
      * Encodes the given string for use in a PDF content stream.
      *
@@ -401,16 +392,21 @@ public abstract class PDFont implements COSObjectable, PDFontLike
         {
             float totalWidth = 0.0f;
             float characterCount = 0.0f;
-            COSArray widths = (COSArray) dict.getDictionaryObject(COSName.WIDTHS);
+            COSArray widths = dict.getCOSArray(COSName.WIDTHS);
             if (widths != null)
             {
                 for (int i = 0; i < widths.size(); i++)
                 {
-                    COSNumber fontWidth = (COSNumber) widths.getObject(i);
-                    if (fontWidth.floatValue() > 0)
+                    COSBase base = widths.getObject(i);
+                    if (base instanceof COSNumber)
                     {
-                        totalWidth += fontWidth.floatValue();
-                        characterCount += 1;
+                        COSNumber fontWidth = (COSNumber) base;
+                        float floatValue = fontWidth.floatValue();
+                        if (floatValue > 0)
+                        {
+                            totalWidth += floatValue;
+                            characterCount += 1;
+                        }
                     }
                 }
             }
@@ -502,12 +498,6 @@ public abstract class PDFont implements COSObjectable, PDFontLike
         return dict.getNameAsString(COSName.SUBTYPE);
     }
 
-    @Override
-    public abstract String getName();
-
-    @Override
-    public abstract BoundingBox getBoundingBox() throws IOException;
-
     /**
      * The widths of the characters. This will be null for the standard 14 fonts.
      *
@@ -517,7 +507,7 @@ public abstract class PDFont implements COSObjectable, PDFontLike
     {
         if (widths == null)
         {
-            COSArray array = (COSArray) dict.getDictionaryObject(COSName.WIDTHS);
+            COSArray array = dict.getCOSArray(COSName.WIDTHS);
             if (array != null)
             {
                 widths = COSArrayList.convertFloatCOSArrayToList(array);
@@ -623,9 +613,6 @@ public abstract class PDFont implements COSObjectable, PDFontLike
     public abstract boolean willBeSubset();
 
     @Override
-    public abstract boolean isDamaged();
-
-    @Override
     public boolean equals(Object other)
     {
         return other instanceof PDFont && ((PDFont) other).getCOSObject() == this.getCOSObject();
@@ -641,5 +628,15 @@ public abstract class PDFont implements COSObjectable, PDFontLike
     public String toString()
     {
         return getClass().getSimpleName() + " " + getName();
+    }
+
+    /**
+     * Get the /ToUnicode CMap.
+     *
+     * @return The /ToUnicode CMap or null if there is none.
+     */
+    protected CMap getToUnicodeCMap()
+    {
+        return toUnicodeCMap;
     }
 }

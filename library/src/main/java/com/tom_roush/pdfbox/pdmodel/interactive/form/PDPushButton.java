@@ -19,8 +19,10 @@ package com.tom_roush.pdfbox.pdmodel.interactive.form;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 
 /**
  * A pushbutton is a purely interactive control that responds immediately to user
@@ -38,7 +40,7 @@ public class PDPushButton extends PDButton
     public PDPushButton(PDAcroForm acroForm)
     {
         super(acroForm);
-        setPushButton(true);
+        getCOSObject().setFlag(COSName.FF, FLAG_PUSHBUTTON, true);
     }
 
     /**
@@ -84,6 +86,12 @@ public class PDPushButton extends PDButton
     public String getValueAsString()
     {
         return getValue();
+    }
+
+    @Override
+    public Set<String> getOnValues()
+    {
+        return Collections.emptySet();
     }
 
     @Override

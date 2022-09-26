@@ -41,7 +41,7 @@ public class SetLineMiterLimit extends OperatorProcessor
             throw new MissingOperandException(operator, arguments);
         }
         COSNumber miterLimit = (COSNumber)arguments.get( 0 );
-        context.getGraphicsState().setMiterLimit( miterLimit.floatValue() );
+        context.getGraphicsState().setMiterLimit(miterLimit.floatValue());
     }
 
     @Override

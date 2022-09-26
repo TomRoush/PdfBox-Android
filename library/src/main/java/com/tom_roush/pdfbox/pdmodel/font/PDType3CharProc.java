@@ -17,6 +17,8 @@
 
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -25,8 +27,9 @@ import java.util.List;
 import com.tom_roush.pdfbox.contentstream.PDContentStream;
 import com.tom_roush.pdfbox.contentstream.operator.Operator;
 import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNumber;
-import com.tom_roush.pdfbox.cos.COSObject;
 import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdfparser.PDFStreamParser;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
@@ -76,6 +79,13 @@ public final class PDType3CharProc implements COSObjectable, PDContentStream
     @Override
     public PDResources getResources()
     {
+        if (charStream.containsKey(COSName.RESOURCES))
+        {
+            // PDFBOX-5294
+            Log.w("PdfBox-Android", "Using resources dictionary found in charproc entry");
+            Log.w("PdfBox-Android", "This should have been in the font or in the page dictionary");
+            return new PDResources((COSDictionary) charStream.getDictionaryObject(COSName.RESOURCES));
+        }
         return font.getResources();
     }
 
@@ -99,11 +109,7 @@ public final class PDType3CharProc implements COSObjectable, PDContentStream
         Object token = parser.parseNextToken();
         while (token != null)
         {
-            if (token instanceof COSObject)
-            {
-                arguments.add(((COSObject) token).getObject());
-            }
-            else if (token instanceof Operator)
+            if (token instanceof Operator)
             {
                 if (((Operator) token).getName().equals("d1") && arguments.size() == 6)
                 {
@@ -154,11 +160,7 @@ public final class PDType3CharProc implements COSObjectable, PDContentStream
         Object token = parser.parseNextToken();
         while (token != null)
         {
-            if (token instanceof COSObject)
-            {
-                arguments.add(((COSObject) token).getObject());
-            }
-            else if (token instanceof Operator)
+            if (token instanceof Operator)
             {
                 return parseWidth((Operator) token, arguments);
             }

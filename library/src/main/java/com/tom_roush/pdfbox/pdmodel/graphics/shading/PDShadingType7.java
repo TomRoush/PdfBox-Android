@@ -16,12 +16,19 @@
  */
 package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
+import android.graphics.PointF;
+import android.graphics.RectF;
+
+import java.io.IOException;
+
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.util.Matrix;
 
 /**
  * Resources for a shading type 7 (Tensor-Product Patch Mesh).
  */
-public class PDShadingType7 extends PDShadingType6
+public class PDShadingType7 extends PDMeshBasedShadingType
 {
     /**
      * Constructor using the given shading dictionary.
@@ -39,9 +46,17 @@ public class PDShadingType7 extends PDShadingType6
         return PDShading.SHADING_TYPE7;
     }
 
-//    @Override
-//    public Paint toPaint(Matrix matrix)
-//    {
-//        return new Type7ShadingPaint(this, matrix);
-//    }TODO: PdfBox-Android
+//    public Paint toPaint(Matrix matrix) TODO: PdfBox-Android
+
+    @Override
+    protected Patch generatePatch(PointF[] points, float[][] color)
+    {
+        return new TensorPatch(points, color);
+    }
+
+    @Override
+    public RectF getBounds(AffineTransform xform, Matrix matrix) throws IOException
+    {
+        return getBounds(xform, matrix, 16);
+    }
 }

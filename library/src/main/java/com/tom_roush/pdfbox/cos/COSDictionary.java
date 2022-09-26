@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +29,7 @@ import java.util.Set;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.util.DateConverter;
+import com.tom_roush.pdfbox.util.SmallMap;
 
 /**
  * This class represents a dictionary where name/value pairs reside.
@@ -45,7 +45,7 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
     /**
      * The name-value pairs of this dictionary. The pairs are kept in the order they were added to the dictionary.
      */
-    protected Map<COSName, COSBase> items = new LinkedHashMap<COSName, COSBase>();
+    protected Map<COSName, COSBase> items = new SmallMap<COSName, COSBase>();
 
     /**
      * Constructor.
@@ -1001,7 +1001,7 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
         COSBase bool = getDictionaryObject(firstKey, secondKey);
         if (bool instanceof COSBoolean)
         {
-            retval = ((COSBoolean) bool).getValue();
+            retval = bool == COSBoolean.TRUE;
         }
         return retval;
     }
@@ -1435,23 +1435,16 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
     }
 
     /**
-     * This will add all of the dictionaries keys/values to this dictionary.
-     * Only called when adding keys to a trailer that already exists.
+     * This will add all of the dictionaries keys/values to this dictionary. Existing key/value pairs will be
+     * overwritten.
      *
-     * @param dic The dictionaries to get the keys from.
+     * @param dic The dictionaries to get the key/value pairs from.
      */
     public void addAll(COSDictionary dic)
     {
         for (Map.Entry<COSName, COSBase> entry : dic.entrySet())
         {
-            /*
-             * If we're at a second trailer, we have a linearized pdf file, meaning that the first Size entry represents
-             * all of the objects so we don't need to grab the second.
-             */
-            if (!COSName.SIZE.equals(entry.getKey()) || !items.containsKey(COSName.SIZE))
-            {
-                setItem(entry.getKey(), entry.getValue());
-            }
+            setItem(entry.getKey(), entry.getValue());
         }
     }
 
@@ -1515,7 +1508,7 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
         {
             if (retval instanceof COSArray)
             {
-                int idx = Integer.parseInt(pathString.replaceAll("\\[", "").replaceAll("\\]", ""));
+                int idx = Integer.parseInt(pathString.replace("\\[", "").replace("\\]", ""));
                 retval = ((COSArray) retval).getObject(idx);
             }
             else if (retval instanceof COSDictionary)
@@ -1566,8 +1559,7 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
         objs.add(base);
         if (base instanceof COSDictionary)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.append("COSDictionary{");
+            StringBuilder sb = new StringBuilder("COSDictionary{");
             for (Map.Entry<COSName, COSBase> x : ((COSDictionary) base).entrySet())
             {
                 sb.append(x.getKey());
@@ -1587,9 +1579,8 @@ public class COSDictionary extends COSBase implements COSUpdateInfo
         }
         if (base instanceof COSArray)
         {
-            StringBuilder sb = new StringBuilder();
-            sb.append("COSArray{");
-            for (COSBase x : ((COSArray) base).toList())
+            StringBuilder sb = new StringBuilder("COSArray{");
+            for (COSBase x : ((COSArray) base))
             {
                 sb.append(getDictionaryString(x, objs));
                 sb.append(";");

@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import com.tom_roush.fontbox.util.Charsets;
@@ -46,9 +45,8 @@ abstract class TTFDataStream implements Closeable
      */
     public float read32Fixed() throws IOException
     {
-        float retval = 0;
-        retval = readSignedShort();
-        retval += (readUnsignedShort() / 65536.0);
+        float retval = readSignedShort();
+        retval += (readUnsignedShort() / 65536f);
         return retval;
     }
 
@@ -138,7 +136,7 @@ abstract class TTFDataStream implements Closeable
     /**
      * Read an unsigned integer.
      *
-     * @return An unsiged integer.
+     * @return An unsigned integer.
      * @throws IOException If there is an error reading the data.
      */
     public long readUnsignedInt() throws IOException
@@ -151,7 +149,7 @@ abstract class TTFDataStream implements Closeable
         {
             throw new EOFException();
         }
-        return (byte1 << 24) + (byte2 << 16) + (byte3 << 8) + (byte4 << 0);
+        return (byte1 << 24) + (byte2 << 16) + (byte3 << 8) + byte4;
     }
 
     /**
@@ -213,7 +211,7 @@ abstract class TTFDataStream implements Closeable
     public Calendar readInternationalDate() throws IOException
     {
         long secondsSince1904 = readLong();
-        Calendar cal = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"));
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         cal.set(1904, 0, 1, 0, 0, 0);
         cal.set(Calendar.MILLISECOND, 0);
         long millisFor1904 = cal.getTimeInMillis();
@@ -230,14 +228,6 @@ abstract class TTFDataStream implements Closeable
     {
         return new String(read(4), Charsets.US_ASCII);
     }
-
-    /**
-     * Close the underlying resources.
-     *
-     * @throws IOException If there is an error closing the resources.
-     */
-    @Override
-    public abstract void close() throws IOException;
 
     /**
      * Seek into the datasource.
@@ -308,7 +298,6 @@ abstract class TTFDataStream implements Closeable
      * This will get the original data size that was used for this stream.
      *
      * @return The size of the original data.
-     * @throws IOException If there is an issue reading the data.
      */
     public abstract long getOriginalDataSize();
 }

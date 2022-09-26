@@ -17,27 +17,37 @@
 
 package com.tom_roush.pdfbox.pdmodel.font;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import com.tom_roush.fontbox.ttf.OS2WindowsMetricsTable;
+import com.tom_roush.fontbox.ttf.TTFParser;
+import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
+import static org.mockito.BDDMockito.given;
 
 /**
  * Tests font embedding.
@@ -264,6 +274,166 @@ public class TestFontEmbedding
     {
         PDDocument document = PDDocument.load(file);
         PDFTextStripper stripper = new PDFTextStripper();
-        return stripper.getText(document);
+        String text = stripper.getText(document);
+        document.close();
+        return text;
+    }
+
+    /**
+     * Test that an embedded and subsetted font can be reused.
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testReuseEmbeddedSubsettedFont() throws IOException
+    {
+        String text1 = "The quick brown fox";
+        String text2 = "xof nworb kciuq ehT";
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PDDocument document = new PDDocument();
+        PDPage page = new PDPage();
+        document.addPage(page);
+        InputStream input = PDFont.class.getResourceAsStream(
+            "/com/tom_roush/pdfbox/resources/ttf/LiberationSans-Regular.ttf");
+        PDType0Font font = PDType0Font.load(document, input);
+        PDPageContentStream stream = new PDPageContentStream(document, page);
+        stream.beginText();
+        stream.setFont(font, 20);
+        stream.newLineAtOffset(50, 600);
+        stream.showText(text1);
+        stream.endText();
+        stream.close();
+        document.save(baos);
+        document.close();
+        // Append, while reusing the font subset
+        document = PDDocument.load(baos.toByteArray());
+        page = document.getPage(0);
+        font = (PDType0Font) page.getResources().getFont(COSName.getPDFName("F1"));
+        stream = new PDPageContentStream(document, page, AppendMode.APPEND, true);
+        stream.beginText();
+        stream.setFont(font, 20);
+        stream.newLineAtOffset(250, 600);
+        stream.showText(text2);
+        stream.endText();
+        stream.close();
+        baos.reset();
+        document.save(baos);
+        document.close();
+        // Test that both texts are there
+        document = PDDocument.load(baos.toByteArray());
+        PDFTextStripper stripper = new PDFTextStripper();
+        String extractedText = stripper.getText(document);
+        assertEquals(text1 + " " + text2, extractedText.trim());
+        document.close();
+    }
+
+    private class TrueTypeEmbedderTester extends TrueTypeEmbedder
+    {
+
+        /**
+         * Common functionality for testing the TrueTypeFontEmbedder
+         *
+         */
+        TrueTypeEmbedderTester(PDDocument document, COSDictionary dict, TrueTypeFont ttf, boolean embedSubset)
+            throws IOException
+        {
+            super(document, dict, ttf, embedSubset);
+        }
+
+        @Override
+        protected void buildSubset(InputStream ttfSubset, String tag, Map<Integer, Integer> gidToCid)
+            throws IOException
+        {
+            // no-op.  Need to define method to extend abstract class, but
+            // this method is not currently needed for testing
+        }
+    }
+
+    /**
+     * Test that we validate embedding permissions properly for all legal permissions combinations
+     *
+     * @throws IOException
+     */
+    public void testIsEmbeddingPermittedMultipleVersions() throws IOException
+    {
+        // SETUP
+        PDDocument doc = new PDDocument();
+        COSDictionary cosDictionary = new COSDictionary();
+        InputStream input = PDFont.class.getResourceAsStream("/com/tom_roush/pdfbox/resources/ttf/LiberationSans-Regular.ttf");
+        TrueTypeFont ttf = new TTFParser().parseEmbedded(input);
+        TrueTypeEmbedderTester tester = new TrueTypeEmbedderTester(doc, cosDictionary, ttf, true);
+        TrueTypeFont mockTtf = Mockito.mock(TrueTypeFont.class);
+        OS2WindowsMetricsTable mockOS2 = Mockito.mock(OS2WindowsMetricsTable.class);
+        given(mockTtf.getOS2Windows()).willReturn(mockOS2);
+        Boolean embeddingIsPermitted;
+
+        // TEST 1: 0000 -- Installable embedding versions 0-3+
+        given(mockTtf.getOS2Windows().getFsType()).willReturn((short) 0x0000);
+        embeddingIsPermitted = tester.isEmbeddingPermitted(mockTtf);
+
+        // VERIFY
+        assertTrue(embeddingIsPermitted);
+
+        // no test for 0001, since bit 0 is permanently reserved, and its use is deprecated
+        // TEST 2: 0010 -- Restricted License embedding versions 0-3+
+        given(mockTtf.getOS2Windows().getFsType()).willReturn((short) 0x0002);
+        embeddingIsPermitted = tester.isEmbeddingPermitted(mockTtf);
+
+        // VERIFY
+        assertFalse(embeddingIsPermitted);
+
+        // no test for 0011
+        // TEST 3: 0100 -- Preview & Print embedding versions 0-3+
+        given(mockTtf.getOS2Windows().getFsType()).willReturn((short) 0x0004);
+        embeddingIsPermitted = tester.isEmbeddingPermitted(mockTtf);
+
+        // VERIFY
+        assertTrue(embeddingIsPermitted);
+
+        // no test for 0101
+        // TEST 4: 0110 -- Restricted License embedding AND Preview & Print embedding versions 0-2
+        //              -- illegal permissions combination for versions 3+
+        given(mockTtf.getOS2Windows().getFsType()).willReturn((short) 0x0006);
+        embeddingIsPermitted = tester.isEmbeddingPermitted(mockTtf);
+
+        // VERIFY
+        assertTrue(embeddingIsPermitted);
+
+        // no test for 0111
+        // TEST 5: 1000 -- Editable embedding versions 0-3+
+        given(mockTtf.getOS2Windows().getFsType()).willReturn((short) 0x0008);
+        embeddingIsPermitted = tester.isEmbeddingPermitted(mockTtf);
+
+        // VERIFY
+        assertTrue(embeddingIsPermitted);
+
+        // no test for 1001
+        // TEST 6: 1010 -- Restricted License embedding AND Editable embedding versions 0-2
+        //              -- illegal permissions combination for versions 3+
+        given(mockTtf.getOS2Windows().getFsType()).willReturn((short) 0x000A);
+        embeddingIsPermitted = tester.isEmbeddingPermitted(mockTtf);
+
+        // VERIFY
+        assertTrue(embeddingIsPermitted);
+
+        // no test for 1011
+        // TEST 7: 1100 -- Editable embedding AND Preview & Print embedding versions 0-2
+        //              -- illegal permissions combination for versions 3+
+        given(mockTtf.getOS2Windows().getFsType()).willReturn((short) 0x000C);
+        embeddingIsPermitted = tester.isEmbeddingPermitted(mockTtf);
+
+        // VERIFY
+        assertTrue(embeddingIsPermitted);
+
+        // no test for 1101
+        // TEST 8: 1110 Editable embedding AND Preview & Print embedding AND Restricted License embedding versions 0-2
+        //              -- illegal permissions combination for versions 3+
+        given(mockTtf.getOS2Windows().getFsType()).willReturn((short) 0x000E);
+        embeddingIsPermitted = tester.isEmbeddingPermitted(mockTtf);
+
+        // VERIFY
+        assertTrue(embeddingIsPermitted);
+
+        // no test for 1111
     }
 }

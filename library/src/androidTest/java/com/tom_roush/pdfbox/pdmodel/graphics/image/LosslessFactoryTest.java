@@ -48,6 +48,7 @@ import static com.tom_roush.pdfbox.pdmodel.graphics.image.ValidateXImage.validat
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -104,7 +105,7 @@ public class LosslessFactoryTest
 //        BufferedImage bitonalImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_BINARY); TODO: PdfBox-Android
 
         // avoid multiple of 8 to test padding
-//        assertFalse(bitonalImage.getWidth() % 8 == 0);
+//        Assert.assertNotEquals(0, bitonalImage.getWidth() % 8);
 
 //        g = bitonalImage.getGraphics();
 //        g.drawImage(image, 0, 0, null);
@@ -232,7 +233,51 @@ public class LosslessFactoryTest
         doWritePDF(document, ximage, testResultsDir, "4babgr.pdf");
     }
 
+    /**
+     * Tests USHORT_555_RGB LosslessFactoryTest#createFromImage(PDDocument document, BufferedImage
+     * image). This should create an 8-bit-image; prevent the problems from PDFBOX-4674 in case
+     * image creation is modified in the future.
+     *
+     * @throws java.io.IOException
+     */
+    @Test
+    public void testCreateLosslessFromImageUSHORT_555_RGB() throws IOException
+    {
+        PDDocument document = new PDDocument();
+        Bitmap image = BitmapFactory.decodeStream(testContext.getAssets().open(
+            "pdfbox/com/tom_roush/pdfbox/pdmodel/graphics/image/png.png"));
+
+        // create an USHORT_555_RGB image
+        int w = image.getWidth();
+        int h = image.getHeight();
+        Bitmap rgbImage = Bitmap.createBitmap(w, h, Bitmap.Config.RGB_565);
+//        Canvas canvas = new Canvas();
+//        canvas.setBitmap(rgbImage);
+//        Paint paint = new Paint();
+//        canvas.drawBitmap(image, 0, 0, paint);
+
+        for (int x = 0; x < rgbImage.getWidth(); ++x)
+        {
+            for (int y = 0; y < rgbImage.getHeight(); ++y)
+            {
+                rgbImage.setPixel(x, y, (rgbImage.getPixel(x, y) & 0xFFFFFF) | ((y / 10 * 10) << 24));
+            }
+        }
+
+        PDImageXObject ximage = LosslessFactory.createFromImage(document, rgbImage);
+
+        validate(ximage, 8, w, h, "png", PDDeviceRGB.INSTANCE.getName());
+        checkIdent(rgbImage, ximage.getImage());
+        checkIdentRGB(rgbImage, ximage.getOpaqueImage());
+
+        assertNull(ximage.getSoftMask());
+
+        doWritePDF(document, ximage, testResultsDir, "ushort555rgb.pdf");
+    }
+
     // TODO: PdfBox-Android : testCreateLosslessFromTransparentGIF: GIF images not currently supported
+
+    // TODO: PdfBox-Android : testCreateLosslessFromTransparent1BitGIF: GIF images not currently supported
 
     /**
      * Test file that had a predictor encoding bug in PDFBOX-4184.

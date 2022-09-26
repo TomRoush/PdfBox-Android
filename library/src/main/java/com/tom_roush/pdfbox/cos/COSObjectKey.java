@@ -62,9 +62,9 @@ public class COSObjectKey implements Comparable<COSObjectKey>
     }
 
     /**
-     * This will get the generation number.
+     * This will get the object generation number.
      *
-     * @return The objects generation number.
+     * @return The object generation number.
      */
     public int getGeneration()
     {
@@ -75,6 +75,8 @@ public class COSObjectKey implements Comparable<COSObjectKey>
      * This will set the generation number. It is intended for fixes only.
      *
      * @param genNumber the new generation number.
+     *
+     * @deprecated will be removed in the next major release
      */
     public void fixGeneration(int genNumber)
     {
@@ -82,9 +84,9 @@ public class COSObjectKey implements Comparable<COSObjectKey>
     }
 
     /**
-     * This will get the objects id.
+     * This will get the object number.
      *
-     * @return The object's id.
+     * @return The object number.
      */
     public long getNumber()
     {
@@ -97,13 +99,15 @@ public class COSObjectKey implements Comparable<COSObjectKey>
     @Override
     public int hashCode()
     {
-        return Long.valueOf(number+generation).hashCode();
+        // most likely generation is 0. Shift number 4 times (fast as multiply)
+        // to support generation numbers up to 15
+        return Long.valueOf((number << 4) + generation).hashCode();
     }
 
     @Override
     public String toString()
     {
-        return Long.toString(number) + " " +  Integer.toString(generation) + " R";
+        return number + " " + generation + " R";
     }
 
     @Override

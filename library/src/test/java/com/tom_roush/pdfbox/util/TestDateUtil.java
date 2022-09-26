@@ -167,6 +167,10 @@ public class TestDateUtil extends TestCase
 
         // PDFBOX-1219
         checkParse(2001, 1,31,10,33, 0, +1, 0,  "2001-01-31T10:33+01:00  ");
+
+        // Same with milliseconds
+        checkParse(2001, 1,31,10,33, 0, +1, 0,  "2001-01-31T10:33.123+01:00");
+
         // PDFBOX-465
         checkParse(2002, 5,12, 9,47, 0, 0, 0, "9:47 5/12/2002");
         // PDFBOX-465
@@ -215,6 +219,7 @@ public class TestDateUtil extends TestCase
 
         checkParse(2000, 2,29, 0, 0, 0, 0, 0, "2000 Feb 29"); // valid date
         checkParse(2000, 2,29, 0, 0, 0,+11, 0, " 2000 Feb 29 GMT + 11:00"); // valid date
+        checkParse(2000, 2,29, 0, 0, 0,+11, 0, " 2000 Feb 29 UTC + 11:00"); // valid date
         checkParse(BAD, 0, 0, 0, 0, 0,  0, 0, "2100 Feb 29 GMT+11"); // invalid date
         checkParse(2012, 2,29, 0, 0, 0,+11, 0, "2012 Feb 29 GMT+11"); // valid date
         checkParse(BAD, 0, 0, 0, 0, 0,  0, 0, "2012 Feb 30 GMT+11"); // invalid date
@@ -334,6 +339,8 @@ public class TestDateUtil extends TestCase
 
         assertNull(DateConverter.toCalendar((COSString) null));
         assertNull(DateConverter.toCalendar((String) null));
+        assertNull(DateConverter.toCalendar("D:    "));
+        assertNull(DateConverter.toCalendar("D:"));
 
         checkToString(2013, 8, 28, 3, 14, 15, tzPgh, -4, 0);
         checkToString(2014, 2, 28, 3, 14, 15, tzPgh, -5, 0);
@@ -346,18 +353,10 @@ public class TestDateUtil extends TestCase
         checkToString(2015, 8, 28, 3, 14, 15, tzAdelaide, +9, 30);
         checkToString(2016, 2, 28, 3, 14, 15, tzAdelaide, +10, 30);
         // McMurdo has a daylightsavings rule, but it seems never to apply
-        checkToString(1981, 1, 1, 1, 14, 15, tzMcMurdo, +0, 0);
-        checkToString(1982, 2, 1, 1, 14, 15, tzMcMurdo, +0, 0);
-        checkToString(1983, 3, 1, 1, 14, 15, tzMcMurdo, +0, 0);
-        checkToString(1984, 4, 1, 1, 14, 15, tzMcMurdo, +0, 0);
-        checkToString(1985, 5, 1, 1, 14, 15, tzMcMurdo, +0, 0);
-        checkToString(1986, 6, 1, 1, 14, 15, tzMcMurdo, +0, 0);
-        checkToString(1987, 7, 1, 1, 14, 15, tzMcMurdo, +0, 0);
-        checkToString(1988, 8, 1, 1, 14, 15, tzMcMurdo, +0, 0);
-        checkToString(1989, 9, 1, 1, 14, 15, tzMcMurdo, +0, 0);
-        checkToString(1990, 10, 1, 1, 14, 15, tzMcMurdo, +0, 0);
-        checkToString(1991, 11, 1, 1, 14, 15, tzMcMurdo, +0, 0);
-        checkToString(1992, 12, 1, 1, 14, 15, tzMcMurdo, +0, 0);
+        for (int m = 1; m <= 12; ++m)
+        {
+            checkToString(1980 + m, m, 1, 1, 14, 15, tzMcMurdo, +0, 0);
+        }
     }
 
     private static void checkParseTZ(int expect, String src)

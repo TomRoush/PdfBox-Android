@@ -56,6 +56,10 @@ public class PDStrikeoutAppearanceHandler extends PDAbstractAppearanceHandler
    {
       PDAnnotationTextMarkup annotation = (PDAnnotationTextMarkup) getAnnotation();
       PDRectangle rect = annotation.getRectangle();
+      if (rect == null)
+      {
+         return;
+      }
       float[] pathsArray = annotation.getQuadPoints();
       if (pathsArray == null)
       {
@@ -114,7 +118,7 @@ public class PDStrikeoutAppearanceHandler extends PDAbstractAppearanceHandler
          // https://stackoverflow.com/questions/9855814/pdf-spec-vs-acrobat-creation-quadpoints
          for (int i = 0; i < pathsArray.length / 8; ++i)
          {
-            // get mid point between bounds, substract the line width to approximate what Adobe is doing
+            // get mid point between bounds, subtract the line width to approximate what Adobe is doing
             // See e.g. CTAN-example-Annotations.pdf and PLPDF.com-MarkupAnnotations.pdf
             // and https://bugs.ghostscript.com/show_bug.cgi?id=693664
             // do the math for diagonal annotations with this weird old trick:

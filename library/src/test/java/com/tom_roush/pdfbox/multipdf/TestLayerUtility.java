@@ -26,6 +26,7 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentCatalog;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.PDPageContentStream;
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream.AppendMode;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
@@ -39,14 +40,14 @@ import junit.framework.TestCase;
 
 /**
  * Tests the {@link com.tom_roush.pdfbox.multipdf.LayerUtility} class.
+ *
  */
 public class TestLayerUtility extends TestCase
 {
+
     private final File testResultsDir = new File("target/test-output");
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     protected void setUp() throws Exception
     {
@@ -56,7 +57,6 @@ public class TestLayerUtility extends TestCase
 
     /**
      * Tests layer import.
-     *
      * @throws Exception if an error occurs
      */
     public void testLayerImport() throws Exception
@@ -93,7 +93,7 @@ public class TestLayerUtility extends TestCase
             assertEquals(1.5f, doc.getVersion());
 
             PDPage page = doc.getPage(0);
-            PDOptionalContentGroup ocg = (PDOptionalContentGroup) page.getResources()
+            PDOptionalContentGroup ocg = (PDOptionalContentGroup)page.getResources()
                 .getProperties(COSName.getPDFName("oc1"));
             assertNotNull(ocg);
             assertEquals("overlay", ocg.getName());
@@ -101,6 +101,9 @@ public class TestLayerUtility extends TestCase
             PDOptionalContentProperties ocgs = catalog.getOCProperties();
             PDOptionalContentGroup overlay = ocgs.getGroup("overlay");
             assertEquals(ocg.getName(), overlay.getName());
+
+            // test PDFBOX-5232 (never ended)
+            new LayerUtility(doc).importPageAsForm(doc, 0);
         }
         finally
         {
@@ -118,13 +121,13 @@ public class TestLayerUtility extends TestCase
             PDPage page = new PDPage();
             doc.addPage(page);
             PDResources resources = page.getResources();
-            if (resources == null)
+            if( resources == null )
             {
                 resources = new PDResources();
-                page.setResources(resources);
+                page.setResources( resources );
             }
 
-            final String[] text = new String[]{
+            final String[] text = new String[] {
                 "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer fermentum lacus in eros",
                 "condimentum eget tristique risus viverra. Sed ac sem et lectus ultrices placerat. Nam",
                 "fringilla tincidunt nulla id euismod. Vivamus eget mauris dui. Mauris luctus ullamcorper",
@@ -134,8 +137,7 @@ public class TestLayerUtility extends TestCase
             };
 
             //Setup page content stream and paint background/title
-            PDPageContentStream contentStream = new PDPageContentStream(doc, page,
-                PDPageContentStream.AppendMode.OVERWRITE, false);
+            PDPageContentStream contentStream = new PDPageContentStream(doc, page, AppendMode.OVERWRITE, false);
             PDFont font = PDType1Font.HELVETICA_BOLD;
             contentStream.beginText();
             contentStream.newLineAtOffset(50, 720);
@@ -174,15 +176,14 @@ public class TestLayerUtility extends TestCase
             PDPage page = new PDPage();
             doc.addPage(page);
             PDResources resources = page.getResources();
-            if (resources == null)
+            if( resources == null )
             {
                 resources = new PDResources();
-                page.setResources(resources);
+                page.setResources( resources );
             }
 
             //Setup page content stream and paint background/title
-            PDPageContentStream contentStream = new PDPageContentStream(doc, page,
-                PDPageContentStream.AppendMode.OVERWRITE, false);
+            PDPageContentStream contentStream = new PDPageContentStream(doc, page, AppendMode.OVERWRITE, false);
             PDFont font = PDType1Font.HELVETICA_BOLD;
             contentStream.setNonStrokingColor(AWTColor.LIGHT_GRAY);
             contentStream.beginText();
@@ -211,4 +212,5 @@ public class TestLayerUtility extends TestCase
         }
         return targetFile;
     }
+
 }

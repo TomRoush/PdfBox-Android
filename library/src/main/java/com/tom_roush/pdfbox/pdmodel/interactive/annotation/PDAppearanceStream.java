@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.tom_roush.pdfbox.pdmodel.interactive.annotation;
 
 import com.tom_roush.pdfbox.cos.COSStream;
@@ -21,8 +22,8 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 
 /**
- * An appearance stream is a form XObject, a self-contained content stream that shall be rendered
- * inside the annotation rectangle.
+ * An appearance stream is a form XObject, a self-contained content stream that shall be rendered inside the annotation
+ * rectangle.
  *
  * @author Ben Litchfield
  * @author John Hewson

@@ -52,7 +52,6 @@ public abstract class PDSimpleFont extends PDFont
      */
     PDSimpleFont()
     {
-        super();
     }
 
     /**
@@ -61,16 +60,7 @@ public abstract class PDSimpleFont extends PDFont
     PDSimpleFont(String baseFont)
     {
         super(baseFont);
-
-        // assign the glyph list based on the font
-        if ("ZapfDingbats".equals(baseFont))
-        {
-            glyphList = GlyphList.getZapfDingbats();
-        }
-        else
-        {
-            glyphList = GlyphList.getAdobeGlyphList();
-        }
+        assignGlyphList(baseFont);
     }
 
     /**
@@ -91,61 +81,46 @@ public abstract class PDSimpleFont extends PDFont
      */
     protected void readEncoding() throws IOException
     {
-        COSBase encoding = dict.getDictionaryObject(COSName.ENCODING);
-        if (encoding != null)
+        COSBase encodingBase = dict.getDictionaryObject(COSName.ENCODING);
+        if (encodingBase instanceof COSName)
         {
-            if (encoding instanceof COSName)
+            COSName encodingName = (COSName) encodingBase;
+            this.encoding = Encoding.getInstance(encodingName);
+            if (this.encoding == null)
             {
-                COSName encodingName = (COSName)encoding;
-                this.encoding = Encoding.getInstance(encodingName);
-                if (this.encoding == null)
-                {
-                    Log.w("PdfBox-Android", "Unknown encoding: " + encodingName.getName());
-                    this.encoding = readEncodingFromFont(); // fallback
-                }
+                Log.w("PdfBox-Android", "Unknown encoding: " + encodingName.getName());
+                this.encoding = readEncodingFromFont(); // fallback
             }
-            else if (encoding instanceof COSDictionary)
+        }
+        else if (encodingBase instanceof COSDictionary)
+        {
+            COSDictionary encodingDict = (COSDictionary) encodingBase;
+            Encoding builtIn = null;
+            Boolean symbolic = getSymbolicFlag();
+
+            COSName baseEncoding = encodingDict.getCOSName(COSName.BASE_ENCODING);
+
+            boolean hasValidBaseEncoding = baseEncoding != null &&
+                Encoding.getInstance(baseEncoding) != null;
+
+            if (!hasValidBaseEncoding && Boolean.TRUE.equals(symbolic))
             {
-                COSDictionary encodingDict = (COSDictionary)encoding;
-                Encoding builtIn = null;
-                Boolean symbolic = getSymbolicFlag();
-                boolean isFlaggedAsSymbolic = symbolic != null && symbolic;
-
-                COSName baseEncoding = encodingDict.getCOSName(COSName.BASE_ENCODING);
-
-                boolean hasValidBaseEncoding = baseEncoding != null &&
-                    Encoding.getInstance(baseEncoding) != null;
-
-                if (!hasValidBaseEncoding && isFlaggedAsSymbolic)
-                {
-                    builtIn = readEncodingFromFont();
-                }
-
-                if (symbolic == null)
-                {
-                    symbolic = false;
-                }
-                this.encoding = new DictionaryEncoding(encodingDict, !symbolic, builtIn);
+                builtIn = readEncodingFromFont();
             }
+
+            if (symbolic == null)
+            {
+                symbolic = false;
+            }
+            this.encoding = new DictionaryEncoding(encodingDict, !symbolic, builtIn);
         }
         else
         {
             this.encoding = readEncodingFromFont();
         }
-
         // normalise the standard 14 name, e.g "Symbol,Italic" -> "Symbol"
         String standard14Name = Standard14Fonts.getMappedFontName(getName());
-
-        // assign the glyph list based on the font
-        if ("ZapfDingbats".equals(standard14Name))
-        {
-            glyphList = GlyphList.getZapfDingbats();
-        }
-        else
-        {
-            // StandardEncoding and Symbol are in the AGL
-            glyphList = GlyphList.getAdobeGlyphList();
-        }
+        assignGlyphList(standard14Name);
     }
 
     /**
@@ -213,7 +188,7 @@ public abstract class PDSimpleFont extends PDFont
         {
             if (encoding == null)
             {
-                // sanity check, should never happen
+                // check, should never happen
                 if (!(this instanceof PDTrueTypeFont))
                 {
                     throw new IllegalStateException("PDFBox bug: encoding should not be null!");
@@ -353,6 +328,19 @@ public abstract class PDSimpleFont extends PDFont
                 return 250f;
             }
 
+            if ("nbspace".equals(nameInAFM))
+            {
+                // PDFBOX-4944: nbspace is missing in AFM files,
+                // but PDF specification tells "it shall be typographically the same as SPACE"
+                nameInAFM = "space";
+            }
+            else if ("sfthyphen".equals(nameInAFM))
+            {
+                // PDFBOX-5115: sfthyphen is missing in AFM files,
+                // but PDF specification tells "it shall be typographically the same as hyphen"
+                nameInAFM = "hyphen";
+            }
+
             return getStandard14AFM().getCharacterWidth(nameInAFM);
         }
         throw new IllegalStateException("No AFM");
@@ -435,5 +423,18 @@ public abstract class PDSimpleFont extends PDFont
             }
         }
         return false;
+    }
+
+    private void assignGlyphList(String baseFont)
+    {
+        // assign the glyph list based on the font
+        if ("ZapfDingbats".equals(baseFont))
+        {
+            glyphList = GlyphList.getZapfDingbats();
+        }
+        else
+        {
+            glyphList = GlyphList.getAdobeGlyphList();
+        }
     }
 }

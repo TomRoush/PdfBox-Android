@@ -70,7 +70,7 @@ public class PDPageAdditionalActions implements COSObjectable
      */
     public PDAction getO()
     {
-        COSDictionary o = (COSDictionary)actions.getDictionaryObject(COSName.O);
+        COSDictionary o = (COSDictionary) actions.getDictionaryObject(COSName.O);
         PDAction retval = null;
         if( o != null )
         {

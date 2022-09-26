@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -271,7 +270,7 @@ public final class TTFSubsetter
     {
         return nr.getPlatformId() == NameRecord.PLATFORM_WINDOWS
             && nr.getPlatformEncodingId() == NameRecord.ENCODING_WINDOWS_UNICODE_BMP
-            && nr.getLanguageId() == NameRecord.LANGUGAE_WINDOWS_EN_US
+            && nr.getLanguageId() == NameRecord.LANGUAGE_WINDOWS_EN_US
             && nr.getNameId() >= 0 && nr.getNameId() < 7;
     }
 
@@ -477,10 +476,10 @@ public final class TTFSubsetter
         hasAddedCompoundReferences = true;
 
         boolean hasNested;
+        GlyphTable g = ttf.getGlyph();
+        long[] offsets = ttf.getIndexToLocation().getOffsets();
         do
         {
-            GlyphTable g = ttf.getGlyph();
-            long[] offsets = ttf.getIndexToLocation().getOffsets();
             InputStream is = ttf.getOriginalData();
             Set<Integer> glyphIdsToAdd = null;
             try
@@ -599,10 +598,7 @@ public final class TTFSubsetter
 
                         // glyphIndex
                         int componentGid = (buf[off] & 0xff) << 8 | buf[off + 1] & 0xff;
-                        if (!glyphIds.contains(componentGid))
-                        {
-                            glyphIds.add(componentGid);
-                        }
+                        glyphIds.add(componentGid);
 
                         int newComponentGid = getNewGlyphId(componentGid);
                         buf[off]   = (byte)(newComponentGid >>> 8);
@@ -704,7 +700,7 @@ public final class TTFSubsetter
         // encoding record
         writeUint16(out, CmapTable.PLATFORM_WINDOWS); // platformID
         writeUint16(out, CmapTable.ENCODING_WIN_UNICODE_BMP); // platformSpecificID
-        writeUint32(out, 4 * 2 + 4); // offset
+        writeUint32(out, 12); // offset 4 * 2 + 4
 
         // build Format 4 subtable (Unicode BMP)
         Iterator<Entry<Integer, Integer>> it = uniToGID.entrySet().iterator();
@@ -714,8 +710,8 @@ public final class TTFSubsetter
 
         // +1 because .notdef is missing in uniToGID
         int[] startCode = new int[uniToGID.size()+1];
-        int[] endCode = new int[uniToGID.size()+1];
-        int[] idDelta = new int[uniToGID.size()+1];
+        int[] endCode = new int[startCode.length];
+        int[] idDelta = new int[startCode.length];
         int segCount = 0;
         while(it.hasNext())
         {
@@ -878,11 +874,7 @@ public final class TTFSubsetter
         // more info: https://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6hmtx.html
         int lastgid = h.getNumberOfHMetrics() - 1;
         // true if lastgid is not in the set: we'll need its width (but not its left side bearing) later
-        boolean needLastGidWidth = false;
-        if (glyphIds.last() > lastgid && !glyphIds.contains(lastgid))
-        {
-            needLastGidWidth = true;
-        }
+        boolean needLastGidWidth = glyphIds.last() > lastgid && !glyphIds.contains(lastgid);
 
         try
         {
@@ -895,7 +887,7 @@ public final class TTFSubsetter
                 if (glyphId <= lastgid)
                 {
                     // copy width and lsb
-                    offset = glyphId * 4;
+                    offset = glyphId * 4l;
                     lastOffset = copyBytes(is, bos, offset, lastOffset, 4);
                 }
                 else
@@ -905,14 +897,14 @@ public final class TTFSubsetter
                         // one time only: copy width from lastgid, whose width applies
                         // to all later glyphs
                         needLastGidWidth = false;
-                        offset = lastgid * 4;
+                        offset = lastgid * 4l;
                         lastOffset = copyBytes(is, bos, offset, lastOffset, 2);
 
                         // then go on with lsb from actual glyph (lsb are individual even in monotype fonts)
                     }
 
                     // copy lsb only, as we are beyond numOfHMetrics
-                    offset = h.getNumberOfHMetrics() * 4 + (glyphId - h.getNumberOfHMetrics()) * 2;
+                    offset = h.getNumberOfHMetrics() * 4l + (glyphId - h.getNumberOfHMetrics()) * 2l;
                     lastOffset = copyBytes(is, bos, offset, lastOffset, 2);
                 }
             }
@@ -1070,7 +1062,7 @@ public final class TTFSubsetter
     private void writeLongDateTime(DataOutputStream out, Calendar calendar) throws IOException
     {
         // inverse operation of TTFDataStream.readInternationalDate()
-        Calendar cal = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"));
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         cal.set(1904, 0, 1, 0, 0, 0);
         cal.set(Calendar.MILLISECOND, 0);
         long millisFor1904 = cal.getTimeInMillis();
@@ -1093,6 +1085,6 @@ public final class TTFSubsetter
 
     private int log2(int num)
     {
-        return (int)Math.round(Math.log(num) / Math.log(2));
+        return (int) Math.floor(Math.log(num) / Math.log(2));
     }
 }

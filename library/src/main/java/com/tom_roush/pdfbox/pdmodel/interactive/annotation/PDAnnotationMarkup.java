@@ -31,6 +31,7 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDAppearanceHandler;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDCaretAppearanceHandler;
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDFileAttachmentAppearanceHandler;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDFreeTextAppearanceHandler;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDInkAppearanceHandler;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.handlers.PDPolygonAppearanceHandler;
@@ -509,7 +510,7 @@ public class PDAnnotationMarkup extends PDAnnotation
                 COSBase base2 = array.getObject(i);
                 if (base2 instanceof COSArray)
                 {
-                    inkList[i] = ((COSArray) array.getObject(i)).toFloatArray();
+                    inkList[i] = ((COSArray) base2).toFloatArray();
                 }
                 else
                 {
@@ -833,7 +834,7 @@ public class PDAnnotationMarkup extends PDAnnotation
                 COSBase base2 = array.getObject(i);
                 if (base2 instanceof COSArray)
                 {
-                    pathArray[i] = ((COSArray) array.getObject(i)).toFloatArray();
+                    pathArray[i] = ((COSArray) base2).toFloatArray();
                 }
                 else
                 {
@@ -869,27 +870,31 @@ public class PDAnnotationMarkup extends PDAnnotation
             PDAppearanceHandler appearanceHandler = null;
             if (SUB_TYPE_CARET.equals(getSubtype()))
             {
-                appearanceHandler = new PDCaretAppearanceHandler(this);
+                appearanceHandler = new PDCaretAppearanceHandler(this, document);
             }
             else if (SUB_TYPE_FREETEXT.equals(getSubtype()))
             {
-                appearanceHandler = new PDFreeTextAppearanceHandler(this);
+                appearanceHandler = new PDFreeTextAppearanceHandler(this, document);
             }
             else if (SUB_TYPE_INK.equals(getSubtype()))
             {
-                appearanceHandler = new PDInkAppearanceHandler(this);
+                appearanceHandler = new PDInkAppearanceHandler(this, document);
             }
             else if (SUB_TYPE_POLYGON.equals(getSubtype()))
             {
-                appearanceHandler = new PDPolygonAppearanceHandler(this);
+                appearanceHandler = new PDPolygonAppearanceHandler(this, document);
             }
             else if (SUB_TYPE_POLYLINE.equals(getSubtype()))
             {
-                appearanceHandler = new PDPolylineAppearanceHandler(this);
+                appearanceHandler = new PDPolylineAppearanceHandler(this, document);
             }
             else if (SUB_TYPE_SOUND.equals(getSubtype()))
             {
-                appearanceHandler = new PDSoundAppearanceHandler(this);
+                appearanceHandler = new PDSoundAppearanceHandler(this, document);
+            }
+            else if (PDAnnotationFileAttachment.SUB_TYPE.equals(getSubtype()))
+            {
+                appearanceHandler = new PDFileAttachmentAppearanceHandler(this, document);
             }
 
             if (appearanceHandler != null)

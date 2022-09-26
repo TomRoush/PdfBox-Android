@@ -37,9 +37,16 @@ public class SetNonStrokingColorSpace extends OperatorProcessor
     @Override
     public void process(Operator operator, List<COSBase> arguments) throws IOException
     {
-        COSName name = (COSName)arguments.get(0);
-
-        PDColorSpace cs = context.getResources().getColorSpace(name);
+        if (arguments.isEmpty())
+        {
+            return;
+        }
+        COSBase base = arguments.get(0);
+        if (!(base instanceof COSName))
+        {
+            return;
+        }
+        PDColorSpace cs = context.getResources().getColorSpace((COSName) base);
         context.getGraphicsState().setNonStrokingColorSpace(cs);
         context.getGraphicsState().setNonStrokingColor(cs.getInitialColor());
     }

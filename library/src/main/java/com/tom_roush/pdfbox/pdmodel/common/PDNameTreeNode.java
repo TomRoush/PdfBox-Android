@@ -112,10 +112,10 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
     public List<PDNameTreeNode<T>> getKids()
     {
         List<PDNameTreeNode<T>> retval = null;
-        COSArray kids = (COSArray)node.getDictionaryObject( COSName.KIDS );
+        COSArray kids = node.getCOSArray(COSName.KIDS);
         if( kids != null )
         {
-            List<PDNameTreeNode<T>> pdObjects = new ArrayList<PDNameTreeNode<T>>();
+            List<PDNameTreeNode<T>> pdObjects = new ArrayList<PDNameTreeNode<T>>(kids.size());
             for( int i=0; i<kids.size(); i++ )
             {
                 pdObjects.add( createChildNode( (COSDictionary)kids.getObject(i) ) );
@@ -129,11 +129,13 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
     /**
      * Set the children of this named tree.
      *
-     * @param kids The children of this named tree.
+     * @param kids The children of this named tree. These have to be in sorted order. Because of
+     * that, it is usually easier to call {@link #setNames(Map)} with a map and pass a single
+     * element list here.
      */
     public void setKids( List<? extends PDNameTreeNode<T>> kids )
     {
-        if (kids != null && kids.size() > 0)
+        if (kids != null && !kids.isEmpty())
         {
             for (PDNameTreeNode<T> kidsNode : kids)
             {
@@ -165,7 +167,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
         else
         {
             List<PDNameTreeNode<T>> kids = getKids();
-            if (kids != null && kids.size() > 0)
+            if (kids != null && !kids.isEmpty())
             {
                 PDNameTreeNode<T> firstKid = kids.get(0);
                 PDNameTreeNode<T> lastKid = kids.get(kids.size() - 1);
@@ -207,40 +209,36 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
      *
      * @param name The name in the tree.
      * @return The value of the name in the tree.
-     * @throws IOException If an there is a problem creating the destinations.
+     * @throws IOException If there is a problem creating the destinations.
      */
     public T getValue( String name ) throws IOException
     {
-        T retval = null;
         Map<String, T> names = getNames();
-        if( names != null )
+        if (names != null)
         {
-            retval = names.get( name );
+            return names.get(name);
+        }
+        List<PDNameTreeNode<T>> kids = getKids();
+        if (kids != null)
+        {
+            for (int i = 0; i < kids.size(); i++)
+            {
+                PDNameTreeNode<T> childNode = kids.get(i);
+                String upperLimit = childNode.getUpperLimit();
+                String lowerLimit = childNode.getLowerLimit();
+                if (upperLimit == null || lowerLimit == null ||
+                    upperLimit.compareTo(lowerLimit) < 0 ||
+                    (lowerLimit.compareTo(name) <= 0 && upperLimit.compareTo(name) >= 0))
+                {
+                    return childNode.getValue( name );
+                }
+            }
         }
         else
         {
-            List<PDNameTreeNode<T>> kids = getKids();
-            if (kids != null)
-            {
-                for( int i=0; i<kids.size() && retval == null; i++ )
-                {
-                    PDNameTreeNode<T> childNode = kids.get( i );
-                    String upperLimit = childNode.getUpperLimit();
-                    String lowerLimit = childNode.getLowerLimit();
-                    if (upperLimit == null || lowerLimit == null ||
-                        upperLimit.compareTo(lowerLimit) < 0 ||
-                        (lowerLimit.compareTo(name) <= 0 && upperLimit.compareTo(name) >= 0))
-                    {
-                        retval = childNode.getValue( name );
-                    }
-                }
-            }
-            else
-            {
-                Log.w("PdfBox-Android", "NameTreeNode does not have \"names\" nor \"kids\" objects.");
-            }
+            Log.w("PdfBox-Android", "NameTreeNode does not have \"names\" nor \"kids\" objects.");
         }
-        return retval;
+        return null;
     }
 
     /**
@@ -255,13 +253,22 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
      */
     public Map<String, T> getNames() throws IOException
     {
-        COSArray namesArray = (COSArray)node.getDictionaryObject( COSName.NAMES );
+        COSArray namesArray = node.getCOSArray(COSName.NAMES);
         if( namesArray != null )
         {
             Map<String, T> names = new LinkedHashMap<String, T>();
-            for( int i=0; i<namesArray.size(); i+=2 )
+            if (namesArray.size() % 2 != 0)
             {
-                COSString key = (COSString)namesArray.getObject(i);
+                Log.w("PdfBox-Android", "Names array has odd size: " + namesArray.size());
+            }
+            for (int i = 0; i + 1 < namesArray.size(); i += 2)
+            {
+                COSBase base = namesArray.getObject(i);
+                if (!(base instanceof COSString))
+                {
+                    throw new IOException("Expected string, found " + base + " in name tree at index " + i);
+                }
+                COSString key = (COSString) base;
                 COSBase cosValue = namesArray.getObject( i+1 );
                 names.put( key.getString(), convertCOSToPD(cosValue) );
             }
@@ -294,7 +301,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
 
     /**
      * Set the names for this node. This method will set the appropriate upper and lower limits
-     * based on the keys in the map.
+     * based on the keys in the map and take care of the ordering.
      *
      * @param names map of names to objects, or <code>null</code> for nothing.
      */
@@ -328,7 +335,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
     public String getUpperLimit()
     {
         String retval = null;
-        COSArray arr = (COSArray)node.getDictionaryObject( COSName.LIMITS );
+        COSArray arr = node.getCOSArray(COSName.LIMITS);
         if( arr != null )
         {
             retval = arr.getString( 1 );
@@ -343,7 +350,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
      */
     private void setUpperLimit( String upper )
     {
-        COSArray arr = (COSArray)node.getDictionaryObject( COSName.LIMITS );
+        COSArray arr = node.getCOSArray(COSName.LIMITS);
         if( arr == null )
         {
             arr = new COSArray();
@@ -362,7 +369,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
     public String getLowerLimit()
     {
         String retval = null;
-        COSArray arr = (COSArray)node.getDictionaryObject( COSName.LIMITS );
+        COSArray arr = node.getCOSArray(COSName.LIMITS);
         if( arr != null )
         {
             retval = arr.getString( 0 );
@@ -377,7 +384,7 @@ public abstract class PDNameTreeNode<T extends COSObjectable> implements COSObje
      */
     private void setLowerLimit( String lower )
     {
-        COSArray arr = (COSArray)node.getDictionaryObject( COSName.LIMITS );
+        COSArray arr = node.getCOSArray(COSName.LIMITS);
         if( arr == null )
         {
             arr = new COSArray();

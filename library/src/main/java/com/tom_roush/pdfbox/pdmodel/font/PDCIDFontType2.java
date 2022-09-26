@@ -118,11 +118,6 @@ public class PDCIDFontType2 extends PDCIDFont
                         Log.w("PdfBox-Android", "Found CFF/OTF but expected embedded TTF font " + fd.getFontName());
                     }
                 }
-                catch (NullPointerException e) // TTF parser is buggy
-                {
-                    fontIsDamaged = true;
-                    Log.w("PdfBox-Android", "Could not read embedded OTF for font " + getBaseFont(), e);
-                }
                 catch (IOException e)
                 {
                     fontIsDamaged = true;
@@ -211,7 +206,11 @@ public class PDCIDFontType2 extends PDCIDFont
         // Acrobat allows bad PDFs to use Unicode CMaps here instead of CID CMaps, see PDFBOX-1283
         if (!cMap.hasCIDMappings() && cMap.hasUnicodeMappings())
         {
-            return cMap.toUnicode(code).codePointAt(0); // actually: code -> CID
+            String unicode = cMap.toUnicode(code);
+            if (unicode != null)
+            {
+                return unicode.codePointAt(0); // actually: code -> CID
+            }
         }
 
         return cMap.toCID(code);
@@ -239,7 +238,14 @@ public class PDCIDFontType2 extends PDCIDFont
                 // Acrobat allows non-embedded GIDs - todo: can we find a test PDF for this?
                 Log.w("PdfBox-Android", "Using non-embedded GIDs in font " + getName());
                 int cid = codeToCID(code);
-                return cid2gid[cid];
+                if (cid < cid2gid.length)
+                {
+                    return cid2gid[cid];
+                }
+                else
+                {
+                    return 0;
+                }
             }
             else
             {
@@ -313,7 +319,7 @@ public class PDCIDFontType2 extends PDCIDFont
     public float getWidthFromFont(int code) throws IOException
     {
         int gid = codeToGID(code);
-        int width = ttf.getAdvanceWidth(gid);
+        float width = ttf.getAdvanceWidth(gid);
         int unitsPerEM = ttf.getUnitsPerEm();
         if (unitsPerEM != 1000)
         {
@@ -348,8 +354,15 @@ public class PDCIDFontType2 extends PDCIDFont
             // otherwise we require an explicit ToUnicode CMap
             if (cid == -1)
             {
-                //TODO: invert the ToUnicode CMap?
-                // see also PDFBOX-4233
+                CMap toUnicodeCMap = parent.getToUnicodeCMap();
+                if (toUnicodeCMap != null)
+                {
+                    byte[] codes = toUnicodeCMap.getCodesFromUnicode(Character.toString((char) unicode));
+                    if (codes != null)
+                    {
+                        return codes;
+                    }
+                }
                 cid = 0;
             }
         }

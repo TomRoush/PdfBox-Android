@@ -91,7 +91,6 @@ public class PDXObject implements COSObjectable
 
     /**
      * Creates a new XObject from the given stream and subtype.
-     *
      * @param stream The stream to read.
      * @param subtype
      */
@@ -105,7 +104,6 @@ public class PDXObject implements COSObjectable
 
     /**
      * Creates a new XObject from the given stream and subtype.
-     *
      * @param stream The stream to read.
      * @param subtype
      */
@@ -163,7 +161,6 @@ public class PDXObject implements COSObjectable
 
     /**
      * Returns the stream.
-     *
      * @return The stream for this object.
      */
     public final PDStream getStream()

@@ -21,7 +21,7 @@ import java.io.InputStream;
 
 /**
  * This builder class is in order to create visible signature properties.
- * 
+ *
  * @author Vakhtang Koroghlishvili
  */
 public class PDVisibleSigProperties
@@ -49,7 +49,7 @@ public class PDVisibleSigProperties
     }
 
     /**
-     * 
+     *
      * @return - signer name
      */
     public String getSignerName()
@@ -110,7 +110,7 @@ public class PDVisibleSigProperties
 
     /**
      * returns your page
-     * @return  the page number.
+     * @return  the page number (1-based).
      */
     public int getPage()
     {
@@ -119,7 +119,7 @@ public class PDVisibleSigProperties
 
     /**
      * sets page number
-     * @param page
+     * @param page page the signature should be placed on (1-based)
      * @return the visible signature properties.
      */
     public PDVisibleSigProperties page(int page)

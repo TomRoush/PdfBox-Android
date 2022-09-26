@@ -20,11 +20,11 @@ import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 
 /**
  * Define styling attributes to be used for text formatting.
+ *
  */
 class AppearanceStyle
 {
     private PDFont font;
-
     /**
      * The font size to be used for text formatting.
      *

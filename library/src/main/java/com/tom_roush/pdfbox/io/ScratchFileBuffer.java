@@ -323,6 +323,10 @@ class ScratchFileBuffer implements RandomAccess
             }
 
             int newPagePosition = (int) (seekToPosition / pageSize);
+            if (seekToPosition % pageSize == 0 && seekToPosition == size)
+            {
+                newPagePosition--; // PDFBOX-4756: Prevent seeking a non-yet-existent page...
+            }
 
             currentPage = pageHandler.readPage(pageIndexes[newPagePosition]);
             currentPagePositionInPageIndexes = newPagePosition;
@@ -510,7 +514,7 @@ class ScratchFileBuffer implements RandomAccess
         {
             if ((pageHandler != null) && PDFBoxConfig.isDebugEnabled())
             {
-                Log.d("PdfBox-Android","ScratchFileBuffer not closed!");
+                Log.d("PdfBox-Android", "ScratchFileBuffer not closed!");
             }
             close();
         }

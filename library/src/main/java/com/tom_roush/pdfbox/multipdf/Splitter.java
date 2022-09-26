@@ -16,12 +16,18 @@
  */
 package com.tom_roush.pdfbox.multipdf;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.MemoryUsageSetting;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
+import com.tom_roush.pdfbox.pdmodel.PDDocumentInformation;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDAction;
 import com.tom_roush.pdfbox.pdmodel.interactive.action.PDActionGoTo;
@@ -46,7 +52,7 @@ public class Splitter
     private int endPage = Integer.MAX_VALUE;
     private List<PDDocument> destinationDocuments;
 
-    private int currentPageNumber = 0;
+    private int currentPageNumber;
 
     private MemoryUsageSetting memoryUsageSetting = null;
 
@@ -61,7 +67,7 @@ public class Splitter
     /**
      * Set the memory setting.
      *
-     * @param memoryUsageSetting
+     * @param memoryUsageSetting The memory setting.
      */
     public void setMemoryUsageSetting(MemoryUsageSetting memoryUsageSetting)
     {
@@ -73,12 +79,17 @@ public class Splitter
      *
      * @param document The document to split.
      *
-     * @return A list of all the split documents.
+     * @return A list of all the split documents. These should all be saved before closing any
+     * documents, including the source document. Any further operations should be made after
+     * reloading them, to avoid problems due to resource sharing. For the same reason, they should
+     * not be saved with encryption.
      *
      * @throws IOException If there is an IOError
      */
     public List<PDDocument> split(PDDocument document) throws IOException
     {
+        // reset the currentPageNumber for a case if the split method will be used several times
+        currentPageNumber = 0;
         destinationDocuments = new ArrayList<PDDocument>();
         sourceDocument = document;
         processPages();
@@ -207,7 +218,35 @@ public class Splitter
         PDDocument document = memoryUsageSetting == null ?
             new PDDocument() : new PDDocument(memoryUsageSetting);
         document.getDocument().setVersion(getSourceDocument().getVersion());
-        document.setDocumentInformation(getSourceDocument().getDocumentInformation());
+        PDDocumentInformation sourceDocumentInformation = getSourceDocument().getDocumentInformation();
+        if (sourceDocumentInformation != null)
+        {
+            // PDFBOX-5317: Image Capture Plus files where /Root and /Info share the same dictionary
+            // Only copy simple elements to avoid huge files
+            COSDictionary sourceDocumentInformationDictionary = sourceDocumentInformation.getCOSObject();
+            COSDictionary destDocumentInformationDictionary = new COSDictionary();
+            for (COSName key : sourceDocumentInformationDictionary.keySet())
+            {
+                COSBase value = sourceDocumentInformationDictionary.getDictionaryObject(key);
+                if (value instanceof COSDictionary)
+                {
+                    Log.w("PdfBox-Android", "Nested entry for key '" + key.getName()
+                        + "' skipped in document information dictionary");
+                    if (sourceDocument.getDocumentCatalog().getCOSObject() ==
+                        sourceDocument.getDocumentInformation().getCOSObject())
+                    {
+                        Log.w("PdfBox-Android", "/Root and /Info share the same dictionary");
+                    }
+                    continue;
+                }
+                if (COSName.TYPE.equals(key))
+                {
+                    continue; // there is no /Type in the document information dictionary
+                }
+                destDocumentInformationDictionary.setItem(key, value);
+            }
+            document.setDocumentInformation(new PDDocumentInformation(destDocumentInformationDictionary));
+        }
         document.getDocumentCatalog().setViewerPreferences(
             getSourceDocument().getDocumentCatalog().getViewerPreferences());
         return document;
@@ -225,7 +264,11 @@ public class Splitter
         createNewDocumentIfNecessary();
 
         PDPage imported = getDestinationDocument().importPage(page);
-        imported.setResources(page.getResources());
+        if (page.getResources() != null && !page.getCOSObject().containsKey(COSName.RESOURCES))
+        {
+            imported.setResources(page.getResources());
+            Log.i("PdfBox-Android", "Resources imported in Splitter"); // follow-up to warning in importPage
+        }
         // remove page links to avoid copying not needed resources 
         processAnnotations(imported);
     }
@@ -239,28 +282,25 @@ public class Splitter
             {
                 PDAnnotationLink link = (PDAnnotationLink)annotation;
                 PDDestination destination = link.getDestination();
-                if (destination == null && link.getAction() != null)
+                PDAction action = link.getAction();
+                if (destination == null && action instanceof PDActionGoTo)
                 {
-                    PDAction action = link.getAction();
-                    if (action instanceof PDActionGoTo)
-                    {
-                        destination = ((PDActionGoTo)action).getDestination();
-                    }
+                    destination = ((PDActionGoTo) action).getDestination();
                 }
                 if (destination instanceof PDPageDestination)
                 {
-                    // TODO preserve links to pages within the splitted result  
+                    // TODO preserve links to pages within the split result  
                     ((PDPageDestination) destination).setPage(null);
                 }
             }
-            // TODO preserve links to pages within the splitted result  
+            // TODO preserve links to pages within the split result  
             annotation.setPage(null);
         }
     }
     /**
      * The source PDF document.
      *
-     * @return the pdf to be splitted
+     * @return the pdf to be split
      */
     protected final PDDocument getSourceDocument()
     {

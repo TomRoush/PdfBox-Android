@@ -23,6 +23,7 @@ import java.util.List;
 import com.tom_roush.fontbox.afm.FontMetrics;
 import com.tom_roush.fontbox.pfb.PfbParser;
 import com.tom_roush.fontbox.type1.Type1Font;
+import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.IOUtils;
@@ -108,16 +109,17 @@ class PDType1FontEmbedder
     {
         boolean isSymbolic = type1.getEncoding()
             instanceof com.tom_roush.fontbox.encoding.BuiltInEncoding;
-
+        BoundingBox bbox = type1.getFontBBox();
         PDFontDescriptor fd = new PDFontDescriptor();
+
         fd.setFontName(type1.getName());
         fd.setFontFamily(type1.getFamilyName());
         fd.setNonSymbolic(!isSymbolic);
         fd.setSymbolic(isSymbolic);
-        fd.setFontBoundingBox(new PDRectangle(type1.getFontBBox()));
+        fd.setFontBoundingBox(new PDRectangle(bbox));
         fd.setItalicAngle(type1.getItalicAngle());
-        fd.setAscent(type1.getFontBBox().getUpperRightY());
-        fd.setDescent(type1.getFontBBox().getLowerLeftY());
+        fd.setAscent(bbox.getUpperRightY());
+        fd.setDescent(bbox.getLowerLeftY());
         fd.setCapHeight(type1.getBlueValues().get(2).floatValue());
         fd.setStemV(0); // for PDF/A
         return fd;

@@ -25,10 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,12 +34,8 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -65,22 +59,27 @@ import com.tom_roush.pdfbox.util.Charsets;
  */
 public abstract class SecurityHandler
 {
-    private static final int DEFAULT_KEY_LENGTH = 40;
+    private static final short DEFAULT_KEY_LENGTH = 40;
 
     // see 7.6.2, page 58, PDF 32000-1:2008
     private static final byte[] AES_SALT = { (byte) 0x73, (byte) 0x41, (byte) 0x6c, (byte) 0x54 };
 
-    /** The length in bits of the secret key used to encrypt the document. */
-    protected int keyLength = DEFAULT_KEY_LENGTH;
+    /**
+     * The length in bits of the secret key used to encrypt the document. Will become private in 3.0.
+     */
+    protected short keyLength = DEFAULT_KEY_LENGTH;
 
-    /** The encryption key that will used to encrypt / decrypt.*/
+    /** The encryption key that will be used to encrypt / decrypt. Will become private in 3.0. */
     protected byte[] encryptionKey;
 
     /** The RC4 implementation used for cryptographic functions. */
     private final RC4Cipher rc4 = new RC4Cipher();
 
-    /** indicates if the Metadata have to be decrypted of not. */
+    /** Indicates if the Metadata have to be decrypted of not. */
     private boolean decryptMetadata;
+
+    /** Can be used to allow stateless AES encryption */
+    private SecureRandom customSecureRandom;
 
     // PDFBOX-4453, PDFBOX-4477: Originally this was just a Set. This failed in rare cases
     // when a decrypted string was identical to an encrypted string.
@@ -91,6 +90,8 @@ public abstract class SecurityHandler
         Collections.newSetFromMap(new IdentityHashMap<COSBase, Boolean>());
 
     private boolean useAES;
+
+    private ProtectionPolicy protectionPolicy = null;
 
     /**
      * The access permission granted to the current user for the document. These
@@ -109,13 +110,23 @@ public abstract class SecurityHandler
     private COSName stringFilterName;
 
     /**
-     * Set wether to decrypt meta data.
+     * Set whether to decrypt meta data.
      *
      * @param decryptMetadata true if meta data has to be decrypted.
      */
     protected void setDecryptMetadata(boolean decryptMetadata)
     {
         this.decryptMetadata = decryptMetadata;
+    }
+
+    /**
+     * Returns true if meta data is to be decrypted.
+     *
+     * @return True if meta data has to be decrypted.
+     */
+    public boolean isDecryptMetadata()
+    {
+        return decryptMetadata;
     }
 
     /**
@@ -136,6 +147,16 @@ public abstract class SecurityHandler
     protected void setStreamFilterName(COSName streamFilterName)
     {
         this.streamFilterName = streamFilterName;
+    }
+
+    /**
+     * Set the custom SecureRandom.
+     *
+     * @param customSecureRandom the custom SecureRandom for AES encryption
+     */
+    public void setCustomSecureRandom(SecureRandom customSecureRandom)
+    {
+        this.customSecureRandom = customSecureRandom;
     }
 
     /**
@@ -284,20 +305,7 @@ public abstract class SecurityHandler
 
         try
         {
-            Cipher decryptCipher;
-            try
-            {
-                decryptCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            }
-            catch (NoSuchAlgorithmException e)
-            {
-                // should never happen
-                throw new RuntimeException(e);
-            }
-
-            SecretKey aesKey = new SecretKeySpec(finalKey, "AES");
-            IvParameterSpec ips = new IvParameterSpec(iv);
-            decryptCipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, aesKey, ips);
+            Cipher decryptCipher = createCipher(finalKey, iv, decrypt);
             byte[] buffer = new byte[256];
             int n;
             while ((n = data.read(buffer)) != -1)
@@ -310,23 +318,7 @@ public abstract class SecurityHandler
             }
             output.write(decryptCipher.doFinal());
         }
-        catch (InvalidKeyException e)
-        {
-            throw new IOException(e);
-        }
-        catch (InvalidAlgorithmParameterException e)
-        {
-            throw new IOException(e);
-        }
-        catch (NoSuchPaddingException e)
-        {
-            throw new IOException(e);
-        }
-        catch (IllegalBlockSizeException e)
-        {
-            throw new IOException(e);
-        }
-        catch (BadPaddingException e)
+        catch (GeneralSecurityException e)
         {
             throw new IOException(e);
         }
@@ -353,10 +345,7 @@ public abstract class SecurityHandler
         Cipher cipher;
         try
         {
-            cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            SecretKeySpec keySpec = new SecretKeySpec(encryptionKey, "AES");
-            IvParameterSpec ivSpec = new IvParameterSpec(iv);
-            cipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, keySpec, ivSpec);
+            cipher = createCipher(this.encryptionKey, iv, decrypt);
         }
         catch (GeneralSecurityException e)
         {
@@ -368,7 +357,7 @@ public abstract class SecurityHandler
         {
             IOUtils.copy(cis, output);
         }
-        catch(IOException exception)
+        catch (IOException exception)
         {
             // starting with java 8 the JVM wraps an IOException around a GeneralSecurityException
             // it should be safe to swallow a GeneralSecurityException
@@ -376,7 +365,7 @@ public abstract class SecurityHandler
             {
                 throw exception;
             }
-            Log.d("PdfBox-Android", "A GeneralSecurityException occured when decrypting some stream data", exception);
+            Log.d("PdfBox-Android", "A GeneralSecurityException occurred when decrypting some stream data", exception);
         }
         finally
         {
@@ -384,13 +373,23 @@ public abstract class SecurityHandler
         }
     }
 
+    private Cipher createCipher(byte[] key, byte[] iv, boolean decrypt) throws GeneralSecurityException
+    {
+        @SuppressWarnings({"squid:S4432"}) // PKCS#5 padding is requested by PDF specification
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+        Key keySpec = new SecretKeySpec(key, "AES");
+        IvParameterSpec ips = new IvParameterSpec(iv);
+        cipher.init(decrypt ? Cipher.DECRYPT_MODE : Cipher.ENCRYPT_MODE, keySpec, ips);
+        return cipher;
+    }
+
     private boolean prepareAESInitializationVector(boolean decrypt, byte[] iv, InputStream data, OutputStream output) throws IOException
     {
         if (decrypt)
         {
             // read IV from stream
-            int ivSize = data.read(iv);
-            if (ivSize == -1)
+            int ivSize = (int) IOUtils.populateBuffer(data, iv);
+            if (ivSize == 0)
             {
                 return false;
             }
@@ -404,7 +403,7 @@ public abstract class SecurityHandler
         else
         {
             // generate random IV and write to stream
-            SecureRandom rnd = new SecureRandom();
+            SecureRandom rnd = getSecureRandom();
             rnd.nextBytes(iv);
             output.write(iv);
         }
@@ -412,9 +411,23 @@ public abstract class SecurityHandler
     }
 
     /**
+     * Returns a SecureRandom If customSecureRandom is not defined, instantiate a new SecureRandom
+     *
+     * @return SecureRandom
+     */
+    private SecureRandom getSecureRandom()
+    {
+        if (customSecureRandom != null)
+        {
+            return customSecureRandom;
+        }
+        return new SecureRandom();
+    }
+
+    /**
      * This will dispatch to the correct method.
      *
-     * @param obj The object to decrypt.
+     * @param obj    The object to decrypt.
      * @param objNum The object number.
      * @param genNum The object generation Number.
      *
@@ -422,10 +435,6 @@ public abstract class SecurityHandler
      */
     public void decrypt(COSBase obj, long objNum, long genNum) throws IOException
     {
-        if (!(obj instanceof COSString || obj instanceof COSDictionary || obj instanceof COSArray))
-        {
-            return;
-        }
         // PDFBOX-4477: only cache strings and streams, this improves speed and memory footprint
         if (obj instanceof COSString)
         {
@@ -487,7 +496,7 @@ public abstract class SecurityHandler
             // PDFBOX-3229 check case where metadata is not encrypted despite /EncryptMetadata missing
             InputStream is = stream.createRawInputStream();
             byte buf[] = new byte[10];
-            is.read(buf);
+            IOUtils.populateBuffer(is, buf);
             is.close();
             if (Arrays.equals(buf, "<?xpacket ".getBytes(Charsets.ISO_8859_1)))
             {
@@ -503,6 +512,12 @@ public abstract class SecurityHandler
         try
         {
             encryptData(objNum, genNum, encryptedStream, output, true /* decrypt */);
+        }
+        catch (IOException ex)
+        {
+            Log.e("PdfBox-Android", ex.getClass().getSimpleName() + " thrown when decrypting object " +
+                objNum + " " + genNum + " obj");
+            throw ex;
         }
         finally
         {
@@ -641,7 +656,7 @@ public abstract class SecurityHandler
 
     /**
      * Getter of the property <tt>keyLength</tt>.
-     * @return  Returns the keyLength.
+     * @return Returns the key length in bits.
      */
     public int getKeyLength()
     {
@@ -651,11 +666,11 @@ public abstract class SecurityHandler
     /**
      * Setter of the property <tt>keyLength</tt>.
      *
-     * @param keyLen  The keyLength to set.
+     * @param keyLen The key length to set in bits.
      */
     public void setKeyLength(int keyLen)
     {
-        this.keyLength = keyLen;
+        this.keyLength = (short) keyLen;
     }
 
     /**
@@ -705,5 +720,74 @@ public abstract class SecurityHandler
      *
      * @return true if a protection policy has been set.
      */
-    public abstract boolean hasProtectionPolicy();
+    public boolean hasProtectionPolicy()
+    {
+        return protectionPolicy != null;
+    }
+
+    /**
+     * Returns the set {@link ProtectionPolicy} or null.
+     *
+     * @return The set {@link ProtectionPolicy}.
+     */
+    protected ProtectionPolicy getProtectionPolicy()
+    {
+        return protectionPolicy;
+    }
+
+    /**
+     * Sets the {@link ProtectionPolicy} to the given value.
+     * @param protectionPolicy The {@link ProtectionPolicy}, that shall be set.
+     */
+    protected void setProtectionPolicy(ProtectionPolicy protectionPolicy)
+    {
+        this.protectionPolicy = protectionPolicy;
+    }
+
+    /**
+     * Returns the current encryption key data.
+     *
+     * @return The current encryption key data.
+     */
+    public byte[] getEncryptionKey()
+    {
+        return encryptionKey;
+    }
+
+    /**
+     * Sets the current encryption key data.
+     *
+     * @param encryptionKey The encryption key data to set.
+     */
+    public void setEncryptionKey(byte[] encryptionKey)
+    {
+        this.encryptionKey = encryptionKey;
+    }
+
+    /**
+     * Computes the version number of the {@link SecurityHandler} based on the encryption key
+     * length. See PDF Spec 1.6 p 93 and
+     * <a href="https://www.adobe.com/content/dam/acom/en/devnet/pdf/adobe_supplement_iso32000.pdf">PDF
+     * 1.7 Supplement ExtensionLevel: 3</a> and
+     * <a href="http://intranet.pdfa.org/wp-content/uploads/2016/08/ISO_DIS_32000-2-DIS4.pdf">PDF
+     * Spec 2.0</a>.
+     *
+     * @return The computed version number.
+     */
+    protected int computeVersionNumber()
+    {
+        if (keyLength == 40)
+        {
+            return 1;
+        }
+        else if (keyLength == 128 && protectionPolicy.isPreferAES())
+        {
+            return 4;
+        }
+        else if (keyLength == 256)
+        {
+            return 5;
+        }
+        return 2;
+    }
 }

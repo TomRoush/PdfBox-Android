@@ -102,12 +102,13 @@ public abstract class PDFunction implements COSObjectable
     {
         return functionStream;
     }
+
     /**
      * Create the correct PD Model function based on the COS base function.
      *
      * @param function The COS function dictionary.
      *
-     * @return The PDModel Function object.
+     * @return The PDModel Function object, never null.
      *
      * @throws IOException If we are unable to create the PDFunction object.
      */
@@ -126,7 +127,7 @@ public abstract class PDFunction implements COSObjectable
         if (!(base instanceof COSDictionary))
         {
             throw new IOException("Error: Function must be a Dictionary, but is " +
-                base.getClass().getSimpleName());
+                (base == null ? "(null)" : base.getClass().getSimpleName()));
         }
         COSDictionary functionDictionary = (COSDictionary) base;
         int functionType = functionDictionary.getInt(COSName.FUNCTION_TYPE);
@@ -160,7 +161,14 @@ public abstract class PDFunction implements COSObjectable
         if (numberOfOutputValues == -1)
         {
             COSArray rangeValues = getRangeValues();
-            numberOfOutputValues = rangeValues.size() / 2;
+            if (rangeValues == null)
+            {
+                numberOfOutputValues = 0;
+            }
+            else
+            {
+                numberOfOutputValues = rangeValues.size() / 2;
+            }
         }
         return numberOfOutputValues;
     }
@@ -255,20 +263,20 @@ public abstract class PDFunction implements COSObjectable
      * Evaluates the function at the given input.
      * ReturnValue = f(input)
      *
-     * @param input The array of input values for the function.
+     * @param input The array of input values for the function. 
      * In many cases will be an array of a single value, but not always.
      *
-     * @return The of outputs the function returns based on those inputs.
+     * @return The of outputs the function returns based on those inputs. 
      * In many cases will be an array of a single value, but not always.
      *
-     * @throws IOException an IOExcpetion is thrown if something went wrong processing the function.
+     * @throws IOException if something went wrong processing the function.  
      */
     public abstract float[] eval(float[] input) throws IOException;
 
     /**
      * Returns all ranges for the output values as COSArray .
      * Required for type 0 and type 4 functions
-     * @return the ranges array.
+     * @return the ranges array. 
      */
     protected COSArray getRangeValues()
     {
@@ -282,7 +290,7 @@ public abstract class PDFunction implements COSObjectable
     /**
      * Returns all domains for the input values as COSArray.
      * Required for all function types.
-     * @return the domains array.
+     * @return the domains array. 
      */
     private COSArray getDomainValues()
     {
@@ -303,7 +311,7 @@ public abstract class PDFunction implements COSObjectable
     {
         COSArray rangesArray = getRangeValues();
         float[] result;
-        if (rangesArray != null)
+        if (rangesArray != null && rangesArray.size() > 0)
         {
             float[] rangeValues = rangesArray.toFloatArray();
             int numberOfRanges = rangeValues.length/2;
@@ -344,8 +352,8 @@ public abstract class PDFunction implements COSObjectable
     }
 
     /**
-     * For a given value of x, interpolate calculates the y value
-     * on the line defined by the two points (xRangeMin , xRangeMax )
+     * For a given value of x, interpolate calculates the y value 
+     * on the line defined by the two points (xRangeMin , xRangeMax ) 
      * and (yRangeMin , yRangeMax ).
      *
      * @param x the to be interpolated value.

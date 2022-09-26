@@ -39,6 +39,7 @@ import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.PDPageTree;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
@@ -52,7 +53,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 public class Overlay implements Closeable
 {
     /**
-     * Possible location of the overlayed pages: foreground or background.
+     * Possible location of the overlaid pages: foreground or background.
      */
     public enum Position
     {
@@ -119,8 +120,8 @@ public class Overlay implements Closeable
                 doc = loadPDF(e.getValue());
                 loadedDocuments.put(e.getValue(), doc);
                 layouts.put(doc, getLayoutPage(doc));
+                openDocuments.add(doc);
             }
-            openDocuments.add(doc);
             specificPageOverlayPage.put(e.getKey(), layouts.get(doc));
         }
         processPages(inputPDFDocument);
@@ -128,7 +129,8 @@ public class Overlay implements Closeable
     }
 
     /**
-     * This will add overlays documents to a document.
+     * This will add overlays documents to a document. If you created the overlay documents with
+     * subsetted fonts, you need to save them first so that the subsetting gets done.
      *
      * @param specificPageOverlayDocuments Optional map of overlay documents for specific pages. The
      * page numbers are 1-based. The map must be empty (but not null) if no specific mappings are
@@ -273,9 +275,9 @@ public class Overlay implements Closeable
         private final PDRectangle overlayMediaBox;
         private final COSStream overlayContentStream;
         private final COSDictionary overlayResources;
-        private final int overlayRotation;
+        private final short overlayRotation;
 
-        private LayoutPage(PDRectangle mediaBox, COSStream contentStream, COSDictionary resources, int rotation)
+        private LayoutPage(PDRectangle mediaBox, COSStream contentStream, COSDictionary resources, short rotation)
         {
             overlayMediaBox = mediaBox;
             overlayContentStream = contentStream;
@@ -286,7 +288,11 @@ public class Overlay implements Closeable
 
     private LayoutPage getLayoutPage(PDDocument doc) throws IOException
     {
-        PDPage page = doc.getPage(0);
+        return createLayoutPage(doc.getPage(0));
+    }
+
+    private LayoutPage createLayoutPage(PDPage page) throws IOException
+    {
         COSBase contents = page.getCOSObject().getDictionaryObject(COSName.CONTENTS);
         PDResources resources = page.getResources();
         if (resources == null)
@@ -294,24 +300,17 @@ public class Overlay implements Closeable
             resources = new PDResources();
         }
         return new LayoutPage(page.getMediaBox(), createCombinedContentStream(contents),
-            resources.getCOSObject(), page.getRotation());
+            resources.getCOSObject(), (short) page.getRotation());
     }
 
     private Map<Integer,LayoutPage> getLayoutPages(PDDocument doc) throws IOException
     {
-        int numberOfPages = doc.getNumberOfPages();
-        Map<Integer,LayoutPage> layoutPages = new HashMap<Integer, Overlay.LayoutPage>(numberOfPages);
-        for (int i=0;i<numberOfPages;i++)
+        int i = 0;
+        Map<Integer, LayoutPage> layoutPages = new HashMap<Integer, LayoutPage>();
+        for (PDPage page : doc.getPages())
         {
-            PDPage page = doc.getPage(i);
-            COSBase contents = page.getCOSObject().getDictionaryObject(COSName.CONTENTS);
-            PDResources resources = page.getResources();
-            if (resources == null)
-            {
-                resources = new PDResources();
-            }
-            layoutPages.put(i, new LayoutPage(page.getMediaBox(), createCombinedContentStream(contents),
-                resources.getCOSObject(), page.getRotation()));
+            layoutPages.put(i, createLayoutPage(page));
+            i++;
         }
         return layoutPages;
     }
@@ -366,17 +365,19 @@ public class Overlay implements Closeable
     private void processPages(PDDocument document) throws IOException
     {
         int pageCounter = 0;
-        for (PDPage page : document.getPages())
+        PDPageTree pageTree = document.getPages();
+        int numberOfPages = pageTree.getCount();
+        for (PDPage page : pageTree)
         {
             pageCounter++;
-            COSDictionary pageDictionary = page.getCOSObject();
-            COSBase originalContent = pageDictionary.getDictionaryObject(COSName.CONTENTS);
-            COSArray newContentArray = new COSArray();
-            LayoutPage layoutPage = getLayoutPage(pageCounter, document.getNumberOfPages());
+            LayoutPage layoutPage = getLayoutPage(pageCounter, numberOfPages);
             if (layoutPage == null)
             {
                 continue;
             }
+            COSDictionary pageDictionary = page.getCOSObject();
+            COSBase originalContent = pageDictionary.getDictionaryObject(COSName.CONTENTS);
+            COSArray newContentArray = new COSArray();
             switch (position)
             {
                 case FOREGROUND:
@@ -590,9 +591,9 @@ public class Overlay implements Closeable
     }
 
     /**
-     * Sets the file to be overlayed.
+     * Sets the file to be overlaid.
      *
-     * @param inputFile the file to be overlayed. The {@link PDDocument} object gathered from
+     * @param inputFile the file to be overlaid. The {@link PDDocument} object gathered from
      * opening this file will be returned by
      * {@link #overlay(java.util.Map) overlay(Map&lt;Integer, String&gt;)}.
      */
@@ -602,9 +603,9 @@ public class Overlay implements Closeable
     }
 
     /**
-     * Sets the PDF to be overlayed.
+     * Sets the PDF to be overlaid.
      *
-     * @param inputPDF the PDF to be overlayed. This will be the object that is returned by
+     * @param inputPDF the PDF to be overlaid. This will be the object that is returned by
      * {@link #overlay(java.util.Map) overlay(Map&lt;Integer, String&gt;)}.
      */
     public void setInputPDF(PDDocument inputPDF)
@@ -633,7 +634,8 @@ public class Overlay implements Closeable
     }
 
     /**
-     * Sets the default overlay PDF.
+     * Sets the default overlay PDF. If you created the overlay document with
+     * subsetted fonts, you need to save it first so that the subsetting gets done.
      *
      * @param defaultOverlayPDF the default overlay PDF
      */
@@ -663,7 +665,8 @@ public class Overlay implements Closeable
     }
 
     /**
-     * Sets the first page overlay PDF.
+     * Sets the first page overlay PDF. If you created the overlay document with
+     * subsetted fonts, you need to save it first so that the subsetting gets done.
      *
      * @param firstPageOverlayPDF the first page overlay PDF
      */
@@ -683,7 +686,8 @@ public class Overlay implements Closeable
     }
 
     /**
-     * Sets the last page overlay PDF.
+     * Sets the last page overlay PDF. If you created the overlay document with
+     * subsetted fonts, you need to save it first so that the subsetting gets done.
      *
      * @param lastPageOverlayPDF the last page overlay PDF
      */
@@ -703,7 +707,8 @@ public class Overlay implements Closeable
     }
 
     /**
-     * Sets the all pages overlay PDF.
+     * Sets the all pages overlay PDF. If you created the overlay document with
+     * subsetted fonts, you need to save it first so that the subsetting gets done.
      *
      * @param allPagesOverlayPDF the all pages overlay PDF. This should not be a PDDocument that you
      * created on the fly, it should be saved first, if it contains any fonts that are subset.
@@ -724,7 +729,8 @@ public class Overlay implements Closeable
     }
 
     /**
-     * Sets the odd page overlay PDF.
+     * Sets the odd page overlay PDF. If you created the overlay document with
+     * subsetted fonts, you need to save it first so that the subsetting gets done.
      *
      * @param oddPageOverlayPDF the odd page overlay PDF
      */
@@ -744,7 +750,8 @@ public class Overlay implements Closeable
     }
 
     /**
-     * Sets the even page overlay PDF.
+     * Sets the even page overlay PDF. If you created the overlay document with
+     * subsetted fonts, you need to save it first so that the subsetting gets done.
      *
      * @param evenPageOverlayPDF the even page overlay PDF
      */

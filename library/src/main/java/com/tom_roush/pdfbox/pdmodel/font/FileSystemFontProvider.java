@@ -37,6 +37,7 @@ import com.tom_roush.fontbox.FontBoxFont;
 import com.tom_roush.fontbox.cff.CFFCIDFont;
 import com.tom_roush.fontbox.cff.CFFFont;
 import com.tom_roush.fontbox.ttf.NamingTable;
+import com.tom_roush.fontbox.ttf.OS2WindowsMetricsTable;
 import com.tom_roush.fontbox.ttf.OTFParser;
 import com.tom_roush.fontbox.ttf.OpenTypeFont;
 import com.tom_roush.fontbox.ttf.TTFParser;
@@ -87,7 +88,8 @@ final class FileSystemFontProvider extends FontProvider
             this.ulCodePageRange1 = ulCodePageRange1;
             this.ulCodePageRange2 = ulCodePageRange2;
             this.macStyle = macStyle;
-            this.panose = panose != null ? new PDPanoseClassification(panose) : null;
+            this.panose = panose != null && panose.length >= PDPanoseClassification.LENGTH ?
+                new PDPanoseClassification(panose) : null;
             this.parent = parent;
         }
 
@@ -116,8 +118,10 @@ final class FileSystemFontProvider extends FontProvider
          *
          */
         @Override
-        public FontBoxFont getFont()
+        public synchronized FontBoxFont getFont()
         {
+            // synchronized to avoid race condition on cache access,
+            // which could result in an unreferenced but open font
             FontBoxFont cached = parent.cache.getFont(this);
             if (cached != null)
             {
@@ -195,13 +199,9 @@ final class FileSystemFontProvider extends FontProvider
                 }
                 return ttf;
             }
-            catch (NullPointerException e) // TTF parser is buggy
-            {
-                Log.e("PdfBox-Android", "Could not load font file: " + file, e);
-            }
             catch (IOException e)
             {
-                Log.e("PdfBox-Android", "Could not load font file: " + file, e);
+                Log.w("PdfBox-Android", "Could not load font file: " + file, e);
             }
             return null;
         }
@@ -214,7 +214,16 @@ final class FileSystemFontProvider extends FontProvider
                 // ttc not closed here because it is needed later when ttf is accessed,
                 // e.g. rendering PDF with non-embedded font which is in ttc file in our font directory
                 TrueTypeCollection ttc = new TrueTypeCollection(file);
-                TrueTypeFont ttf = ttc.getFontByName(postScriptName);
+                TrueTypeFont ttf;
+                try
+                {
+                    ttf = ttc.getFontByName(postScriptName);
+                }
+                catch (IOException ex)
+                {
+                    ttc.close();
+                    throw ex;
+                }
                 if (ttf == null)
                 {
                     ttc.close();
@@ -233,7 +242,31 @@ final class FileSystemFontProvider extends FontProvider
         {
             try
             {
-                // todo JH: we don't yet support loading CFF fonts from OTC collections 
+                if (file.getName().toLowerCase().endsWith(".ttc"))
+                {
+                    @SuppressWarnings("squid:S2095")
+                    // ttc not closed here because it is needed later when ttf is accessed,
+                    // e.g. rendering PDF with non-embedded font which is in ttc file in our font directory
+                    TrueTypeCollection ttc = new TrueTypeCollection(file);
+                    TrueTypeFont ttf;
+                    try
+                    {
+                        ttf = ttc.getFontByName(postScriptName);
+                    }
+                    catch (IOException ex)
+                    {
+                        Log.e("PdfBox-Android", ex.getMessage(), ex);
+                        ttc.close();
+                        return null;
+                    }
+                    if (ttf == null)
+                    {
+                        ttc.close();
+                        throw new IOException("Font " + postScriptName + " not found in " + file);
+                    }
+                    return (OpenTypeFont) ttf;
+                }
+
                 OTFParser parser = new OTFParser(false, true);
                 OpenTypeFont otf = parser.parse(file);
 
@@ -245,7 +278,7 @@ final class FileSystemFontProvider extends FontProvider
             }
             catch (IOException e)
             {
-                Log.e("PdfBox-Android", "Could not load font file: " + file, e);
+                Log.w("PdfBox-Android", "Could not load font file: " + file, e);
             }
             return null;
         }
@@ -266,7 +299,7 @@ final class FileSystemFontProvider extends FontProvider
             }
             catch (IOException e)
             {
-                Log.e("PdfBox-Android", "Could not load font file: " + file, e);
+                Log.w("PdfBox-Android", "Could not load font file: " + file, e);
             }
             finally
             {
@@ -325,9 +358,9 @@ final class FileSystemFontProvider extends FontProvider
             }
 
             // scan the local system for font files
-            List<File> files = new ArrayList<File>();
             FontFileFinder fontFileFinder = new FontFileFinder();
             List<URI> fonts = fontFileFinder.find();
+            List<File> files = new ArrayList<File>(fonts.size());
             for (URI font : fonts)
             {
                 files.add(new File(font));
@@ -338,19 +371,22 @@ final class FileSystemFontProvider extends FontProvider
                 Log.d("PdfBox-Android", "Found " + files.size() + " fonts on the local system");
             }
 
-            // load cached FontInfo objects
-            List<FSFontInfo> cachedInfos = loadDiskCache(files);
-            if (cachedInfos != null && !cachedInfos.isEmpty())
+            if (!files.isEmpty())
             {
-                fontInfoList.addAll(cachedInfos);
-            }
-            else
-            {
-                Log.w("PdfBox-Android", "Building on-disk font cache, this may take a while");
-                scanFonts(files);
-                saveDiskCache();
-                Log.w("PdfBox-Android", "Finished building on-disk font cache, found " +
-                    fontInfoList.size() + " fonts");
+                // load cached FontInfo objects
+                List<FSFontInfo> cachedInfos = loadDiskCache(files);
+                if (cachedInfos != null && !cachedInfos.isEmpty())
+                {
+                    fontInfoList.addAll(cachedInfos);
+                }
+                else
+                {
+                    Log.w("PdfBox-Android", "Building on-disk font cache, this may take a while");
+                    scanFonts(files);
+                    saveDiskCache();
+                    Log.w("PdfBox-Android", "Finished building on-disk font cache, found " + fontInfoList.size()
+                        + " fonts");
+                }
             }
         }
         catch (AccessControlException e)
@@ -365,24 +401,23 @@ final class FileSystemFontProvider extends FontProvider
         {
             try
             {
-                if (file.getPath().toLowerCase().endsWith(".ttf") ||
-                    file.getPath().toLowerCase().endsWith(".otf"))
+                String filePath = file.getPath().toLowerCase();
+                if (filePath.endsWith(".ttf") || filePath.endsWith(".otf"))
                 {
                     addTrueTypeFont(file);
                 }
-                else if (file.getPath().toLowerCase().endsWith(".ttc") ||
-                    file.getPath().toLowerCase().endsWith(".otc"))
+                else if (filePath.endsWith(".ttc") || filePath.endsWith(".otc"))
                 {
                     addTrueTypeCollection(file);
                 }
-                else if (file.getPath().toLowerCase().endsWith(".pfb"))
+                else if (filePath.endsWith(".pfb"))
                 {
                     addType1Font(file);
                 }
             }
             catch (IOException e)
             {
-                Log.e("PdfBox-Android", "Error parsing font " + file.getPath(), e);
+                Log.w("PdfBox-Android", "Error parsing font " + file.getPath(), e);
             }
         }
     }
@@ -486,7 +521,7 @@ final class FileSystemFontProvider extends FontProvider
      */
     private List<FSFontInfo> loadDiskCache(List<File> files)
     {
-        Set<String> pending = new HashSet<String>();
+        Set<String> pending = new HashSet<String>(files.size());
         for (File file : files)
         {
             pending.add(file.getAbsolutePath());
@@ -518,7 +553,7 @@ final class FileSystemFontProvider extends FontProvider
                     String[] parts = line.split("\\|", 10);
                     if (parts.length < 10)
                     {
-                        Log.e("PdfBox-Android", "Incorrect line '" + line + "' in font disk cache is skipped");
+                        Log.w("PdfBox-Android", "Incorrect line '" + line + "' in font disk cache is skipped");
                         continue;
                     }
 
@@ -581,7 +616,7 @@ final class FileSystemFontProvider extends FontProvider
             }
             catch (IOException e)
             {
-                Log.e("PdfBox-Android", "Error loading font cache, will be re-built", e);
+                Log.w("PdfBox-Android", "Error loading font cache, will be re-built", e);
                 return null;
             }
             finally
@@ -618,13 +653,9 @@ final class FileSystemFontProvider extends FontProvider
                 }
             });
         }
-        catch (NullPointerException e) // TTF parser is buggy
-        {
-            Log.e("PdfBox-Android", "Could not load font file: " + ttcFile, e);
-        }
         catch (IOException e)
         {
-            Log.e("PdfBox-Android", "Could not load font file: " + ttcFile, e);
+            Log.w("PdfBox-Android", "Could not load font file: " + ttcFile, e);
         }
         finally
         {
@@ -642,7 +673,7 @@ final class FileSystemFontProvider extends FontProvider
     {
         try
         {
-            if (ttfFile.getPath().endsWith(".otf"))
+            if (ttfFile.getPath().toLowerCase().endsWith(".otf"))
             {
                 OTFParser parser = new OTFParser(false, true);
                 OpenTypeFont otf = parser.parse(ttfFile);
@@ -655,13 +686,9 @@ final class FileSystemFontProvider extends FontProvider
                 addTrueTypeFontImpl(ttf, ttfFile);
             }
         }
-        catch (NullPointerException e) // TTF parser is buggy
-        {
-            Log.e("PdfBox-Android", "Could not load font file: " + ttfFile, e);
-        }
         catch (IOException e)
         {
-            Log.e("PdfBox-Android", "Could not load font file: " + ttfFile, e);
+            Log.w("PdfBox-Android", "Could not load font file: " + ttfFile, e);
         }
     }
 
@@ -693,14 +720,15 @@ final class FileSystemFontProvider extends FontProvider
                 int ulCodePageRange1 = 0;
                 int ulCodePageRange2 = 0;
                 byte[] panose = null;
+                OS2WindowsMetricsTable os2WindowsMetricsTable = ttf.getOS2Windows();
                 // Apple's AAT fonts don't have an OS/2 table
-                if (ttf.getOS2Windows() != null)
+                if (os2WindowsMetricsTable != null)
                 {
-                    sFamilyClass = ttf.getOS2Windows().getFamilyClass();
-                    usWeightClass = ttf.getOS2Windows().getWeightClass();
-                    ulCodePageRange1 = (int)ttf.getOS2Windows().getCodePageRange1();
-                    ulCodePageRange2 = (int)ttf.getOS2Windows().getCodePageRange2();
-                    panose = ttf.getOS2Windows().getPanose();
+                    sFamilyClass = os2WindowsMetricsTable.getFamilyClass();
+                    usWeightClass = os2WindowsMetricsTable.getWeightClass();
+                    ulCodePageRange1 = (int) os2WindowsMetricsTable.getCodePageRange1();
+                    ulCodePageRange2 = (int) os2WindowsMetricsTable.getCodePageRange2();
+                    panose = os2WindowsMetricsTable.getPanose();
                 }
 
                 String format;
@@ -762,7 +790,7 @@ final class FileSystemFontProvider extends FontProvider
         catch (IOException e)
         {
             fontInfoList.add(new FSIgnored(file, FontFormat.TTF, "*skipexception*"));
-            Log.e("PdfBox-Android", "Could not load font file: " + file, e);
+            Log.w("PdfBox-Android", "Could not load font file: " + file, e);
         }
         finally
         {
@@ -779,7 +807,13 @@ final class FileSystemFontProvider extends FontProvider
         try
         {
             Type1Font type1 = Type1Font.createWithPFB(input);
-            if (type1.getName() != null && type1.getName().contains("|"))
+            if (type1.getName() == null)
+            {
+                fontInfoList.add(new FSIgnored(pfbFile, FontFormat.PFB, "*skipnoname*"));
+                Log.w("PdfBox-Android", "Missing 'name' entry for PostScript name in font " + pfbFile);
+                return;
+            }
+            if (type1.getName().contains("|"))
             {
                 fontInfoList.add(new FSIgnored(pfbFile, FontFormat.PFB, "*skippipeinname*"));
                 Log.w("PdfBox-Android", "Skipping font with '|' in name " + type1.getName() + " in file " + pfbFile);
@@ -796,7 +830,7 @@ final class FileSystemFontProvider extends FontProvider
         }
         catch (IOException e)
         {
-            Log.e("PdfBox-Android", "Could not load font file: " + pfbFile, e);
+            Log.w("PdfBox-Android", "Could not load font file: " + pfbFile, e);
         }
         finally
         {

@@ -25,16 +25,17 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * @author Andrea Vacondio
+ *
  */
 public class PDTransitionDirectionTest
 {
+
     @Test
     public void getCOSBase()
     {
         assertEquals(COSName.NONE, PDTransitionDirection.NONE.getCOSBase());
         assertEquals(0, ((COSInteger) PDTransitionDirection.LEFT_TO_RIGHT.getCOSBase()).intValue());
-        assertEquals(90,
-            ((COSInteger) PDTransitionDirection.BOTTOM_TO_TOP.getCOSBase()).intValue());
+        assertEquals(90, ((COSInteger) PDTransitionDirection.BOTTOM_TO_TOP.getCOSBase()).intValue());
         assertEquals(180,
             ((COSInteger) PDTransitionDirection.RIGHT_TO_LEFT.getCOSBase()).intValue());
         assertEquals(270,
@@ -43,4 +44,5 @@ public class PDTransitionDirectionTest
             ((COSInteger) PDTransitionDirection.TOP_LEFT_TO_BOTTOM_RIGHT.getCOSBase())
                 .intValue());
     }
+
 }

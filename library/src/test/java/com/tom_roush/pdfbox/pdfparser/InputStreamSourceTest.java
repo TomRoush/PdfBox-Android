@@ -19,6 +19,7 @@ package com.tom_roush.pdfbox.pdfparser;
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.IOException;
+
 import org.junit.Assert;
 import org.junit.Test;
 

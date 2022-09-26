@@ -24,24 +24,23 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import java.io.File;
 import java.io.IOException;
 
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.rendering.TestRendering;
-import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class MultilineFieldsTest
+public class MultilineFieldsInstrumentationTest
 {
     private static File OUT_DIR;
     private static final String IN_DIR = "pdfbox/com/tom_roush/pdfbox/pdmodel/interactive/form";
     private static final String NAME_OF_PDF = "MultilineFields.pdf";
-    private static final String TEST_VALUE =
-        "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, " +
-            "sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam";
+    private static final String TEST_VALUE = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, " +
+        "sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam";
 
-    Context testContext;
+    private Context testContext;
 
     private PDDocument document;
     private PDAcroForm acroForm;
@@ -51,7 +50,6 @@ public class MultilineFieldsTest
     {
         testContext = InstrumentationRegistry.getInstrumentation().getContext();
         PDFBoxResourceLoader.init(testContext);
-        System.out.println("Working Directory = " + System.getProperty("user.dir"));
         document = PDDocument.load(testContext.getAssets().open(IN_DIR + "/" + NAME_OF_PDF));
         acroForm = document.getDocumentCatalog().getAcroForm();
         OUT_DIR = new File(testContext.getCacheDir(), "pdfbox-test-output");
@@ -110,4 +108,5 @@ public class MultilineFieldsTest
     {
         document.close();
     }
+
 }

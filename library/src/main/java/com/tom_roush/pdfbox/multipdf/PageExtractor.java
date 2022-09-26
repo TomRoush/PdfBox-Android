@@ -17,7 +17,11 @@
 
 package com.tom_roush.pdfbox.multipdf;
 
+import android.util.Log;
+
 import java.io.IOException;
+
+import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
 
@@ -27,12 +31,12 @@ import com.tom_roush.pdfbox.pdmodel.PDPage;
  */
 public class PageExtractor
 {
-    private PDDocument sourceDocument;
+    private final PDDocument sourceDocument;
 
     // first page to extract is page 1 (by default)
     private int startPage = 1;
 
-    private int endPage = 0;
+    private int endPage;
 
     /**
      * Creates a new instance of PageExtractor
@@ -47,12 +51,12 @@ public class PageExtractor
     /**
      * Creates a new instance of PageExtractor
      * @param sourceDocument The document to split.
-     * @param startPage The first page you want extracted (inclusive)
-     * @param endPage The last page you want extracted (inclusive)
+     * @param startPage The first page you want extracted (1-based, inclusive)
+     * @param endPage The last page you want extracted (1-based, inclusive)
      */
     public PageExtractor(PDDocument sourceDocument, int startPage, int endPage)
     {
-        this(sourceDocument);
+        this.sourceDocument = sourceDocument;
         this.startPage = startPage;
         this.endPage = endPage;
     }
@@ -80,10 +84,11 @@ public class PageExtractor
         {
             PDPage page = sourceDocument.getPage(i - 1);
             PDPage imported = extractedDocument.importPage(page);
-            imported.setCropBox(page.getCropBox());
-            imported.setMediaBox(page.getMediaBox());
-            imported.setResources(page.getResources());
-            imported.setRotation(page.getRotation());
+            if (page.getResources() != null && !page.getCOSObject().containsKey(COSName.RESOURCES))
+            {
+                imported.setResources(page.getResources());
+                Log.i("PdfBox-Android", "Done in PageExtractor"); // follow-up to warning in importPage
+            }
         }
 
         return extractedDocument;

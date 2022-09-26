@@ -165,13 +165,23 @@ public abstract class BaseParser
         }
         if (!(generationNumber instanceof COSInteger))
         {
-            Log.e("PdfBox-Android", "expected number, actual=" + value + " at offset " + genOffset);
+            Log.e("PdfBox-Android", "expected number, actual=" + generationNumber + " at offset " + genOffset);
             return COSNull.NULL;
         }
-        COSObjectKey key = new COSObjectKey(((COSInteger) value).longValue(),
-            ((COSInteger) generationNumber).intValue());
+        long objNumber = ((COSInteger) value).longValue();
+        if (objNumber <= 0)
+        {
+            Log.e("PdfBox-Android", "invalid object number value =" + objNumber + " at offset " + numOffset);
+            return COSNull.NULL;
+        }
+        int genNumber = ((COSInteger) generationNumber).intValue();
+        if (genNumber < 0)
+        {
+            Log.e("PdfBox-Android", "invalid generation number value =" + genNumber + " at offset " + numOffset);
+            return COSNull.NULL;
+        }
         // dereference the object
-        return getObjectFromPool(key);
+        return getObjectFromPool(new COSObjectKey(objNumber, genNumber));
     }
 
     private COSBase getObjectFromPool(COSObjectKey key) throws IOException
@@ -280,13 +290,20 @@ public abstract class BaseParser
     private boolean parseCOSDictionaryNameValuePair(COSDictionary obj) throws IOException
     {
         COSName key = parseCOSName();
+        if (key == null || key.getName().isEmpty())
+        {
+            Log.w("PdfBox-Android", "Empty COSName at offset " + seqSource.getPosition());
+        }
         COSBase value = parseCOSDictionaryValue();
         skipSpaces();
-
         if (value == null)
         {
             Log.w("PdfBox-Android", "Bad dictionary declaration at offset " + seqSource.getPosition());
             return false;
+        }
+        else if (value instanceof COSInteger && !((COSInteger)value).isValid())
+        {
+            Log.w("PdfBox-Android", "Skipped out of range number value at offset " + seqSource.getPosition());
         }
         else
         {
@@ -473,7 +490,6 @@ public abstract class BaseParser
                     case '5':
                     case '6':
                     case '7':
-                    {
                         StringBuilder octal = new StringBuilder();
                         octal.append( next );
                         c = seqSource.read();
@@ -508,13 +524,10 @@ public abstract class BaseParser
                         }
                         out.write(character);
                         break;
-                    }
                     default:
-                    {
                         // dropping the backslash
                         // see 7.3.4.2 Literal Strings for further information
                         out.write(next);
-                    }
                 }
             }
             else
@@ -652,13 +665,18 @@ public abstract class BaseParser
             else
             {
                 //it could be a bad object in the array which is just skipped
-                Log.w("PdfBox-Android", "Corrupt object reference at offset " +
-                    seqSource.getPosition() + ", start offset: " + startPosition);
-
+                Log.w("PdfBox-Android", "Corrupt array element at offset "
+                    + seqSource.getPosition() + ", start offset: " + startPosition);
+                String isThisTheEnd = readString();
+                // return immediately if a corrupt element is followed by another array
+                // to avoid a possible infinite recursion as most likely the whole array is corrupted
+                if (isThisTheEnd.isEmpty() && seqSource.peek() == '[')
+                {
+                    return po;
+                }
+                seqSource.unread(isThisTheEnd.getBytes(ISO_8859_1));
                 // This could also be an "endobj" or "endstream" which means we can assume that
                 // the array has ended.
-                String isThisTheEnd = readString();
-                seqSource.unread(isThisTheEnd.getBytes(ISO_8859_1));
                 if(ENDOBJ_STRING.equals(isThisTheEnd) || ENDSTREAM_STRING.equals(isThisTheEnd))
                 {
                     return po;
@@ -682,7 +700,7 @@ public abstract class BaseParser
     {
         return ch == ASCII_SPACE || ch == ASCII_CR || ch == ASCII_LF || ch == 9 || ch == '>' ||
             ch == '<' || ch == '[' || ch =='/' || ch ==']' || ch ==')' || ch =='(' ||
-            ch == 0 || ch == '\f';
+            ch == 0 || ch == '\f' || ch == '%';
     }
 
     /**
@@ -835,134 +853,106 @@ public abstract class BaseParser
      */
     protected COSBase parseDirObject() throws IOException
     {
-        COSBase retval = null;
-
         skipSpaces();
-        int nextByte = seqSource.peek();
-        char c = (char)nextByte;
+        char c = (char)seqSource.peek();
         switch(c)
         {
             case '<':
-            {
                 // pull off first left bracket
                 int leftBracket = seqSource.read();
                 // check for second left bracket
                 c = (char) seqSource.peek();
                 seqSource.unread(leftBracket);
-                if(c == '<')
-                {
-
-                    retval = parseCOSDictionary();
-                    skipSpaces();
-                }
-                else
-                {
-                    retval = parseCOSString();
-                }
-                break;
-            }
+                return c == '<' ? parseCOSDictionary() : parseCOSString();
             case '[':
-            {
                 // array
-                retval = parseCOSArray();
-                break;
-            }
+                return parseCOSArray();
             case '(':
-                retval = parseCOSString();
-                break;
+                return parseCOSString();
             case '/':
                 // name
-                retval = parseCOSName();
-                break;
+                return parseCOSName();
             case 'n':
-            {
                 // null
                 readExpectedString(NULL);
-                retval = COSNull.NULL;
-                break;
-            }
+                return COSNull.NULL;
             case 't':
-            {
                 String trueString = new String( seqSource.readFully(4), ISO_8859_1 );
                 if( trueString.equals( TRUE ) )
                 {
-                    retval = COSBoolean.TRUE;
+                    return COSBoolean.TRUE;
                 }
                 else
                 {
                     throw new IOException( "expected true actual='" + trueString + "' " + seqSource +
                         "' at offset " + seqSource.getPosition());
                 }
-                break;
-            }
             case 'f':
-            {
                 String falseString = new String( seqSource.readFully(5), ISO_8859_1 );
                 if( falseString.equals( FALSE ) )
                 {
-                    retval = COSBoolean.FALSE;
+                    return COSBoolean.FALSE;
                 }
                 else
                 {
                     throw new IOException( "expected false actual='" + falseString + "' " + seqSource +
                         "' at offset " + seqSource.getPosition());
                 }
-                break;
-            }
             case 'R':
                 seqSource.read();
-                retval = new COSObject(null);
-                break;
+                return new COSObject(null);
             case (char)-1:
                 return null;
             default:
-            {
                 if( Character.isDigit(c) || c == '-' || c == '+' || c == '.')
                 {
-                    StringBuilder buf = new StringBuilder();
-                    int ic = seqSource.read();
-                    c = (char)ic;
-                    while( Character.isDigit( c )||
-                        c == '-' ||
-                        c == '+' ||
-                        c == '.' ||
-                        c == 'E' ||
-                        c == 'e' )
-                    {
-                        buf.append( c );
-                        ic = seqSource.read();
-                        c = (char)ic;
-                    }
-                    if( ic != -1 )
-                    {
-                        seqSource.unread(ic);
-                    }
-                    retval = COSNumber.get( buf.toString() );
+                    return parseCOSNumber();
+                }
+                // This is not suppose to happen, but we will allow for it
+                // so we are more compatible with POS writers that don't
+                // follow the spec
+                long startOffset = seqSource.getPosition();
+                String badString = readString();
+                if (badString.isEmpty())
+                {
+                    int peek = seqSource.peek();
+                    // we can end up in an infinite loop otherwise
+                    throw new IOException(
+                        "Unknown dir object c='" + c + "' cInt=" + (int) c + " peek='" + (char) peek
+                            + "' peekInt=" + peek + " at offset " + seqSource.getPosition()
+                            + " (start offset: " + startOffset + ")");
+                }
+
+                // if it's an endstream/endobj, we want to put it back so the caller will see it
+                if (ENDOBJ_STRING.equals(badString) || ENDSTREAM_STRING.equals(badString))
+                {
+                    seqSource.unread(badString.getBytes(ISO_8859_1));
                 }
                 else
                 {
-                    //This is not suppose to happen, but we will allow for it
-                    //so we are more compatible with POS writers that don't
-                    //follow the spec
-                    String badString = readString();
-                    if (badString.isEmpty())
-                    {
-                        int peek = seqSource.peek();
-                        // we can end up in an infinite loop otherwise
-                        throw new IOException( "Unknown dir object c='" + c +
-                            "' cInt=" + (int)c + " peek='" + (char)peek
-                            + "' peekInt=" + peek + " at offset " + seqSource.getPosition() );
-                    }
-
-                    // if it's an endstream/endobj, we want to put it back so the caller will see it
-                    if(ENDOBJ_STRING.equals(badString) || ENDSTREAM_STRING.equals(badString))
-                    {
-                        seqSource.unread(badString.getBytes(ISO_8859_1));
-                    }
+                    Log.w("PdfBox-Android", "Skipped unexpected dir object = '" + badString + "' at offset "
+                        + seqSource.getPosition() + " (start offset: " + startOffset + ")");
                 }
-            }
         }
-        return retval;
+        return null;
+    }
+
+    private COSNumber parseCOSNumber() throws IOException
+    {
+        StringBuilder buf = new StringBuilder();
+        int ic = seqSource.read();
+        char c = (char) ic;
+        while (Character.isDigit(c) || c == '-' || c == '+' || c == '.' || c == 'E' || c == 'e')
+        {
+            buf.append(c);
+            ic = seqSource.read();
+            c = (char) ic;
+        }
+        if (ic != -1)
+        {
+            seqSource.unread(ic);
+        }
+        return COSNumber.get(buf.toString());
     }
 
     /**
@@ -1357,8 +1347,8 @@ public abstract class BaseParser
     }
 
     /**
-     * This method is used to read a token by the {@linkplain #readInt()} method
-     * and the {@linkplain #readLong()} method.
+     * This method is used to read a token by the {@linkplain #readInt()} and the {@linkplain #readLong()} method. Valid
+     * delimiters are any non digit values.
      *
      * @return the token to parse as integer or long by the calling method.
      * @throws IOException throws by the {@link #seqSource} methods.
@@ -1367,14 +1357,7 @@ public abstract class BaseParser
     {
         int lastByte;
         StringBuilder buffer = new StringBuilder();
-        while( (lastByte = seqSource.read() ) != ASCII_SPACE &&
-            lastByte != ASCII_LF &&
-            lastByte != ASCII_CR &&
-            lastByte != 60 && //see sourceforge bug 1714707
-            lastByte != '[' && // PDFBOX-1845
-            lastByte != '(' && // PDFBOX-2579
-            lastByte != 0 && //See sourceforge bug 853328
-            lastByte != -1 )
+        while ((lastByte = seqSource.read()) >= '0' && lastByte <= '9')
         {
             buffer.append( (char)lastByte );
             if (buffer.length() > MAX_LENGTH_LONG)

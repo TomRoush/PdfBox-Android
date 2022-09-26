@@ -27,6 +27,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author Andrea Vacondio
+ *
  */
 public class PDOutlineNodeTest
 {
@@ -366,10 +367,10 @@ public class PDOutlineNodeTest
         }
         assertEquals(0, counter);
     }
-
     @Test
     public void openNodeAndAppend()
     {
         // TODO
     }
+
 }

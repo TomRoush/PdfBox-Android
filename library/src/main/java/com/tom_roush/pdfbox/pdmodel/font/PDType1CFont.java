@@ -18,7 +18,6 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import android.graphics.Path;
-import android.graphics.PointF;
 import android.util.Log;
 
 import java.io.IOException;
@@ -29,6 +28,7 @@ import java.util.Map;
 
 import com.tom_roush.fontbox.EncodedFont;
 import com.tom_roush.fontbox.FontBoxFont;
+import com.tom_roush.fontbox.cff.CFFFont;
 import com.tom_roush.fontbox.cff.CFFParser;
 import com.tom_roush.fontbox.cff.CFFType1Font;
 import com.tom_roush.fontbox.util.BoundingBox;
@@ -97,7 +97,16 @@ public class PDType1CFont extends PDSimpleFont
             {
                 // note: this could be an OpenType file, fortunately CFFParser can handle that
                 CFFParser cffParser = new CFFParser();
-                cffEmbedded = (CFFType1Font)cffParser.parse(bytes, new FF3ByteSource()).get(0);
+                CFFFont parsedCffFont = cffParser.parse(bytes, new FF3ByteSource()).get(0);
+                if (parsedCffFont instanceof CFFType1Font)
+                {
+                    cffEmbedded = (CFFType1Font) parsedCffFont;
+                }
+                else
+                {
+                    Log.e("PdfBox-Android", "Expected CFFType1Font, got " + parsedCffFont.getClass().getSimpleName());
+                    fontIsDamaged = true;
+                }
             }
         }
         catch (IOException e)
@@ -161,10 +170,19 @@ public class PDType1CFont extends PDSimpleFont
         {
             return new Path();
         }
-        else
+        if ("sfthyphen".equals(name))
         {
-            return genericFont.getPath(name);
+            return genericFont.getPath("hyphen");
         }
+        if ("nbspace".equals(name))
+        {
+            if (!hasGlyph("space"))
+            {
+                return new Path();
+            }
+            return genericFont.getPath("space");
+        }
+        return genericFont.getPath(name);
     }
 
     @Override
@@ -282,9 +300,9 @@ public class PDType1CFont extends PDSimpleFont
         name = getNameInFont(name);
         float width = genericFont.getWidth(name);
 
-        PointF p = new PointF(width, 0);
-        fontMatrixTransform.transform(p, p);
-        return (float)p.x;
+        float[] p = { width, 0 };
+        fontMatrixTransform.transform(p, 0, p, 0, 1);
+        return p[0];
     }
 
     @Override
@@ -300,7 +318,12 @@ public class PDType1CFont extends PDSimpleFont
         float height;
         if (!glyphHeights.containsKey(name))
         {
-            height = (float)cffFont.getType1CharString(name).getBounds().height(); // todo: cffFont could be null
+            if (cffFont == null)
+            {
+                Log.w("PdfBox-Android", "No embedded CFF font, returning 0");
+                return 0;
+            }
+            height = (float) cffFont.getType1CharString(name).getBounds().height();
             glyphHeights.put(name, height);
         }
         else
@@ -338,6 +361,11 @@ public class PDType1CFont extends PDSimpleFont
     @Override
     public float getStringWidth(String string) throws IOException
     {
+        if (cffFont == null)
+        {
+            Log.w("PdfBox-Android", "No embedded CFF font, returning 0");
+            return 0;
+        }
         float width = 0;
         for (int i = 0; i < string.length(); i++)
         {

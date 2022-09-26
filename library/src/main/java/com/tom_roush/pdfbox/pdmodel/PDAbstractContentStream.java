@@ -29,6 +29,7 @@ import java.util.Locale;
 import com.tom_roush.harmony.awt.AWTColor;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.contentstream.operator.OperatorName;
+import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSNumber;
@@ -161,7 +162,8 @@ abstract class PDAbstractContentStream implements Closeable
             }
             else
             {
-                Log.w("PdfBox-Android", "attempting to use subset font " + font.getName() + " without proper context");
+                Log.w("PdfBox-Android", "Using the subsetted font '" + font.getName() +
+                    "' without a PDDocument context; call subset() before saving");
             }
         }
 
@@ -449,11 +451,12 @@ abstract class PDAbstractContentStream implements Closeable
         sb.append("/");
         sb.append(inlineImage.getColorSpace().getName());
 
-        if (inlineImage.getDecode() != null && inlineImage.getDecode().size() > 0)
+        COSArray decodeArray = inlineImage.getDecode();
+        if (decodeArray != null && decodeArray.size() > 0)
         {
             sb.append("\n /D ");
             sb.append("[");
-            for (COSBase base : inlineImage.getDecode())
+            for (COSBase base : decodeArray)
             {
                 sb.append(((COSNumber) base).intValue());
                 sb.append(" ");
@@ -640,7 +643,7 @@ abstract class PDAbstractContentStream implements Closeable
     }
 
     /**
-     * Set the stroking color in the DeviceRGB color space. Range is 0..255.
+     * Set the stroking color in the DeviceRGB color space. Range is 0..1.
      *
      * @param r The red value
      * @param g The green value.
@@ -648,6 +651,32 @@ abstract class PDAbstractContentStream implements Closeable
      * @throws IOException If an IO error occurs while writing to the stream.
      * @throws IllegalArgumentException If the parameters are invalid.
      */
+    public void setStrokingColor(float r, float g, float b) throws IOException
+    {
+        if (isOutsideOneInterval(r) || isOutsideOneInterval(g) || isOutsideOneInterval(b))
+        {
+            throw new IllegalArgumentException("Parameters must be within 0..1, but are "
+                + String.format("(%.2f,%.2f,%.2f)", r, g, b));
+        }
+        writeOperand(r);
+        writeOperand(g);
+        writeOperand(b);
+        writeOperator(OperatorName.STROKING_COLOR_RGB);
+        setStrokingColorSpaceStack(PDDeviceRGB.INSTANCE);
+    }
+
+    /**
+     * Set the stroking color in the DeviceRGB color space. Range is 0..255.
+     *
+     * @param r The red value
+     * @param g The green value.
+     * @param b The blue value.
+     * @throws IOException If an IO error occurs while writing to the stream.
+     * @throws IllegalArgumentException If the parameters are invalid.
+     * @deprecated use
+     * {@link #setStrokingColor(float, float, float) setStrokingColor(r/255f, g/255f, b/255f)}
+     */
+    @Deprecated
     public void setStrokingColor(int r, int g, int b) throws IOException
     {
         if (isOutside255Interval(r) || isOutside255Interval(g) || isOutside255Interval(b))
@@ -655,11 +684,7 @@ abstract class PDAbstractContentStream implements Closeable
             throw new IllegalArgumentException("Parameters must be within 0..255, but are "
                 + String.format("(%d,%d,%d)", r, g, b));
         }
-        writeOperand(r / 255f);
-        writeOperand(g / 255f);
-        writeOperand(b / 255f);
-        writeOperator(OperatorName.STROKING_COLOR_RGB);
-        setStrokingColorSpaceStack(PDDeviceRGB.INSTANCE);
+        setStrokingColor(r / 255f, g / 255f, b / 255f);
     }
 
     /**
@@ -759,7 +784,7 @@ abstract class PDAbstractContentStream implements Closeable
     }
 
     /**
-     * Set the non-stroking color in the DeviceRGB color space. Range is 0..255.
+     * Set the non-stroking color in the DeviceRGB color space. Range is 0..1.
      *
      * @param r The red value.
      * @param g The green value.
@@ -767,6 +792,32 @@ abstract class PDAbstractContentStream implements Closeable
      * @throws IOException If an IO error occurs while writing to the stream.
      * @throws IllegalArgumentException If the parameters are invalid.
      */
+    public void setNonStrokingColor(float r, float g, float b) throws IOException
+    {
+        if (isOutsideOneInterval(r) || isOutsideOneInterval(g) || isOutsideOneInterval(b))
+        {
+            throw new IllegalArgumentException("Parameters must be within 0..1, but are "
+                + String.format("(%.2f,%.2f,%.2f)", r, g, b));
+        }
+        writeOperand(r);
+        writeOperand(g);
+        writeOperand(b);
+        writeOperator(OperatorName.NON_STROKING_RGB);
+        setNonStrokingColorSpaceStack(PDDeviceRGB.INSTANCE);
+    }
+
+    /**
+     * Set the non stroking color in the DeviceRGB color space. Range is 0..255.
+     *
+     * @param r The red value
+     * @param g The green value.
+     * @param b The blue value.
+     * @throws IOException If an IO error occurs while writing to the stream.
+     * @throws IllegalArgumentException If the parameters are invalid.
+     * @deprecated use
+     * {@link #setNonStrokingColor(float, float, float) setNonStrokingColor(r/255f, g/255f, b/255f)}
+     */
+    @Deprecated
     public void setNonStrokingColor(int r, int g, int b) throws IOException
     {
         if (isOutside255Interval(r) || isOutside255Interval(g) || isOutside255Interval(b))
@@ -774,11 +825,7 @@ abstract class PDAbstractContentStream implements Closeable
             throw new IllegalArgumentException("Parameters must be within 0..255, but are "
                 + String.format("(%d,%d,%d)", r, g, b));
         }
-        writeOperand(r / 255f);
-        writeOperand(g / 255f);
-        writeOperand(b / 255f);
-        writeOperator(OperatorName.NON_STROKING_RGB);
-        setNonStrokingColorSpaceStack(PDDeviceRGB.INSTANCE);
+        setNonStrokingColor(r / 255f, g / 255f, b / 255f);
     }
 
     /**
@@ -790,7 +837,9 @@ abstract class PDAbstractContentStream implements Closeable
      * @param k The black value.
      * @throws IOException If an IO error occurs while writing to the stream.
      * @throws IllegalArgumentException If the parameters are invalid.
+     * @deprecated Use {@link #setStrokingColor(float, float, float, float) setStrokingColor(c/255f, m/255f, y/255f, k/255f)} instead.
      */
+    @Deprecated
     public void setNonStrokingColor(int c, int m, int y, int k) throws IOException
     {
         if (isOutside255Interval(c) || isOutside255Interval(m) || isOutside255Interval(y) || isOutside255Interval(k))
@@ -831,6 +880,7 @@ abstract class PDAbstractContentStream implements Closeable
      * @param g The gray value.
      * @throws IOException If an IO error occurs while writing to the stream.
      * @throws IllegalArgumentException If the parameter is invalid.
+     * @deprecated use {@link #setNonStrokingColor(float) setNonStrokingColor(g/255f)}
      */
     public void setNonStrokingColor(int g) throws IOException
     {
@@ -1198,14 +1248,9 @@ abstract class PDAbstractContentStream implements Closeable
      *
      * @param lineWidth The width which is used for drawing.
      * @throws IOException If the content stream could not be written
-     * @throws IllegalStateException If the method was called within a text block.
      */
     public void setLineWidth(float lineWidth) throws IOException
     {
-        if (inTextMode)
-        {
-            throw new IllegalStateException("Error: setLineWidth is not allowed within a text block.");
-        }
         writeOperand(lineWidth);
         writeOperator(OperatorName.SET_LINE_WIDTH);
     }
@@ -1215,15 +1260,10 @@ abstract class PDAbstractContentStream implements Closeable
      *
      * @param lineJoinStyle 0 for miter join, 1 for round join, and 2 for bevel join.
      * @throws IOException If the content stream could not be written.
-     * @throws IllegalStateException If the method was called within a text block.
      * @throws IllegalArgumentException If the parameter is not a valid line join style.
      */
     public void setLineJoinStyle(int lineJoinStyle) throws IOException
     {
-        if (inTextMode)
-        {
-            throw new IllegalStateException("Error: setLineJoinStyle is not allowed within a text block.");
-        }
         if (lineJoinStyle >= 0 && lineJoinStyle <= 2)
         {
             writeOperand(lineJoinStyle);
@@ -1240,15 +1280,10 @@ abstract class PDAbstractContentStream implements Closeable
      *
      * @param lineCapStyle 0 for butt cap, 1 for round cap, and 2 for projecting square cap.
      * @throws IOException If the content stream could not be written.
-     * @throws IllegalStateException If the method was called within a text block.
      * @throws IllegalArgumentException If the parameter is not a valid line cap style.
      */
     public void setLineCapStyle(int lineCapStyle) throws IOException
     {
-        if (inTextMode)
-        {
-            throw new IllegalStateException("Error: setLineCapStyle is not allowed within a text block.");
-        }
         if (lineCapStyle >= 0 && lineCapStyle <= 2)
         {
             writeOperand(lineCapStyle);
@@ -1266,14 +1301,9 @@ abstract class PDAbstractContentStream implements Closeable
      * @param pattern The pattern array
      * @param phase The phase of the pattern
      * @throws IOException If the content stream could not be written.
-     * @throws IllegalStateException If the method was called within a text block.
      */
     public void setLineDashPattern(float[] pattern, float phase) throws IOException
     {
-        if (inTextMode)
-        {
-            throw new IllegalStateException("Error: setLineDashPattern is not allowed within a text block.");
-        }
         write("[");
         for (float value : pattern)
         {
@@ -1289,13 +1319,10 @@ abstract class PDAbstractContentStream implements Closeable
      *
      * @param miterLimit the new miter limit.
      * @throws IOException If the content stream could not be written.
+     * @throws IllegalArgumentException If the parameter is \u2264 0.
      */
     public void setMiterLimit(float miterLimit) throws IOException
     {
-        if (inTextMode)
-        {
-            throw new IllegalStateException("Error: setMiterLimit is not allowed within a text block.");
-        }
         if (miterLimit <= 0.0)
         {
             throw new IllegalArgumentException("A miter limit <= 0 is invalid and will not render in Acrobat Reader");
@@ -1376,9 +1403,15 @@ abstract class PDAbstractContentStream implements Closeable
      * Writes a real number to the content stream.
      * @param real
      * @throws java.io.IOException
+     * @throws IllegalArgumentException if the parameter is not a finite number
      */
     protected void writeOperand(float real) throws IOException
     {
+        if (Float.isInfinite(real) || Float.isNaN(real))
+        {
+            throw new IllegalArgumentException(real + " is not a finite number");
+        }
+
         int byteCount = NumberFormatUtil.formatFloatFast(real, formatDecimal.getMaximumFractionDigits(), formatBuffer);
 
         if (byteCount == -1)

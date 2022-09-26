@@ -74,44 +74,47 @@ public final class LosslessFactory
     public static PDImageXObject createFromImage(PDDocument document, Bitmap image)
         throws IOException
     {
-        if ((image.getConfig() == Bitmap.Config.ALPHA_8))
+        if (isGrayImage(image))
         {
             return createFromGrayImage(image, document);
         }
-        else
-        {
-            // We try to encode the image with predictor
-            if (usePredictorEncoder)
-            {
-                PDImageXObject pdImageXObject = new PredictorEncoder(document, image).encode();
-                if (pdImageXObject != null)
-                {
-                    if (pdImageXObject.getColorSpace() == PDDeviceRGB.INSTANCE &&
-                        pdImageXObject.getBitsPerComponent() < 16 &&
-                        image.getWidth() * image.getHeight() <= 50 * 50)
-                    {
-                        // also create classic compressed image, compare sizes
-                        PDImageXObject pdImageXObjectClassic = createFromRGBImage(image, document);
-                        if (pdImageXObjectClassic.getCOSObject().getLength() <
-                            pdImageXObject.getCOSObject().getLength())
-                        {
-                            Log.e("PdfBox-Android", "Return classic");
-                            pdImageXObject.getCOSObject().close();
-                            return pdImageXObjectClassic;
-                        }
-                        else
-                        {
-                            Log.e("PdfBox-Android", "Return predictor");
-                            pdImageXObjectClassic.getCOSObject().close();
-                        }
-                    }
-                    return pdImageXObject;
-                }
-            }
 
-            // Fallback: We export the image as 8-bit sRGB and might loose color information
-            return createFromRGBImage(image, document);
+        // We try to encode the image with predictor
+        if (usePredictorEncoder)
+        {
+            PDImageXObject pdImageXObject = new PredictorEncoder(document, image).encode();
+            if (pdImageXObject != null)
+            {
+                if (pdImageXObject.getColorSpace() == PDDeviceRGB.INSTANCE &&
+                    pdImageXObject.getBitsPerComponent() < 16 &&
+                    image.getWidth() * image.getHeight() <= 50 * 50)
+                {
+                    // also create classic compressed image, compare sizes
+                    PDImageXObject pdImageXObjectClassic = createFromRGBImage(image, document);
+                    if (pdImageXObjectClassic.getCOSObject().getLength() <
+                        pdImageXObject.getCOSObject().getLength())
+                    {
+                        Log.e("PdfBox-Android", "Return classic");
+                        pdImageXObject.getCOSObject().close();
+                        return pdImageXObjectClassic;
+                    }
+                    else
+                    {
+                        Log.e("PdfBox-Android", "Return predictor");
+                        pdImageXObjectClassic.getCOSObject().close();
+                    }
+                }
+                return pdImageXObject;
+            }
         }
+
+        // Fallback: We export the image as 8-bit sRGB and might loose color information
+        return createFromRGBImage(image, document);
+    }
+
+    private static boolean isGrayImage(Bitmap image)
+    {
+        return image.getConfig() == Bitmap.Config.ALPHA_8;
     }
 
     // grayscale images need one color per sample
@@ -175,8 +178,6 @@ public final class LosslessFactory
                 imageData[byteIdx++] = (byte) (pixel & 0xFF);
                 if (image.hasAlpha())
                 {
-                    // we have the alpha right here, so no need to do it separately
-                    // as done prior April 2018
                     {
                         // write a byte
                         alphaImageData[alphaByteIdx++] = (byte) ((pixel >> 24) & 0xFF);
@@ -207,7 +208,7 @@ public final class LosslessFactory
      * @return the newly created PDImageXObject with the data compressed.
      * @throws IOException
      */
-    private static PDImageXObject prepareImageXObject(PDDocument document,
+    static PDImageXObject prepareImageXObject(PDDocument document,
         byte [] byteArray, int width, int height, int bitsPerComponent,
         PDColorSpace initColorSpace) throws IOException
     {
@@ -424,6 +425,8 @@ public final class LosslessFactory
                     targetValues[0] = b2;
                     targetValues[1] = b1;
                     targetValues[2] = b0;
+                    break;
+                default:
                     break;
             }
         }

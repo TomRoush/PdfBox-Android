@@ -125,7 +125,7 @@ public class PDPage implements COSObjectable, PDContentStream
         {
             streams.add(new PDStream((COSStream) base));
         }
-        else if (base instanceof COSArray && ((COSArray) base).size() > 0)
+        else if (base instanceof COSArray)
         {
             COSArray array = (COSArray)base;
             for (int i = 0; i < array.size(); i++)
@@ -533,7 +533,7 @@ public class PDPage implements COSObjectable, PDContentStream
         {
             beads = new COSArray();
         }
-        List<PDThreadBead> pdObjects = new ArrayList<PDThreadBead>();
+        List<PDThreadBead> pdObjects = new ArrayList<PDThreadBead>(beads.size());
         for (int i = 0; i < beads.size(); i++)
         {
             COSBase base = beads.getObject(i);
@@ -678,26 +678,27 @@ public class PDPage implements COSObjectable, PDContentStream
     public List<PDAnnotation> getAnnotations(AnnotationFilter annotationFilter) throws IOException
     {
         COSBase base = page.getDictionaryObject(COSName.ANNOTS);
-        if (base instanceof COSArray)
+        if (!(base instanceof COSArray))
         {
-            COSArray annots = (COSArray) base;
-            List<PDAnnotation> actuals = new ArrayList<PDAnnotation>();
-            for (int i = 0; i < annots.size(); i++)
-            {
-                COSBase item = annots.getObject(i);
-                if (item == null)
-                {
-                    continue;
-                }
-                PDAnnotation createdAnnotation = PDAnnotation.createAnnotation(item);
-                if (annotationFilter.accept(createdAnnotation))
-                {
-                    actuals.add(createdAnnotation);
-                }
-            }
-            return new COSArrayList<PDAnnotation>(actuals, annots);
+            return new COSArrayList<PDAnnotation>(page, COSName.ANNOTS);
         }
-        return new COSArrayList<PDAnnotation>(page, COSName.ANNOTS);
+
+        COSArray annots = (COSArray) base;
+        List<PDAnnotation> actuals = new ArrayList<PDAnnotation>();
+        for (int i = 0; i < annots.size(); i++)
+        {
+            COSBase item = annots.getObject(i);
+            if (item == null)
+            {
+                continue;
+            }
+            PDAnnotation createdAnnotation = PDAnnotation.createAnnotation(item);
+            if (annotationFilter.accept(createdAnnotation))
+            {
+                actuals.add(createdAnnotation);
+            }
+        }
+        return new COSArrayList<PDAnnotation>(actuals, annots);
     }
 
     /**
@@ -779,5 +780,34 @@ public class PDPage implements COSObjectable, PDContentStream
             array.add(viewport);
         }
         page.setItem(COSName.VP, array);
+    }
+
+    /**
+     * Get the user unit. This is a positive number that shall give the size of default user space
+     * units, in multiples of 1/72 inch, or 1 if it hasn't been set. This is supported by PDF 1.6
+     * and higher.
+     *
+     * @return the user unit.
+     */
+    public float getUserUnit()
+    {
+        float userUnit = page.getFloat(COSName.USER_UNIT, 1.0f);
+        return userUnit > 0 ? userUnit : 1.0f;
+    }
+
+    /**
+     * Get the user unit. This is a positive number that shall give the size of default user space
+     * units, in multiples of 1/72 inch. This is supported by PDF 1.6 and higher.
+     *
+     * @param userUnit
+     * throws IllegalArgumentException if the parameter is not positive.
+     */
+    public void setUserUnit(float userUnit)
+    {
+        if (userUnit <= 0)
+        {
+            throw new IllegalArgumentException("User unit must be positive");
+        }
+        page.setFloat(COSName.USER_UNIT, userUnit);
     }
 }

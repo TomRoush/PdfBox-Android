@@ -50,6 +50,9 @@ public class CMap
     // Unicode mappings
     private final Map<Integer,String> charToUnicode = new HashMap<Integer,String>();
 
+    // inverted map
+    private final Map <String, byte[]> unicodeToByteCodes = new HashMap<String, byte[]>();
+
     // CID mappings
     private final Map<Integer,Integer> codeToCid = new HashMap<Integer,Integer>();
     private final List<CIDRange> codeToCidRanges = new ArrayList<CIDRange>();
@@ -107,6 +110,7 @@ public class CMap
     {
         byte[] bytes = new byte[maxCodeLength];
         in.read(bytes,0,minCodeLength);
+        in.mark(maxCodeLength);
         for (int i = minCodeLength-1; i < maxCodeLength; i++)
         {
             final int byteCount = i+1;
@@ -122,13 +126,23 @@ public class CMap
                 bytes[byteCount] = (byte)in.read();
             }
         }
-        String seq = "";
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < maxCodeLength; ++i)
         {
-            seq += String.format("0x%02X (%04o) ", bytes[i], bytes[i]);
+            sb.append(String.format("0x%02X (%04o) ", bytes[i], bytes[i]));
         }
-        Log.w("PdfBox-Android", "Invalid character code sequence " + seq + "in CMap " + cmapName);
-        return 0;
+        Log.w("PdfBox-Android", "Invalid character code sequence " + sb + "in CMap " + cmapName);
+        // PDFBOX-4811 reposition to where we were after initial read
+        if (in.markSupported())
+        {
+            in.reset();
+        }
+        else
+        {
+            Log.w("PdfBox-Android", "mark() and reset() not supported, " + (maxCodeLength - 1) +
+                " bytes have been skipped");
+        }
+        return toInt(bytes, minCodeLength); // Adobe Reader behavior
     }
 
     /**
@@ -195,6 +209,7 @@ public class CMap
      */
     void addCharMapping(byte[] codes, String unicode)
     {
+        unicodeToByteCodes.put(unicode, codes.clone()); // clone needed, bytes is modified later
         int code = getCodeFromArray(codes, 0, codes.length);
         charToUnicode.put(code, unicode);
 
@@ -203,6 +218,17 @@ public class CMap
         {
             spaceMapping = code;
         }
+    }
+
+    /**
+     * Get the code bytes for an unicode string.
+     *
+     * @param unicode The unicode string.
+     * @return the code bytes or null if there is none.
+     */
+    public byte[] getCodesFromUnicode(String unicode)
+    {
+        return unicodeToByteCodes.get(unicode);
     }
 
     /**
@@ -219,7 +245,7 @@ public class CMap
     /**
      * This will add a CID Range.
      *
-     * @param from starting charactor of the CID range.
+     * @param from starting character of the CID range.
      * @param to ending character of the CID range.
      * @param cid the cid to be started with.
      *
@@ -264,6 +290,9 @@ public class CMap
         charToUnicode.putAll(cmap.charToUnicode);
         codeToCid.putAll(cmap.codeToCid);
         codeToCidRanges.addAll(cmap.codeToCidRanges);
+
+        // unicodeToByteCodes should be filled too, but this isn't possible in 2.0.*
+        // because we don't know the code length
     }
 
     /**

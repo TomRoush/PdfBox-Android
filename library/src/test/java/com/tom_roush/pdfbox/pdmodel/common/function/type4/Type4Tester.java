@@ -33,7 +33,6 @@ public class Type4Tester
 
     /**
      * Creates a new instance for the given type 4 function.
-     *
      * @param text the text of the type 4 function
      * @return the tester instance
      */
@@ -48,20 +47,18 @@ public class Type4Tester
 
     /**
      * Pops a bool value from the stack and checks it against the expected result.
-     *
      * @param expected the expected bool value
      * @return this instance
      */
     public Type4Tester pop(boolean expected)
     {
-        boolean value = (Boolean) context.getStack().pop();
+        boolean value = (Boolean)context.getStack().pop();
         Assert.assertEquals(expected, value);
         return this;
     }
 
     /**
      * Pops a real value from the stack and checks it against the expected result.
-     *
      * @param expected the expected real value
      * @return this instance
      */
@@ -72,21 +69,19 @@ public class Type4Tester
 
     /**
      * Pops a real value from the stack and checks it against the expected result.
-     *
      * @param expected the expected real value
      * @param delta the allowed deviation of the value from the expected result
      * @return this instance
      */
     public Type4Tester popReal(float expected, double delta)
     {
-        Float value = (Float) context.getStack().pop();
+        Float value = (Float)context.getStack().pop();
         Assert.assertEquals(expected, value, delta);
         return this;
     }
 
     /**
      * Pops an int value from the stack and checks it against the expected result.
-     *
      * @param expected the expected int value
      * @return this instance
      */
@@ -99,7 +94,6 @@ public class Type4Tester
 
     /**
      * Pops a numeric value from the stack and checks it against the expected result.
-     *
      * @param expected the expected numeric value
      * @return this instance
      */
@@ -110,7 +104,6 @@ public class Type4Tester
 
     /**
      * Pops a numeric value from the stack and checks it against the expected result.
-     *
      * @param expected the expected numeric value
      * @param delta the allowed deviation of the value from the expected result
      * @return this instance
@@ -124,7 +117,6 @@ public class Type4Tester
 
     /**
      * Checks that the stack is empty at this point.
-     *
      * @return this instance
      */
     public Type4Tester isEmpty()
@@ -135,7 +127,6 @@ public class Type4Tester
 
     /**
      * Returns the execution context so some custom checks can be performed.
-     *
      * @return the associated execution context
      */
     public ExecutionContext toExecutionContext()

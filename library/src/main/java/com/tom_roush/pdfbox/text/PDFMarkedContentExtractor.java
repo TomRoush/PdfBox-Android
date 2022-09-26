@@ -17,11 +17,12 @@
 package com.tom_roush.pdfbox.text;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
+import java.util.Deque;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -39,9 +40,9 @@ import com.tom_roush.pdfbox.contentstream.operator.markedcontent.EndMarkedConten
  */
 public class PDFMarkedContentExtractor extends LegacyPDFStreamEngine
 {
-    private final boolean suppressDuplicateOverlappingText = true;
+    private boolean suppressDuplicateOverlappingText = true;
     private final List<PDMarkedContent> markedContents = new ArrayList<PDMarkedContent>();
-    private final Stack<PDMarkedContent> currentMarkedContents = new Stack<PDMarkedContent>();
+    private final Deque<PDMarkedContent> currentMarkedContents = new ArrayDeque<PDMarkedContent>();
     private final Map<String, List<TextPosition>> characterListMapping = new HashMap<String, List<TextPosition>>();
 
     /**
@@ -66,6 +67,28 @@ public class PDFMarkedContentExtractor extends LegacyPDFStreamEngine
         // todo: DP - Marked Content Point
         // todo: MP - Marked Content Point with Properties
     }
+
+    /**
+     * @return the suppressDuplicateOverlappingText setting.
+     */
+    public boolean isSuppressDuplicateOverlappingText()
+    {
+        return suppressDuplicateOverlappingText;
+    }
+
+    /**
+     * By default the class will attempt to remove text that overlaps each other. Word paints the
+     * same character several times in order to make it look bold. By setting this to false all text
+     * will be extracted, which means that certain sections will be duplicated, but better
+     * performance will be noticed.
+     *
+     * @param suppressDuplicateOverlappingText The suppressDuplicateOverlappingText setting to set.
+     */
+    public void setSuppressDuplicateOverlappingText(boolean suppressDuplicateOverlappingText)
+    {
+        this.suppressDuplicateOverlappingText = suppressDuplicateOverlappingText;
+    }
+
 
     /**
      * This will determine of two floating point numbers are within a specified variance.
@@ -155,10 +178,9 @@ public class PDFMarkedContentExtractor extends LegacyPDFStreamEngine
             float tolerance = (text.getWidth()/textCharacter.length())/3.0f;
             for (TextPosition sameTextCharacter : sameTextCharacters)
             {
-                TextPosition character = sameTextCharacter;
-                String charCharacter = character.getUnicode();
-                float charX = character.getX();
-                float charY = character.getY();
+                String charCharacter = sameTextCharacter.getUnicode();
+                float charX = sameTextCharacter.getX();
+                float charY = sameTextCharacter.getY();
                 //only want to suppress
                 if( charCharacter != null &&
                     //charCharacter.equals( textCharacter ) &&
@@ -184,7 +206,7 @@ public class PDFMarkedContentExtractor extends LegacyPDFStreamEngine
 
             /* In the wild, some PDF encoded documents put diacritics (accents on
              * top of characters) into a separate Tj element.  When displaying them
-             * graphically, the two chunks get overlayed.  With text output though,
+             * graphically, the two chunks get overlaid.  With text output though,
              * we need to do the overlay. This code recombines the diacritic with
              * its associated character if the two are consecutive.
              */

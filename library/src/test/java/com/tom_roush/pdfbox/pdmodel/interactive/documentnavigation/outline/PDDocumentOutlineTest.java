@@ -23,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 
 /**
  * @author Andrea Vacondio
+ *
  */
 public class PDDocumentOutlineTest
 {

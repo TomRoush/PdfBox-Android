@@ -16,12 +16,14 @@
  */
 package com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
 
 import com.tom_roush.pdfbox.cos.COSArray;
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -290,11 +292,15 @@ public class PDSignature implements COSObjectable
     /**
      * Read out the byterange from the file.
      *
-     * @return a integer array with the byterange
+     * @return an integer array with the byterange, or an empty array if there is none.
      */
     public int[] getByteRange()
     {
-        COSArray byteRange = (COSArray)dictionary.getDictionaryObject(COSName.BYTERANGE);
+        COSArray byteRange = dictionary.getCOSArray(COSName.BYTERANGE);
+        if (byteRange == null)
+        {
+            return new int[0];
+        }
         int[] ary = new int[byteRange.size()];
         for (int i = 0; i<ary.length;++i)
         {
@@ -304,11 +310,28 @@ public class PDSignature implements COSObjectable
     }
 
     /**
+     * Returns the /Contents string as a byte array, i.e. the embedded signature between the
+     * byterange gap.
+     *
+     * @return a byte array containing the signature, or an empty array if there isn't any.
+     */
+    public byte[] getContents()
+    {
+        COSBase base = dictionary.getDictionaryObject(COSName.CONTENTS);
+        if (base instanceof COSString)
+        {
+            return ((COSString) base).getBytes();
+        }
+        return new byte[0];
+    }
+
+    /**
      * Will return the embedded signature between the byterange gap.
      *
      * @param pdfFile The signed pdf file as InputStream. It will be closed in this method.
      * @return a byte array containing the signature
      * @throws IOException if the pdfFile can't be read
+     * @throws IndexOutOfBoundsException if the byterange array is not long enough
      */
     public byte[] getContents(InputStream pdfFile) throws IOException
     {
@@ -325,6 +348,7 @@ public class PDSignature implements COSObjectable
      * @param pdfFile The signed pdf file as byte array
      * @return a byte array containing the signature
      * @throws IOException if the pdfFile can't be read
+     * @throws IndexOutOfBoundsException if the byterange array is not long enough
      */
     public byte[] getContents(byte[] pdfFile) throws IOException
     {
@@ -332,34 +356,34 @@ public class PDSignature implements COSObjectable
         int begin = byteRange[0]+byteRange[1]+1;
         int len = byteRange[2]-begin;
 
-        return getConvertedContents(new COSFilterInputStream(pdfFile,new int[] {begin,len}));
+        return getConvertedContents(new ByteArrayInputStream(pdfFile, begin, len));
     }
 
     private byte[] getConvertedContents(InputStream is) throws IOException
     {
-        ByteArrayOutputStream byteOS = new ByteArrayOutputStream(1024);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
         byte[] buffer = new byte[1024];
-        int c;
-        while ((c = is.read(buffer)) != -1)
+        int readLen;
+        while ((readLen = is.read(buffer)) != -1)
         {
+            int writeLen = readLen;
+            int start = 0;
             // Filter < and (
             if(buffer[0]==0x3C || buffer[0]==0x28)
             {
-                byteOS.write(buffer, 1, c);
+                ++start;
+                --writeLen;
             }
-            // Filter > and )
-            else if(buffer[c-1]==0x3E || buffer[c-1]==0x29)
+            // Filter > and ) at the end
+            if(buffer[readLen-1]==0x3E || buffer[readLen-1]==0x29)
             {
-                byteOS.write(buffer, 0, c-1);
+                --writeLen;
             }
-            else
-            {
-                byteOS.write(buffer, 0, c);
-            }
+            baos.write(buffer, start, writeLen);
         }
         is.close();
 
-        return COSString.parseHex(byteOS.toString("ISO-8859-1")).getBytes();
+        return COSString.parseHex(baos.toString("ISO-8859-1")).getBytes();
     }
 
     /**
@@ -432,7 +456,7 @@ public class PDSignature implements COSObjectable
     }
 
     /**
-     * PDF signature build dictionary. Provides informations about the signature handler.
+     * PDF signature build dictionary. Provides information about the signature handler.
      *
      * @return the pdf signature build dictionary.
      */
@@ -448,7 +472,7 @@ public class PDSignature implements COSObjectable
     }
 
     /**
-     * PDF signature build dictionary. Provides informations about the signature handler.
+     * PDF signature build dictionary. Provides information about the signature handler.
      *
      * @param propBuild the prop build
      */

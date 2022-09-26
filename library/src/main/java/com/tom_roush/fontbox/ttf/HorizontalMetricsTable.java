@@ -52,7 +52,7 @@ public class HorizontalMetricsTable extends TTFTable
         HorizontalHeaderTable hHeader = ttf.getHorizontalHeader();
         if (hHeader == null)
         {
-            throw new IOException("Could not get hhea table");
+            throw new IOException("Could not get hmtx table");
         }
         numHMetrics = hHeader.getNumberOfHMetrics();
         int numGlyphs = ttf.getNumberOfGlyphs();
@@ -101,6 +101,10 @@ public class HorizontalMetricsTable extends TTFTable
      */
     public int getAdvanceWidth(int gid)
     {
+        if (advanceWidth.length == 0)
+        {
+            return 250;
+        }
         if (gid < numHMetrics)
         {
             return advanceWidth[gid];
@@ -120,6 +124,10 @@ public class HorizontalMetricsTable extends TTFTable
      */
     public int getLeftSideBearing(int gid)
     {
+        if (leftSideBearing.length == 0)
+        {
+            return 0;
+        }
         if (gid < numHMetrics)
         {
             return leftSideBearing[gid];

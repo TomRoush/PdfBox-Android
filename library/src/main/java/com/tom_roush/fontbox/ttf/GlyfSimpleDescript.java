@@ -18,6 +18,8 @@
  */
 package com.tom_roush.fontbox.ttf;
 
+import android.util.Log;
+
 import java.io.IOException;
 
 /**
@@ -32,6 +34,17 @@ public class GlyfSimpleDescript extends GlyfDescript
     private short[] xCoordinates;
     private short[] yCoordinates;
     private final int pointCount;
+
+    /**
+     * Constructor for an empty description.
+     *
+     * @throws IOException is thrown if something went wrong
+     */
+    GlyfSimpleDescript() throws IOException
+    {
+        super((short) 0, null);
+        pointCount = 0;
+    }
 
     /**
      * Constructor.
@@ -153,7 +166,7 @@ public class GlyfSimpleDescript extends GlyfDescript
             {
                 if ((flags[i] & X_SHORT_VECTOR) != 0)
                 {
-                    x += (short) -((short) bais.readUnsignedByte());
+                    x -= (short) bais.readUnsignedByte();
                 }
                 else
                 {
@@ -176,7 +189,7 @@ public class GlyfSimpleDescript extends GlyfDescript
             {
                 if ((flags[i] & Y_SHORT_VECTOR) != 0)
                 {
-                    y += (short) -((short) bais.readUnsignedByte());
+                    y -= (short) bais.readUnsignedByte();
                 }
                 else
                 {
@@ -198,8 +211,13 @@ public class GlyfSimpleDescript extends GlyfDescript
             if ((flags[index] & REPEAT) != 0)
             {
                 int repeats = bais.readUnsignedByte();
-                for (int i = 1; i <= repeats && index + i < flags.length; i++)
+                for (int i = 1; i <= repeats; i++)
                 {
+                    if (index + i >= flags.length)
+                    {
+                        Log.e("PdfBox-Android", "repeat count (" + repeats + ") higher than remaining space");
+                        return;
+                    }
                     flags[index + i] = flags[index];
                 }
                 index += repeats;

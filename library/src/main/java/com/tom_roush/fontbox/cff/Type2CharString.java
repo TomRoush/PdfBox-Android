@@ -133,7 +133,7 @@ public class Type2CharString extends Type1CharString
         else if ("endchar".equals(name))
         {
             numbers = clearStack(numbers, numbers.size() == 5 || numbers.size() == 1);
-            closePath();
+            closeCharString2Path();
             if (numbers.size() == 4)
             {
                 // deprecated "seac" operator
@@ -167,12 +167,15 @@ public class Type2CharString extends Type1CharString
         }
         else if ("hflex".equals(name))
         {
-            List<Number> first = Arrays.asList(numbers.get(0), 0,
-                numbers.get(1), numbers.get(2), numbers.get(3), 0);
-            List<Number> second = Arrays.asList(numbers.get(4), 0,
-                numbers.get(5), -(numbers.get(2).floatValue()),
-                numbers.get(6), 0);
-            addCommandList(Arrays.asList(first, second), new CharStringCommand(8));
+            if (numbers.size() >= 7)
+            {
+                List<Number> first = Arrays.asList(numbers.get(0), 0,
+                    numbers.get(1), numbers.get(2), numbers.get(3), 0);
+                List<Number> second = Arrays.asList(numbers.get(4), 0,
+                    numbers.get(5), -(numbers.get(2).floatValue()),
+                    numbers.get(6), 0);
+                addCommandList(Arrays.asList(first, second), new CharStringCommand(8));
+            }
         }
         else if ("flex".equals(name))
         {
@@ -182,11 +185,14 @@ public class Type2CharString extends Type1CharString
         }
         else if ("hflex1".equals(name))
         {
-            List<Number> first = Arrays.asList(numbers.get(0), numbers.get(1),
-                numbers.get(2), numbers.get(3), numbers.get(4), 0);
-            List<Number> second = Arrays.asList(numbers.get(5), 0,
-                numbers.get(6), numbers.get(7), numbers.get(8), 0);
-            addCommandList(Arrays.asList(first, second), new CharStringCommand(8));
+            if (numbers.size() >= 9)
+            {
+                List<Number> first = Arrays.asList(numbers.get(0), numbers.get(1),
+                    numbers.get(2), numbers.get(3), numbers.get(4), 0);
+                List<Number> second = Arrays.asList(numbers.get(5), 0,
+                    numbers.get(6), numbers.get(7), numbers.get(8), 0);
+                addCommandList(Arrays.asList(first, second), new CharStringCommand(8));
+            }
         }
         else if ("flex1".equals(name))
         {
@@ -211,7 +217,7 @@ public class Type2CharString extends Type1CharString
         else if ("hintmask".equals(name) || "cntrmask".equals(name))
         {
             numbers = clearStack(numbers, numbers.size() % 2 != 0);
-            if (numbers.size() > 0)
+            if (!numbers.isEmpty())
             {
                 expandStemHints(numbers, false);
             }
@@ -288,12 +294,12 @@ public class Type2CharString extends Type1CharString
     {
         if (pathCount > 0)
         {
-            closePath();
+            closeCharString2Path();
         }
         pathCount++;
     }
 
-    private void closePath()
+    private void closeCharString2Path()
     {
         CharStringCommand command = pathCount > 0 ? (CharStringCommand) type1Sequence
             .get(type1Sequence.size() - 1)
@@ -308,7 +314,7 @@ public class Type2CharString extends Type1CharString
 
     private void drawAlternatingLine(List<Number> numbers, boolean horizontal)
     {
-        while (numbers.size() > 0)
+        while (!numbers.isEmpty())
         {
             addCommand(numbers.subList(0, 1), new CharStringCommand(
                 horizontal ? 6 : 7));
@@ -325,15 +331,15 @@ public class Type2CharString extends Type1CharString
             if (horizontal)
             {
                 addCommand(Arrays.asList(numbers.get(0), 0,
-                    numbers.get(1), numbers.get(2), last ? numbers.get(4)
-                        : 0, numbers.get(3)),
+                        numbers.get(1), numbers.get(2), last ? numbers.get(4)
+                            : 0, numbers.get(3)),
                     new CharStringCommand(8));
             }
             else
             {
                 addCommand(Arrays.asList(0, numbers.get(0),
-                    numbers.get(1), numbers.get(2), numbers.get(3),
-                    last ? numbers.get(4) : 0),
+                        numbers.get(1), numbers.get(2), numbers.get(3),
+                        last ? numbers.get(4) : 0),
                     new CharStringCommand(8));
             }
             numbers = numbers.subList(last ? 5 : 4, numbers.size());
@@ -358,8 +364,8 @@ public class Type2CharString extends Type1CharString
             else
             {
                 addCommand(Arrays.asList(first ? numbers.get(0) : 0, numbers.get(first ? 1 : 0), numbers
-                        .get(first ? 2 : 1), numbers.get(first ? 3 : 2),
-                    0, numbers.get(first ? 4 : 3)),
+                            .get(first ? 2 : 1), numbers.get(first ? 3 : 2),
+                        0, numbers.get(first ? 4 : 3)),
                     new CharStringCommand(8));
             }
             numbers = numbers.subList(first ? 5 : 4, numbers.size());
@@ -382,8 +388,9 @@ public class Type2CharString extends Type1CharString
 
     private static <E> List<List<E>> split(List<E> list, int size)
     {
-        List<List<E>> result = new ArrayList<List<E>>();
-        for (int i = 0; i < list.size() / size; i++)
+        int listSize = list.size() / size;
+        List<List<E>> result = new ArrayList<List<E>>(listSize);
+        for (int i = 0; i < listSize; i++)
         {
             result.add(list.subList(i * size, (i + 1) * size));
         }

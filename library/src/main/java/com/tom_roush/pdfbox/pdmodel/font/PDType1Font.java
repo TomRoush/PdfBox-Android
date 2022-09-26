@@ -172,15 +172,7 @@ public class PDType1Font extends PDSimpleFont
      */
     public PDType1Font(PDDocument doc, InputStream pfbIn) throws IOException
     {
-        PDType1FontEmbedder embedder = new PDType1FontEmbedder(doc, dict, pfbIn, null);
-        encoding = embedder.getFontEncoding();
-        glyphList = embedder.getGlyphList();
-        type1font = embedder.getType1Font();
-        genericFont = embedder.getType1Font();
-        isEmbedded = true;
-        isDamaged = false;
-        fontMatrixTransform = new AffineTransform();
-        codeToBytesMap = new HashMap<Integer,byte[]>();
+        this(doc, pfbIn, null);
     }
 
     /**
@@ -194,7 +186,7 @@ public class PDType1Font extends PDSimpleFont
     public PDType1Font(PDDocument doc, InputStream pfbIn, Encoding encoding) throws IOException
     {
         PDType1FontEmbedder embedder = new PDType1FontEmbedder(doc, dict, pfbIn, encoding);
-        this.encoding = encoding;
+        this.encoding = encoding == null ? embedder.getFontEncoding() : encoding;
         glyphList = embedder.getGlyphList();
         type1font = embedder.getType1Font();
         genericFont = embedder.getType1Font();
@@ -225,7 +217,7 @@ public class PDType1Font extends PDSimpleFont
             PDStream fontFile3 = fd.getFontFile3();
             if (fontFile3 != null)
             {
-                throw new IllegalArgumentException("Use PDType1CFont for FontFile3");
+                throw new IOException("/FontFile3 for Type1 font not supported");
             }
 
             // or it may contain a PFB
@@ -240,10 +232,14 @@ public class PDType1Font extends PDSimpleFont
 
                     // repair Length1 and Length2 if necessary
                     byte[] bytes = fontFile.toByteArray();
+                    if (bytes.length == 0)
+                    {
+                        throw new IOException("Font data unavailable");
+                    }
                     length1 = repairLength1(bytes, length1);
                     length2 = repairLength2(bytes, length1, length2);
 
-                    if (bytes.length > 0 && (bytes[0] & 0xff) == PFB_START_MARKER)
+                    if ((bytes[0] & 0xff) == PFB_START_MARKER)
                     {
                         // some bad files embed the entire PFB, see PDFBOX-2607
                         t1 = Type1Font.createWithPFB(bytes);
@@ -251,6 +247,11 @@ public class PDType1Font extends PDSimpleFont
                     else
                     {
                         // the PFB embedded as two segments back-to-back
+                        if (length1 < 0 || length1 > length1 + length2)
+                        {
+                            throw new IOException("Invalid length data, actual length: " +
+                                bytes.length + ", /Length1: " + length1 + ", /Length2: " + length2);
+                        }
                         byte[] segment1 = Arrays.copyOfRange(bytes, 0, length1);
                         byte[] segment2 = Arrays.copyOfRange(bytes, length1, length1 + length2);
 
@@ -388,7 +389,6 @@ public class PDType1Font extends PDSimpleFont
     @Override
     public float getHeight(int code) throws IOException
     {
-        String name = codeToName(code);
         if (getStandard14AFM() != null)
         {
             String afmName = getEncoding().getName(code);
@@ -396,6 +396,8 @@ public class PDType1Font extends PDSimpleFont
         }
         else
         {
+            String name = codeToName(code);
+
             // todo: should be scaled by font matrix
             RectF bounds = new RectF();
             genericFont.getPath(name).computeBounds(bounds, true);
@@ -420,13 +422,13 @@ public class PDType1Font extends PDSimpleFont
             if (!encoding.contains(name))
             {
                 throw new IllegalArgumentException(
-                    String.format("U+%04X ('%s') is not available in this font %s encoding: %s",
+                    String.format("U+%04X ('%s') is not available in the font %s, encoding: %s",
                         unicode, name, getName(), encoding.getEncodingName()));
             }
             if (".notdef".equals(name))
             {
                 throw new IllegalArgumentException(
-                    String.format("No glyph for U+%04X in font %s", unicode, getName()));
+                    String.format("No glyph for U+%04X in the font %s", unicode, getName()));
             }
         }
         else
@@ -434,7 +436,7 @@ public class PDType1Font extends PDSimpleFont
             if (!encoding.contains(name))
             {
                 throw new IllegalArgumentException(
-                    String.format("U+%04X ('%s') is not available in this font %s (generic: %s) encoding: %s",
+                    String.format("U+%04X ('%s') is not available in the font %s (generic: %s), encoding: %s",
                         unicode, name, getName(), genericFont.getName(), encoding.getEncodingName()));
             }
 
@@ -443,12 +445,18 @@ public class PDType1Font extends PDSimpleFont
             if (nameInFont.equals(".notdef") || !genericFont.hasGlyph(nameInFont))
             {
                 throw new IllegalArgumentException(
-                    String.format("No glyph for U+%04X in font %s (generic: %s)", unicode, getName(), genericFont.getName()));
+                    String.format("No glyph for U+%04X in the font %s (generic: %s)", unicode, getName(), genericFont.getName()));
             }
         }
 
         Map<String, Integer> inverted = encoding.getNameToCodeMap();
         int code = inverted.get(name);
+        if (code < 0)
+        {
+            throw new IllegalArgumentException(
+                String.format("U+%04X ('%s') is not available in the font %s (generic: %s), encoding: %s",
+                    unicode, name, getName(), genericFont.getName(), encoding.getEncodingName()));
+        }
         bytes = new byte[] { (byte)code };
         codeToBytesMap.put(unicode, bytes);
         return bytes;
@@ -567,7 +575,7 @@ public class PDType1Font extends PDSimpleFont
     //@Override
     public String codeToName(int code) throws IOException
     {
-        String name = getEncoding().getName(code);
+        String name = getEncoding() != null ? getEncoding().getName(code) : ".notdef";
         return getNameInFont(name);
     }
 

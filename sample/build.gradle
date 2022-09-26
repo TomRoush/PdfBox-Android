@@ -9,6 +9,7 @@ android {
         targetSdkVersion Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
         versionName project.VERSION_NAME
         versionCode Integer.parseInt(project.VERSION_CODE)
+        multiDexEnabled true
     }
 
     buildTypes {
@@ -17,18 +18,25 @@ android {
         }
     }
 
-    lintOptions {
-        abortOnError false
-    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    lint {
+        abortOnError false
+    }
+    namespace 'com.tom_roush.pdfbox.sample'
 }
 
 dependencies {
     implementation project(':library')
 //    implementation "com.tom-roush:pdfbox-android:${project.VERSION_NAME}"
-    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation "androidx.multidex:multidex:2.0.1"
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+
+    // Optional dependencies
+
+    // Read JPX images
+    implementation 'com.gemalto.jp2:jp2-android:1.0.3'
 }

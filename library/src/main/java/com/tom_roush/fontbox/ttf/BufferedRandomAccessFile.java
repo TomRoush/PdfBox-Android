@@ -36,7 +36,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile
     /**
      * Uses a byte instead of a char buffer for efficiency reasons.
      */
-    private final byte buffer[];
+    private final byte[] buffer;
     private int bufend = 0;
     private int bufpos = 0;
 
@@ -44,11 +44,6 @@ public class BufferedRandomAccessFile extends RandomAccessFile
      * The position inside the actual file.
      */
     private long realpos = 0;
-
-    /**
-     * Buffer size.
-     */
-    private final int BUFSIZE;
 
     /**
      * Creates a new instance of the BufferedRandomAccessFile.
@@ -66,8 +61,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile
         throws FileNotFoundException
     {
         super(filename, mode);
-        BUFSIZE = bufsize;
-        buffer = new byte[BUFSIZE];
+        buffer = new byte[bufsize];
     }
 
     /**
@@ -86,8 +80,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile
         throws FileNotFoundException
     {
         super(file, mode);
-        BUFSIZE = bufsize;
-        buffer = new byte[BUFSIZE];
+        buffer = new byte[bufsize];
     }
 
     /**
@@ -110,7 +103,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile
     }
 
     /**
-     * Reads the next BUFSIZE bytes into the internal buffer.
+     * Reads as much bytes as possible into the internal buffer.
      *
      * @return The total number of bytes read into the buffer, or -1 if there is no more data
      * because the end of the file has been reached.
@@ -119,7 +112,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile
      */
     private int fillBuffer() throws IOException
     {
-        int n = super.read(buffer, 0, BUFSIZE);
+        int n = super.read(buffer);
 
         if (n >= 0)
         {
@@ -146,26 +139,39 @@ public class BufferedRandomAccessFile extends RandomAccessFile
      * {@inheritDoc}
      */
     @Override
-    public int read(byte b[], int off, int len) throws IOException
+    public int read(byte[] b, int off, int len) throws IOException
     {
-        int leftover = bufend - bufpos;
-        if (len <= leftover)
+        int curLen = len; // length of what is left to read (shrinks)
+        int curOff = off; // offset where to put read data (grows)
+        int totalRead = 0;
+
+        while (true)
         {
-            System.arraycopy(buffer, bufpos, b, off, len);
-            bufpos += len;
-            return len;
-        }
-        System.arraycopy(buffer, bufpos, b, off, leftover);
-        bufpos += leftover;
-        if (fillBuffer() > 0)
-        {
-            int bytesRead = read(b, off + leftover, len - leftover);
-            if (bytesRead > 0)
+            int leftover = bufend - bufpos;
+            if (curLen <= leftover)
             {
-                leftover += bytesRead;
+                System.arraycopy(buffer, bufpos, b, curOff, curLen);
+                bufpos += curLen;
+                return totalRead + curLen;
+            }
+            // curLen > leftover, we need to read more than what remains in buffer
+            System.arraycopy(buffer, bufpos, b, curOff, leftover);
+            totalRead += leftover;
+            bufpos += leftover;
+            if (fillBuffer() > 0)
+            {
+                curOff += leftover;
+                curLen -= leftover;
+            }
+            else
+            {
+                if (totalRead == 0)
+                {
+                    return -1;
+                }
+                return totalRead;
             }
         }
-        return leftover > 0 ? leftover : -1;
     }
 
     /**

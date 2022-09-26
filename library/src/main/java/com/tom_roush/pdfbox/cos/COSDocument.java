@@ -27,6 +27,7 @@ import java.util.Map;
 
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.io.ScratchFile;
+import com.tom_roush.pdfbox.multipdf.Splitter;
 import com.tom_roush.pdfbox.pdfparser.PDFObjectStreamParser;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 
@@ -378,7 +379,9 @@ public class COSDocument extends COSBase implements Closeable
     }
 
     /**
-     * This will get a list of all available objects.
+     * This will get a list of all available objects. This method works only for loaded PDFs. It
+     * will return an empty list for PDFs created from scratch (this includes PDFs generated within
+     * PDFBox, e.g. by {@link Splitter}). This method will be removed in 3.0.
      *
      * @return A list of all objects, never null.
      */
@@ -446,52 +449,54 @@ public class COSDocument extends COSBase implements Closeable
     /**
      * This will close all storage and delete the tmp files.
      *
-     *  @throws IOException If there is an error close resources.
+     * @throws IOException If there is an error close resources.
      */
     @Override
     public void close() throws IOException
     {
-        if (!closed)
+        if (closed)
         {
-            // Make sure that:
-            // - first Exception is kept
-            // - all COSStreams are closed
-            // - ScratchFile is closed
-            // - there's a way to see which errors occured
+            return;
+        }
 
-            IOException firstException = null;
+        // Make sure that:
+        // - first Exception is kept
+        // - all COSStreams are closed
+        // - ScratchFile is closed
+        // - there's a way to see which errors occurred
 
-            // close all open I/O streams
-            for (COSObject object : getObjects())
-            {
-                COSBase cosObject = object.getObject();
-                if (cosObject instanceof COSStream)
-                {
-                    firstException = IOUtils.closeAndLogException((COSStream) cosObject, "COSStream", firstException);
-                }
-            }
-            for (COSStream stream : streams)
-            {
-                firstException = IOUtils.closeAndLogException(stream, "COSStream", firstException);
-            }
-            if (scratchFile != null)
-            {
-                firstException = IOUtils.closeAndLogException(scratchFile, "ScratchFile", firstException);
-            }
-            closed = true;
+        IOException firstException = null;
 
-            // rethrow first exception to keep method contract
-            if (firstException != null)
+        // close all open I/O streams
+        for (COSObject object : getObjects())
+        {
+            COSBase cosObject = object.getObject();
+            if (cosObject instanceof COSStream)
             {
-                throw firstException;
+                firstException = IOUtils.closeAndLogException((COSStream) cosObject, "COSStream", firstException);
             }
+        }
+        for (COSStream stream : streams)
+        {
+            firstException = IOUtils.closeAndLogException(stream, "COSStream", firstException);
+        }
+        if (scratchFile != null)
+        {
+            firstException = IOUtils.closeAndLogException(scratchFile, "ScratchFile", firstException);
+        }
+        closed = true;
+
+        // rethrow first exception to keep method contract
+        if (firstException != null)
+        {
+            throw firstException;
         }
     }
 
     /**
      * Returns true if this document has been closed.
      *
-     * @return true if the documnet has been closed.
+     * @return true if the document has been closed.
      */
     public boolean isClosed()
     {

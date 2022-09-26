@@ -31,14 +31,14 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDFontFactory;
-import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
-import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
+import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.pattern.PDAbstractPattern;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
-import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 
 /**
  * A set of resources available at the page/pages/stream level.
@@ -139,10 +139,10 @@ public final class PDResources implements COSObjectable
         }
 
         PDFont font = null;
-        COSDictionary dict = (COSDictionary)get(COSName.FONT, name);
-        if (dict != null)
+        COSBase base = get(COSName.FONT, name);
+        if (base instanceof COSDictionary)
         {
-            font = PDFontFactory.createFont(dict, cache);
+            font = PDFontFactory.createFont((COSDictionary) base, cache);
         }
 
         if (cache != null && indirect != null)
@@ -203,7 +203,7 @@ public final class PDResources implements COSObjectable
         }
 
         // we can't cache PDPattern, because it holds page resources, see PDFBOX-2370
-        if (cache != null /*&& !(colorSpace instanceof PDPattern)*/) // TODO: PdfBox-Android
+        if (cache != null && indirect != null /*&& !(colorSpace instanceof PDPattern)*/) // TODO: PdfBox-Android
         {
             cache.put(indirect, colorSpace);
         }
@@ -243,13 +243,13 @@ public final class PDResources implements COSObjectable
 
         // get the instance
         PDExtendedGraphicsState extGState = null;
-        COSDictionary dict = (COSDictionary)get(COSName.EXT_G_STATE, name);
-        if (dict != null)
+        COSBase base = get(COSName.EXT_G_STATE, name);
+        if (base instanceof COSDictionary)
         {
-            extGState = new PDExtendedGraphicsState(dict);
+            extGState = new PDExtendedGraphicsState((COSDictionary) base);
         }
 
-        if (cache != null)
+        if (cache != null && indirect != null)
         {
             cache.put(indirect, extGState);
         }
@@ -279,13 +279,13 @@ public final class PDResources implements COSObjectable
 
         // get the instance
         PDShading shading = null;
-        COSDictionary dict = (COSDictionary)get(COSName.SHADING, name);
-        if (dict != null)
+        COSBase base = get(COSName.SHADING, name);
+        if (base instanceof COSDictionary)
         {
-            shading = PDShading.create(dict);
+            shading = PDShading.create((COSDictionary) base);
         }
 
-        if (cache != null)
+        if (cache != null && indirect != null)
         {
             cache.put(indirect, shading);
         }
@@ -315,13 +315,13 @@ public final class PDResources implements COSObjectable
 
         // get the instance
         PDAbstractPattern pattern = null;
-        COSDictionary dict = (COSDictionary)get(COSName.PATTERN, name);
-        if (dict != null)
+        COSBase base = get(COSName.PATTERN, name);
+        if (base instanceof COSDictionary)
         {
-            pattern = PDAbstractPattern.create(dict);
+            pattern = PDAbstractPattern.create((COSDictionary) base, getResourceCache());
         }
 
-        if (cache != null)
+        if (cache != null && indirect != null)
         {
             cache.put(indirect, pattern);
         }
@@ -349,13 +349,13 @@ public final class PDResources implements COSObjectable
 
         // get the instance
         PDPropertyList propertyList = null;
-        COSDictionary dict = (COSDictionary)get(COSName.PROPERTIES, name);
-        if (dict != null)
+        COSBase base = get(COSName.PROPERTIES, name);
+        if (base instanceof COSDictionary)
         {
-            propertyList = PDPropertyList.create(dict);
+            propertyList = PDPropertyList.create((COSDictionary) base);
         }
 
-        if (cache != null)
+        if (cache != null && indirect != null)
         {
             cache.put(indirect, propertyList);
         }
@@ -424,7 +424,7 @@ public final class PDResources implements COSObjectable
         {
             xobject = PDXObject.createXObject(value, this);
         }
-        if (cache != null && isAllowedCache(xobject))
+        if (cache != null && indirect != null && isAllowedCache(xobject))
         {
             cache.put(indirect, xobject);
         }

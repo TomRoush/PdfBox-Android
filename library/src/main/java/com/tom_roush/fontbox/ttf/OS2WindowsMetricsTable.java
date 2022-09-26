@@ -16,10 +16,14 @@
  */
 package com.tom_roush.fontbox.ttf;
 
+import android.util.Log;
+
+import java.io.EOFException;
 import java.io.IOException;
 
 /**
- * A table in a true type font.
+ * The OS/2 and Windows Metrics Table in a TrueType font, see
+ * <a href="https://docs.microsoft.com/en-us/typography/opentype/spec/os2">here</a>.
  *
  * @author Ben Litchfield
  *
@@ -152,7 +156,7 @@ public class OS2WindowsMetricsTable extends TTFTable
      * <p>For Restricted License embedding to take effect, it must be the only level of embedding
      * selected.
      */
-    public static final short FSTYPE_RESTRICTED = 0x0001;
+    public static final short FSTYPE_RESTRICTED = 0x0002;
 
     /**
      * Preview and Print embedding: the font may be embedded, and temporarily loaded on the
@@ -176,6 +180,44 @@ public class OS2WindowsMetricsTable extends TTFTable
      * may be embedded. Other embedding restrictions specified in bits 0-3 and 8 also apply.
      */
     public static final short FSTYPE_BITMAP_ONLY = 0x0200;
+
+    private int version;
+    private short averageCharWidth;
+    private int weightClass;
+    private int widthClass;
+    private short fsType;
+    private short subscriptXSize;
+    private short subscriptYSize;
+    private short subscriptXOffset;
+    private short subscriptYOffset;
+    private short superscriptXSize;
+    private short superscriptYSize;
+    private short superscriptXOffset;
+    private short superscriptYOffset;
+    private short strikeoutSize;
+    private short strikeoutPosition;
+    private int familyClass;
+    private byte[] panose = new byte[10];
+    private long unicodeRange1;
+    private long unicodeRange2;
+    private long unicodeRange3;
+    private long unicodeRange4;
+    private String achVendId = "XXXX";
+    private int fsSelection;
+    private int firstCharIndex;
+    private int lastCharIndex;
+    private int typoAscender;
+    private int typoDescender;
+    private int typoLineGap;
+    private int winAscent;
+    private int winDescent;
+    private long codePageRange1 = 0;
+    private long codePageRange2 = 0;
+    private int sxHeight;
+    private int sCapHeight;
+    private int usDefaultChar;
+    private int usBreakChar;
+    private int usMaxContext;
 
     OS2WindowsMetricsTable(TrueTypeFont font)
     {
@@ -734,44 +776,6 @@ public class OS2WindowsMetricsTable extends TTFTable
         return usMaxContext;
     }
 
-    private int version;
-    private short averageCharWidth;
-    private int weightClass;
-    private int widthClass;
-    private short fsType;
-    private short subscriptXSize;
-    private short subscriptYSize;
-    private short subscriptXOffset;
-    private short subscriptYOffset;
-    private short superscriptXSize;
-    private short superscriptYSize;
-    private short superscriptXOffset;
-    private short superscriptYOffset;
-    private short strikeoutSize;
-    private short strikeoutPosition;
-    private int familyClass;
-    private byte[] panose = new byte[10];
-    private long unicodeRange1;
-    private long unicodeRange2;
-    private long unicodeRange3;
-    private long unicodeRange4;
-    private String achVendId = "XXXX";
-    private int fsSelection;
-    private int firstCharIndex;
-    private int lastCharIndex;
-    private int typoAscender;
-    private int typoDescender;
-    private int typoLineGap;
-    private int winAscent;
-    private int winDescent;
-    private long codePageRange1 = -1;
-    private long codePageRange2 = -1;
-    private int sxHeight;
-    private int sCapHeight;
-    private int usDefaultChar;
-    private int usBreakChar;
-    private int usMaxContext;
-
     /**
      * A tag that identifies this table type.
      */
@@ -784,6 +788,7 @@ public class OS2WindowsMetricsTable extends TTFTable
      * @param data The stream to read the data from.
      * @throws IOException If there is an error reading the data.
      */
+    @Override
     void read(TrueTypeFont ttf, TTFDataStream data) throws IOException
     {
         version = data.readUnsignedShort();
@@ -811,23 +816,52 @@ public class OS2WindowsMetricsTable extends TTFTable
         fsSelection = data.readUnsignedShort();
         firstCharIndex = data.readUnsignedShort();
         lastCharIndex = data.readUnsignedShort();
-        typoAscender = data.readSignedShort();
-        typoDescender = data.readSignedShort();
-        typoLineGap = data.readSignedShort();
-        winAscent = data.readUnsignedShort();
-        winDescent = data.readUnsignedShort();
+        try
+        {
+            typoAscender = data.readSignedShort();
+            typoDescender = data.readSignedShort();
+            typoLineGap = data.readSignedShort();
+            winAscent = data.readUnsignedShort();
+            winDescent = data.readUnsignedShort();
+        }
+        catch (EOFException ex)
+        {
+            Log.d("PdfBox-Android", "EOF, probably some legacy TrueType font");
+            initialized = true;
+            return;
+        }
         if (version >= 1)
         {
-            codePageRange1 = data.readUnsignedInt();
-            codePageRange2 = data.readUnsignedInt();
+            try
+            {
+                codePageRange1 = data.readUnsignedInt();
+                codePageRange2 = data.readUnsignedInt();
+            }
+            catch (EOFException ex)
+            {
+                version = 0;
+                Log.w("PdfBox-Android", "Could not read all expected parts of version >= 1, setting version to 0", ex);
+                initialized = true;
+                return;
+            }
         }
-        if (version >= 1.2)
+        if (version >= 2)
         {
-            sxHeight = data.readSignedShort();
-            sCapHeight = data.readSignedShort();
-            usDefaultChar = data.readUnsignedShort();
-            usBreakChar = data.readUnsignedShort();
-            usMaxContext = data.readUnsignedShort();
+            try
+            {
+                sxHeight = data.readSignedShort();
+                sCapHeight = data.readSignedShort();
+                usDefaultChar = data.readUnsignedShort();
+                usBreakChar = data.readUnsignedShort();
+                usMaxContext = data.readUnsignedShort();
+            }
+            catch (EOFException ex)
+            {
+                version = 1;
+                Log.w("PdfBox-Android", "Could not read all expected parts of version >= 2, setting version to 1", ex);
+                initialized = true;
+                return;
+            }
         }
         initialized = true;
     }

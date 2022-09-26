@@ -115,7 +115,8 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
     List<Number> familyBlues = new ArrayList<Number>();
     List<Number> familyOtherBlues = new ArrayList<Number>();
     float blueScale;
-    int blueShift, blueFuzz;
+    int blueShift;
+    int blueFuzz;
     List<Number> stdHW = new ArrayList<Number>();
     List<Number> stdVW = new ArrayList<Number>();
     List<Number> stemSnapH = new ArrayList<Number>();
@@ -132,7 +133,8 @@ public final class Type1Font implements Type1CharStringReader, EncodedFont, Font
         new ConcurrentHashMap<String, Type1CharString>();
 
     // raw data
-    private final byte[] segment1, segment2;
+    private final byte[] segment1;
+    private final byte[] segment2;
 
     /**
      * Constructs a new Type1Font, called by Type1Parser.

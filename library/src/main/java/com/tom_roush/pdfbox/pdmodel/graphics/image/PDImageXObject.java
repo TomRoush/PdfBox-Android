@@ -31,10 +31,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.SoftReference;
+import java.util.Arrays;
 import java.util.List;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
+import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSInputStream;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.cos.COSObject;
@@ -46,6 +48,7 @@ import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.common.PDMetadata;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
+import com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent.PDPropertyList;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
@@ -126,15 +129,33 @@ public final class PDImageXObject extends PDXObject implements PDImage
         super(stream, COSName.IMAGE);
         this.resources = resources;
         List<COSName> filters = stream.getFilters();
-        if (filters != null && !filters.isEmpty() && COSName.JPX_DECODE.equals(filters.get(filters.size()-1)))
+        // JPX would be decode twice in rending. here is no need. just to ensure no parameters is missing.
+        if (filters != null && !filters.isEmpty() && COSName.JPX_DECODE.equals(filters.get(filters.size() - 1)))
         {
+            // skip decode jpx is no parameters is missing. see PDFBOX-5375 PDFBOX-3340
+            List<COSName> requireKeys = Arrays.asList(COSName.WIDTH, COSName.HEIGHT, COSName.COLORSPACE);
+            boolean needDecode = false;
+            COSStream cos = stream.getCOSObject();
+            for (COSName k : requireKeys)
+            {
+                if (!cos.containsKey(k))
+                {
+                    needDecode = true;
+                    break;
+                }
+            }
+            if (!needDecode)
+            {
+                return;
+            }
             COSInputStream is = null;
             try
             {
                 is = stream.createInputStream();
                 DecodeResult decodeResult = is.getDecodeResult();
                 stream.getCOSObject().addAll(decodeResult.getParameters());
-//                this.colorSpace = decodeResult.getJPXColorSpace(); TODO: PdfBox-Android
+                // getJPXColorSpace would be null in most cases
+                this.colorSpace = decodeResult.getJPXColorSpace();
             }
             finally
             {
@@ -196,11 +217,17 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
     /**
      * Create a PDImageXObject from an image file. The file format is determined by the file name
-     * suffix. The following suffixes are supported: jpg, jpeg, tif, tiff, gif, bmp and png. This is
+     * suffix. The following suffixes are supported: JPG, JPEG, TIF, TIFF, GIF, BMP and PNG. This is
      * a convenience method that calls {@link JPEGFactory#createFromStream},
      * {@link CCITTFactory#createFromFile} or {@link BitmapFactory#decodeFile} combined with
      * {@link LosslessFactory#createFromImage}. (The later can also be used to create a
-     * PDImageXObject from a Bitmap).
+     * PDImageXObject from a Bitmap). Starting with 2.0.18, this call will create an image
+     * directly from a PNG file without decoding it (when possible), which is faster. However the
+     * result size depends on the compression skill of the software that created the PNG file. If
+     * file size or bandwidth are important to you or to your clients, then create your PNG files
+     * with a tool that has implemented the
+     * <a href="https://blog.codinghorror.com/zopfli-optimization-literally-free-bandwidth/">Zopfli
+     * algorithm</a>, or use the two-step process mentioned above.
      *
      * @param file the image file.
      * @param doc the document that shall use this PDImageXObject.
@@ -212,7 +239,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
     public static PDImageXObject createFromFileByExtension(File file, PDDocument doc) throws IOException
     {
         String name = file.getName();
-        int dot = file.getName().lastIndexOf('.');
+        int dot = name.lastIndexOf('.');
         if (dot == -1)
         {
             throw new IllegalArgumentException("Image type not supported: " + name);
@@ -220,14 +247,31 @@ public final class PDImageXObject extends PDXObject implements PDImage
         String ext = name.substring(dot + 1).toLowerCase();
         if ("jpg".equals(ext) || "jpeg".equals(ext))
         {
-            FileInputStream fis = new FileInputStream(file);
-            PDImageXObject imageXObject = JPEGFactory.createFromStream(doc, fis);
-            fis.close();
-            return imageXObject;
+            FileInputStream fis = null;
+            try
+            {
+                fis = new FileInputStream(file);
+                return JPEGFactory.createFromStream(doc, fis);
+            }
+            finally
+            {
+                IOUtils.closeQuietly(fis);
+            }
         }
         if ("tif".equals(ext) || "tiff".equals(ext))
         {
-            return CCITTFactory.createFromFile(doc, file);
+            try
+            {
+                return CCITTFactory.createFromFile(doc, file);
+            }
+            catch (IOException ex)
+            {
+                Log.d("PdfBox-Android", "Reading as TIFF failed, setting fileType to PNG", ex);
+                // Plan B: try reading with ImageIO
+                // common exception:
+                // First image in tiff is not CCITT T4 or T6 compressed
+                ext = "png";
+            }
         }
         if ("gif".equals(ext) || "bmp".equals(ext) || "png".equals(ext))
         {
@@ -239,11 +283,17 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
     /**
      * Create a PDImageXObject from an image file. The file format is determined by the file
-     * content. The following file types are supported: jpg, jpeg, tif, tiff, gif, bmp and png. This
+     * content. The following file types are supported: JPG, JPEG, TIF, TIFF, GIF, BMP and PNG. This
      * is a convenience method that calls {@link JPEGFactory#createFromStream},
      * {@link CCITTFactory#createFromFile} or {@link BitmapFactory#decodeFile} combined with
      * {@link LosslessFactory#createFromImage}. (The later can also be used to create a
-     * PDImageXObject from a Bitmap).
+     * PDImageXObject from a Bitmap). Starting with 2.0.18, this call will create an image
+     * directly from a png file without decoding it (when possible), which is faster. However the
+     * result size depends on the compression skill of the software that created the PNG file. If
+     * file size or bandwidth are important to you or to your clients, then create your PNG files
+     * with a tool that has implemented the
+     * <a href="https://blog.codinghorror.com/zopfli-optimization-literally-free-bandwidth/">Zopfli
+     * algorithm</a>, or use the two-step process mentioned above.
      *
      * @param file the image file.
      * @param doc the document that shall use this PDImageXObject.
@@ -309,11 +359,17 @@ public final class PDImageXObject extends PDXObject implements PDImage
 
     /**
      * Create a PDImageXObject from bytes of an image file. The file format is determined by the
-     * file content. The following file types are supported: jpg, jpeg, tif, tiff, gif, bmp and png.
+     * file content. The following file types are supported: JPG, JPEG, TIF, TIFF, GIF, BMP and PNG.
      * This is a convenience method that calls {@link JPEGFactory#createFromByteArray},
      * {@link CCITTFactory#createFromFile} or {@link BitmapFactory#decodeFile} combined with
      * {@link LosslessFactory#createFromImage}. (The later can also be used to create a
-     * PDImageXObject from a Bitmap).
+     * PDImageXObject from a Bitmap). Starting with 2.0.18, this call will create an image
+     * directly from a PNG file without decoding it (when possible), which is faster. However the
+     * result size depends on the compression skill of the software that created the PNG file. If
+     * file size or bandwidth are important to you or to your clients, then create your PNG files
+     * with a tool that has implemented the
+     * <a href="https://blog.codinghorror.com/zopfli-optimization-literally-free-bandwidth/">Zopfli
+     * algorithm</a>, or use the two-step process mentioned above.
      *
      * @param byteArray bytes from an image file.
      * @param document the document that shall use this PDImageXObject.
@@ -343,6 +399,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         {
             return JPEGFactory.createFromByteArray(document, byteArray);
         }
+//        if (fileType.equals(FileType.PNG)) TODO: PdfBox-Android
         if (fileType.equals(FileType.TIFF))
         {
             try
@@ -434,24 +491,25 @@ public final class PDImageXObject extends PDXObject implements PDImage
             }
         }
 
-        // get image as RGB
-        Bitmap image = SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask());
-
+        // get RGB image w/o reference because applyMask might modify it, take long time and a lot of memory.
+        final Bitmap image;
+        final PDImageXObject softMask = getSoftMask();
+        final PDImageXObject mask = getMask();
         // soft mask (overrides explicit mask)
-        PDImageXObject softMask = getSoftMask();
         if (softMask != null)
         {
-            float[] matte = extractMatte(softMask);
-            image = applyMask(image, softMask.getOpaqueImage(), true, matte);
+            image = applyMask(SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask()),
+                softMask.getOpaqueImage(), softMask.getInterpolate(), true, extractMatte(softMask));
+        }
+        // explicit mask - to be applied only if /ImageMask true
+        else if (mask != null && mask.isStencil())
+        {
+            image = applyMask(SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask()),
+                mask.getOpaqueImage(), mask.getInterpolate(), false, null);
         }
         else
         {
-            // explicit mask - to be applied only if /ImageMask true
-            PDImageXObject mask = getMask();
-            if (mask != null && mask.isStencil())
-            {
-                image = applyMask(image, mask.getOpaqueImage(), false, null);
-            }
+            image = SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask());
         }
 
         if (region == null && subsampling <= cachedImageSubsampling)
@@ -465,6 +523,13 @@ public final class PDImageXObject extends PDXObject implements PDImage
         return image;
     }
 
+    /**
+     * Extract the matte color from a softmask.
+     *
+     * @param softMask
+     * @return the matte color.
+     * @throws IOException if the color conversion fails.
+     */
     private float[] extractMatte(PDImageXObject softMask) throws IOException
     {
         COSBase base = softMask.getCOSObject().getItem(COSName.MATTE);
@@ -475,6 +540,11 @@ public final class PDImageXObject extends PDXObject implements PDImage
             // see PDF specification 1.7, 11.6.5.3 Soft-Mask Images
             matte = ((COSArray) base).toFloatArray();
             // convert to RGB
+            if (matte.length < getColorSpace().getNumberOfComponents())
+            {
+                Log.e("PdfBox-Android", "Image /Matte entry not long enough for colorspace, skipped");
+                return null;
+            }
             matte = getColorSpace().toRGB(matte);
         }
         return matte;
@@ -505,83 +575,143 @@ public final class PDImageXObject extends PDXObject implements PDImage
         return SampledImageReader.getRGBImage(this, null);
     }
 
-    // explicit mask: RGB + Binary -> ARGB
-    // soft mask: RGB + Gray -> ARGB
-    private Bitmap applyMask(Bitmap image, Bitmap mask,
+    /**
+     * @param image The image to apply the mask to as alpha channel.
+     * @param mask A mask image in 8 bit Gray. Even for a stencil mask image due to
+     * {@link #getOpaqueImage()} and {@link SampledImageReader}'s {@code from1Bit()} special
+     * handling of DeviceGray.
+     * @param interpolateMask interpolation flag of the mask image.
+     * @param isSoft {@code true} if a soft mask. If not stencil mask, then alpha will be inverted
+     * by this method.
+     * @param matte an optional RGB matte if a soft mask.
+     * @return an ARGB image (can be the altered original image)
+     */
+    private Bitmap applyMask(Bitmap image, Bitmap mask, boolean interpolateMask,
         boolean isSoft, float[] matte)
-        throws IOException
     {
         if (mask == null)
         {
             return image;
         }
 
-        int width = image.getWidth();
-        int height = image.getHeight();
+        final int width = Math.max(image.getWidth(), mask.getWidth());
+        final int height = Math.max(image.getHeight(), mask.getHeight());
 
-        // scale mask to fit image, or image to fit mask, whichever is larger
+        // scale mask to fit image, or image to fit mask, whichever is larger.
+        // also make sure that mask is 8 bit gray and image is ARGB as this
+        // is what needs to be returned.
         if (mask.getWidth() < width || mask.getHeight() < height)
         {
-            mask = scaleImage(mask, width, height);
+            mask = scaleImage(mask, width, height, interpolateMask);
         }
-        else if (mask.getWidth() > width || mask.getHeight() > height)
+        if (mask.getConfig() != Bitmap.Config.ALPHA_8 || !image.isMutable())
         {
-            width = mask.getWidth();
-            height = mask.getHeight();
-            image = scaleImage(image, width, height);
+            mask = mask.copy(Bitmap.Config.ALPHA_8, true);
         }
 
-        // compose to ARGB
-        Bitmap masked = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-
-        int rgb;
-        int rgba;
-        int alphaPixel;
-        int alpha;
-        for (int y = 0; y < height; y++)
+        if (image.getWidth() < width || image.getHeight() < height)
         {
-            for (int x = 0; x < width; x++)
+            image = scaleImage(image, width, height, getInterpolate());
+        }
+        if (image.getConfig() != Bitmap.Config.ARGB_8888 || !image.isMutable())
+        {
+            image = image.copy(Bitmap.Config.ARGB_8888, true);
+        }
+        int[] pixels = new int[width];
+        int[] maskPixels = new int[width];
+
+        // compose alpha into ARGB image, either:
+        // - very fast by direct bit combination if not a soft mask and a 8 bit alpha source.
+        // - fast by letting the sample model do a bulk band operation if no matte is set.
+        // - slow and complex by matte calculations on individual pixel components.
+        if (!isSoft && image.getByteCount() == mask.getByteCount())
+        {
+            for (int y = 0; y < height; y++)
             {
-                rgb = image.getPixel(x, y);
-
-                alphaPixel = mask.getPixel(x, y);
-                if (isSoft)
+                image.getPixels(pixels, 0, width, 0, y, width, 1);
+                mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
+                for (int i = 0, c = width; c > 0; i++, c--)
                 {
-                    alpha = Color.alpha(alphaPixel);
-                    if (matte != null && Float.compare(alpha, 0) != 0)
-                    {
-                        rgb = Color.rgb(
-                            clampColor(((Color.red(rgb) / 255F - matte[0]) / (alpha / 255F) + matte[0]) * 255),
-                            clampColor(((Color.green(rgb) / 255F - matte[1]) / (alpha / 255F) + matte[1]) * 255),
-                            clampColor(((Color.blue(rgb) / 255F - matte[2]) / (alpha / 255F) + matte[2]) * 255)
-                        );
-                    }
+                    pixels[i] = pixels[i] & 0xffffff | ~maskPixels[i] & 0xff000000;
                 }
-                else
-                {
-                    alpha = 255 - Color.alpha(alphaPixel);
-                }
-                rgba = Color.argb(alpha, Color.red(rgb), Color.green(rgb),
-                    Color.blue(rgb));
-
-                masked.setPixel(x, y, rgba);
+                image.setPixels(pixels, 0, width, 0, y, width, 1);
             }
         }
-
-        return masked;
+        else if (matte == null)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                image.getPixels(pixels, 0, width, 0, y, width, 1);
+                mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
+                for (int x = 0; x < width; x++)
+                {
+                    if (!isSoft)
+                    {
+                        maskPixels[x] ^= -1;
+                    }
+                    pixels[x] = pixels[x] & 0xffffff | maskPixels[x] & 0xff000000;
+                }
+                image.setPixels(pixels, 0, width, 0, y, width, 1);
+            }
+        }
+        else
+        {
+            // Original code is to clamp component and alpha to [0f, 1f] as matte is,
+            // and later expand to [0; 255] again (with rounding).
+            // component = 255f * ((component / 255f - matte) / (alpha / 255f) + matte)
+            //           = (255 * component - 255 * 255f * matte) / alpha + 255f * matte
+            // There is a clearly visible factor 255 for most components in above formula,
+            // i.e. max value is 255 * 255: 16 bits + sign.
+            // Let's use faster fixed point integer arithmetics with Q16.15,
+            // introducing neglible errors (0.001%).
+            // Note: For "correct" rounding we increase the final matte value (m0h, m1h, m2h) by
+            // a half an integer.
+            final int fraction = 15;
+            final int factor = 255 << fraction;
+            final int m0 = Math.round(factor * matte[0]) * 255;
+            final int m1 = Math.round(factor * matte[1]) * 255;
+            final int m2 = Math.round(factor * matte[2]) * 255;
+            final int m0h = m0 / 255 + (1 << fraction - 1);
+            final int m1h = m1 / 255 + (1 << fraction - 1);
+            final int m2h = m2 / 255 + (1 << fraction - 1);
+            for (int y = 0; y < height; y++)
+            {
+                image.getPixels(pixels, 0, width, 0, y, width, 1);
+                mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
+                for (int x = 0; x < width; x++)
+                {
+                    int a = Color.alpha(maskPixels[x]);
+                    if (a == 0)
+                    {
+                        pixels[x] = pixels[x] & 0xffffff;
+                        continue;
+                    }
+                    int rgb = pixels[x];
+                    int r = Color.red(rgb);
+                    int g = Color.green(rgb);
+                    int b = Color.blue(rgb);
+                    r = clampColor(((r * factor - m0) / a + m0h) >> fraction);
+                    g = clampColor(((g * factor - m1) / a + m1h) >> fraction);
+                    b = clampColor(((b * factor - m2) / a + m2h) >> fraction);
+                    pixels[x] = Color.argb(a, r, g, b);
+                }
+                image.setPixels(pixels, 0, width, 0, y, width, 1);
+            }
+        }
+        return image;
     }
 
-    private int clampColor(float color)
+    private static int clampColor(int color)
     {
-        return Float.valueOf(color < 0 ? 0 : (color > 255 ? 255 : color)).intValue();
+        return color < 0 ? 0 : color > 255 ? 255 : color;
     }
 
     /**
      * High-quality image scaling.
      */
-    private Bitmap scaleImage(Bitmap image, int width, int height)
+    private Bitmap scaleImage(Bitmap image, int width, int height, boolean interpolate)
     {
-        return Bitmap.createScaledBitmap(image, width, height, true);
+        return Bitmap.createScaledBitmap(image, width, height, !interpolate);
     }
 
     /**
@@ -727,6 +857,8 @@ public final class PDImageXObject extends PDXObject implements PDImage
     public void setColorSpace(PDColorSpace cs)
     {
         getCOSObject().setItem(COSName.COLORSPACE, cs != null ? cs.getCOSObject() : null);
+        colorSpace = null;
+        cachedImage = null;
     }
 
     @Override
@@ -834,5 +966,31 @@ public final class PDImageXObject extends PDXObject implements PDImage
             Log.w("PdfBox-Android", "getSuffix() returns null, filters: " + filters);
             return null;
         }
+    }
+
+    /**
+     * This will get the optional content group or optional content membership dictionary.
+     *
+     * @return The optional content group or optional content membership dictionary or null if there
+     * is none.
+     */
+    public PDPropertyList getOptionalContent()
+    {
+        COSBase base = getCOSObject().getDictionaryObject(COSName.OC);
+        if (base instanceof COSDictionary)
+        {
+            return PDPropertyList.create((COSDictionary) base);
+        }
+        return null;
+    }
+
+    /**
+     * Sets the optional content group or optional content membership dictionary.
+     *
+     * @param oc The optional content group or optional content membership dictionary.
+     */
+    public void setOptionalContent(PDPropertyList oc)
+    {
+        getCOSObject().setItem(COSName.OC, oc);
     }
 }

@@ -17,13 +17,11 @@ package com.tom_roush.pdfbox.filter;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
-import com.tom_roush.pdfbox.io.IOUtils;
 
 /**
  * Helper class to contain predictor decoding used by Flate and LZW filter. 
@@ -75,7 +73,7 @@ public final class Predictor
                 }
                 if (bitsPerComponent == 16)
                 {
-                    for (int p = bytesPerPixel; p < rowlength; p += 2)
+                    for (int p = bytesPerPixel; p < rowlength - 1; p += 2)
                     {
                         int sub = ((actline[p] & 0xff) << 8) + (actline[p + 1] & 0xff);
                         int left = (((actline[p - bytesPerPixel] & 0xff) << 8)
@@ -114,12 +112,12 @@ public final class Predictor
                             if (((sub + left) & 1) == 0)
                             {
                                 // reset bit
-                                actline[p] = (byte) (actline[p] & ~(1 << bit));
+                                actline[p] &= ~(1 << bit);
                             }
                             else
                             {
                                 // set bit
-                                actline[p] = (byte) (actline[p] | (1 << bit));
+                                actline[p] |= 1 << bit;
                             }
                         }
                     }
@@ -203,53 +201,6 @@ public final class Predictor
         }
     }
 
-    static void decodePredictor(int predictor, int colors, int bitsPerComponent, int columns, InputStream in, OutputStream out)
-        throws IOException
-    {
-        if (predictor == 1)
-        {
-            // no prediction
-            IOUtils.copy(in, out);
-        }
-        else
-        {
-            // calculate sizes
-            final int rowlength = calculateRowLength(colors, bitsPerComponent, columns);
-            byte[] actline = new byte[rowlength];
-            byte[] lastline = new byte[rowlength];
-
-            int linepredictor = predictor;
-
-            while (in.available() > 0)
-            {
-                // test for PNG predictor; each value >= 10 (not only 15) indicates usage of PNG predictor
-                if (predictor >= 10)
-                {
-                    // PNG predictor; each row starts with predictor type (0, 1, 2, 3, 4)
-                    // read per line predictor
-                    linepredictor = in.read();
-                    if (linepredictor == -1)
-                    {
-                        return;
-                    }
-                    // add 10 to tread value 0 as 10, 1 as 11, ...
-                    linepredictor += 10;
-                }
-
-                // read line
-                int i, offset = 0;
-                while (offset < rowlength && ((i = in.read(actline, offset, rowlength - offset)) != -1))
-                {
-                    offset += i;
-                }
-
-                decodePredictorRow(linepredictor, colors, bitsPerComponent, columns, actline, lastline);
-                System.arraycopy(actline, 0, lastline, 0, rowlength);
-                out.write(actline);
-            }
-        }
-    }
-
     static int calculateRowLength(int colors, int bitsPerComponent, int columns)
     {
         final int bitsPerPixel = colors * bitsPerComponent;
@@ -317,7 +268,8 @@ public final class Predictor
         private final boolean predictorPerRow;
 
         // data buffers
-        private byte[] currentRow, lastRow;
+        private byte[] currentRow;
+        private byte[] lastRow;
         // amount of data in the current row
         private int currentRowData = 0;
         // was the per-row predictor value read for the current row being processed

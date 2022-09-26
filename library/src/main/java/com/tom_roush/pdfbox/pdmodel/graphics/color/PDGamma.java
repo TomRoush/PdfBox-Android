@@ -30,7 +30,7 @@ import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
  */
 public final class PDGamma implements COSObjectable
 {
-    private COSArray values = null;
+    private final COSArray values;
 
     /**
      * Creates a new gamma.
