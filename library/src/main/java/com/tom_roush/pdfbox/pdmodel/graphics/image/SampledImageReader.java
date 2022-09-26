@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Date;
 
 import com.tom_roush.harmony.javax.imageio.stream.ImageInputStream;
 import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageInputStream;
@@ -319,6 +320,7 @@ final class SampledImageReader
 
             // use the color space to convert the image to RGB
             return colorSpace.toRGBImage(raster);
+
         }
         finally
         {
