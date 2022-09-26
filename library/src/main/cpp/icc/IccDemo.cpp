@@ -7,7 +7,7 @@
 #include "IccProfile.h"
 #include <jni.h>
 
-CIccCmm cmm;
+CIccCmm *cmm = nullptr;
 icFloatNumber Pixels[16];
 
 icUInt8Number* ConvertJByteaArrayToChars(JNIEnv *env, jbyteArray bytearray)
@@ -27,16 +27,17 @@ icUInt8Number* ConvertJByteaArrayToChars(JNIEnv *env, jbyteArray bytearray)
 
 extern "C"
 JNIEXPORT jint JNICALL Java_com_xsooy_icc_IccUtils_loadProfile(JNIEnv *env, jobject thiz, jstring path) {
-    cmm.RemoveAllIO();
-    if (cmm.GetNumXforms()!=0) {
+    delete cmm;
+    cmm = new CIccCmm;
+    if (cmm->GetNumXforms()!=0) {
         return 1;
     }
     const char *nativeString = env->GetStringUTFChars(path, 0);
-    if (cmm.AddXform(nativeString, (icRenderingIntent)0)) {
+    if (cmm->AddXform(nativeString, (icRenderingIntent)0)) {
 //            printf("Invalid Profile:  %s\n", szSrcProfile);
         return -1;
     }
-    if (cmm.Begin() != icCmmStatOk) {
+    if (cmm->Begin() != icCmmStatOk) {
         return false;
     }
     return 0;
@@ -44,23 +45,23 @@ JNIEXPORT jint JNICALL Java_com_xsooy_icc_IccUtils_loadProfile(JNIEnv *env, jobj
 
 extern "C"
 JNIEXPORT jint JNICALL Java_com_xsooy_icc_IccUtils_loadProfileByData(JNIEnv *env, jobject thiz, jbyteArray data) {
-    cmm.RemoveAllIO();
+    delete cmm;
     icUInt8Number *pmsg = ConvertJByteaArrayToChars(env,data);
     int chars_len = env->GetArrayLength(data);
     CIccProfile* cIccProfile = OpenIccProfile(pmsg, chars_len);
-    if (cmm.AddXform(cIccProfile, (icRenderingIntent)0)) {
+    if (cmm->AddXform(cIccProfile, (icRenderingIntent)0)) {
         return -1;
     }
-    if (cmm.Begin() != icCmmStatOk) {
+    if (cmm->Begin() != icCmmStatOk) {
         return false;
     }
-    return cmm.GetSourceSpace();
+    return cmm->GetSourceSpace();
 }
 
 extern "C"
 JNIEXPORT jfloat JNICALL Java_com_xsooy_icc_IccUtils_apply(JNIEnv *env, jobject thiz, jfloat pixel) {
     Pixels[0] = (float) pixel;
-    cmm.Apply(Pixels, Pixels);
+    cmm->Apply(Pixels, Pixels);
     return Pixels[0];
 }
 
@@ -70,7 +71,7 @@ JNIEXPORT void JNICALL Java_com_xsooy_icc_IccUtils_applyGray(JNIEnv *env, jobjec
     jfloat *parray = env->GetFloatArrayElements(array, &isCopy);
     Pixels[0] = float (parray[0]);
 
-    cmm.Apply(Pixels, Pixels);
+    cmm->Apply(Pixels, Pixels);
 
     env->SetFloatArrayRegion(outArray,0,3,Pixels);
 }
@@ -85,7 +86,7 @@ JNIEXPORT void JNICALL Java_com_xsooy_icc_IccUtils_applyCmyk(JNIEnv *env, jobjec
     Pixels[3] = float (parray[3]);
 
     //change data to 'lab'
-    cmm.Apply(Pixels, Pixels);
+    cmm->Apply(Pixels, Pixels);
     env->SetFloatArrayRegion(outArray,0,3,Pixels);
 }
 
