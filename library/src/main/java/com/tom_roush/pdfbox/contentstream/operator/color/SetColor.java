@@ -27,6 +27,7 @@ import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDPattern;
 
 /**
  * sc,scn,SC,SCN: Sets the color to use for stroking or non-stroking operations.
@@ -39,7 +40,7 @@ public abstract class SetColor extends OperatorProcessor
     public void process(Operator operator, List<COSBase> arguments) throws IOException
     {
         PDColorSpace colorSpace = getColorSpace();
-//        if (!(colorSpace instanceof PDPattern)) TODO: PdfBox-Android
+        if (!(colorSpace instanceof PDPattern)) //TODO: PdfBox-Android
         {
             if (arguments.size() < colorSpace.getNumberOfComponents())
             {

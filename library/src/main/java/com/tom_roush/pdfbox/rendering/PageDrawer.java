@@ -23,6 +23,7 @@ import android.graphics.DashPathEffect;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Region;
 import android.util.Log;
@@ -61,6 +62,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDPattern;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDTransparencyGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImage;
@@ -68,7 +70,11 @@ import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentGroup.RenderState;
 import com.tom_roush.pdfbox.pdmodel.graphics.optionalcontent.PDOptionalContentMembershipDictionary;
+import com.tom_roush.pdfbox.pdmodel.graphics.pattern.PDAbstractPattern;
+import com.tom_roush.pdfbox.pdmodel.graphics.pattern.PDShadingPattern;
+import com.tom_roush.pdfbox.pdmodel.graphics.shading.AxialShadingContext;
 import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShading;
+import com.tom_roush.pdfbox.pdmodel.graphics.shading.PDShadingType2;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDGraphicsState;
 import com.tom_roush.pdfbox.pdmodel.graphics.state.PDSoftMask;
@@ -102,6 +108,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
     // the graphics device to draw to, xform is the initial transform of the device (i.e. DPI)
     private Paint paint;
+    private float scaleX = 1;
+    private float scaleY = 1;
     private Canvas canvas;
     private AffineTransform xform;
     private float xformScalingFactorX;
@@ -119,7 +127,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     private Path linePath = new Path();
 
     // last clipping path
-    private Region lastClip;
+    private Path lastClip;
     private int lastStackSize = 0;
 
     // clip when drawPage() is called, can be null, must be intersected when clipping
@@ -162,6 +170,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public PageDrawer(PageDrawerParameters parameters) throws IOException
     {
         super(parameters.getPage());
+        this.scaleX = parameters.getScaleX();
+        this.scaleY = parameters.getScaleY();
         this.renderer = parameters.getRenderer();
         this.subsamplingAllowed = parameters.isSubsamplingAllowed();
         this.destination = parameters.getDestination();
@@ -296,7 +306,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
      */
     protected final void setClip()
     {
-        Region clippingPath = getGraphicsState().getCurrentClippingPath();
+        Path clippingPath = getGraphicsState().getCurrentClippingPath();
         if (clippingPath != lastClip)
         {
             // android canvas manage clips with save/restore in a private stack, we can not
@@ -309,7 +319,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             lastStackSize = canvas.save();
             if (!clippingPath.isEmpty())
             {
-                canvas.clipPath(clippingPath.getBoundaryPath());
+//                Log.w("ceshi","canvas.clipPath(clippingPath.getBoundaryPath());"+clippingPath);
+                canvas.clipPath(clippingPath);
             }
             if (initialClip != null)
             {
@@ -669,8 +680,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public void fillPath(Path.FillType windingRule) throws IOException
     {
         PDGraphicsState graphicsState = getGraphicsState();
-        paint.setColor(getNonStrokingColor());
-        setClip();
+        paint.setAlpha((int)(graphicsState.getNonStrokeAlphaConstant()*255));
+
         linePath.setFillType(windingRule);
 
         // disable anti-aliasing for rectangular paths, this is a workaround to avoid small stripes
@@ -689,7 +700,32 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         if (isContentRendered())
         {
             paint.setStyle(Paint.Style.FILL);
-            canvas.drawPath(linePath, paint);
+            if (getGraphicsState().getNonStrokingColor().getColorSpace() instanceof PDPattern) {
+                PDColorSpace colorSpace = getGraphicsState().getNonStrokingColor().getColorSpace();
+                PDAbstractPattern pattern = ((PDPattern)colorSpace).getPattern(getGraphicsState().getNonStrokingColor());
+                PDShadingPattern shadingPattern = (PDShadingPattern)pattern;
+                PDShading shading = shadingPattern.getShading();
+                if (shading instanceof PDShadingType2) {
+                    getGraphicsState().intersectClippingPath(linePath);
+                    setClip();
+                    canvas.scale(1/scaleX,1/scaleY);
+                    Rect rect = new Rect((int)(bounds.left*scaleX),(int)(bounds.top*scaleY),(int)(bounds.right*scaleX),(int)(bounds.bottom*scaleY));
+                    Rect rect2 = new Rect((int)(bounds.left*scaleX),(int)(canvas.getHeight()-(bounds.bottom*scaleY)),(int)(bounds.right*scaleX),(int)(canvas.getHeight()-(bounds.top*scaleY)));
+
+                    AxialShadingContext axialShadingContext = new AxialShadingContext((PDShadingType2) shading,rect2);
+                    for (int y=rect.bottom;y>rect.top;y--) {
+                        int[] data = axialShadingContext.getRaster(rect.left,canvas.getHeight()-y,rect.right-rect.left,1);
+                        for (int i=0;i<data.length;i++) {
+                            paint.setColor(data[i]|0xff000000);
+                            canvas.drawPoint(rect.left+i,y,paint);
+                        }
+                    }
+                }
+            } else {
+                setClip();
+                paint.setColor(getNonStrokingColor());
+                canvas.drawPath(linePath, paint);
+            }
         }
 
         linePath.reset();
@@ -772,6 +808,16 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public void endPath()
     {
+        if (clipWindingRule != null)
+        {
+            linePath.setFillType(clipWindingRule);
+            //TODO: zyj 生成了有损路径
+            getGraphicsState().intersectClippingPath(linePath);
+            // PDFBOX-3836: lastClip needs to be reset, because after intersection it is still the same
+            // object, thus setClip() would believe that it is cached.
+            lastClip = null;
+            clipWindingRule = null;
+        }
 //        TODO: PdfBox-Android adding clipping causes rendering issues
         linePath.reset();
     }

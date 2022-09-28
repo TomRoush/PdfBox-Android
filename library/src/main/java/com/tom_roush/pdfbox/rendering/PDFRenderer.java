@@ -311,7 +311,7 @@ public class PDFRenderer
         // the end-user may provide a custom PageDrawer
         PageDrawerParameters parameters =
             new PageDrawerParameters(this, page, subsamplingAllowed, destination,
-                imageDownscalingOptimizationThreshold);
+                imageDownscalingOptimizationThreshold,scale,scale);
         PageDrawer drawer = createPageDrawer(parameters);
         drawer.drawPage(paint, canvas, cropBox);
 
@@ -409,7 +409,7 @@ public class PDFRenderer
         // the end-user may provide a custom PageDrawer
         PageDrawerParameters parameters =
             new PageDrawerParameters(this, page, subsamplingAllowed, destination,
-                imageDownscalingOptimizationThreshold);
+                imageDownscalingOptimizationThreshold,scaleX,scaleY);
         PageDrawer drawer = createPageDrawer(parameters);
         drawer.drawPage(paint, canvas, cropBox);
     }

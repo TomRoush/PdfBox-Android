@@ -46,6 +46,7 @@ JNIEXPORT jint JNICALL Java_com_xsooy_icc_IccUtils_loadProfile(JNIEnv *env, jobj
 extern "C"
 JNIEXPORT jint JNICALL Java_com_xsooy_icc_IccUtils_loadProfileByData(JNIEnv *env, jobject thiz, jbyteArray data) {
     delete cmm;
+    cmm = new CIccCmm;
     icUInt8Number *pmsg = ConvertJByteaArrayToChars(env,data);
     int chars_len = env->GetArrayLength(data);
     CIccProfile* cIccProfile = OpenIccProfile(pmsg, chars_len);
