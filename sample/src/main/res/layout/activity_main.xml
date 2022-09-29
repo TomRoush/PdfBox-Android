@@ -24,7 +24,7 @@
         android:text="Render PDF to Image"
         android:layout_below="@+id/buttonCreate"
         android:layout_marginTop="10dp"
-        android:onClick="openFile" />
+        android:onClick="renderFile" />
 
     <Button
         android:id="@+id/buttonFillForm"
