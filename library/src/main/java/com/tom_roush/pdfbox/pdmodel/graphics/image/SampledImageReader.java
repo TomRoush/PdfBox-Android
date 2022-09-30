@@ -37,7 +37,9 @@ import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.filter.DecodeOptions;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceCMYK;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDIndexed;
+import com.xsooy.jpeg.JpegUtils;
 
 /**
  * Reads a sampled image from a PDF file.
@@ -212,6 +214,12 @@ final class SampledImageReader
             final float[] decode = getDecodeArray(pdImage);
             if (pdImage.getSuffix() != null && pdImage.getSuffix().equals("jpg") && subsampling == 1)
             {
+                if (pdImage.getColorSpace() instanceof PDDeviceCMYK) {
+                    InputStream inputStream = pdImage.createInputStream();
+                    byte[] buff = new byte[inputStream.available()];
+                    IOUtils.populateBuffer(inputStream,buff);
+                    return ((PDDeviceCMYK)pdImage.getColorSpace()).toRGBImage(new JpegUtils().converData(buff),width,height);
+                }
                 return BitmapFactory.decodeStream(pdImage.createInputStream());
             }
             else if (bitsPerComponent == 8 && colorKey == null && Arrays.equals(decode, defaultDecode))

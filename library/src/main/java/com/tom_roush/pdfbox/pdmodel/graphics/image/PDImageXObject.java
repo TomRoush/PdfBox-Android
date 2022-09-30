@@ -245,7 +245,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
             throw new IllegalArgumentException("Image type not supported: " + name);
         }
         String ext = name.substring(dot + 1).toLowerCase();
-        if ("jpg".equals(ext) || "jpeg".equals(ext))
+        if ("jpg".equals(ext) || "cpp/jpeg".equals(ext))
         {
             FileInputStream fis = null;
             try
