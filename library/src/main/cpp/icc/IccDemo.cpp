@@ -66,16 +66,16 @@ JNIEXPORT jfloat JNICALL Java_com_xsooy_icc_IccUtils_apply(JNIEnv *env, jobject 
     return Pixels[0];
 }
 
-extern "C"
-JNIEXPORT void JNICALL Java_com_xsooy_icc_IccUtils_applyGray(JNIEnv *env, jobject thiz, jfloatArray array,jfloatArray outArray) {
-    jboolean isCopy = JNI_FALSE;
-    jfloat *parray = env->GetFloatArrayElements(array, &isCopy);
-    Pixels[0] = float (parray[0]);
-
-    cmm->Apply(Pixels, Pixels);
-
-    env->SetFloatArrayRegion(outArray,0,3,Pixels);
-}
+//extern "C"
+//JNIEXPORT void JNICALL Java_com_xsooy_icc_IccUtils_applyGray(JNIEnv *env, jobject thiz, jfloatArray array,jfloatArray outArray) {
+//    jboolean isCopy = JNI_FALSE;
+//    jfloat *parray = env->GetFloatArrayElements(array, &isCopy);
+//    Pixels[0] = float (parray[0]);
+//
+//    cmm->Apply(Pixels, Pixels);
+//
+//    env->SetFloatArrayRegion(outArray,0,3,Pixels);
+//}
 
 extern "C"
 JNIEXPORT void JNICALL Java_com_xsooy_icc_IccUtils_applyCmyk(JNIEnv *env, jobject thiz, jfloatArray array,jfloatArray outArray) {

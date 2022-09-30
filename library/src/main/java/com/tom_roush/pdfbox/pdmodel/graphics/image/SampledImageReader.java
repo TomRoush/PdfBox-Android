@@ -37,6 +37,7 @@ import com.tom_roush.pdfbox.cos.COSNumber;
 import com.tom_roush.pdfbox.filter.DecodeOptions;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDIndexed;
 
 /**
  * Reads a sampled image from a PDF file.
@@ -369,6 +370,11 @@ final class SampledImageReader
             if (startx == 0 && starty == 0 && scanWidth == width && scanHeight == height)
             {
                 // we just need to copy all sample data, then convert to RGB image.
+                if (pdImage.getColorSpace() instanceof PDIndexed && numComponents ==1){
+                    byte[] banks = new byte[width*height];
+                    IOUtils.populateBuffer(input,banks);
+                    return ((PDIndexed)pdImage.getColorSpace()).toRGBImage(banks,width,height);
+                }
                 return createBitmapFromRawStream(input, inputWidth, numComponents, currentSubsampling);
             }
             else

@@ -212,13 +212,13 @@ public final class PDIndexed extends PDSpecialColorSpace
         return rgbImage;
     }
 
-    public Bitmap toRGBImage(int[] raster,int width,int height) throws IOException {
+    public Bitmap toRGBImage(byte[] raster,int width,int height) throws IOException {
         Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width; x++)
             {
-                int index = Math.min(raster[x+y*width], actualMaxIndex);
+                int index = Math.min(raster[x+y*width]&0xff, actualMaxIndex);
                 int color = Color.argb(255,rgbColorTable[index][0],rgbColorTable[index][1],rgbColorTable[index][2]);
                 rgbImage.setPixel(x,y,color);
             }

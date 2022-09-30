@@ -2,6 +2,7 @@ package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -52,6 +53,7 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
             InputStream inputStream = PDFBoxResourceLoader.getStream("com/tom_roush/pdfbox/resources/icc/ISOcoated_v2_300_bas.icc");
             byte[] buff = new byte[inputStream.available()];
             IOUtils.populateBuffer(inputStream,buff);
+            Log.w("ceshi","");
 //            if (new File(IccUtils.iccProfileDir+"/ISOcoated_v2_300_bas.icc").exists()) {
             iccUtils = new IccUtils();
 //                iccUtils.loadProfile(IccUtils.iccProfileDir+"/ISOcoated_v2_300_bas.icc");

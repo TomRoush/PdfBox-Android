@@ -305,11 +305,11 @@ public final class PDICCBased extends PDCIEBasedColorSpace
         {
             return value;
         }
-        if (iccUtils!=null) {
-            float[] xyz = new float[3];
-            iccUtils.applyGray(value,xyz);
-            return xyzToRgb(xyz);
-        }
+//        if (iccUtils!=null) {
+//            float[] xyz = new float[3];
+//            iccUtils.applyGray(value,xyz);
+//            return xyzToRgb(xyz);
+//        }
 //        if (awtColorSpace != null)
 //        {
             // PDFBOX-2142: clamp bad values

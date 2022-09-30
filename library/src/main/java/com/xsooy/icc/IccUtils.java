@@ -19,7 +19,7 @@ public class IccUtils {
     public native float apply(float color);
 
     //gray to xyz
-    public native void applyGray(float[] in,float[] out);
+//    public native void applyGray(float[] in,float[] out);
 
     //cmyk to lab
     public native void applyCmyk(float[] in,float[] out);

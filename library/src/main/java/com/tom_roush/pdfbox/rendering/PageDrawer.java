@@ -62,6 +62,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.blend.BlendMode;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDICCBased;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDPattern;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDTransparencyGroup;
@@ -680,7 +681,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     public void fillPath(Path.FillType windingRule) throws IOException
     {
         PDGraphicsState graphicsState = getGraphicsState();
-        paint.setAlpha((int)(graphicsState.getNonStrokeAlphaConstant()*255));
 
         linePath.setFillType(windingRule);
 
@@ -1452,17 +1452,17 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
                 return true;
             }
-//            if (colorSpace instanceof PDICCBased)
-//            {
-//                try
-//                {
-//                    return ((PDICCBased) colorSpace).getAlternateColorSpace() instanceof PDDeviceGray;
-//                }
-//                catch (IOException ex)
-//                {
-//                    return false;
-//                }
-//            } TODO: PdfBox-Android
+            if (colorSpace instanceof PDICCBased)
+            {
+                try
+                {
+                    return ((PDICCBased) colorSpace).getAlternateColorSpace() instanceof PDDeviceGray;
+                }
+                catch (IOException ex)
+                {
+                    return false;
+                }
+            } //TODO: PdfBox-Android
             return false;
         }
 

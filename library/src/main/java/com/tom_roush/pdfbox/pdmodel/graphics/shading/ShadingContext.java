@@ -1,7 +1,5 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
-import android.util.Log;
-
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 
@@ -23,7 +21,6 @@ public class ShadingContext {
     {
         this.shading = shading;
         shadingColorSpace = shading.getColorSpace();
-        Log.w("ceshi","shadingColorSpace==="+shadingColorSpace.getName());
         // create the output color model using RGB+alpha as color space
 //        shadingColorSpace = PDDeviceCMYK.INSTANCE;
 //        ColorSpace outputCS = ColorSpace.getInstance(ColorSpace.CS_sRGB);
