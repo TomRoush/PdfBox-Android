@@ -49,16 +49,11 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
             {
                 return;
             }
-
             InputStream inputStream = PDFBoxResourceLoader.getStream("com/tom_roush/pdfbox/resources/icc/ISOcoated_v2_300_bas.icc");
             byte[] buff = new byte[inputStream.available()];
             IOUtils.populateBuffer(inputStream,buff);
-            Log.w("ceshi","");
-//            if (new File(IccUtils.iccProfileDir+"/ISOcoated_v2_300_bas.icc").exists()) {
             iccUtils = new IccUtils();
-//                iccUtils.loadProfile(IccUtils.iccProfileDir+"/ISOcoated_v2_300_bas.icc");
             iccUtils.loadProfileByData(buff);
-//            }
             initDone = true;
         }
     }

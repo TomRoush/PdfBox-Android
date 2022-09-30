@@ -220,8 +220,8 @@ final class SampledImageReader
                 return from8bit(pdImage, clipped, subsampling, width, height);
             }
             Log.e("PdfBox-Android", "Trying to create other-bit image not supported");
-//        return fromAny(pdImage, colorKey, clipped, subsampling, width, height);
-            return from8bit(pdImage, clipped, subsampling, width, height);
+            return fromAny(pdImage, colorKey, clipped, subsampling, width, height);
+//            return from8bit(pdImage, clipped, subsampling, width, height);
         }
         catch (NegativeArraySizeException ex)
         {
@@ -371,8 +371,12 @@ final class SampledImageReader
             {
                 // we just need to copy all sample data, then convert to RGB image.
                 if (pdImage.getColorSpace() instanceof PDIndexed && numComponents ==1){
-                    byte[] banks = new byte[width*height];
-                    IOUtils.populateBuffer(input,banks);
+                    int[] banks = new int[width*height];
+                    byte[] buffer = new byte[width*height];
+                    IOUtils.populateBuffer(input,buffer);
+                    for (int i=0;i< buffer.length;i++) {
+                        banks[i] = buffer[i];
+                    }
                     return ((PDIndexed)pdImage.getColorSpace()).toRGBImage(banks,width,height);
                 }
                 return createBitmapFromRawStream(input, inputWidth, numComponents, currentSubsampling);
@@ -441,6 +445,132 @@ final class SampledImageReader
     // slower, general-purpose image conversion from any image format
 //    private static BufferedImage fromAny(PDImage pdImage, WritableRaster raster, COSArray colorKey, Rectangle clipped,
 //        final int subsampling, final int width, final int height) TODO: Pdfbox-Android
+    private static Bitmap fromAny(PDImage pdImage,
+//                                  WritableRaster raster,
+                                  COSArray colorKey, Rect clipped,
+                                  final int subsampling, final int width, final int height)
+            throws IOException
+    {
+        int currentSubsampling = subsampling;
+        final PDColorSpace colorSpace = pdImage.getColorSpace();
+        final int numComponents = colorSpace.getNumberOfComponents();
+        final int bitsPerComponent = pdImage.getBitsPerComponent();
+        final float[] decode = getDecodeArray(pdImage);
+
+        DecodeOptions options = new DecodeOptions(currentSubsampling);
+        options.setSourceRegion(clipped);
+        // read bit stream
+
+        try {
+            ImageInputStream input = new MemoryCacheImageInputStream(pdImage.createInputStream(options));
+            final int inputWidth;
+            final int startx;
+            final int starty;
+            final int scanWidth;
+            final int scanHeight;
+            if (options.isFilterSubsampled()) {
+                // Decode options were honored, and so there is no need for additional clipping or subsampling
+                inputWidth = width;
+                startx = 0;
+                starty = 0;
+                scanWidth = width;
+                scanHeight = height;
+                currentSubsampling = 1;
+            } else {
+                // Decode options not honored, so we need to clip and subsample ourselves.
+                inputWidth = pdImage.getWidth();
+                startx = clipped.left;
+                starty = clipped.top;
+                scanWidth = clipped.width();
+                scanHeight = clipped.height();
+            }
+            final float sampleMax = (float) Math.pow(2, bitsPerComponent) - 1f;
+            final boolean isIndexed = colorSpace instanceof PDIndexed;
+
+            // init color key mask
+            float[] colorKeyRanges = null;
+//            BufferedImage colorKeyMask = null;
+            if (colorKey != null) {
+                colorKeyRanges = colorKey.toFloatArray();
+//                colorKeyMask = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+            }
+
+            // calculate row padding
+            int padding = 0;
+            if (inputWidth * numComponents * bitsPerComponent % 8 > 0) {
+                padding = 8 - (inputWidth * numComponents * bitsPerComponent % 8);
+            }
+
+            // read stream
+            int[] banks = new int[width * height];
+            byte[] srcColorValues = new byte[numComponents];
+            byte[] alpha = new byte[1];
+//            byte[] tempBytes = new byte[numComponents * inputWidth];
+            for (int y = 0; y < starty + scanHeight; y++) {
+                for (int x = 0; x < startx + scanWidth; x++) {
+                    boolean isMasked = true;
+                    for (int c = 0; c < numComponents; c++) {
+                        int value = (int) input.readBits(bitsPerComponent);
+
+                        // color key mask requires values before they are decoded
+                        if (colorKeyRanges != null) {
+                            isMasked &= value >= colorKeyRanges[c * 2] &&
+                                    value <= colorKeyRanges[c * 2 + 1];
+                        }
+
+                        // decode array
+                        final float dMin = decode[c * 2];
+                        final float dMax = decode[(c * 2) + 1];
+
+                        // interpolate to domain
+                        float output = dMin + (value * ((dMax - dMin) / sampleMax));
+
+                        if (isIndexed) {
+                            // indexed color spaces get the raw value, because the TYPE_BYTE
+                            // below cannot be reversed by the color space without it having
+                            // knowledge of the number of bits per component
+                            srcColorValues[c] = (byte) Math.round(output);
+                        } else {
+                            // interpolate to TYPE_BYTE
+                            int outputByte = Math.round(((output - Math.min(dMin, dMax)) /
+                                    Math.abs(dMax - dMin)) * 255f);
+                            srcColorValues[c] = (byte) outputByte;
+                        }
+                    }
+
+                    // only write to output if within requested region and subsample.
+                    if (x >= startx && y >= starty && x % currentSubsampling == 0 && y % currentSubsampling == 0) {
+                        if (numComponents == 1) {
+                            banks[(y - starty) * scanWidth + (x - startx)] = srcColorValues[0];
+                        } else {
+                            banks[(y - starty) * scanWidth + (x - startx)] = Color.argb(isMasked ? 255 : 0, srcColorValues[0], srcColorValues[1], srcColorValues[2]);
+                        }
+//                        raster.setDataElements((x - startx) / currentSubsampling, (y - starty) / currentSubsampling, srcColorValues);
+//
+//                        // set alpha channel in color key mask, if any
+//                        if (colorKeyMask != null)
+//                        {
+//                            alpha[0] = (byte)(isMasked ? 255 : 0);
+//                            colorKeyMask.getRaster().setDataElements((x - startx) / currentSubsampling, (y - starty) / currentSubsampling, alpha);
+//                        }
+                    }
+                }
+                // rows are padded to the nearest byte
+                input.readBits(padding);
+            }
+
+            if (pdImage.getColorSpace() instanceof PDIndexed) {
+                return ((PDIndexed)pdImage.getColorSpace()).toRGBImage(banks,width,height);
+            }
+            Bitmap raster = Bitmap.createBitmap(width, height,Bitmap.Config.ARGB_8888);
+            raster.setPixels(banks, 0, width, 0 ,0, width, height);
+            return raster;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     // color key mask: RGB + Binary -> ARGB
 //    private static BufferedImage applyColorKeyMask(BufferedImage image, BufferedImage mask) TODO: PdfBox-Android

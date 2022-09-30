@@ -193,16 +193,11 @@ public final class PDIndexed extends PDSpecialColorSpace
 
         Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
         int[] src = new int[width];
-        int test = 0;
         for (int y = 0; y < height; y++)
         {
             raster.getPixels(src,0,width,0,y,width,1);
             for (int x = 0; x < width; x++)
             {
-                test++;
-                if (test<100) {
-                    Log.w("color_test","src[x]:"+raster.getPixel(x,y));
-                }
                 // lookup
                 int index = Math.min(src[x]>>24&0xff, actualMaxIndex);
                 int color = Color.argb(255,rgbColorTable[index][0],rgbColorTable[index][1],rgbColorTable[index][2]);
@@ -212,7 +207,7 @@ public final class PDIndexed extends PDSpecialColorSpace
         return rgbImage;
     }
 
-    public Bitmap toRGBImage(byte[] raster,int width,int height) throws IOException {
+    public Bitmap toRGBImage(int[] raster,int width,int height) throws IOException {
         Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
         for (int y = 0; y < height; y++)
         {
