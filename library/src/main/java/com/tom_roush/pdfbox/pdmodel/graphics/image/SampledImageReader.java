@@ -30,6 +30,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Date;
 
+import com.gemalto.jp2.JP2Decoder;
 import com.tom_roush.harmony.javax.imageio.stream.ImageInputStream;
 import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageInputStream;
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -212,15 +213,34 @@ final class SampledImageReader
             // in PDColorSpace#toRGBImage expects an 8-bit range, i.e. 0-255.
             final float[] defaultDecode = pdImage.getColorSpace().getDefaultDecode(8);
             final float[] decode = getDecodeArray(pdImage);
-            if (pdImage.getSuffix() != null && pdImage.getSuffix().equals("jpg") && subsampling == 1)
+            if (pdImage.getSuffix() != null && subsampling == 1)
             {
-                if (pdImage.getColorSpace() instanceof PDDeviceCMYK) {
+                if (pdImage.getSuffix().equals("jpg")) {
+                    if (pdImage.getColorSpace() instanceof PDDeviceCMYK) {
+                        InputStream inputStream = pdImage.createInputStream();
+                        byte[] buff = new byte[inputStream.available()];
+                        IOUtils.populateBuffer(inputStream,buff);
+                        return ((PDDeviceCMYK)pdImage.getColorSpace()).toRGBImage(new JpegUtils().converData(buff),width,height);
+                    }
+                    return BitmapFactory.decodeStream(pdImage.createInputStream());
+                } else if (pdImage.getSuffix().equals("jpx")){
                     InputStream inputStream = pdImage.createInputStream();
                     byte[] buff = new byte[inputStream.available()];
                     IOUtils.populateBuffer(inputStream,buff);
-                    return ((PDDeviceCMYK)pdImage.getColorSpace()).toRGBImage(new JpegUtils().converData(buff),width,height);
+                    int[] bank = new int[pdImage.getWidth()*pdImage.getHeight()];
+                    int index = 0;
+                    for (int h=0;h<pdImage.getHeight();h++) {
+                        for (int w=0;w<pdImage.getWidth();w++) {
+                            if (numComponents == 1) {
+                                bank[index] = Color.argb(buff[index*3]&0xff,buff[index*3]&0xff,buff[index*3]&0xff,buff[index*3]&0xff);
+                            } else {
+                                bank[index] = Color.argb(255,buff[index*3]&0xff,buff[index*3+1]&0xff,buff[index*3+2]&0xff);
+                            }
+                            index+=1;
+                        }
+                    }
+                    return Bitmap.createBitmap(bank,pdImage.getWidth(),pdImage.getHeight(), Bitmap.Config.ARGB_8888);
                 }
-                return BitmapFactory.decodeStream(pdImage.createInputStream());
             }
             else if (bitsPerComponent == 8 && colorKey == null && Arrays.equals(decode, defaultDecode))
             {

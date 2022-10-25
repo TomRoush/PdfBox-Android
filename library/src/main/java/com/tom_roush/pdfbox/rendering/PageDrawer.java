@@ -452,7 +452,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
             if (renderingMode.isClip())
             {
-//                textClippings.add(glyph); TODO: PdfBox-Android
+                textClippings.add(path);
             }
         }
     }
