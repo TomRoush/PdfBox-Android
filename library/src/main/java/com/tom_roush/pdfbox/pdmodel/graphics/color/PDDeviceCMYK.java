@@ -2,6 +2,7 @@ package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.opengl.Matrix;
 import android.util.Log;
 
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
@@ -9,9 +10,11 @@ import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.xsooy.icc.IccUtils;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 public class PDDeviceCMYK extends PDDeviceColorSpace
 {
@@ -25,8 +28,8 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
     }
 
     private final PDColor initialColor = new PDColor(new float[] { 0, 0, 0, 1 }, this);
-//    private ICC_ColorSpace awtColorSpace;
-    private volatile boolean initDone = false;
+    //    private ICC_ColorSpace awtColorSpace;
+    public volatile boolean initDone = false;
 
     protected PDDeviceCMYK()
     {
@@ -49,12 +52,19 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
             {
                 return;
             }
+
+            Log.w("icc_ceshi","初始化Cmyk");
             InputStream inputStream = PDFBoxResourceLoader.getStream("com/tom_roush/pdfbox/resources/icc/ISOcoated_v2_300_bas.icc");
             byte[] buff = new byte[inputStream.available()];
             IOUtils.populateBuffer(inputStream,buff);
             iccUtils = new IccUtils();
             iccUtils.loadProfileByData(buff);
             initDone = true;
+//            if (new File(IccUtils.iccProfileDir+"/ISOcoated_v2_300_bas.icc").exists()) {
+//                iccUtils = new IccUtils();
+//                iccUtils.loadProfile(IccUtils.iccProfileDir+"/ISOcoated_v2_300_bas.icc");
+//            }
+//            initDone = true;
         }
     }
 
@@ -105,13 +115,15 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
     public float[] toRGB(float[] value) throws IOException
     {
         init();
+//        Log.w("ceshi",String.format("value:%f,%f,%f,%f",value[0],value[1],value[2],value[3]));
         //cmyk to lab
         if (iccUtils!=null) {
             float[] data = new float[3];
             iccUtils.applyCmyk(value,data);
-            float[] lab = toLab(data);
-            float[] xyz = labToXyz(lab);
-            return xyzToRgb(xyz);
+//            float[] lab = toLab(data);
+//            float[] xyz = labToXyz(lab);
+//            return NormalColorSpace.xyzToRgb(xyz);
+            return data;
         }
         return new float[]{(1-value[0])*(1-value[3]),(1-value[1])*(1-value[3]),(1-value[2])*(1-value[3])};
     }

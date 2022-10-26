@@ -7,7 +7,7 @@ import static com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace.TYPE_RGB;
 public class IccUtils {
 
     static {
-        System.loadLibrary("icc");
+        System.loadLibrary("iccUse");
     }
 
     public native int loadProfile(String path);

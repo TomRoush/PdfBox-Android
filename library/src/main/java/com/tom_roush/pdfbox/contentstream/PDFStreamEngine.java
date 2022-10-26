@@ -529,6 +529,8 @@ public abstract class PDFStreamEngine
      * @param contentStream to content stream to parse.
      * @throws IOException if there is an error reading or parsing the content stream.
      */
+
+    int test = 0;
     private void processStreamOperators(PDContentStream contentStream) throws IOException
     {
         List<COSBase> arguments = new ArrayList<COSBase>();

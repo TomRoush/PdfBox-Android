@@ -5,7 +5,7 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-set(TARGET icc)
+set(TARGET iccUse)
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 include_directories(
