@@ -242,7 +242,7 @@ final class SampledImageReader
                     return Bitmap.createBitmap(bank,pdImage.getWidth(),pdImage.getHeight(), Bitmap.Config.ARGB_8888);
                 }
             }
-            else if (bitsPerComponent == 8 && colorKey == null && Arrays.equals(decode, defaultDecode))
+            if (bitsPerComponent == 8 && colorKey == null && Arrays.equals(decode, defaultDecode))
             {
                 // convert image, faster path for non-decoded, non-colormasked 8-bit images
                 return from8bit(pdImage, clipped, subsampling, width, height);
