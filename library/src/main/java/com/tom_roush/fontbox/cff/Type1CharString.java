@@ -123,9 +123,7 @@ public class Type1CharString
         {
             render();
         }
-        Path clone = new Path();
-        clone.addPath(path);
-        return clone;
+        return path;
     }
 
     /**

@@ -1,9 +1,12 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.shading;
 
 import android.graphics.Rect;
+import android.util.Log;
 
+import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBoolean;
+import com.tom_roush.pdfbox.util.Matrix;
 
 import java.io.IOException;
 
@@ -21,8 +24,9 @@ public class AxialShadingContext extends ShadingContext {
     private final int factor;
 
     private final int[] colorTable;
+    private AffineTransform rat;
 
-    public AxialShadingContext(PDShadingType2 shading, Rect deviceBounds) throws IOException {
+    public AxialShadingContext(PDShadingType2 shading, Rect deviceBounds, Matrix matrix, AffineTransform xform) throws IOException {
         super(shading);
         this.axialShadingType = shading;
         coords = shading.getCoords().toFloatArray();
@@ -55,18 +59,18 @@ public class AxialShadingContext extends ShadingContext {
         d1d0 = domain[1] - domain[0];
         denom = Math.pow(x1x0, 2) + Math.pow(y1y0, 2);
 
-//        try
-//        {
-            // get inverse transform to be independent of current user / device space
-            // when handling actual pixels in getRaster()
-//            rat = matrix.createAffineTransform().createInverse();
-//            rat.concatenate(xform.createInverse());
-//        }
-//        catch (AffineTransform.NoninvertibleTransformException ex)
-//        {
+        try
+        {
+//             get inverse transform to be independent of current user / device space
+//             when handling actual pixels in getRaster()
+            rat = matrix.createAffineTransform().createInverse();
+            rat.concatenate(xform.createInverse());
+        }
+        catch (AffineTransform.NoninvertibleTransformException ex)
+        {
 //            LOG.error(ex.getMessage() + ", matrix: " + matrix, ex);
-//            rat = new AffineTransform();
-//        }
+            rat = new AffineTransform();
+        }
 
         // shading space -> device space
 //        AffineTransform shadingToDevice = (AffineTransform)xform.clone();
@@ -119,7 +123,7 @@ public class AxialShadingContext extends ShadingContext {
 //                float[] test = new float[] {(map[i]>>24&0xff)/255.f, (map[i]>>16&0xff)/255.f,(map[0]>>8&0xff)/255.f,(map[0]&0xff)/255.f};
                 map[i] = convertToRGB(values);
 
-//                Log.w("ceshi",String.format("r:%d,g:%d,b:%d",map[i]>>16&0xff,map[0]>>8&0xff,map[0]&0xff));
+                Log.w("ceshi",String.format("r:%d,g:%d,b:%d",map[i]>>16&0xff,map[i]>>8&0xff,map[i]&0xff));
             }
         }
         return map;
@@ -142,7 +146,7 @@ public class AxialShadingContext extends ShadingContext {
                 useBackground = false;
                 values[0] = x + i;
                 values[1] = y + j;
-//                rat.transform(values, 0, values, 0, 1);
+                rat.transform(values, 0, values, 0, 1);
                 double inputValue = x1x0 * (values[0] - coords[0]) + y1y0 * (values[1] - coords[1]);
                 // TODO this happens if start == end, see PDFBOX-1442
                 if (Double.compare(denom, 0) == 0)

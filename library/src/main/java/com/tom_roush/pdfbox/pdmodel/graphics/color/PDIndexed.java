@@ -38,7 +38,7 @@ import java.io.IOException;
 /**
  * An Indexed colour space specifies that an area is to be painted using a colour table
  * of arbitrary colours from another color space.
- * 
+ *
  * @author John Hewson
  * @author Ben Litchfield
  */
@@ -89,6 +89,7 @@ public final class PDIndexed extends PDSpecialColorSpace
         // don't call getObject(1), we want to pass a reference if possible
         // to profit from caching (PDFBOX-4149)
         baseColorSpace = PDColorSpace.create(array.get(1), resources);
+//        Log.w("ceshi","PDIndexed---baseColorSpace=="+baseColorSpace.getClass().getSimpleName());
         readColorTable();
         initRgbColorTable();
     }
@@ -139,12 +140,14 @@ public final class PDIndexed extends PDSpecialColorSpace
 //        }
 
 //        int[] base = new int[numBaseComponents];
-        rgbColorTable = new int[actualMaxIndex + 1][3];
+        rgbColorTable = new int[actualMaxIndex + 1][numBaseComponents];
         for (int i = 0, n = actualMaxIndex; i <= n; i++)
         {
-            for (int c = 0; c < numBaseComponents; c++)
+            float[] rgb = baseColorSpace.toRGB(colorTable[i]);
+            for (int c = 0; c < 3; c++)
             {
-                rgbColorTable[i][c] = (int)(colorTable[i][c] * 255f);
+                rgbColorTable[i][c] = (int)(rgb[c]*255);
+//                rgbColorTable[i][c] = (int)(colorTable[i][c] * 255f);
 //                base[c] = (int)(colorTable[i][c] * 255f);
             }
 //            rgbColorTable[i][c] = base;
@@ -175,7 +178,7 @@ public final class PDIndexed extends PDSpecialColorSpace
         {
             throw new IllegalArgumentException("Indexed color spaces must have one color value");
         }
-        
+
         // scale and clamp input value
         int index = Math.round(value[0]);
         index = Math.max(index, 0);
@@ -213,8 +216,11 @@ public final class PDIndexed extends PDSpecialColorSpace
         {
             for (int x = 0; x < width; x++)
             {
-                int index = Math.min(raster[x+y*width]&0xff, actualMaxIndex);
-                int color = Color.argb(255,rgbColorTable[index][0],rgbColorTable[index][1],rgbColorTable[index][2]);
+                int index = Math.min(raster[x+y*width], actualMaxIndex);
+                int color = Color.alpha(0);
+                if (index>=0) {
+                    color = Color.argb(255,rgbColorTable[index][0],rgbColorTable[index][1],rgbColorTable[index][2]);
+                }
                 rgbImage.setPixel(x,y,color);
             }
         }

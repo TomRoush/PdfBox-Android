@@ -427,7 +427,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
             // render glyph
 //            Shape glyph = at.createTransformedShape(path);
-            path.transform(at.toMatrix());
+            Path clone = new Path();
+            clone.addPath(path);
+            clone.transform(at.toMatrix());
+//            path.transform(at.toMatrix());
 
             if (isContentRendered())
             {
@@ -436,7 +439,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                     paint.setColor(getNonStrokingColor());
                     setClip();
                     paint.setStyle(Paint.Style.FILL);
-                    canvas.drawPath(path, paint);
+                    canvas.drawPath(clone, paint);
                 }
 
                 if (renderingMode.isStroke())
@@ -445,13 +448,13 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                     setStroke();
                     setClip();
                     paint.setStyle(Paint.Style.STROKE);
-                    canvas.drawPath(path, paint);
+                    canvas.drawPath(clone, paint);
                 }
             }
 
             if (renderingMode.isClip())
             {
-                textClippings.add(path);
+                textClippings.add(clone);
             }
         }
     }
@@ -714,7 +717,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 //                    paint.setStrokeWidth(2f);
 //                    setClip();
                     Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
-                    AxialShadingContext axialShadingContext = new AxialShadingContext((PDShadingType2) shading,rect2);
+                    AxialShadingContext axialShadingContext = new AxialShadingContext((PDShadingType2) shading,rect2,ctm,new AffineTransform(scaleX,0,0,-scaleY,0,canvas.getHeight()));
 //                    axialShadingContext.setTransform(ctm,new AffineTransform(4.166666507720948,0.0, 0.0, -4.166666507720948, 0.0, 3507.874927220342));
                     for (int y=rect.bottom;y>rect.top;y--) {
                         int[] data = axialShadingContext.getRaster(rect.left,canvas.getHeight()-y,rect.right-rect.left,1);
@@ -1041,10 +1044,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
     @Override
     public void shadingFill(COSName shadingName) throws IOException
     {
-        if (!isContentRendered())
-        {
-            return;
-        }
         PDShading shading = getResources().getShading(shadingName);
         if (shading == null)
         {
@@ -1053,39 +1052,55 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         }
         Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
 
+//        Paint paint = shading.toPaint(ctm);
+//        paint = applySoftMaskToPaint(paint, getGraphicsState().getSoftMask());
+
 //        graphics.setComposite(getGraphicsState().getNonStrokingJavaComposite());
-//        Shape savedClip = graphics.getClip();
+//        graphics.setPaint(paint);
 //        graphics.setClip(null);
-//        lastClips = null;
+//        lastClip = null;
 
         // get the transformed BBox and intersect with current clipping path
         // need to do it here and not in shading getRaster() because it may have been rotated
         PDRectangle bbox = shading.getBBox();
-//        Area area;
         if (bbox != null)
         {
-//            area = new Area(bbox.transform(ctm));
-//            area.intersect(getGraphicsState().getCurrentClippingPath());
+//            Area bboxArea = new Area(bbox.transform(ctm));
+//            bboxArea.intersect(getGraphicsState().getCurrentClippingPath());
+//            graphics.fill(bboxArea);
         }
         else
         {
-            RectF bounds = shading.getBounds(new AffineTransform(), ctm);
-            if (bounds != null)
-            {
-                bounds.union((float)Math.floor(bounds.left - 1),
-                    (float)Math.floor(bounds.top - 1));
-                bounds.union((float)Math.ceil(bounds.right + 1),
-                    (float)Math.ceil(bounds.bottom + 1));
-//                area = new Area(bounds);
-//                area.intersect(getGraphicsState().getCurrentClippingPath());
+            if (shading instanceof PDShadingType2) {
+                canvas.save();
+                Path path = getGraphicsState().getCurrentClippingPath();
+                RectF bounds = new RectF();
+                path.computeBounds(bounds,true);
+                canvas.scale(1/scaleX,1/scaleY);
+                Rect rect = new Rect((int)(bounds.left*scaleX+0.5f),(int)(bounds.top*scaleY+0.5f),(int)(bounds.right*scaleX+0.5f),(int)(bounds.bottom*scaleY+0.5f));
+                Rect rect2 = new Rect((int)(bounds.left*scaleX+0.5f),(int)(canvas.getHeight()-(bounds.bottom*scaleY)+0.5f),(int)(bounds.right*scaleX+0.5f),(int)(canvas.getHeight()-(bounds.top*scaleY+0.5f)));
+
+                android.graphics.Matrix matrix = new android.graphics.Matrix();
+                matrix.setScale(scaleX,scaleY);
+                path.transform(matrix);
+                path.computeBounds(bounds,true);
+                canvas.clipPath(path, Region.Op.INTERSECT);
+
+                AxialShadingContext axialShadingContext = new AxialShadingContext((PDShadingType2) shading,rect2,ctm,new AffineTransform(scaleX,0,0,-scaleY,0,canvas.getHeight()));
+                for (int y=rect.bottom;y>rect.top;y--) {
+                    int[] data = axialShadingContext.getRaster(rect.left,canvas.getHeight()-y,rect.right-rect.left,1);
+                    paint.setStrokeWidth(2f);
+                    for (int i=0;i<data.length;i++) {
+                        paint.setColor(data[i]|0xff000000);
+                        canvas.drawPoint(rect.left+i,y,paint);
+                    }
+                }
+                canvas.restore();
             }
-            else
-            {
-//                area = getGraphicsState().getCurrentClippingPath();
-            }
+//            paint.setColor(Color.GREEN);
+//            canvas.drawPath(getGraphicsState().getCurrentClippingPath(),paint);
+//            graphics.fill(getGraphicsState().getCurrentClippingPath());
         }
-//        if (!area.isEmpty()) TODO: PdfBox-Android
-//        graphics.setClip(savedClip);
     }
 
     @Override
