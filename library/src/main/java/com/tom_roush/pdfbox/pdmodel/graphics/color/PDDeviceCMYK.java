@@ -53,7 +53,6 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
                 return;
             }
 
-            Log.w("icc_ceshi","初始化Cmyk");
             InputStream inputStream = PDFBoxResourceLoader.getStream("com/tom_roush/pdfbox/resources/icc/ISOcoated_v2_300_bas.icc");
             byte[] buff = new byte[inputStream.available()];
             IOUtils.populateBuffer(inputStream,buff);

@@ -255,7 +255,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         xformScalingFactorX = Math.abs(m.getScalingFactorX());
         xformScalingFactorY = Math.abs(m.getScalingFactorY());
         // backup init status
-        Log.w("ceshi","canvas.save()==="+canvas.save());
         this.pageSize = pageSize;
 
         setRenderingHints();
@@ -426,17 +425,16 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             }
 
             // render glyph
-//            Shape glyph = at.createTransformedShape(path);
             Path clone = new Path();
             clone.addPath(path);
             clone.transform(at.toMatrix());
-//            path.transform(at.toMatrix());
 
             if (isContentRendered())
             {
                 if (renderingMode.isFill())
                 {
                     paint.setColor(getNonStrokingColor());
+                    paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
                     setClip();
                     paint.setStyle(Paint.Style.FILL);
                     canvas.drawPath(clone, paint);
@@ -445,6 +443,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 if (renderingMode.isStroke())
                 {
                     paint.setColor(getStrokingColor());
+                    paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
                     setStroke();
                     setClip();
                     paint.setStyle(Paint.Style.STROKE);
@@ -673,6 +672,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             setStroke();
             paint.setStyle(Paint.Style.STROKE);
             paint.setColor(getStrokingColor());
+            paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
             setClip();
             canvas.drawPath(linePath, paint);
         }
@@ -710,12 +710,14 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 //轴向
                 if (shading instanceof PDShadingType2) {
 //                    getGraphicsState().intersectClippingPath(linePath);
+                    setClip();
+                    canvas.save();
                     canvas.clipPath(linePath, Region.Op.INTERSECT);
                     canvas.scale(1/scaleX,1/scaleY);
                     Rect rect = new Rect((int)(bounds.left*scaleX),(int)(bounds.top*scaleY),(int)(bounds.right*scaleX),(int)(bounds.bottom*scaleY));
                     Rect rect2 = new Rect((int)(bounds.left*scaleX),(int)(canvas.getHeight()-(bounds.bottom*scaleY)),(int)(bounds.right*scaleX),(int)(canvas.getHeight()-(bounds.top*scaleY)));
 //                    paint.setStrokeWidth(2f);
-//                    setClip();
+
                     Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
                     AxialShadingContext axialShadingContext = new AxialShadingContext((PDShadingType2) shading,rect2,ctm,new AffineTransform(scaleX,0,0,-scaleY,0,canvas.getHeight()));
 //                    axialShadingContext.setTransform(ctm,new AffineTransform(4.166666507720948,0.0, 0.0, -4.166666507720948, 0.0, 3507.874927220342));
@@ -723,13 +725,16 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                         int[] data = axialShadingContext.getRaster(rect.left,canvas.getHeight()-y,rect.right-rect.left,1);
                         for (int i=0;i<data.length;i++) {
                             paint.setColor(data[i]|0xff000000);
+                            paint.setAlpha((int)(graphicsState.getNonStrokeAlphaConstant()*255));
                             canvas.drawPoint(rect.left+i,y,paint);
                         }
                     }
+                    canvas.restore();
                 }
             } else {
                 setClip();
                 paint.setColor(getNonStrokingColor());
+                paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
                 canvas.drawPath(linePath, paint);
             }
         }
@@ -954,7 +959,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
                 image = applyTransferFunction(image, transfer);
             }
-
             canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
         }
     }
@@ -1072,6 +1076,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         else
         {
             if (shading instanceof PDShadingType2) {
+                setClip();
                 canvas.save();
                 Path path = getGraphicsState().getCurrentClippingPath();
                 RectF bounds = new RectF();
@@ -1092,6 +1097,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                     paint.setStrokeWidth(2f);
                     for (int i=0;i<data.length;i++) {
                         paint.setColor(data[i]|0xff000000);
+                        paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
                         canvas.drawPoint(rect.left+i,y,paint);
                     }
                 }
@@ -1261,19 +1267,9 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
                 android.graphics.Matrix matrix = new android.graphics.Matrix();
                 canvas.drawBitmap(image, matrix, paint);
-                Log.w("ceshi","canvas.drawBitmap(image, matrix, paint);");
+                image.recycle();
             }
-//            try
-//            {
-//                graphics.drawImage(image, null, null);
-//            }
-//            catch (InternalError ie)
-//            {
-//                Log.e("PdfBox-Android", "Exception drawing image, see JDK-6689349, " +
-//                    "try rendering into a BufferedImage instead", ie);
-//            }
         }
-
 //        graphics.setTransform(savedTransform);
     }
 
@@ -1310,7 +1306,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                                   PDColor backdropColor) throws IOException
         {
             Canvas savedCanvas = canvas;
-            Log.w("ceshi","TransparencyGroup-----");
 //            Graphics2D g2dOriginal = graphics;
 //            Area lastClipOriginal = lastClip;
 

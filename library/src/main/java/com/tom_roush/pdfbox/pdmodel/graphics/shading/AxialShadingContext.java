@@ -123,7 +123,7 @@ public class AxialShadingContext extends ShadingContext {
 //                float[] test = new float[] {(map[i]>>24&0xff)/255.f, (map[i]>>16&0xff)/255.f,(map[0]>>8&0xff)/255.f,(map[0]&0xff)/255.f};
                 map[i] = convertToRGB(values);
 
-                Log.w("ceshi",String.format("r:%d,g:%d,b:%d",map[i]>>16&0xff,map[i]>>8&0xff,map[i]&0xff));
+//                Log.w("ceshi",String.format("r:%d,g:%d,b:%d",map[i]>>16&0xff,map[i]>>8&0xff,map[i]&0xff));
             }
         }
         return map;

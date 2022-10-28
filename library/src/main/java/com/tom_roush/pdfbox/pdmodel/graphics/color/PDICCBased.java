@@ -212,7 +212,7 @@ public final class PDICCBased extends PDCIEBasedColorSpace
             // results in a large performance gain as it's our native color space, see PDFBOX-2587
 //            ICC_Profile profile;
             iccUtils = new IccUtils();
-
+            PDDeviceCMYK.INSTANCE.initDone = false;
             colorType = IccUtils.getIccColorType(iccUtils.loadProfileByData(getProfileDataFromStream(input)));
             switch (colorType) {
                 case TYPE_GRAY:
@@ -305,16 +305,21 @@ public final class PDICCBased extends PDCIEBasedColorSpace
         {
             return value;
         }
+        if (iccUtils!=null) {
+            float[] rgb = new float[3];
+            iccUtils.applyCmyk(value,rgb);
+            return rgb;
+        }
 //        if (awtColorSpace != null)
 //        {
             // PDFBOX-2142: clamp bad values
             // WARNING: toRGB is very slow when used with LUT-based ICC profiles
 //            return awtColorSpace.toRGB(clampColors(awtColorSpace, value));
 //        }
-//        else
-//        {
+        else
+        {
             return alternateColorSpace.toRGB(value);
-//        }
+        }
     }
 
     @Override

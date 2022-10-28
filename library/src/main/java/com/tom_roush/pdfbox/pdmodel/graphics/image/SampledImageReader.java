@@ -28,9 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.Date;
 
-import com.gemalto.jp2.JP2Decoder;
 import com.tom_roush.harmony.javax.imageio.stream.ImageInputStream;
 import com.tom_roush.harmony.javax.imageio.stream.MemoryCacheImageInputStream;
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -215,6 +213,7 @@ final class SampledImageReader
             final float[] decode = getDecodeArray(pdImage);
             if (pdImage.getSuffix() != null && subsampling == 1)
             {
+//                Log.w("ceshi","pdImage.getSuffix()=="+pdImage.getSuffix());
                 if (pdImage.getSuffix().equals("jpg")) {
                     if (pdImage.getColorSpace() instanceof PDDeviceCMYK) {
                         InputStream inputStream = pdImage.createInputStream();
@@ -232,7 +231,7 @@ final class SampledImageReader
                     for (int h=0;h<pdImage.getHeight();h++) {
                         for (int w=0;w<pdImage.getWidth();w++) {
                             if (numComponents == 1) {
-                                bank[index] = Color.argb(buff[index*3]&0xff,buff[index*3]&0xff,buff[index*3]&0xff,buff[index*3]&0xff);
+                                bank[index] = Color.argb(buff[index]&0xff,buff[index]&0xff,buff[index]&0xff,buff[index]&0xff);
                             } else {
                                 bank[index] = Color.argb(255,buff[index*3]&0xff,buff[index*3+1]&0xff,buff[index*3+2]&0xff);
                             }
@@ -311,7 +310,8 @@ final class SampledImageReader
             // and then simply shift bits out to the left, detecting set bits via sign
             final boolean nosubsampling = currentSubsampling == 1;
             final int stride = (inputWidth + 7) / 8;
-            final int invert = /*colorSpace instanceof PDIndexed TODO: PdfBox-Android ||*/ decode[0] < decode[1] ? 0 : -1;
+            final boolean isJBIG2 = !(pdImage.getSuffix() != null && pdImage.getSuffix().equals("jb2"));
+            final int invert = isJBIG2 && (colorSpace instanceof PDIndexed || decode[0] < decode[1]) ? 0 : -1;
             final int endX = startx + scanWidth;
             final byte[] buff = new byte[stride];
             for (int y = 0; y < starty + scanHeight; y++)
@@ -349,7 +349,6 @@ final class SampledImageReader
 
             // use the color space to convert the image to RGB
             return colorSpace.toRGBImage(raster);
-
         }
         finally
         {
@@ -406,6 +405,14 @@ final class SampledImageReader
                         banks[i] = buffer[i];
                     }
                     return ((PDIndexed)pdImage.getColorSpace()).toRGBImage(banks,width,height);
+                }
+                if (numComponents == 1) {
+                    Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8);
+                    ByteBuffer buffer = ByteBuffer.allocate(raster.getRowBytes() * height);
+                    final byte[] output = buffer.array();
+                    input.read(output);
+                    raster.copyPixelsFromBuffer(buffer);
+                    return pdImage.getColorSpace().toRGBImage(raster);
                 }
                 return createBitmapFromRawStream(input, inputWidth, numComponents, currentSubsampling);
             }
