@@ -959,7 +959,10 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             {
                 image = applyTransferFunction(image, transfer);
             }
-            canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
+            if (image.getConfig() == Bitmap.Config.ALPHA_8)
+                canvas.drawBitmap(PDDeviceGray.INSTANCE.toRGBImage(image), imageTransform.toMatrix(), paint);
+            else
+                canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
         }
     }
 

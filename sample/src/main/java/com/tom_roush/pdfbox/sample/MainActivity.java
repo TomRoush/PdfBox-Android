@@ -1,9 +1,11 @@
 package com.tom_roush.pdfbox.sample;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -11,7 +13,11 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.documentfile.provider.DocumentFile;
+
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,7 +83,7 @@ public class MainActivity extends Activity {
         PDFBoxResourceLoader.init(getApplicationContext());
         // Find the root of the external storage.
 
-        root = getApplicationContext().getCacheDir();
+        root = getExternalFilesDir(null);
         assetManager = getAssets();
         tv = (TextView) findViewById(R.id.statusTextView);
     }
@@ -150,14 +156,89 @@ public class MainActivity extends Activity {
         }
     }
 
+    private String getPreviewDir() {
+        File storageDir = new File(getExternalFilesDir("").getAbsolutePath()+"/preview/");
+        if (!storageDir.exists()) {
+            storageDir.mkdirs();
+        }
+        return storageDir.getAbsolutePath()+"/";
+    }
+
+    public String getScanImageDir(){
+        File storageDir = new File(getExternalFilesDir("").getAbsolutePath()+"/scanHistory/");
+        if (!storageDir.exists()) {
+            storageDir.mkdirs();
+        }
+        return storageDir.getAbsolutePath()+"/";
+    }
+
+    public void saveFileByPath(FileInputStream inputStream, String filePath) {
+        Log.w("ceshi","保存路径："+filePath);
+//        Log.w("ceshi","目录："+filePath.substring(0,filePath.lastIndexOf("/")+1));
+
+        File dirFile = new File(getScanImageDir());
+        if (!dirFile.exists()) {
+            Log.w("ceshi","临时文件路径创建："+dirFile.mkdirs());
+        }
+        File target = new File(filePath);
+        Log.w("ceshi","saveFileByPath="+filePath);
+        try {
+            FileOutputStream outputStream = new FileOutputStream(target);
+            int temp = 0;
+            byte[] data = new byte[1024];
+            while((temp = inputStream.read(data))!=-1) {
+                outputStream.write(data,0,temp);
+//                Log.w("ceshi","文件读取中"+temp);
+            }
+            inputStream.close();
+            outputStream.close();
+        } catch (Exception e) {
+            Log.w("ceshi","saveFileByPathException="+e.toString());
+        }
+    }
+
+    public void openFile(View v) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        String [] mimeTypes = {
+//                "image/*",
+                "application/pdf"
+//                ,"text/plain","application/vnd.ms-powerpoint",
+//                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+//                "application/msword",
+//                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+//                "application/vnd.ms-excel",
+//                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent,200);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Uri uri = data.getData();
+        if (uri!= null) {
+            Log.w("ceshi","返回的路径:"+uri.getEncodedPath());
+            try {
+                DocumentFile documentFile = DocumentFile.fromSingleUri(this,uri);
+                saveFileByPath((FileInputStream) getContentResolver().openInputStream(documentFile.getUri()),getScanImageDir()+documentFile.getName());
+                renderFile(documentFile);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     /**
      * Loads an existing PDF and renders it to a Bitmap
      */
-    public void renderFile(View v) {
+    public void renderFile(DocumentFile documentFile) {
         // Render the page and save it to an image file
         try {
             // Load in an already created PDF
-            PDDocument document = PDDocument.load(assetManager.open("Created.pdf"));
+            PDDocument document = PDDocument.load(new File(getScanImageDir()+documentFile.getName()));
             // Create a renderer for the document
             PDFRenderer renderer = new PDFRenderer(document);
             // Render the image to an RGB Bitmap

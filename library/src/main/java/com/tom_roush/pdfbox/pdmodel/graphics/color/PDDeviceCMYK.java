@@ -14,6 +14,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class PDDeviceCMYK extends PDDeviceColorSpace
@@ -129,46 +130,57 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
 
     @Override
     public Bitmap toRGBImage(Bitmap raster) throws IOException {
+        init();
+        int width = raster.getWidth();
+        int height = raster.getHeight();
+
+        ByteBuffer buffer = ByteBuffer.allocate(raster.getRowBytes() * height);
+        raster.copyPixelsToBuffer(buffer);
+        final byte[] output = buffer.array();
+
+        int[] src = new int[width];
+        int[] out = new int[width];
+        int numberOfComponents = getNumberOfComponents();
+        float[] value = new float[numberOfComponents];
+        for (int y = 0; y < height; y++)
+        {
+            raster.getPixels(src,0,width,0,y,width,1);
+            for (int x = 0; x < width; x++)
+            {
+                for (int i=0;i<numberOfComponents;i++) {
+                    value[i] =(output[(x+y*width)*numberOfComponents+i] & 0xff) / 255.f;
+                }
+                float[] rgb = toRGB(value);
+                int color = Color.argb(255,(int)(rgb[0]*255),(int)(rgb[1]*255),(int)(rgb[2]*255));
+                out[x] = color;
+            }
+            raster.setPixels(out,0,width,0,y,width,1);
+        }
+        return raster;
+    }
+
+//    public Bitmap toRGBImage(byte[] raster,int width,int height) throws IOException {
 //        init();
-//        int width = raster.getWidth();
-//        int height = raster.getHeight();
-//
 //        Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
-//        int[] src = new int[width];
+//        int location = 0;
 //        for (int y = 0; y < height; y++)
 //        {
-//            raster.getPixels(src,0,width,0,y,width,1);
 //            for (int x = 0; x < width; x++)
 //            {
-//                float[] value = new float[] {(src[x]&0xff)/255.f,(src[x]>>8&0xff)/255.f,(src[x]>>16&0xff)/255.f,(src[x]>>24&0xff)/255.f};
+//                float[] value = new float[4];
+//                for (int i=0;i<4;i++) {
+//                    value[i] = ((raster[location]&0xff)/255.f);
+//                    location++;
+//                }
 //                float[] rgb = toRGB(value);
-//                int color = Color.argb(255,(int)(rgb[0]*255),(int)(rgb[0]*255),(int)(rgb[0]*255));
+//                if (x==0 && y==0) {
+//                    Log.w("ceshi",String.format("r:%d,g:%d,b:%d",(int)(rgb[0]*255),(int)(rgb[1]*255),(int)(rgb[2]*255)));
+//                }
+//                int color = Color.argb(255,(int)(rgb[0]*255),(int)(rgb[1]*255),(int)(rgb[2]*255));
 //                rgbImage.setPixel(x,y,color);
 //            }
 //        }
 //        return rgbImage;
-        return null;
-    }
-
-    public Bitmap toRGBImage(byte[] raster,int width,int height) throws IOException {
-        init();
-        Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
-        int location = 0;
-        for (int y = 0; y < height; y++)
-        {
-            for (int x = 0; x < width; x++)
-            {
-                float[] value = new float[4];
-                for (int i=0;i<4;i++) {
-                    value[i] = ((raster[location]&0xff)/255.f);
-                    location++;
-                }
-                float[] rgb = toRGB(value);
-                int color = Color.argb(255,(int)(rgb[0]*255),(int)(rgb[1]*255),(int)(rgb[2]*255));
-                rgbImage.setPixel(x,y,color);
-            }
-        }
-        return rgbImage;
-    }
+//    }
 
 }

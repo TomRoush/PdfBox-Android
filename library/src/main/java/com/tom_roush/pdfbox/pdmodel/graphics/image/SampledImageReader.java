@@ -213,13 +213,26 @@ final class SampledImageReader
             final float[] decode = getDecodeArray(pdImage);
             if (pdImage.getSuffix() != null && subsampling == 1)
             {
-//                Log.w("ceshi","pdImage.getSuffix()=="+pdImage.getSuffix());
+                Log.w("ceshi","pdImage.getSuffix()=="+pdImage.getSuffix());
                 if (pdImage.getSuffix().equals("jpg")) {
                     if (pdImage.getColorSpace() instanceof PDDeviceCMYK) {
+                        Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                        ByteBuffer buffer = ByteBuffer.allocate(raster.getRowBytes() * height);
+                        final byte[] output = buffer.array();
                         InputStream inputStream = pdImage.createInputStream();
+
                         byte[] buff = new byte[inputStream.available()];
                         IOUtils.populateBuffer(inputStream,buff);
-                        return ((PDDeviceCMYK)pdImage.getColorSpace()).toRGBImage(new JpegUtils().converData(buff),width,height);
+
+                        new JpegUtils().converDataToArray(buff,output);
+                        raster.copyPixelsFromBuffer(buffer);
+
+                        return pdImage.getColorSpace().toRGBImage(raster);
+
+//                        InputStream inputStream = pdImage.createInputStream();
+//                        byte[] buff = new byte[inputStream.available()];
+//                        IOUtils.populateBuffer(inputStream,buff);
+//                        return ((PDDeviceCMYK)pdImage.getColorSpace()).toRGBImage(new JpegUtils().converData(buff),width,height);
                     }
                     return BitmapFactory.decodeStream(pdImage.createInputStream());
                 } else if (pdImage.getSuffix().equals("jpx")){
@@ -231,7 +244,7 @@ final class SampledImageReader
                     for (int h=0;h<pdImage.getHeight();h++) {
                         for (int w=0;w<pdImage.getWidth();w++) {
                             if (numComponents == 1) {
-                                bank[index] = Color.argb(buff[index]&0xff,buff[index]&0xff,buff[index]&0xff,buff[index]&0xff);
+                                bank[index] = Color.argb(255,buff[index]&0xff,buff[index]&0xff,buff[index]&0xff);
                             } else {
                                 bank[index] = Color.argb(255,buff[index*3]&0xff,buff[index*3+1]&0xff,buff[index*3+2]&0xff);
                             }
@@ -410,9 +423,10 @@ final class SampledImageReader
                     Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8);
                     ByteBuffer buffer = ByteBuffer.allocate(raster.getRowBytes() * height);
                     final byte[] output = buffer.array();
-                    input.read(output);
-                    raster.copyPixelsFromBuffer(buffer);
-                    return pdImage.getColorSpace().toRGBImage(raster);
+                    if(input.read(output)>0)
+                        raster.copyPixelsFromBuffer(buffer);
+//                    return pdImage.getColorSpace().toRGBImage(raster);
+                    return raster;
                 }
                 return createBitmapFromRawStream(input, inputWidth, numComponents, currentSubsampling);
             }

@@ -359,7 +359,6 @@ ycck_cmyk_convert (j_decompress_ptr cinfo,
 		   JSAMPIMAGE input_buf, JDIMENSION input_row,
 		   JSAMPARRAY output_buf, int num_rows)
 {
-  pri_debug("ycck_cmyk_convert===%d",num_rows);
   my_cconvert_ptr cconvert = (my_cconvert_ptr) cinfo->cconvert;
   register int y, cb, cr;
   register JSAMPROW outptr;

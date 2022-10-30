@@ -8,4 +8,6 @@ public class JpegUtils {
 
     public native byte[] converData(byte[] data);
 
+    public native void converDataToArray(byte[] data,byte[] ouput);
+
 }
