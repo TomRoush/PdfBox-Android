@@ -342,6 +342,24 @@ final class FileSystemFontProvider extends FontProvider
                 addTrueTypeFont(new File("/system/fonts/DroidSansMono.ttf"));
 //                addTrueTypeFont(new File("/system/fonts/DroidSansFallback.ttf"));
                 // XXX: list may need to be expanded for other character sets
+                FontFileFinder fontFileFinder = new FontFileFinder();
+                List<URI> fonts = fontFileFinder.find();
+                for (URI font : fonts)
+                {
+                    if (font.getPath().contains("NotoSansCJK")&&font.getPath().contains("Regular")) {
+                        File file = new File(font);
+                        if (file.getName().endsWith(".ttf")) {
+                            addTrueTypeFont(file);
+                        } else  if (file.getName().endsWith(".otf")) {
+                            addTrueTypeFont(file);
+                        }  else if (file.getName().endsWith(".ttc")) {
+                            addTrueTypeCollection(file);
+                        } else if (file.getName().endsWith(".otc")) {
+                            addTrueTypeCollection(file);
+                        }
+                    }
+                }
+
                 return;
             }
             catch (IOException e)

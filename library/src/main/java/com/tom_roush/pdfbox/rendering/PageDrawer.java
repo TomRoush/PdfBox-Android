@@ -28,6 +28,9 @@ import android.graphics.RectF;
 import android.graphics.Region;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -86,6 +89,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationUnknown;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
 import com.tom_roush.pdfbox.util.Matrix;
 import com.tom_roush.pdfbox.util.Vector;
+import com.xsooy.Glable;
 
 /**
  * Paints a page in a PDF document to a Canvas context. May be subclassed to provide custom
@@ -271,7 +275,6 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         {
             showAnnotation(annotation);
         }
-        canvas.restore();
     }
 
 //    void drawTilingPattern(Graphics2D g, PDTilingPattern pattern, PDColorSpace colorSpace,
@@ -679,9 +682,16 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         linePath.reset();
     }
 
+//    int test = 0;
+
     @Override
     public void fillPath(Path.FillType windingRule) throws IOException
     {
+//        test++;
+//        if (test!=18) {
+//            Log.w("ceshi","fillPath----"+test);
+//            return;
+//        }
         PDGraphicsState graphicsState = getGraphicsState();
 
         linePath.setFillType(windingRule);
@@ -733,6 +743,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 }
             } else {
                 setClip();
+                int color = getNonStrokingColor();
+//                Log.w("ceshi",String.format("r:%d,g:%d,b:%d",Color.red(color),Color.green(color),Color.blue(color)));
                 paint.setColor(getNonStrokingColor());
                 paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
                 canvas.drawPath(linePath, paint);
@@ -960,9 +972,27 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                 image = applyTransferFunction(image, transfer);
             }
             if (image.getConfig() == Bitmap.Config.ALPHA_8)
-                canvas.drawBitmap(PDDeviceGray.INSTANCE.toRGBImage(image), imageTransform.toMatrix(), paint);
-            else
-                canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
+                image = PDDeviceGray.INSTANCE.toRGBImage(image);
+
+            Bitmap nn = image;
+            File f = new File("/storage/emulated/0/Android/data/com.tom_roush.pdfbox.sample/files/temp_"+ Glable.jj +".png");
+            Glable.jj++;
+            if (f.exists()) {
+                f.delete();
+            }
+            try {
+                FileOutputStream out = new FileOutputStream(f);
+                nn.compress(Bitmap.CompressFormat.JPEG, 80, out);
+                out.flush();
+                out.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
+
+
         }
     }
 
@@ -1070,45 +1100,50 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         // get the transformed BBox and intersect with current clipping path
         // need to do it here and not in shading getRaster() because it may have been rotated
         PDRectangle bbox = shading.getBBox();
+        Path path = getGraphicsState().getCurrentClippingPath();
         if (bbox != null)
         {
+            Path bboxPath = bbox.transform(ctm);
+            path.op(bboxPath, Path.Op.INTERSECT);
+//            canvas.drawPath(path,paint);
 //            Area bboxArea = new Area(bbox.transform(ctm));
 //            bboxArea.intersect(getGraphicsState().getCurrentClippingPath());
 //            graphics.fill(bboxArea);
         }
         else
         {
-            if (shading instanceof PDShadingType2) {
-                setClip();
-                canvas.save();
-                Path path = getGraphicsState().getCurrentClippingPath();
-                RectF bounds = new RectF();
-                path.computeBounds(bounds,true);
-                canvas.scale(1/scaleX,1/scaleY);
-                Rect rect = new Rect((int)(bounds.left*scaleX+0.5f),(int)(bounds.top*scaleY+0.5f),(int)(bounds.right*scaleX+0.5f),(int)(bounds.bottom*scaleY+0.5f));
-                Rect rect2 = new Rect((int)(bounds.left*scaleX+0.5f),(int)(canvas.getHeight()-(bounds.bottom*scaleY)+0.5f),(int)(bounds.right*scaleX+0.5f),(int)(canvas.getHeight()-(bounds.top*scaleY+0.5f)));
 
-                android.graphics.Matrix matrix = new android.graphics.Matrix();
-                matrix.setScale(scaleX,scaleY);
-                path.transform(matrix);
-                path.computeBounds(bounds,true);
-                canvas.clipPath(path, Region.Op.INTERSECT);
-
-                AxialShadingContext axialShadingContext = new AxialShadingContext((PDShadingType2) shading,rect2,ctm,new AffineTransform(scaleX,0,0,-scaleY,0,canvas.getHeight()));
-                for (int y=rect.bottom;y>rect.top;y--) {
-                    int[] data = axialShadingContext.getRaster(rect.left,canvas.getHeight()-y,rect.right-rect.left,1);
-                    paint.setStrokeWidth(2f);
-                    for (int i=0;i<data.length;i++) {
-                        paint.setColor(data[i]|0xff000000);
-                        paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
-                        canvas.drawPoint(rect.left+i,y,paint);
-                    }
-                }
-                canvas.restore();
-            }
 //            paint.setColor(Color.GREEN);
 //            canvas.drawPath(getGraphicsState().getCurrentClippingPath(),paint);
 //            graphics.fill(getGraphicsState().getCurrentClippingPath());
+        }
+
+        if (shading instanceof PDShadingType2) {
+            setClip();
+            canvas.save();
+            RectF bounds = new RectF();
+            path.computeBounds(bounds,true);
+            canvas.scale(1/scaleX,1/scaleY);
+            Rect rect = new Rect((int)(bounds.left*scaleX+0.5f),(int)(bounds.top*scaleY+0.5f),(int)(bounds.right*scaleX+0.5f),(int)(bounds.bottom*scaleY+0.5f));
+            Rect rect2 = new Rect((int)(bounds.left*scaleX+0.5f),(int)(canvas.getHeight()-(bounds.bottom*scaleY)+0.5f),(int)(bounds.right*scaleX+0.5f),(int)(canvas.getHeight()-(bounds.top*scaleY+0.5f)));
+
+            android.graphics.Matrix matrix = new android.graphics.Matrix();
+            matrix.setScale(scaleX,scaleY);
+            path.transform(matrix);
+            path.computeBounds(bounds,true);
+            canvas.clipPath(path, Region.Op.INTERSECT);
+
+            AxialShadingContext axialShadingContext = new AxialShadingContext((PDShadingType2) shading,rect2,ctm,new AffineTransform(scaleX,0,0,-scaleY,0,canvas.getHeight()));
+            for (int y=rect.bottom;y>rect.top;y--) {
+                int[] data = axialShadingContext.getRaster(rect.left,canvas.getHeight()-y,rect.right-rect.left,1);
+                paint.setStrokeWidth(2f);
+                for (int i=0;i<data.length;i++) {
+                    paint.setColor(data[i]|0xff000000);
+                    paint.setAlpha((int)(getGraphicsState().getNonStrokeAlphaConstant()*255));
+                    canvas.drawPoint(rect.left+i,y,paint);
+                }
+            }
+            canvas.restore();
         }
     }
 

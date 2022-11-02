@@ -1,6 +1,8 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
@@ -121,7 +123,34 @@ public class PDSeparation extends PDSpecialColorSpace
 
     @Override
     public Bitmap toRGBImage(Bitmap raster) throws IOException {
-        return null;
+        if (raster.getConfig() != Bitmap.Config.ALPHA_8)
+        {
+            Log.e("PdfBox-Android", "Raster in PDDevicGrey was not ALPHA_8");
+        }
+
+        int width = raster.getWidth();
+        int height = raster.getHeight();
+        int[] imgPixels = new int[width];
+
+        Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        int[] outPixels = new int[width];
+
+        int rgb;
+        float[] value = new float[1];
+        for (int y = 0; y < height; y++)
+        {
+            raster.getPixels(imgPixels, 0, width, 0, y, width, 1);
+            for (int x = 0; x < width; x++)
+            {
+                value[0] = Color.alpha(imgPixels[x])/255.f;
+                float[] rgbList = toRGB(value);
+                rgb = Color.argb(255, (int)(rgbList[0]*255), (int)(rgbList[1]*255), (int)(rgbList[2]*255));
+                outPixels[x] = rgb;
+            }
+            image.setPixels(outPixels, 0, width, 0, y, width, 1);
+        }
+
+        return image;
     }
 
     //

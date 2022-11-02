@@ -6,6 +6,8 @@ public class Jbig2Utils {
         System.loadLibrary("jbig2Use");
     }
 
+//    public native void init();
+
     public native byte[] converData(byte[] data);
 
 }

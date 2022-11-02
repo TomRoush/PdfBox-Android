@@ -214,6 +214,7 @@ public final class PDICCBased extends PDCIEBasedColorSpace
             iccUtils = new IccUtils();
             PDDeviceCMYK.INSTANCE.initDone = false;
             colorType = IccUtils.getIccColorType(iccUtils.loadProfileByData(getProfileDataFromStream(input)));
+//            Log.w("ceshi","PDICCBased_colorType=="+colorType);
             switch (colorType) {
                 case TYPE_GRAY:
                     numberOfComponents = 1;
@@ -326,16 +327,27 @@ public final class PDICCBased extends PDCIEBasedColorSpace
     public Bitmap toRGBImage(Bitmap raster) throws IOException {
         int width = raster.getWidth();
         int height = raster.getHeight();
-        Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
         switch (colorType) {
             case TYPE_GRAY:
+            case TYPE_CMYK:
+                Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
                 int[] src = new int[width];
+                float[] value = new float[numberOfComponents];
                 for (int y = 0; y < height; y++)
                 {
                     raster.getPixels(src,0,width,0,y,width,1);
                     for (int x = 0; x < width; x++)
                     {
-                        src[x] = Color.argb(255,src[x]>>24&0xff,src[x]>>24&0xff,src[x]>>24&0xff);
+                        if (colorType==TYPE_GRAY) {
+                            src[x] = Color.argb(255,Color.alpha(src[x]),Color.alpha(src[x]),Color.alpha(src[x]));
+                        } else {
+                            value[0] = Color.alpha(src[x])/255.f;
+                            value[1] = Color.red(src[x])/255.f;
+                            value[2] = Color.green(src[x])/255.f;
+                            value[3] = Color.blue(src[x])/255.f;
+                            float[] rgb = toRGB(value);
+                            src[x] = Color.argb(255,(int)(rgb[0]*255),(int)(rgb[1]*255),(int)(rgb[2]*255));
+                        }
                     }
                     rgbImage.setPixels(src,0,width,0,y,width,1);
                 }
@@ -522,6 +534,9 @@ public final class PDICCBased extends PDCIEBasedColorSpace
      */
     public int getColorSpaceType()
     {
+        if (iccUtils!=null) {
+            return colorType;
+        }
 //        if (iccProfile != null)
 //        {
 //            return iccProfile.getColorSpaceType();

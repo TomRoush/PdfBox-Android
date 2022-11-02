@@ -26,7 +26,7 @@ public class PDFBoxConfig
     /**
      * Option to disable searching the file system for fonts (Speeds up startup if fonts not needed)
      */
-    public static FontLoadLevel FONT_LOAD_LEVEL = FontLoadLevel.FULL;
+    public static FontLoadLevel FONT_LOAD_LEVEL = FontLoadLevel.MINIMUM;
 
     private static boolean debugLoggingEnabled = false;
 

@@ -1,6 +1,7 @@
 package com.tom_roush.pdfbox.pdmodel.graphics.color;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.util.Log;
 
 import com.tom_roush.pdfbox.cos.COSArray;
@@ -334,12 +335,39 @@ public class PDDeviceN extends PDSpecialColorSpace
 
     @Override
     public Bitmap toRGBImage(Bitmap raster) throws IOException {
-        return null;
+        if (raster.getConfig() != Bitmap.Config.ALPHA_8)
+        {
+            Log.e("PdfBox-Android", "Raster in PDDeviceN was not ALPHA_8");
+        }
+
+        int width = raster.getWidth();
+        int height = raster.getHeight();
+        int[] imgPixels = new int[width];
+
+        Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        int[] outPixels = new int[width];
+
+        int rgb;
+        float[] value = new float[1];
+        for (int y = 0; y < height; y++)
+        {
+            raster.getPixels(imgPixels, 0, width, 0, y, width, 1);
+            for (int x = 0; x < width; x++)
+            {
+                value[0] = Color.alpha(imgPixels[x])/255.f;
+                float[] rgbList = toRGB(value);
+                rgb = Color.argb(255, (int)(rgbList[0]*255), (int)(rgbList[1]*255), (int)(rgbList[2]*255));
+                outPixels[x] = rgb;
+            }
+            image.setPixels(outPixels, 0, width, 0, y, width, 1);
+        }
+
+        return image;
     }
 
     private float[] toRGBWithAttributes(float[] value) throws IOException
     {
-        Log.w("ceshi",String.format("value:%f,  %f,  %f",value[0],value[1],value[2]));
+//        Log.w("ceshi",String.format("value:%f,  %f,  %f",value[0],value[1],value[2]));
         float[] rgbValue = new float[] { 1, 1, 1 };
         // look up each colorant
         for (int c = 0; c < numColorants; c++)
@@ -348,6 +376,7 @@ public class PDDeviceN extends PDSpecialColorSpace
             boolean isProcessColorant = colorantToComponent[c] >= 0;
             if (isProcessColorant)
             {
+//                Log.w("ceshi","processColorSpace=="+processColorSpace.getClass().getSimpleName());
                 // process color
                 componentColorSpace = processColorSpace;
             }
@@ -383,6 +412,7 @@ public class PDDeviceN extends PDSpecialColorSpace
 //            rgbComponent[0] = 1-componentSamples[0];
 //            rgbComponent[1] = 1-componentSamples[1];
 //            rgbComponent[2] = 1-componentSamples[2];
+//            Log.w("ceshi","componentColorSpace=="+componentColorSpace.getClass().getSimpleName());
             float[] rgbComponent = componentColorSpace.toRGB(componentSamples);
 
             // combine the RGB component value with the RGB composite value

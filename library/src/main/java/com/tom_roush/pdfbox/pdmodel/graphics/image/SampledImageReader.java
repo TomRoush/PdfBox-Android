@@ -24,6 +24,9 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -37,7 +40,10 @@ import com.tom_roush.pdfbox.filter.DecodeOptions;
 import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceCMYK;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDIndexed;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDSeparation;
+import com.xsooy.Glable;
 import com.xsooy.jpeg.JpegUtils;
 
 /**
@@ -213,7 +219,10 @@ final class SampledImageReader
             final float[] decode = getDecodeArray(pdImage);
             if (pdImage.getSuffix() != null && subsampling == 1)
             {
-                Log.w("ceshi","pdImage.getSuffix()=="+pdImage.getSuffix());
+                Log.w("ceshi","suffix==="+pdImage.getSuffix());
+                Log.w("ceshi","colorSpace===="+pdImage.getColorSpace().getClass().getSimpleName());
+                Log.w("ceshi","numComponents===="+numComponents);
+                Log.w("ceshi","bitsPerComponent==="+bitsPerComponent+","+(colorKey == null));
                 if (pdImage.getSuffix().equals("jpg")) {
                     if (pdImage.getColorSpace() instanceof PDDeviceCMYK) {
                         Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
@@ -233,21 +242,32 @@ final class SampledImageReader
 //                        byte[] buff = new byte[inputStream.available()];
 //                        IOUtils.populateBuffer(inputStream,buff);
 //                        return ((PDDeviceCMYK)pdImage.getColorSpace()).toRGBImage(new JpegUtils().converData(buff),width,height);
+                    } else if (pdImage.getColorSpace() instanceof PDSeparation) {
+                        Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8);
+
+                        ByteBuffer buffer = ByteBuffer.allocate(raster.getRowBytes() * height);
+                        final byte[] output = buffer.array();
+                        InputStream inputStream = pdImage.createInputStream();
+
+                        byte[] buff = new byte[inputStream.available()];
+                        IOUtils.populateBuffer(inputStream,buff);
+
+                        new JpegUtils().converDataToArray(buff,output);
+                        raster.copyPixelsFromBuffer(buffer);
+
+                        return pdImage.getColorSpace().toRGBImage(raster);
                     }
                     return BitmapFactory.decodeStream(pdImage.createInputStream());
                 } else if (pdImage.getSuffix().equals("jpx")){
                     InputStream inputStream = pdImage.createInputStream();
                     byte[] buff = new byte[inputStream.available()];
+//                    Log.w("ceshi","input.available==="+inputStream.available());
                     IOUtils.populateBuffer(inputStream,buff);
                     int[] bank = new int[pdImage.getWidth()*pdImage.getHeight()];
                     int index = 0;
                     for (int h=0;h<pdImage.getHeight();h++) {
                         for (int w=0;w<pdImage.getWidth();w++) {
-                            if (numComponents == 1) {
-                                bank[index] = Color.argb(255,buff[index]&0xff,buff[index]&0xff,buff[index]&0xff);
-                            } else {
-                                bank[index] = Color.argb(255,buff[index*3]&0xff,buff[index*3+1]&0xff,buff[index*3+2]&0xff);
-                            }
+                            bank[index] = Color.argb(255,buff[index*3]&0xff,buff[index*3+1]&0xff,buff[index*3+2]&0xff);
                             index+=1;
                         }
                     }
@@ -376,6 +396,7 @@ final class SampledImageReader
     private static Bitmap from8bit(PDImage pdImage, Rect clipped, final int subsampling,
         final int width, final int height) throws IOException
     {
+        Log.w("ceshi","from8bit");
         int currentSubsampling = subsampling;
         DecodeOptions options = new DecodeOptions(currentSubsampling);
         options.setSourceRegion(clipped);
@@ -409,29 +430,51 @@ final class SampledImageReader
             final int numComponents = pdImage.getColorSpace().getNumberOfComponents();
             if (startx == 0 && starty == 0 && scanWidth == width && scanHeight == height)
             {
+                Log.w("ceshi","input==="+input.available()+","+width+","+height);
+                Log.w("ceshi","input==="+numComponents);
                 // we just need to copy all sample data, then convert to RGB image.
-                if (pdImage.getColorSpace() instanceof PDIndexed && numComponents ==1){
-                    int[] banks = new int[width*height];
-                    byte[] buffer = new byte[width*height];
-                    IOUtils.populateBuffer(input,buffer);
-                    for (int i=0;i< buffer.length;i++) {
-                        banks[i] = buffer[i];
-                    }
-                    return ((PDIndexed)pdImage.getColorSpace()).toRGBImage(banks,width,height);
-                }
                 if (numComponents == 1) {
                     Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8);
                     ByteBuffer buffer = ByteBuffer.allocate(raster.getRowBytes() * height);
                     final byte[] output = buffer.array();
-                    if(input.read(output)>0)
+                    if(input.read(output)>0) {
                         raster.copyPixelsFromBuffer(buffer);
+                    }
+
+                    Bitmap nn = pdImage.getColorSpace().toRGBImage(raster);
+                    File f = new File("/storage/emulated/0/Android/data/com.tom_roush.pdfbox.sample/files/temp_"+ Glable.jj +".png");
+                    Glable.jj++;
+                    if (f.exists()) {
+                        f.delete();
+                    }
+                    try {
+                        FileOutputStream out = new FileOutputStream(f);
+                        nn.compress(Bitmap.CompressFormat.JPEG, 80, out);
+                        out.flush();
+                        out.close();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return nn;
 //                    return pdImage.getColorSpace().toRGBImage(raster);
-                    return raster;
+//                    return raster;
+                } else if (numComponents == 4) {
+                    Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                    ByteBuffer buffer = ByteBuffer.allocate(raster.getRowBytes() * height);
+                    final byte[] output = buffer.array();
+                    if(input.read(output)>0) {
+                        raster.copyPixelsFromBuffer(buffer);
+                    }
+
+                    return pdImage.getColorSpace().toRGBImage(raster);
                 }
                 return createBitmapFromRawStream(input, inputWidth, numComponents, currentSubsampling);
             }
             else
             {
+                Log.w("ceshi","走到这里了？");
                 Bitmap origin = createBitmapFromRawStream(input, inputWidth, numComponents,
                     currentSubsampling);
                 if (currentSubsampling > 1)
@@ -539,9 +582,10 @@ final class SampledImageReader
             // init color key mask
             float[] colorKeyRanges = null;
 //            BufferedImage colorKeyMask = null;
+            Bitmap colorKeyMask = null;
             if (colorKey != null) {
                 colorKeyRanges = colorKey.toFloatArray();
-//                colorKeyMask = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+                colorKeyMask = Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8);
             }
 
             // calculate row padding
@@ -579,6 +623,7 @@ final class SampledImageReader
                             // below cannot be reversed by the color space without it having
                             // knowledge of the number of bits per component
                             srcColorValues[c] = (byte) Math.round(output);
+
                         } else {
                             // interpolate to TYPE_BYTE
                             int outputByte = Math.round(((output - Math.min(dMin, dMax)) /
@@ -586,33 +631,40 @@ final class SampledImageReader
                             srcColorValues[c] = (byte) outputByte;
                         }
                     }
-
                     // only write to output if within requested region and subsample.
                     if (x >= startx && y >= starty && x % currentSubsampling == 0 && y % currentSubsampling == 0) {
                         if (numComponents == 1) {
-                            banks[(y - starty) * scanWidth + (x - startx)] = srcColorValues[0];
+                            banks[(y - starty) * scanWidth + (x - startx)] = Color.argb(srcColorValues[0],srcColorValues[0],srcColorValues[0],srcColorValues[0]);
                         } else {
                             banks[(y - starty) * scanWidth + (x - startx)] = Color.argb(isMasked ? 255 : 0, srcColorValues[0], srcColorValues[1], srcColorValues[2]);
                         }
 //                        raster.setDataElements((x - startx) / currentSubsampling, (y - starty) / currentSubsampling, srcColorValues);
 //
 //                        // set alpha channel in color key mask, if any
-//                        if (colorKeyMask != null)
-//                        {
-//                            alpha[0] = (byte)(isMasked ? 255 : 0);
-//                            colorKeyMask.getRaster().setDataElements((x - startx) / currentSubsampling, (y - starty) / currentSubsampling, alpha);
-//                        }
+                        if (colorKeyMask != null)
+                        {
+                            alpha[0] = (byte)(isMasked ? 255 : 0);
+                            colorKeyMask.setPixel((x - startx) / currentSubsampling, (y - starty) / currentSubsampling,(int)alpha[0]);
+                        }
                     }
                 }
                 // rows are padded to the nearest byte
                 input.readBits(padding);
             }
 
+            Bitmap raster;
             if (pdImage.getColorSpace() instanceof PDIndexed) {
-                return ((PDIndexed)pdImage.getColorSpace()).toRGBImage(banks,width,height);
+                raster = Bitmap.createBitmap(width,height,Bitmap.Config.ALPHA_8);
+                raster.setPixels(banks, 0, width, 0 ,0, width, height);
+                raster = ((PDIndexed)pdImage.getColorSpace()).toRGBImage(raster);
+            } else {
+                raster = Bitmap.createBitmap(width, height,Bitmap.Config.ARGB_8888);
+                raster.setPixels(banks, 0, width, 0 ,0, width, height);
             }
-            Bitmap raster = Bitmap.createBitmap(width, height,Bitmap.Config.ARGB_8888);
-            raster.setPixels(banks, 0, width, 0 ,0, width, height);
+            if (colorKeyMask != null)
+            {
+                return applyColorKeyMask(raster, colorKeyMask);
+            }
             return raster;
         } catch (IOException e) {
             e.printStackTrace();
@@ -623,6 +675,34 @@ final class SampledImageReader
 
     // color key mask: RGB + Binary -> ARGB
 //    private static BufferedImage applyColorKeyMask(BufferedImage image, BufferedImage mask) TODO: PdfBox-Android
+    private static Bitmap applyColorKeyMask(Bitmap image, Bitmap mask)
+    {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        // compose to ARGB
+        Bitmap masked = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+//        WritableRaster src = image.getRaster();
+//        WritableRaster dest = masked.getRaster();
+//        WritableRaster alpha = mask.getRaster();
+
+        int[] src = new int[width];
+        int[] alpha = new int[width];
+        int[] dest = new int[width];
+        for (int y = 0; y < height; y++)
+        {
+            image.getPixels(src,0,width,0 , y, width,1);
+            mask.getPixels(alpha,0,width,0, y, width,1);
+            for (int x = 0; x < width; x++)
+            {
+                dest[x] = Color.argb(255-Color.alpha(alpha[x]),Color.red(src[x]),Color.green(src[x]),Color.blue(src[x]));
+            }
+            masked.setPixels(dest,0,width,0,y,width,1);
+        }
+
+        return masked;
+    }
 
     // gets decode array from dictionary or returns default
     private static float[] getDecodeArray(PDImage pdImage) throws IOException

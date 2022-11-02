@@ -32,7 +32,6 @@
 //    jbig2dec_format output_format;
 //    size_t memory_limit;
 //} jbig2dec_params_t;
-extern "C" {
 
 typedef struct {
     int verbose;
@@ -64,8 +63,6 @@ unsigned char* ConvertJByteaArrayToChars(JNIEnv *env, jbyteArray bytearray)
     env->ReleaseByteArrayElements(bytearray, bytes, 0);
     return chars;
 }
-
-
 
 jbyteArray ConvertCharsToJByteaArray(JNIEnv *env, unsigned char *buff,int size)
 {
@@ -190,120 +187,113 @@ static void *jbig2dec_realloc(Jbig2Allocator *allocator_, void *p, size_t size)
     return (unsigned char *) p + ALIGNMENT;
 }
 
-//    static
-    void error_callback(void *error_callback_data, const char *message, Jbig2Severity severity, uint32_t seg_idx)
-    {
-        jbig2dec_error_callback_state_t *state = (jbig2dec_error_callback_state_t *) error_callback_data;
-        char *type;
-        int ret;
+static void error_callback(void *error_callback_data, const char *message, Jbig2Severity severity, uint32_t seg_idx)
+{
+    pri_debug("error_callback");
+    jbig2dec_error_callback_state_t *state = (jbig2dec_error_callback_state_t *) error_callback_data;
+    char *type;
+//        int ret;
 
-        switch (severity) {
-            case JBIG2_SEVERITY_DEBUG:
-                if (state->verbose < 3)
-                    return;
-                type = "DEBUG";
-                break;
-            case JBIG2_SEVERITY_INFO:
-                if (state->verbose < 2)
-                    return;
-                type = "info";
-                break;
-            case JBIG2_SEVERITY_WARNING:
-                if (state->verbose < 1)
-                    return;
-                type = "WARNING";
-                break;
-            case JBIG2_SEVERITY_FATAL:
-                type = "FATAL ERROR";
-                break;
-            default:
-                type = "unknown message";
-                break;
-        }
+    switch (severity) {
+        case JBIG2_SEVERITY_DEBUG:
+            if (state->verbose < 3)
+                return;
+            type = "DEBUG";
+            break;
+        case JBIG2_SEVERITY_INFO:
+            if (state->verbose < 2)
+                return;
+            type = "info";
+            break;
+        case JBIG2_SEVERITY_WARNING:
+            if (state->verbose < 1)
+                return;
+            type = "WARNING";
+            break;
+        case JBIG2_SEVERITY_FATAL:
+            type = "FATAL ERROR";
+            break;
+        default:
+            type = "unknown message";
+            break;
+    }
 
-        if (state->last_message != NULL && !strcmp(message, state->last_message) && state->severity == severity && state->type == type) {
-            state->repeats++;
-            if (state->repeats % 1000000 == 0) {
-                if (state->type!= nullptr)
-                    pri_debug("jbig2dec %s last message repeated %ld times so far\n", state->type, state->repeats);
-                else
-                    pri_debug("jbig2dec last message repeated %ld times so far\n", state->repeats);
+    if (state->last_message != NULL
+//    && !strcmp(message, state->last_message)
+    && state->severity == severity && state->type == type) {
+        state->repeats++;
+        if (state->repeats % 1000000 == 0) {
+            if (state->type!= nullptr)
+                pri_debug("jbig2dec %s last message repeated %ld times so far\n", state->type, state->repeats);
+            else
+                pri_debug("jbig2dec last message repeated %ld times so far\n", state->repeats);
 //                ret = fprintf(stderr, "jbig2dec %s last message repeated %ld times so far\n", state->type, state->repeats);
 //                if (ret < 0)
 //                    goto printerror;
-            }
-        } else {
-            if (state->repeats > 1) {
+        }
+    } else {
+        if (state->repeats > 1) {
 //                pri_debug("error_callback222 %s",state->type);
 //                pri_debug("jbig2dec %s last message repeated %ld times\n", state->type, state->repeats);
-                pri_debug("jbig2dec last message repeated %ld times\n", state->repeats);
+            pri_debug("jbig2dec last message repeated %ld times\n", state->repeats);
 //                ret = fprintf(stderr, "jbig2dec %s last message repeated %ld times\n", state->type, state->repeats);
 //                if (ret < 0)
 //                    goto printerror;
-            }
+        }
 
-            if (seg_idx == JBIG2_UNKNOWN_SEGMENT_NUMBER){
-                pri_debug("jbig2dec %s %s\n", type, message);
-            }
+        if (seg_idx == JBIG2_UNKNOWN_SEGMENT_NUMBER){
+            pri_debug("jbig2dec %s %s\n", type, message);
+        }
 //                ret = fprintf(stderr, "jbig2dec %s %s\n", type, message);
-            else {
-                pri_debug("jbig2dec %s %s (segment 0x%08x)\n", type, message, seg_idx);
-            }
+        else {
+            pri_debug("jbig2dec %s %s (segment 0x%08x)\n", type, message, seg_idx);
+        }
 
 //                ret = fprintf(stderr, "jbig2dec %s %s (segment 0x%08x)\n", type, message, seg_idx);
 //            if (ret < 0)
 //                goto printerror;
 
-            state->repeats = 0;
-            state->severity = severity;
-            state->type = type;
-//            free(state->last_message);
-            state->last_message = NULL;
+        state->repeats = 0;
+        state->severity = severity;
+        state->type = type;
+//        free(state->last_message);
+        state->last_message = NULL;
 
-            if (message) {
-                state->last_message = strdup(message);
-                if (state->last_message == NULL) {
-                    pri_debug("error_callback555");
-                    pri_debug("jbig2dec WARNING could not duplicate message\n");
-//                    ret = fprintf(stderr, "jbig2dec WARNING could not duplicate message\n");
-//                    if (ret < 0)
-//                        goto printerror;
-                }
+        if (message) {
+            state->last_message = strdup(message);
+            if (state->last_message == NULL) {
+                pri_debug("jbig2dec WARNING could not duplicate message\n");
             }
         }
-
-//        return;
-//        printerror:
-//        pri_debug("error_callback666");
-//        pri_debug("jbig2dec WARNING could not print message\n");
-//        fprintf(stderr, "jbig2dec WARNING could not print message\n");
-//        state->repeats = 0;
-//        free(state->last_message);
-//        state->last_message = NULL;
     }
 
-    JNIEXPORT jbyteArray JNICALL Java_com_xsooy_jbig2_Jbig2Utils_converData(JNIEnv *env, jobject thiz, jbyteArray data) {
+}
 
+extern "C"
+JNIEXPORT jbyteArray JNICALL Java_com_xsooy_jbig2_Jbig2Utils_converData(JNIEnv *env, jobject thiz, jbyteArray data) {
+
+    pri_debug("开始解析图片");
     unsigned char *pmsg = ConvertJByteaArrayToChars(env,data);
     int chars_len = env->GetArrayLength(data);
 
-//    jbig2dec_params_t params;
+    Jbig2Image *image;
+
+//            jbig2dec_params_t params;
     jbig2dec_error_callback_state_t error_callback_state;
     Jbig2Ctx *ctx = NULL;
     jbig2dec_allocator_t allocator_;
     jbig2dec_allocator_t *allocator = &allocator_;
 
-    Jbig2Image *image;
-
     allocator->super.alloc = jbig2dec_alloc;
     allocator->super.free = jbig2dec_free;
     allocator->super.realloc = jbig2dec_realloc;
     allocator->ctx = NULL;
-//    allocator->memory_limit = params.memory_limit;
+    allocator->memory_limit = 1024*1024*100;
     allocator->memory_used = 0;
     allocator->memory_peak = 0;
 
     ctx = jbig2_ctx_new((Jbig2Allocator *) allocator, (Jbig2Options) JBIG2_OPTIONS_EMBEDDED, NULL, error_callback, &error_callback_state);
+    pri_debug("error callback address11=== 0x%x", ctx);
     jbig2_data_in(ctx, pmsg, chars_len);
 
     int code = jbig2_complete_page(ctx);
@@ -329,6 +319,3 @@ static void *jbig2dec_realloc(Jbig2Allocator *allocator_, void *p, size_t size)
 //    jbyteArray result = ConvertCharsToJByteaArray(env,raw_image,width*height*depth);
 //    return result;
 }
-
-}
-

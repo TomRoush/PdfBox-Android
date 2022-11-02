@@ -501,12 +501,14 @@ public final class PDImageXObject extends PDXObject implements PDImage
         // soft mask (overrides explicit mask)
         if (softMask != null)
         {
+            Log.w("ceshi","applyMask11111");
             image = applyMask(SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask()),
                 softMask.getOpaqueImage(), softMask.getInterpolate(), true, extractMatte(softMask));
         }
         // explicit mask - to be applied only if /ImageMask true
         else if (mask != null && mask.isStencil())
         {
+            Log.w("ceshi","applyMask2222");
             image = applyMask(SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask()),
                 mask.getOpaqueImage(), mask.getInterpolate(), false, null);
         }
@@ -601,6 +603,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         final int height = Math.max(image.getHeight(), mask.getHeight());
 
         int[] maskPixels = new int[width];
+
         // scale mask to fit image, or image to fit mask, whichever is larger.
         // also make sure that mask is 8 bit gray and image is ARGB as this
         // is what needs to be returned.
@@ -608,7 +611,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
         {
             mask = scaleImage(mask, width, height, interpolateMask);
         }
-        if (mask.getConfig() != Bitmap.Config.ALPHA_8 || !image.isMutable())
+        if (mask.getConfig() != Bitmap.Config.ALPHA_8 )
         {
             Bitmap clone = Bitmap.createBitmap(mask.getWidth(),mask.getHeight(),Bitmap.Config.ALPHA_8);
             for (int y = 0; y < height; y++)
@@ -622,9 +625,11 @@ public final class PDImageXObject extends PDXObject implements PDImage
             }
             mask.recycle();
             mask = clone;
-//            mask = mask.copy(Bitmap.Config.ALPHA_8, true);
         }
-
+        if (!mask.isMutable())
+        {
+            mask = mask.copy(Bitmap.Config.ALPHA_8, true);
+        }
         if (image.getWidth() < width || image.getHeight() < height)
         {
             image = scaleImage(image, width, height, getInterpolate());
@@ -633,8 +638,10 @@ public final class PDImageXObject extends PDXObject implements PDImage
         {
             image = image.copy(Bitmap.Config.ARGB_8888, true);
         }
+        if (!image.hasAlpha()) {
+            image.setHasAlpha(true);
+        }
         int[] pixels = new int[width];
-
 
         // compose alpha into ARGB image, either:
         // - very fast by direct bit combination if not a soft mask and a 8 bit alpha source.
@@ -696,7 +703,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
                 mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
                 for (int x = 0; x < width; x++)
                 {
-                    int a = Color.alpha(maskPixels[x]);
+                    int a = maskPixels[x]>>24&0xff;
                     if (a == 0)
                     {
                         pixels[x] = pixels[x] & 0xffffff;

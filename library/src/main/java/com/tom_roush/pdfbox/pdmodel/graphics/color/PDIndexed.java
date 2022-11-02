@@ -150,6 +150,7 @@ public final class PDIndexed extends PDSpecialColorSpace
 //                rgbColorTable[i][c] = (int)(colorTable[i][c] * 255f);
 //                base[c] = (int)(colorTable[i][c] * 255f);
             }
+//            Log.w("ceshi",String.format("r:%d,g:%d,b:%d",rgbColorTable[i][0],rgbColorTable[i][1],rgbColorTable[i][2]));
 //            rgbColorTable[i][c] = base;
 //            baseRaster.setPixel(i, 0, base);
         }
@@ -191,23 +192,33 @@ public final class PDIndexed extends PDSpecialColorSpace
 
     @Override
     public Bitmap toRGBImage(Bitmap raster) throws IOException {
+        if (raster.getConfig() != Bitmap.Config.ALPHA_8)
+        {
+            Log.e("PdfBox-Android", "Raster in PDDeviceN was not ALPHA_8");
+        }
+
         int width = raster.getWidth();
         int height = raster.getHeight();
+        int[] imgPixels = new int[width];
 
-        Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
-        int[] src = new int[width];
+        Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        int[] outPixels = new int[width];
+
         for (int y = 0; y < height; y++)
         {
-            raster.getPixels(src,0,width,0,y,width,1);
+            raster.getPixels(imgPixels, 0, width, 0, y, width, 1);
             for (int x = 0; x < width; x++)
             {
-                // lookup
-                int index = Math.min(src[x]>>24&0xff, actualMaxIndex);
-                int color = Color.argb(255,rgbColorTable[index][0],rgbColorTable[index][1],rgbColorTable[index][2]);
-                rgbImage.setPixel(x,y,color);
+                int index = Math.min(Color.alpha(imgPixels[x]), actualMaxIndex);
+                Log.w("ceshi","index==="+index);
+                Log.w("ceshi",String.format("r:%d,g:%d,b:%d",rgbColorTable[index][0],rgbColorTable[index][1],rgbColorTable[index][2]));
+                int rgb = Color.argb(255, rgbColorTable[index][0],rgbColorTable[index][1], rgbColorTable[index][2]);
+                outPixels[x] = rgb;
             }
+            image.setPixels(outPixels, 0, width, 0, y, width, 1);
         }
-        return rgbImage;
+
+        return image;
     }
 
     public Bitmap toRGBImage(int[] raster,int width,int height) throws IOException {
