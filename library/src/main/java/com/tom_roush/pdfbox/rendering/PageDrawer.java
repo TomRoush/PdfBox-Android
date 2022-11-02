@@ -441,6 +441,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                     setClip();
                     paint.setStyle(Paint.Style.FILL);
                     canvas.drawPath(clone, paint);
+                    Log.w("ceshi","11111");
                 }
 
                 if (renderingMode.isStroke())
@@ -451,11 +452,13 @@ public class PageDrawer extends PDFGraphicsStreamEngine
                     setClip();
                     paint.setStyle(Paint.Style.STROKE);
                     canvas.drawPath(clone, paint);
+                    Log.w("ceshi","22222");
                 }
             }
 
             if (renderingMode.isClip())
             {
+                Log.w("ceshi","33333");
                 textClippings.add(clone);
             }
         }
@@ -859,7 +862,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         Matrix ctm = getGraphicsState().getCurrentTransformationMatrix();
         AffineTransform at = ctm.createAffineTransform();
 
-        if (!pdImage.getInterpolate())
+        if (!pdImage.getInterpolate() && !pdImage.isStencil())
         {
             // if the image is scaled down, we use smooth interpolation, eg PDFBOX-2364
             // only when scaled up do we use nearest neighbour, eg PDFBOX-2302 / mori-cvpr01.pdf
@@ -890,7 +893,13 @@ public class PageDrawer extends PDFGraphicsStreamEngine
 
         if (pdImage.isStencil())
         {
-//            if (getGraphicsState().getNonStrokingColor().getColorSpace() instanceof PDPattern) TODO: PdfBox-Android
+            if (getGraphicsState().getNonStrokingColor().getColorSpace() instanceof PDPattern){
+                Log.w("PdfBox-Android","PdfBox-Android draw stenciled Bitmap");
+            } else {
+                paint.setColor(getNonStrokingColor());
+                drawBitmap(pdImage.getStencilImage(paint), at);
+            }
+//            if (getGraphicsState().getNonStrokingColor().getColorSpace() instanceof PDPattern)
 //            else
 //            TODO: PdfBox-Android draw stenciled Bitmap
         }
@@ -974,25 +983,7 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             if (image.getConfig() == Bitmap.Config.ALPHA_8)
                 image = PDDeviceGray.INSTANCE.toRGBImage(image);
 
-            Bitmap nn = image;
-            File f = new File("/storage/emulated/0/Android/data/com.tom_roush.pdfbox.sample/files/temp_"+ Glable.jj +".png");
-            Glable.jj++;
-            if (f.exists()) {
-                f.delete();
-            }
-            try {
-                FileOutputStream out = new FileOutputStream(f);
-                nn.compress(Bitmap.CompressFormat.JPEG, 80, out);
-                out.flush();
-                out.close();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             canvas.drawBitmap(image, imageTransform.toMatrix(), paint);
-
-
         }
     }
 

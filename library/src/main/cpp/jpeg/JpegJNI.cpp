@@ -122,17 +122,18 @@ JNIEXPORT void JNICALL Java_com_xsooy_jpeg_JpegUtils_converDataToArray(JNIEnv *e
 
     JSAMPROW row_pointer[1];
     unsigned long location = 0;
-    unsigned char * raw_image = (unsigned char*)malloc( cinfo.output_width*cinfo.output_height*cinfo.num_components );
-    row_pointer[0] = (unsigned char *)malloc( cinfo.output_width*cinfo.num_components );
+//    unsigned char * raw_image = (unsigned char*)malloc( cinfo.output_width*cinfo.output_height*cinfo.num_components );
+//    unsigned char * raw_image = (unsigned char*)malloc( cinfo.output_width*cinfo.num_components );
+    row_pointer[0] = (unsigned char *)malloc( cinfo.output_width*cinfo.num_components);
 
     for (int y=0;y<height;y++){
 //        pri_debug("jpeg_read_scanlines222====,%d",y);
         jpeg_read_scanlines( &cinfo, row_pointer, 1);
-        for(int i=0; i<cinfo.image_width*cinfo.num_components;i++)
-            raw_image[location++] = row_pointer[0][i];
+        env->SetByteArrayRegion(output, width*depth*y, width*depth, (jbyte*)row_pointer[0]);
+//        for(int i=0; i<cinfo.image_width*cinfo.num_components;i++)
+//            raw_image[location++] = row_pointer[0][i];
     }
 
-    env->SetByteArrayRegion(output, 0, width*height*depth, (jbyte*)raw_image);
 //    jbyteArray result = ConvertCharsToJByteaArray(env,raw_image,width*height*depth);
 //    jpeg_finish_decompress( &cinfo );
 //    jpeg_destroy_decompress( &cinfo );

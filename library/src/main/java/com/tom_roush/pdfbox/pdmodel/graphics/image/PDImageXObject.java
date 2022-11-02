@@ -703,7 +703,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
                 mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
                 for (int x = 0; x < width; x++)
                 {
-                    int a = maskPixels[x]>>24&0xff;
+                    int a = Color.alpha(maskPixels[x]);
                     if (a == 0)
                     {
                         pixels[x] = pixels[x] & 0xffffff;

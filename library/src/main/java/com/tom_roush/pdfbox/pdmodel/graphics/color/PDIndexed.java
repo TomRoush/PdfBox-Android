@@ -210,8 +210,6 @@ public final class PDIndexed extends PDSpecialColorSpace
             for (int x = 0; x < width; x++)
             {
                 int index = Math.min(Color.alpha(imgPixels[x]), actualMaxIndex);
-                Log.w("ceshi","index==="+index);
-                Log.w("ceshi",String.format("r:%d,g:%d,b:%d",rgbColorTable[index][0],rgbColorTable[index][1],rgbColorTable[index][2]));
                 int rgb = Color.argb(255, rgbColorTable[index][0],rgbColorTable[index][1], rgbColorTable[index][2]);
                 outPixels[x] = rgb;
             }

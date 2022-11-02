@@ -20,6 +20,7 @@ import com.xsooy.icc.IccUtils;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
@@ -214,7 +215,7 @@ public final class PDICCBased extends PDCIEBasedColorSpace
             iccUtils = new IccUtils();
             PDDeviceCMYK.INSTANCE.initDone = false;
             colorType = IccUtils.getIccColorType(iccUtils.loadProfileByData(getProfileDataFromStream(input)));
-//            Log.w("ceshi","PDICCBased_colorType=="+colorType);
+            Log.w("ceshi","PDICCBased_colorType=="+colorType);
             switch (colorType) {
                 case TYPE_GRAY:
                     numberOfComponents = 1;
@@ -325,37 +326,45 @@ public final class PDICCBased extends PDCIEBasedColorSpace
 
     @Override
     public Bitmap toRGBImage(Bitmap raster) throws IOException {
+        if (isRGB) {
+            return raster;
+        }
         int width = raster.getWidth();
         int height = raster.getHeight();
-        switch (colorType) {
-            case TYPE_GRAY:
-            case TYPE_CMYK:
-                Bitmap rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
-                int[] src = new int[width];
-                float[] value = new float[numberOfComponents];
-                for (int y = 0; y < height; y++)
-                {
-                    raster.getPixels(src,0,width,0,y,width,1);
-                    for (int x = 0; x < width; x++)
-                    {
-                        if (colorType==TYPE_GRAY) {
-                            src[x] = Color.argb(255,Color.alpha(src[x]),Color.alpha(src[x]),Color.alpha(src[x]));
-                        } else {
-                            value[0] = Color.alpha(src[x])/255.f;
-                            value[1] = Color.red(src[x])/255.f;
-                            value[2] = Color.green(src[x])/255.f;
-                            value[3] = Color.blue(src[x])/255.f;
-                            float[] rgb = toRGB(value);
-                            src[x] = Color.argb(255,(int)(rgb[0]*255),(int)(rgb[1]*255),(int)(rgb[2]*255));
-                        }
-                    }
-                    rgbImage.setPixels(src,0,width,0,y,width,1);
-                }
-                return rgbImage;
-            default:
-                //TODO:PdfBox-Android
-                return raster;
+        Bitmap rgbImage;
+        if (raster.getConfig() == Bitmap.Config.ARGB_8888) {
+            rgbImage =raster;
+        } else {
+            rgbImage = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
         }
+        ByteBuffer buffer = ByteBuffer.allocate(raster.getRowBytes() * height);
+        raster.copyPixelsToBuffer(buffer);
+        final byte[] output = buffer.array();
+
+        int[] src = new int[width];
+        int[] out = new int[width];
+        int numberOfComponents = getNumberOfComponents();
+        float[] value = new float[numberOfComponents];
+        for (int y = 0; y < height; y++)
+        {
+            raster.getPixels(src,0,width,0,y,width,1);
+            for (int x = 0; x < width; x++)
+            {
+                int color;
+                if (colorType==TYPE_GRAY) {
+                    color = Color.argb(255,output[(x+y*width)*numberOfComponents] & 0xff,output[(x+y*width)*numberOfComponents] & 0xff,output[(x+y*width)*numberOfComponents] & 0xff);
+                } else {
+                    for (int i=0;i<numberOfComponents;i++) {
+                        value[i] =(output[(x+y*width)*numberOfComponents+i] & 0xff) / 255.f;
+                    }
+                    float[] rgb = toRGB(value);
+                    color = Color.argb(255,(int)(rgb[0]*255),(int)(rgb[1]*255),(int)(rgb[2]*255));
+                }
+                out[x] = color;
+            }
+            rgbImage.setPixels(out,0,width,0,y,width,1);
+        }
+        return rgbImage;
     }
 
 //    @Override

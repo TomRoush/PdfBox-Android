@@ -41,6 +41,7 @@ import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceCMYK;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDICCBased;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDIndexed;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDSeparation;
 import com.xsooy.Glable;
@@ -96,13 +97,19 @@ final class SampledImageReader
                 rowLen++;
             }
             byte[] buff = new byte[rowLen];
+            int[] bank = new int[width];
             for (int y = 0; y < height; y++)
             {
                 int x = 0;
                 int readLen = iis.read(buff);
+                if (readLen<rowLen) {
+                    readLen+=iis.read(buff,readLen,rowLen-readLen);
+                }
+                masked.getPixels(bank,0,width,0,y,width,1);
                 for (int r = 0; r < rowLen && r < readLen; r++)
                 {
                     int byteValue = buff[r];
+//                    Log.w("ceshi","0x"+Integer.toHexString(byteValue));
                     int mask = 128;
                     int shift = 7;
                     for (int i = 0; i < 8; i++)
@@ -112,7 +119,8 @@ final class SampledImageReader
                         --shift;
                         if (bit == value)
                         {
-                            masked.setPixel(x, y, Color.TRANSPARENT);
+                            bank[x] = Color.TRANSPARENT;
+//                            masked.setPixel(x, y, Color.TRANSPARENT);
                         }
                         x++;
                         if (x == width)
@@ -126,6 +134,7 @@ final class SampledImageReader
                     Log.w("PdfBox-Android", "premature EOF, image will be incomplete");
                     break;
                 }
+                masked.setPixels(bank,0,width,0,y,width,1);
             }
         }
         finally
@@ -135,7 +144,6 @@ final class SampledImageReader
                 iis.close();
             }
         }
-
         return masked;
     }
 
@@ -219,10 +227,10 @@ final class SampledImageReader
             final float[] decode = getDecodeArray(pdImage);
             if (pdImage.getSuffix() != null && subsampling == 1)
             {
-                Log.w("ceshi","suffix==="+pdImage.getSuffix());
-                Log.w("ceshi","colorSpace===="+pdImage.getColorSpace().getClass().getSimpleName());
-                Log.w("ceshi","numComponents===="+numComponents);
-                Log.w("ceshi","bitsPerComponent==="+bitsPerComponent+","+(colorKey == null));
+//                Log.w("ceshi","suffix==="+pdImage.getSuffix());
+//                Log.w("ceshi","colorSpace===="+pdImage.getColorSpace().getClass().getSimpleName());
+//                Log.w("ceshi","numComponents===="+numComponents);
+//                Log.w("ceshi","bitsPerComponent==="+bitsPerComponent+","+(colorKey == null));
                 if (pdImage.getSuffix().equals("jpg")) {
                     if (pdImage.getColorSpace() instanceof PDDeviceCMYK) {
                         Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
@@ -256,7 +264,59 @@ final class SampledImageReader
                         raster.copyPixelsFromBuffer(buffer);
 
                         return pdImage.getColorSpace().toRGBImage(raster);
+                    } else if (pdImage.getColorSpace() instanceof PDICCBased) {
+                        Bitmap raster = numComponents==1?
+                                Bitmap.createBitmap(width, height, Bitmap.Config.ALPHA_8):
+                                Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+                        InputStream inputStream = pdImage.createInputStream();
+
+                        byte[] buff = new byte[inputStream.available()];
+                        IOUtils.populateBuffer(inputStream,buff);
+                        if (numComponents ==3) {
+                            byte[] data = new JpegUtils().converData(buff);
+                            final int[] banks = new int[width];
+                            int index = 0;
+                            for (int y=0;y<height;y++) {
+                                for (int x=0;x<width;x++) {
+                                    banks[x] = Color.argb(255,data[index*3]&0xff,data[index*3+1]&0xff,data[index*3+2]&0xff);
+                                    index++;
+                                }
+                                raster.setPixels(banks,0,width,0,y,width,1);
+                            }
+                        } else {
+                            ByteBuffer buffer = ByteBuffer.allocate(raster.getRowBytes() * height);
+                            final byte[] output = buffer.array();
+                            new JpegUtils().converDataToArray(buff,output);
+                            raster.copyPixelsFromBuffer(buffer);
+                        }
+
+                        return pdImage.getColorSpace().toRGBImage(raster);
                     }
+
+//                    Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+//
+//                    final int[] banks = new int[width];
+//
+//                    Log.w("ceshi","width:"+width);
+//                    Log.w("ceshi","height:"+height);
+//                    InputStream inputStream = pdImage.createInputStream();
+//
+//                    byte[] buff = new byte[inputStream.available()];
+//                    IOUtils.populateBuffer(inputStream,buff);
+//
+//                    final byte[] data = new JpegUtils().converData(buff);
+//                    Log.w("ceshi","data.length:"+data.length);
+//
+//                    int index = 0;
+//                    for (int y=0;y<height;y++) {
+//                        for (int x=0;x<width;x++) {
+//                            banks[x] = Color.argb(255,data[index*3]&0xff,data[index*3+1]&0xff,data[index*3+2]&0xff);
+//                            index++;
+//                        }
+//                        raster.setPixels(banks,0,width,0,y,width,1);
+//                    }
+//                    return raster;
                     return BitmapFactory.decodeStream(pdImage.createInputStream());
                 } else if (pdImage.getSuffix().equals("jpx")){
                     InputStream inputStream = pdImage.createInputStream();
@@ -296,6 +356,10 @@ final class SampledImageReader
     private static Bitmap from1Bit(PDImage pdImage, Rect clipped, final int subsampling,
         final int width, final int height) throws IOException
     {
+//        if (pdImage.getSuffix()!=null) {
+//            Log.w("ceshi","suffix==="+pdImage.getSuffix());
+//            Log.w("ceshi","colorSpace===="+pdImage.getColorSpace().getClass().getSimpleName());
+//        }
         int currentSubsampling = subsampling;
         final PDColorSpace colorSpace = pdImage.getColorSpace();
         final float[] decode = getDecodeArray(pdImage);
@@ -441,24 +505,24 @@ final class SampledImageReader
                         raster.copyPixelsFromBuffer(buffer);
                     }
 
-                    Bitmap nn = pdImage.getColorSpace().toRGBImage(raster);
-                    File f = new File("/storage/emulated/0/Android/data/com.tom_roush.pdfbox.sample/files/temp_"+ Glable.jj +".png");
-                    Glable.jj++;
-                    if (f.exists()) {
-                        f.delete();
-                    }
-                    try {
-                        FileOutputStream out = new FileOutputStream(f);
-                        nn.compress(Bitmap.CompressFormat.JPEG, 80, out);
-                        out.flush();
-                        out.close();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return nn;
-//                    return pdImage.getColorSpace().toRGBImage(raster);
+//                    Bitmap nn = pdImage.getColorSpace().toRGBImage(raster);
+//                    File f = new File("/storage/emulated/0/Android/data/com.tom_roush.pdfbox.sample/files/temp_"+ Glable.jj +".png");
+//                    Glable.jj++;
+//                    if (f.exists()) {
+//                        f.delete();
+//                    }
+//                    try {
+//                        FileOutputStream out = new FileOutputStream(f);
+//                        nn.compress(Bitmap.CompressFormat.JPEG, 80, out);
+//                        out.flush();
+//                        out.close();
+//                    } catch (FileNotFoundException e) {
+//                        e.printStackTrace();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                    return nn;
+                    return pdImage.getColorSpace().toRGBImage(raster);
 //                    return raster;
                 } else if (numComponents == 4) {
                     Bitmap raster = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);

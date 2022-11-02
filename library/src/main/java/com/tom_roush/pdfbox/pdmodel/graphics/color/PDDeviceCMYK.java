@@ -172,10 +172,11 @@ public class PDDeviceCMYK extends PDDeviceColorSpace
 //                    value[i] = ((raster[location]&0xff)/255.f);
 //                    location++;
 //                }
+//                Log.w("ceshi",String.format("c:%d,m:%d,y:%d,k:%d",(int)(value[0]*100),(int)(value[1]*100),(int)(value[2]*100),(int)(value[3]*100)));
 //                float[] rgb = toRGB(value);
-//                if (x==0 && y==0) {
+////                if (x==0 && y==0) {
 //                    Log.w("ceshi",String.format("r:%d,g:%d,b:%d",(int)(rgb[0]*255),(int)(rgb[1]*255),(int)(rgb[2]*255)));
-//                }
+////                }
 //                int color = Color.argb(255,(int)(rgb[0]*255),(int)(rgb[1]*255),(int)(rgb[2]*255));
 //                rgbImage.setPixel(x,y,color);
 //            }
