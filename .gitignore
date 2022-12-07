@@ -43,6 +43,7 @@ project.properties
 # Gradle
 .gradle
 build/
+github.properties
 
 # OS X
 .DS_Store

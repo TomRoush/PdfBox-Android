@@ -53,7 +53,7 @@ android {
     android.libraryVariants.all { variant ->
         variant.outputs.all { output ->
             if (outputFileName.endsWith('.aar')) {
-                outputFileName = "pdfbox-android-${variant.name}-${defaultConfig.versionName}.aar"
+                outputFileName = "pdfbox-android-rendering-hot-fix-2.0.25.1.aar"
             }
         }
     }

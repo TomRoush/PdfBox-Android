@@ -1,117 +1,42 @@
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
+apply plugin: 'maven-publish' // Apply this plugin at the top of your library build.gradle
 
-ext.isReleaseVersion = !version.endsWith("SNAPSHOT")
+def githubProperties = new Properties()
+githubProperties.load(new FileInputStream(rootProject.file("github.properties"))) //Set env variable GPR_USER & GPR_API_KEY if not adding a properties file
 
-task androidJavadocs(type: Javadoc) {
-    failOnError false
-    source = android.sourceSets.main.java.sourceFiles
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-
-    // disable the crazy super-strict doclint tool in Java 8
-    if (JavaVersion.current().isJava8Compatible()) {
-        options.addStringOption('Xdoclint:none', '-quiet')
-    }
-    if (JavaVersion.current().isJava9Compatible()) {
-        options.addBooleanOption('html5', true)
-    }
-
-    options.encoding = "UTF-8"
-    options.docTitle("PdfBox-Android")
-    options.links("https://docs.oracle.com/en/java/javase/11/docs/api")
-    options.links("https://developer.android.com/reference/")
-
-    exclude '**/BuildConfig.java'
-    exclude '**/R.java'
+def getVersionName = { ->
+    return "2.0.25.1"
 }
 
-afterEvaluate {
-    androidJavadocs.classpath += files(android.libraryVariants.collect { variant ->
-        variant.javaCompileProvider.get().classpath.files
-    })
+def getArtificatId = { ->
+    return "pdfbox-android-rendering-hot-fix"
 }
 
-task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-    archiveClassifier.set('javadoc')
-    from androidJavadocs.destinationDir
-}
-
-task androidSourcesJar(type: Jar) {
-    archiveClassifier.set('sources')
-    from android.sourceSets.main.java.srcDirs
-}
-
-def pomConfig = {
-    url "https://github.com/TomRoush/PdfBox-Android"
-    licenses {
-        license {
-            name "The Apache Software License, Version 2.0"
-            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-            distribution "repo"
+publishing {
+    publications {
+        bar(MavenPublication) {
+            groupId 'com.tom-roush' // Replace with group ID
+            artifactId getArtificatId()
+            version getVersionName()
+            artifact("$buildDir/outputs/aar/pdfbox-android-rendering-hot-fix-2.0.25.1.aar")
         }
     }
-    developers {
-        developer {
-            name "Tom Roush"
-            email "tom@tom-roush.com"
-            organization "PdfBox-Android Developers"
-            organizationUrl "https://github.com/TomRoush/PdfBox-Android"
-        }
-    }
-    scm {
-        connection "scm:git:git@github.com:TomRoush/PdfBox-Android.git"
-        developerConnection "scm:git:ssh@github.com:TomRoush/PdfBox-Android.git"
-        url "https://github.com/TomRoush/PdfBox-Android"
-    }
-}
 
-project.afterEvaluate {
-    publishing {
-        repositories {
-            maven {
-                def releaseRepo = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-                def snapshotRepo = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-                url = isReleaseVersion ? releaseRepo : snapshotRepo
-                credentials {
-                    username = project.hasProperty('ossrhUsername') ? ossrhUsername : System.getenv('OSSRH_USERNAME')
-                    password = project.hasProperty('ossrhPassword') ? ossrhPassword : System.getenv('OSSRH_PASSWORD')
-                }
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            /** Configure path of your package repository on Github
+             ** Replace GITHUB_USERID with your/organisation Github userID
+             ** and REPOSITORY with the repository name on GitHub
+             */
+            url = uri("https://maven.pkg.github.com/imranetalibi/PdfBox-Android-rendering-fix")
+            credentials {
+                /** Create github.properties in root project folder file with
+                 ** gpr.usr=GITHUB_USER_ID & gpr.key=PERSONAL_ACCESS_TOKEN
+                 ** Set env variable GPR_USER & GPR_API_KEY if not adding a properties file**/
+
+                username = githubProperties['gpr.usr'] ?: System.getenv("GPR_USER")
+                password = githubProperties['gpr.key'] ?: System.getenv("GPR_API_KEY")
             }
         }
-        publications {
-            maven(MavenPublication) {
-                artifact bundleReleaseAar
-                artifact androidJavadocsJar
-                artifact androidSourcesJar
-
-                groupId project.PUBLISH_GROUP_ID
-                artifactId project.PUBLISH_ARTIFACT_ID
-                version project.PUBLISH_VERSION
-
-                pom.withXml {
-                    def root = asNode()
-                    root.appendNode('name', 'PdfBox-Android')
-                    root.appendNode('description', 'The Apache PdfBox project ported to work on Android')
-                    root.children().last() + pomConfig
-
-                    // Manually add all the pom nodes for dependencies
-                    def dependenciesNode = asNode().appendNode('dependencies')
-                    configurations.api.allDependencies.each {
-                        def dependencyNode = dependenciesNode.appendNode('dependency')
-                        dependencyNode.appendNode('groupId', it.group)
-                        dependencyNode.appendNode('artifactId', it.name)
-                        dependencyNode.appendNode('version', it.version)
-                    }
-                }
-            }
-        }
-    }
-
-    signing {
-        def signingKeyId = findProperty("signingKeyId")
-        def signingKey = findProperty("signingKey")
-        def signingPassword = findProperty("signingPassword")
-        useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
-        sign publishing.publications.maven
     }
 }

@@ -119,10 +119,10 @@ public class Type1CharString
      */
     public Path getPath()
     {
-        if (path == null)
-        {
-            render();
-        }
+//        if (path == null) // imrane, this fixes rendering issue for some pdf files see ticket
+//        {
+        render();
+//        }
         return path;
     }
 
