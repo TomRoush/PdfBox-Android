@@ -25,8 +25,8 @@ A clear and concise description of what you expected to happen.
 A clear and concise description of what happened instead.
 
 **Environment details:**
- - PdfBox-Android version: [e.g. 2.0.25.0]
- - Android API version: [e.g. API 31]
+ - PdfBox-Android version: [e.g. 2.0.26.0]
+ - Android API version: [e.g. API 33]
 
 **Additional context**
 Add any other context about the problem here.
