@@ -130,6 +130,21 @@ public final class PDFontFactory
         COSName subType = dictionary.getCOSName(COSName.SUBTYPE);
         if (COSName.CID_FONT_TYPE0.equals(subType))
         {
+//            COSBase base = dictionary.getDictionaryObject(COSName.CIDSYSTEMINFO);
+//            if (base instanceof COSDictionary)
+//            {
+//                PDCIDSystemInfo cidSystemInfo = new PDCIDSystemInfo((COSDictionary) base);
+//                String collection = cidSystemInfo.getRegistry() + "-" + cidSystemInfo.getOrdering();
+//                if (collection.equals("Adobe-GB1") || collection.equals("Adobe-CNS1") ||
+//                        collection.equals("Adobe-Japan1") || collection.equals("Adobe-Korea1"))
+//                {
+//                    COSDictionary fd = (COSDictionary) dictionary.getDictionaryObject(COSName.FONT_DESC);
+//                    if (FontMappers.instance().getCIDFontDefault(dictionary.getNameAsString(COSName.BASE_FONT), new PDFontDescriptor(fd), cidSystemInfo)==null) {
+//                        Log.w("ceshi","？？？==="+collection);
+//                        return new PDCIDFontType2(dictionary, parent);
+//                    }
+//                }
+//            }
             return new PDCIDFontType0(dictionary, parent);
         }
         else if (COSName.CID_FONT_TYPE2.equals(subType))

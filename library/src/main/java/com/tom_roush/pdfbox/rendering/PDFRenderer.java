@@ -20,6 +20,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 import java.io.IOException;
 
@@ -311,7 +312,7 @@ public class PDFRenderer
         // the end-user may provide a custom PageDrawer
         PageDrawerParameters parameters =
             new PageDrawerParameters(this, page, subsamplingAllowed, destination,
-                imageDownscalingOptimizationThreshold);
+                imageDownscalingOptimizationThreshold,scale,scale);
         PageDrawer drawer = createPageDrawer(parameters);
         drawer.drawPage(paint, canvas, cropBox);
 
@@ -409,7 +410,7 @@ public class PDFRenderer
         // the end-user may provide a custom PageDrawer
         PageDrawerParameters parameters =
             new PageDrawerParameters(this, page, subsamplingAllowed, destination,
-                imageDownscalingOptimizationThreshold);
+                imageDownscalingOptimizationThreshold,scaleX,scaleY);
         PageDrawer drawer = createPageDrawer(parameters);
         drawer.drawPage(paint, canvas, cropBox);
     }

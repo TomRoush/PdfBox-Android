@@ -27,6 +27,8 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -54,6 +56,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.util.filetypedetector.FileType;
 import com.tom_roush.pdfbox.util.filetypedetector.FileTypeDetector;
+import com.xsooy.Glable;
 
 /**
  * An Image XObject.
@@ -245,7 +248,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
             throw new IllegalArgumentException("Image type not supported: " + name);
         }
         String ext = name.substring(dot + 1).toLowerCase();
-        if ("jpg".equals(ext) || "jpeg".equals(ext))
+        if ("jpg".equals(ext) || "cpp/jpeg".equals(ext))
         {
             FileInputStream fis = null;
             try
@@ -498,12 +501,14 @@ public final class PDImageXObject extends PDXObject implements PDImage
         // soft mask (overrides explicit mask)
         if (softMask != null)
         {
+            Log.w("ceshi","applyMask11111");
             image = applyMask(SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask()),
                 softMask.getOpaqueImage(), softMask.getInterpolate(), true, extractMatte(softMask));
         }
         // explicit mask - to be applied only if /ImageMask true
         else if (mask != null && mask.isStencil())
         {
+            Log.w("ceshi","applyMask2222");
             image = applyMask(SampledImageReader.getRGBImage(this, region, subsampling, getColorKeyMask()),
                 mask.getOpaqueImage(), mask.getInterpolate(), false, null);
         }
@@ -597,6 +602,8 @@ public final class PDImageXObject extends PDXObject implements PDImage
         final int width = Math.max(image.getWidth(), mask.getWidth());
         final int height = Math.max(image.getHeight(), mask.getHeight());
 
+        int[] maskPixels = new int[width];
+
         // scale mask to fit image, or image to fit mask, whichever is larger.
         // also make sure that mask is 8 bit gray and image is ARGB as this
         // is what needs to be returned.
@@ -604,11 +611,25 @@ public final class PDImageXObject extends PDXObject implements PDImage
         {
             mask = scaleImage(mask, width, height, interpolateMask);
         }
-        if (mask.getConfig() != Bitmap.Config.ALPHA_8 || !image.isMutable())
+        if (mask.getConfig() != Bitmap.Config.ALPHA_8 )
+        {
+            Bitmap clone = Bitmap.createBitmap(mask.getWidth(),mask.getHeight(),Bitmap.Config.ALPHA_8);
+            for (int y = 0; y < height; y++)
+            {
+                mask.getPixels(maskPixels, 0, width, 0, y, width, 1);
+                for (int x = 0; x < width; x++)
+                {
+                    maskPixels[x] = Color.argb(maskPixels[x]&0xff,maskPixels[x]&0xff,maskPixels[x]&0xff,maskPixels[x]&0xff);
+                }
+                clone.setPixels(maskPixels, 0, width, 0, y, width, 1);
+            }
+            mask.recycle();
+            mask = clone;
+        }
+        if (!mask.isMutable())
         {
             mask = mask.copy(Bitmap.Config.ALPHA_8, true);
         }
-
         if (image.getWidth() < width || image.getHeight() < height)
         {
             image = scaleImage(image, width, height, getInterpolate());
@@ -617,8 +638,10 @@ public final class PDImageXObject extends PDXObject implements PDImage
         {
             image = image.copy(Bitmap.Config.ARGB_8888, true);
         }
+        if (!image.hasAlpha()) {
+            image.setHasAlpha(true);
+        }
         int[] pixels = new int[width];
-        int[] maskPixels = new int[width];
 
         // compose alpha into ARGB image, either:
         // - very fast by direct bit combination if not a soft mask and a 8 bit alpha source.
@@ -649,7 +672,7 @@ public final class PDImageXObject extends PDXObject implements PDImage
                     {
                         maskPixels[x] ^= -1;
                     }
-                    pixels[x] = pixels[x] & 0xffffff | maskPixels[x] & 0xff000000;
+                    pixels[x] = pixels[x] & 0x00ffffff | (maskPixels[x] & 0xff000000);
                 }
                 image.setPixels(pixels, 0, width, 0, y, width, 1);
             }

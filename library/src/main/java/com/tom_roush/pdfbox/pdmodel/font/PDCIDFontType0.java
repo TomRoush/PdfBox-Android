@@ -31,6 +31,10 @@ import com.tom_roush.fontbox.cff.CFFFont;
 import com.tom_roush.fontbox.cff.CFFParser;
 import com.tom_roush.fontbox.cff.CFFType1Font;
 import com.tom_roush.fontbox.cff.Type2CharString;
+import com.tom_roush.fontbox.ttf.CmapLookup;
+import com.tom_roush.fontbox.ttf.GlyphData;
+import com.tom_roush.fontbox.ttf.OpenTypeFont;
+import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.harmony.awt.geom.AffineTransform;
 import com.tom_roush.pdfbox.cos.COSDictionary;
@@ -60,6 +64,8 @@ public class PDCIDFontType0 extends PDCIDFont
     private final AffineTransform fontMatrixTransform;
     private BoundingBox fontBBox;
     private int[] cid2gid = null;
+
+    private final CmapLookup cmap; // may be null
 
     /**
      * Constructor.
@@ -120,6 +126,7 @@ public class PDCIDFontType0 extends PDCIDFont
             cid2gid = readCIDToGIDMap();
             isEmbedded = true;
             isDamaged = false;
+            cmap = null;
         }
         else
         {
@@ -130,20 +137,27 @@ public class PDCIDFontType0 extends PDCIDFont
             FontBoxFont font;
             if (mapping.isCIDFont())
             {
-                cffFont = mapping.getFont().getCFF().getFont();
-                if (cffFont instanceof CFFCIDFont)
-                {
-                    cidFont = (CFFCIDFont) cffFont;
-                    t1Font = null;
-                    font = cidFont;
-                }
-                else
-                {
-                    // PDFBOX-3515: OpenType fonts are loaded as CFFType1Font
-                    CFFType1Font f = (CFFType1Font) cffFont;
+                cmap = mapping.getFont().getUnicodeCmapLookup(false);
+                if (cmap !=null) {
                     cidFont = null;
-                    t1Font = f;
-                    font = f;
+                    font = (TrueTypeFont) mapping.getFont();
+                    t1Font = font;
+                } else {
+                    cffFont = mapping.getFont().getCFF().getFont();
+                    if (cffFont instanceof CFFCIDFont)
+                    {
+                        cidFont = (CFFCIDFont) cffFont;
+                        t1Font = null;
+                        font = cidFont;
+                    }
+                    else
+                    {
+                        // PDFBOX-3515: OpenType fonts are loaded as CFFType1Font
+                        CFFType1Font f = (CFFType1Font) cffFont;
+                        cidFont = null;
+                        t1Font = f;
+                        font = f;
+                    }
                 }
             }
             else
@@ -151,6 +165,7 @@ public class PDCIDFontType0 extends PDCIDFont
                 cidFont = null;
                 t1Font = mapping.getTrueTypeFont();
                 font = t1Font;
+                cmap = null;
             }
 
             if (mapping.isFallback())
@@ -338,6 +353,19 @@ public class PDCIDFontType0 extends PDCIDFont
         }
         else
         {
+            try {
+                if (cmap!=null) {
+                    String unicode = parent.toUnicode(code);
+                    int gid = cmap.getGlyphId(unicode.codePointAt(0));
+                    if (t1Font instanceof OpenTypeFont && ((OpenTypeFont)t1Font).isPostScript())
+                    {
+                        Type2CharString charstring2 = ((OpenTypeFont)t1Font).getCFF().getFont().getType2CharString(gid);
+                        return charstring2.getPath();
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             return t1Font.getPath(getGlyphName(code));
         }
     }

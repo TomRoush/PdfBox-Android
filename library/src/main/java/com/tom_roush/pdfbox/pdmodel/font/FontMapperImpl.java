@@ -682,12 +682,12 @@ final class FontMapperImpl implements FontMapper
      */
     private boolean isCharSetMatch(PDCIDSystemInfo cidSystemInfo, FontInfo info)
     {
-        if (info.getCIDSystemInfo() != null)
-        {
-            return info.getCIDSystemInfo().getRegistry().equals(cidSystemInfo.getRegistry()) &&
-                info.getCIDSystemInfo().getOrdering().equals(cidSystemInfo.getOrdering());
-        }
-        else
+//        if (info.getCIDSystemInfo() != null)
+//        {
+//            return info.getCIDSystemInfo().getRegistry().equals(cidSystemInfo.getRegistry()) &&
+//                info.getCIDSystemInfo().getOrdering().equals(cidSystemInfo.getOrdering());
+//        }
+//        else
         {
             long codePageRange = info.getCodePageRange();
 
@@ -765,4 +765,5 @@ final class FontMapperImpl implements FontMapper
         System.out.println("-------");
         return bestMatch;
     }
+
 }

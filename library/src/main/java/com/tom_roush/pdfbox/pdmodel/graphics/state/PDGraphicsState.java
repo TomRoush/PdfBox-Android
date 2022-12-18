@@ -633,19 +633,20 @@ public class PDGraphicsState implements Cloneable
      *
      * @return The current clipping path.
      */
-    public Region getCurrentClippingPath()
+    public Path getCurrentClippingPath()
     {
         if (clippingPaths.size() == 1)
         {
             // If there is just a single clipping path, no intersections are needed.
             Path path = clippingPaths.get(0);
-            Region area = clippingCache.get(path);
-            if (area == null)
-            {
-                area = GraphicsUtil.getPathRegion(path);
-                clippingCache.put(path, area);
-            }
-            return area;
+//            Region area = clippingCache.get(path);
+//            if (area == null)
+//            {
+//                area = GraphicsUtil.getPathRegion(path);
+//                clippingCache.put(path, area);
+//            }
+            return path;
+//            return area;
         }
         // If there are multiple clipping paths, combine them to a single area.
         Path clippingPath = new Path(clippingPaths.get(0));
@@ -653,12 +654,16 @@ public class PDGraphicsState implements Cloneable
         {
             clippingPath.op(clippingPaths.get(i), Path.Op.INTERSECT);
         }
-        Region clippingRegion = GraphicsUtil.getPathRegion(clippingPath);
+//        android.graphics.Matrix matrix = new android.graphics.Matrix();
+//        matrix.setScale(scaleX,scaleY);
+//        clippingPath.transform(matrix);
+//        Region clippingRegion = GraphicsUtil.getPathRegion(clippingPath);
         // Replace the list of individual clipping paths with the intersection, and add it to the cache.
-        clippingPaths = new ArrayList<Path>(1);
-        clippingPaths.add(clippingPath);
-        clippingCache.put(clippingPath, clippingRegion);
-        return clippingRegion;
+//        clippingPaths = new ArrayList<Path>(1);
+//        clippingPaths.add(clippingPath);
+//        clippingCache.put(clippingPath, clippingRegion);
+//        return clippingRegion;
+        return clippingPath;
     }
 
     /**

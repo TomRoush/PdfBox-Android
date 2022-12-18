@@ -130,6 +130,7 @@ public class PDCIDFontType2 extends PDCIDFont
             if (ttfFont == null)
             {
                 ttfFont = findFontOrSubstitute();
+                Log.w("ceshi","ttfFont::"+ttfFont.getClass().getSimpleName());
             }
             ttf = ttfFont;
         }
