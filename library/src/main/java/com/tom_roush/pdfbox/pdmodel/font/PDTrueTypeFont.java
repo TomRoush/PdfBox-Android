@@ -35,6 +35,7 @@ import com.tom_roush.fontbox.ttf.TrueTypeFont;
 import com.tom_roush.fontbox.util.BoundingBox;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
+import com.tom_roush.pdfbox.io.IOUtils;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.common.PDStream;
@@ -190,16 +191,19 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
             PDStream ff2Stream = fd.getFontFile2();
             if (ff2Stream != null)
             {
+                InputStream is = null;
                 try
                 {
                     // embedded
                     TTFParser ttfParser = new TTFParser(true);
-                    ttfFont = ttfParser.parse(ff2Stream.createInputStream());
+                    is = ff2Stream.createInputStream();
+                    ttfFont = ttfParser.parse(is);
                 }
                 catch (IOException e)
                 {
                     Log.w("PdfBox-Android", "Could not read embedded TTF for font " + getBaseFont(), e);
                     fontIsDamaged = true;
+                    IOUtils.closeQuietly(is);
                 }
             }
         }
@@ -683,6 +687,12 @@ public class PDTrueTypeFont extends PDSimpleFont implements PDVectorFont
                     && CmapTable.ENCODING_UNICODE_1_0 == cmap.getPlatformEncodingId())
                 {
                     // PDFBOX-4755 / PDF.js #5501
+                    cmapWinUnicode = cmap;
+                }
+                else if (CmapTable.PLATFORM_UNICODE == cmap.getPlatformId()
+                    && CmapTable.ENCODING_UNICODE_2_0_BMP == cmap.getPlatformEncodingId())
+                {
+                    // PDFBOX-5484
                     cmapWinUnicode = cmap;
                 }
             }

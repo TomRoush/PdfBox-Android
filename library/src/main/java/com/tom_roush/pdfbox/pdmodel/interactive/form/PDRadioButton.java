@@ -19,7 +19,6 @@ package com.tom_roush.pdfbox.pdmodel.interactive.form;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
@@ -124,7 +123,6 @@ public final class PDRadioButton extends PDButton
      */
     public List<String> getSelectedExportValues() throws IOException
     {
-        Set<String> onValues = getOnValues();
         List<String> exportValues = getExportValues();
         List<String> selectedExportValues = new ArrayList<String>();
         if (exportValues.isEmpty())
@@ -136,7 +134,7 @@ public final class PDRadioButton extends PDButton
         {
             String fieldValue = getValue();
             int idx = 0;
-            for (String onValue : onValues)
+            for (String onValue : getOnValues())
             {
                 if (onValue.compareTo(fieldValue) == 0)
                 {

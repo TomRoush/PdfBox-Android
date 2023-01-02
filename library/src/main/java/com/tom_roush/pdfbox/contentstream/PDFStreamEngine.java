@@ -682,12 +682,12 @@ public abstract class PDFStreamEngine
             }
             else if (obj instanceof COSArray)
             {
-                Log.e("PdfBox-Android", "Nested arrays are not allowed in an array for TJ operation:" + obj);
+                Log.e("PdfBox-Android", "Nested arrays are not allowed in an array for TJ operation: " + obj);
             }
             else
             {
-                throw new IOException("Unknown type " + obj.getClass().getSimpleName()
-                    + " in array for TJ operation:" + obj);
+                Log.e("PdfBox-Android", "Unknown type " + obj.getClass().getSimpleName()
+                    + " in array for TJ operation: " + obj);
             }
         }
     }

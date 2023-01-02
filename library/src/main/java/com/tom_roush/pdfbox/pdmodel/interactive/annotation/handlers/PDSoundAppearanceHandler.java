@@ -20,39 +20,31 @@ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
 
 public class PDSoundAppearanceHandler extends PDAbstractAppearanceHandler
 {
-   public PDSoundAppearanceHandler(PDAnnotation annotation)
-   {
-      super(annotation);
-   }
+    public PDSoundAppearanceHandler(PDAnnotation annotation)
+    {
+        super(annotation);
+    }
 
-   public PDSoundAppearanceHandler(PDAnnotation annotation, PDDocument document)
-   {
-      super(annotation, document);
-   }
+    public PDSoundAppearanceHandler(PDAnnotation annotation, PDDocument document)
+    {
+        super(annotation, document);
+    }
 
-   @Override
-   public void generateAppearanceStreams()
-   {
-      generateNormalAppearance();
-      generateRolloverAppearance();
-      generateDownAppearance();
-   }
+    @Override
+    public void generateNormalAppearance()
+    {
+        // TODO to be implemented
+    }
 
-   @Override
-   public void generateNormalAppearance()
-   {
-      // TODO to be implemented
-   }
+    @Override
+    public void generateRolloverAppearance()
+    {
+        // TODO to be implemented
+    }
 
-   @Override
-   public void generateRolloverAppearance()
-   {
-      // TODO to be implemented
-   }
-
-   @Override
-   public void generateDownAppearance()
-   {
-      // TODO to be implemented
-   }
+    @Override
+    public void generateDownAppearance()
+    {
+        // TODO to be implemented
+    }
 }

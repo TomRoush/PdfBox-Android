@@ -171,7 +171,7 @@ public abstract class BaseParser
         long objNumber = ((COSInteger) value).longValue();
         if (objNumber <= 0)
         {
-            Log.e("PdfBox-Android", "invalid object number value =" + objNumber + " at offset " + numOffset);
+            Log.w("PdfBox-Android", "invalid object number value =" + objNumber + " at offset " + numOffset);
             return COSNull.NULL;
         }
         int genNumber = ((COSInteger) generationNumber).intValue();
@@ -773,12 +773,12 @@ public abstract class BaseParser
         String string;
         if (isValidUTF8(bytes))
         {
-            string = new String(buffer.toByteArray(), Charsets.UTF_8);
+            string = new String(bytes, Charsets.UTF_8);
         }
         else
         {
             // some malformed PDFs don't use UTF-8 see PDFBOX-3347
-            string = new String(buffer.toByteArray(), Charsets.WINDOWS_1252);
+            string = new String(bytes, Charsets.WINDOWS_1252);
         }
         return COSName.getPDFName(string);
     }
@@ -1099,7 +1099,8 @@ public abstract class BaseParser
     {
         if (seqSource.isEOF())
         {
-            throw new IOException( "Error: End-of-File, expected line");
+            throw new IOException( "Error: End-of-File, expected line at offset " +
+                seqSource.getPosition());
         }
 
         StringBuilder buffer = new StringBuilder( 11 );

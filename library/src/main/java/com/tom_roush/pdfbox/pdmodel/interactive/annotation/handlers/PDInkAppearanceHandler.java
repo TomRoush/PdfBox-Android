@@ -34,128 +34,120 @@ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationMarkup;
  */
 public class PDInkAppearanceHandler extends PDAbstractAppearanceHandler
 {
-   public PDInkAppearanceHandler(PDAnnotation annotation)
-   {
-      super(annotation);
-   }
+    public PDInkAppearanceHandler(PDAnnotation annotation)
+    {
+        super(annotation);
+    }
 
-   public PDInkAppearanceHandler(PDAnnotation annotation, PDDocument document)
-   {
-      super(annotation, document);
-   }
+    public PDInkAppearanceHandler(PDAnnotation annotation, PDDocument document)
+    {
+        super(annotation, document);
+    }
 
-   @Override
-   public void generateAppearanceStreams()
-   {
-      generateNormalAppearance();
-      generateRolloverAppearance();
-      generateDownAppearance();
-   }
+    @Override
+    public void generateNormalAppearance()
+    {
+        PDAnnotationMarkup ink = (PDAnnotationMarkup) getAnnotation();
+        PDColor color = ink.getColor();
+        if (color == null || color.getComponents().length == 0)
+        {
+            return;
+        }
+        // PDF spec does not mention /Border for ink annotations, but it is used if /BS is not available
+        AnnotationBorder ab = AnnotationBorder.getAnnotationBorder(ink, ink.getBorderStyle());
+        if (Float.compare(ab.width, 0) == 0)
+        {
+            return;
+        }
 
-   @Override
-   public void generateNormalAppearance()
-   {
-      PDAnnotationMarkup ink = (PDAnnotationMarkup) getAnnotation();
-      PDColor color = ink.getColor();
-      if (color == null || color.getComponents().length == 0)
-      {
-         return;
-      }
-      // PDF spec does not mention /Border for ink annotations, but it is used if /BS is not available
-      AnnotationBorder ab = AnnotationBorder.getAnnotationBorder(ink, ink.getBorderStyle());
-      if (Float.compare(ab.width, 0) == 0)
-      {
-         return;
-      }
-
-      // Adjust rectangle even if not empty
-      // file from PDF.js issue 13447
-      //TODO in a class structure this should be overridable
-      float minX = Float.MAX_VALUE;
-      float minY = Float.MAX_VALUE;
-      float maxX = Float.MIN_VALUE;
-      float maxY = Float.MIN_VALUE;
-      for (float[] pathArray : ink.getInkList())
-      {
-         int nPoints = pathArray.length / 2;
-         for (int i = 0; i < nPoints; ++i)
-         {
-            float x = pathArray[i * 2];
-            float y = pathArray[i * 2 + 1];
-            minX = Math.min(minX, x);
-            minY = Math.min(minY, y);
-            maxX = Math.max(maxX, x);
-            maxY = Math.max(maxY, y);
-         }
-      }
-      PDRectangle rect = ink.getRectangle();
-      if (rect == null)
-      {
-         return;
-      }
-      rect.setLowerLeftX(Math.min(minX - ab.width * 2, rect.getLowerLeftX()));
-      rect.setLowerLeftY(Math.min(minY - ab.width * 2, rect.getLowerLeftY()));
-      rect.setUpperRightX(Math.max(maxX + ab.width * 2, rect.getUpperRightX()));
-      rect.setUpperRightY(Math.max(maxY + ab.width * 2, rect.getUpperRightY()));
-      ink.setRectangle(rect);
-
-      PDAppearanceContentStream cs = null;
-
-      try
-      {
-         cs = getNormalAppearanceAsContentStream();
-
-         setOpacity(cs, ink.getConstantOpacity());
-
-         cs.setStrokingColor(color);
-         if (ab.dashArray != null)
-         {
-            cs.setLineDashPattern(ab.dashArray, 0);
-         }
-         cs.setLineWidth(ab.width);
-
-         for (float[] pathArray : ink.getInkList())
-         {
+        // Adjust rectangle even if not empty
+        // file from PDF.js issue 13447
+        //TODO in a class structure this should be overridable
+        float minX = Float.MAX_VALUE;
+        float minY = Float.MAX_VALUE;
+        float maxX = Float.MIN_VALUE;
+        float maxY = Float.MIN_VALUE;
+        for (float[] pathArray : ink.getInkList())
+        {
             int nPoints = pathArray.length / 2;
-
-            // "When drawn, the points shall be connected by straight lines or curves 
-            // in an implementation-dependent way" - we do lines.
             for (int i = 0; i < nPoints; ++i)
             {
-               float x = pathArray[i * 2];
-               float y = pathArray[i * 2 + 1];
-
-               if (i == 0)
-               {
-                  cs.moveTo(x, y);
-               }
-               else
-               {
-                  cs.lineTo(x, y);
-               }
+                float x = pathArray[i * 2];
+                float y = pathArray[i * 2 + 1];
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
             }
-            cs.stroke();
-         }
-      }
-      catch (IOException ex)
-      {
-         Log.e("PdfBox-Android", ex.getMessage(), ex);
-      }
-      finally
-      {
-         IOUtils.closeQuietly(cs);
-      }
-   }
+        }
+        PDRectangle rect = ink.getRectangle();
+        if (rect == null)
+        {
+            return;
+        }
+        rect.setLowerLeftX(Math.min(minX - ab.width * 2, rect.getLowerLeftX()));
+        rect.setLowerLeftY(Math.min(minY - ab.width * 2, rect.getLowerLeftY()));
+        rect.setUpperRightX(Math.max(maxX + ab.width * 2, rect.getUpperRightX()));
+        rect.setUpperRightY(Math.max(maxY + ab.width * 2, rect.getUpperRightY()));
+        ink.setRectangle(rect);
 
-   @Override
-   public void generateRolloverAppearance()
-   {
-      // No rollover appearance generated
-   }
+        PDAppearanceContentStream cs = null;
 
-   @Override
-   public void generateDownAppearance()
-   {
-      // No down appearance generated
-   }
+        try
+        {
+            cs = getNormalAppearanceAsContentStream();
+
+            setOpacity(cs, ink.getConstantOpacity());
+
+            cs.setStrokingColor(color);
+            if (ab.dashArray != null)
+            {
+                cs.setLineDashPattern(ab.dashArray, 0);
+            }
+            cs.setLineWidth(ab.width);
+
+            for (float[] pathArray : ink.getInkList())
+            {
+                int nPoints = pathArray.length / 2;
+
+                // "When drawn, the points shall be connected by straight lines or curves
+                // in an implementation-dependent way" - we do lines.
+                for (int i = 0; i < nPoints; ++i)
+                {
+                    float x = pathArray[i * 2];
+                    float y = pathArray[i * 2 + 1];
+
+                    if (i == 0)
+                    {
+                        cs.moveTo(x, y);
+                    }
+                    else
+                    {
+                        cs.lineTo(x, y);
+                    }
+                }
+                cs.stroke();
+            }
+        }
+        catch (IOException ex)
+        {
+            Log.e("PdfBox-Android", ex.getMessage(), ex);
+        }
+        finally
+        {
+            IOUtils.closeQuietly(cs);
+        }
+    }
+
+    @Override
+    public void generateRolloverAppearance()
+    {
+        // No rollover appearance generated
+    }
+
+    @Override
+    public void generateDownAppearance()
+    {
+        // No down appearance generated
+    }
 }

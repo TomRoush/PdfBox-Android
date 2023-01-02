@@ -16,6 +16,7 @@
  */
 package com.tom_roush.pdfbox.pdmodel.documentinterchange.markedcontent;
 
+import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSDictionary;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
@@ -39,11 +40,12 @@ public class PDPropertyList implements COSObjectable
      */
     public static PDPropertyList create(COSDictionary dict)
     {
-        if (COSName.OCG.equals(dict.getItem(COSName.TYPE)))
+        COSBase item = dict.getItem(COSName.TYPE);
+        if (COSName.OCG.equals(item))
         {
             return new PDOptionalContentGroup(dict);
         }
-        else if (COSName.OCMD.equals(dict.getItem(COSName.TYPE)))
+        else if (COSName.OCMD.equals(item))
         {
             return new PDOptionalContentMembershipDictionary(dict);
         }

@@ -275,11 +275,11 @@ public class PDPage implements COSObjectable, PDContentStream
             {
                 mediaBox = new PDRectangle((COSArray) base);
             }
-        }
-        if (mediaBox == null)
-        {
-            Log.d("PdfBox-Android", "Can't find MediaBox, will use U.S. Letter");
-            mediaBox = PDRectangle.LETTER;
+            else
+            {
+                Log.d("PdfBox-Android", "Can't find MediaBox, will use U.S. Letter");
+                mediaBox = PDRectangle.LETTER;
+            }
         }
         return mediaBox;
     }

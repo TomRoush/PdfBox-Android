@@ -18,6 +18,8 @@
 package com.tom_roush.pdfbox.pdmodel.font;
 
 import android.content.Context;
+import android.graphics.Path;
+import android.graphics.RectF;
 import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -51,7 +53,6 @@ import com.tom_roush.pdfbox.rendering.PDFRenderer;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
 
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -228,7 +229,7 @@ public class PDFontTest
                 break;
             }
         }
-        Assume.assumeTrue("testFullEmbeddingTTC skipped, no .ttc files available", ttc != null);
+        assumeTrue("testFullEmbeddingTTC skipped, no .ttc files available", ttc != null);
 
         final List<String> names = new ArrayList<String>();
         ttc.processAllFonts(new TrueTypeCollection.TrueTypeFontProcessor()
@@ -429,6 +430,33 @@ public class PDFontTest
         stripper.setLineSeparator("\n");
         String extractedText = stripper.getText(doc);
         Assert.assertEquals(text + "\n" + text, extractedText.trim());
+        doc.close();
+    }
+
+    /**
+     * Test font with an unusual cmap table combination (0, 3).
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testPDFBox5484() throws IOException
+    {
+        File fontFile = TestResourceGenerator.downloadTestResource(IN_DIR, "PDFBOX-5484.ttf", "https://issues.apache.org/jira/secure/attachment/13047577/PDFBOX-5484.ttf");
+        assumeTrue(fontFile.exists());
+
+        TrueTypeFont ttf = new TTFParser().parse(fontFile);
+        PDDocument doc = new PDDocument();
+        PDTrueTypeFont tr = PDTrueTypeFont.load(doc, ttf, WinAnsiEncoding.INSTANCE);
+        Path path1 = tr.getPath("oslash");
+        Path path2 = tr.getPath(248);
+        Assert.assertFalse(path2.isEmpty()); // not empty
+
+        RectF area1 = new RectF();
+        path1.computeBounds(area1, true);
+        RectF area2 = new RectF();
+        path2.computeBounds(area2, true);
+
+        Assert.assertTrue(area1.equals(area2)); // assertEquals does not test equals()
         doc.close();
     }
 }
