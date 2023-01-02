@@ -110,7 +110,7 @@ public class TestSymmetricKeyEncryption
         permission.setCanModify(false);
         permission.setCanModifyAnnotations(false);
         permission.setCanPrint(true);
-        permission.setCanPrintDegraded(false);
+        permission.setCanPrintFaithful(false);
         permission.setReadOnly();
     }
 
@@ -147,7 +147,7 @@ public class TestSymmetricKeyEncryption
 
         restrAP.setCanAssembleDocument(false);
         restrAP.setCanExtractForAccessibility(false);
-        restrAP.setCanPrintDegraded(false);
+        restrAP.setCanPrintFaithful(false);
 
         inputFileAsByteArray = getFileResourceAsByteArray("PasswordSample-128bit.pdf");
         checkPerms(inputFileAsByteArray, "owner", fullAP);
@@ -196,7 +196,7 @@ public class TestSymmetricKeyEncryption
         assertEquals(expectedPermissions.canModify(), currentAccessPermission.canModify());
         assertEquals(expectedPermissions.canModifyAnnotations(), currentAccessPermission.canModifyAnnotations());
         assertEquals(expectedPermissions.canPrint(), currentAccessPermission.canPrint());
-        assertEquals(expectedPermissions.canPrintDegraded(), currentAccessPermission.canPrintDegraded());
+        assertEquals(expectedPermissions.canPrintFaithful(), currentAccessPermission.canPrintFaithful());
 
         new PDFRenderer(doc).renderImage(0);
 

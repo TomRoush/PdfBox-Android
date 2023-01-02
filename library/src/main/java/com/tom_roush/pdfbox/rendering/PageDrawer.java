@@ -88,8 +88,9 @@ import com.tom_roush.pdfbox.util.Vector;
  * If you want to do custom graphics processing rather than Canvas rendering, then you should
  * subclass {@link PDFGraphicsStreamEngine} instead. Subclassing PageDrawer is only suitable for
  * cases where the goal is to render onto a {@link Canvas} surface. In that case you'll also
- * have to subclass {@link PDFRenderer} and modify
- * {@link PDFRenderer#createPageDrawer(PageDrawerParameters)}.
+ * have to subclass {@link PDFRenderer} and override
+ * {@link PDFRenderer#createPageDrawer(PageDrawerParameters)}. See the <i>OpaquePDFRenderer.java</i>
+ * example in the source code download on how to do this.
  *
  * @author Ben Litchfield
  */
@@ -378,7 +379,15 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         at.concatenate(font.getFontMatrix().createAffineTransform());
 
         Glyph2D glyph2D = createGlyph2D(font);
-        drawGlyph2D(glyph2D, font, code, displacement, at);
+        try
+        {
+            drawGlyph2D(glyph2D, font, code, displacement, at);
+        }
+        catch (IOException ex)
+        {
+            Log.e("PdfBox-Android", "Could not draw glyph for code " + code + " at position (" +
+                at.getTranslateX() + "," + at.getTranslateY() + ")", ex);
+        }
     }
 
     /**
@@ -1243,7 +1252,15 @@ public class PageDrawer extends PDFGraphicsStreamEngine
             Matrix transform = Matrix.concatenate(ctm, form.getMatrix());
 
             // transform the bbox
-            Path transformedBox = form.getBBox().transform(transform);
+            PDRectangle formBBox = form.getBBox();
+            if (formBBox == null)
+            {
+                // PDFBOX-5471
+                // check done here and not in caller to avoid getBBox() creating rectangle twice
+                Log.w("PdfBox-Android", "transparency group ignored because BBox is null");
+                formBBox = new PDRectangle();
+            }
+            Path transformedBox = formBBox.transform(transform);
 
             // clip the bbox to prevent giant bboxes from consuming all memory
 //            Area transformed = new Area(transformedBox);

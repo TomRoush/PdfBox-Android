@@ -213,7 +213,7 @@ public class PDType0Font extends PDFont implements PDVectorFont
      * @param closeTTF whether to close the ttf parameter after embedding. Must be true when the ttf
      * parameter was created in the load() method, false when the ttf parameter was passed to the
      * load() method.
-     * @param vertical
+     * @param vertical whether to enable vertical substitutions.
      * @throws IOException
      */
     private PDType0Font(PDDocument document, TrueTypeFont ttf, boolean embedSubset,
@@ -284,14 +284,7 @@ public class PDType0Font extends PDFont implements PDVectorFont
             // predefined CMap
             COSName encodingName = (COSName) encoding;
             cMap = CMapManager.getPredefinedCMap(encodingName.getName());
-            if (cMap != null)
-            {
-                isCMapPredefined = true;
-            }
-            else
-            {
-                throw new IOException("Missing required CMap");
-            }
+            isCMapPredefined = true;
         }
         else if (encoding != null)
         {
@@ -310,11 +303,12 @@ public class PDType0Font extends PDFont implements PDVectorFont
         PDCIDSystemInfo ros = descendantFont.getCIDSystemInfo();
         if (ros != null)
         {
+            String ordering = ros.getOrdering();
             isDescendantCJK = "Adobe".equals(ros.getRegistry()) &&
-                ("GB1".equals(ros.getOrdering()) ||
-                    "CNS1".equals(ros.getOrdering()) ||
-                    "Japan1".equals(ros.getOrdering()) ||
-                    "Korea1".equals(ros.getOrdering()));
+                ("GB1".equals(ordering) ||
+                    "CNS1".equals(ordering) ||
+                    "Japan1".equals(ordering) ||
+                    "Korea1".equals(ordering));
         }
     }
 
@@ -340,9 +334,13 @@ public class PDType0Font extends PDFont implements PDVectorFont
             String strName = null;
             if (isDescendantCJK)
             {
-                strName = descendantFont.getCIDSystemInfo().getRegistry() + "-" +
-                    descendantFont.getCIDSystemInfo().getOrdering() + "-" +
-                    descendantFont.getCIDSystemInfo().getSupplement();
+                PDCIDSystemInfo cidSystemInfo = descendantFont.getCIDSystemInfo();
+                if (cidSystemInfo != null)
+                {
+                    strName = cidSystemInfo.getRegistry() + "-" +
+                        cidSystemInfo.getOrdering() + "-" +
+                        cidSystemInfo.getSupplement();
+                }
             }
             else if (name != null)
             {
@@ -413,7 +411,7 @@ public class PDType0Font extends PDFont implements PDVectorFont
     @Override
     public boolean isVertical()
     {
-        return cMap.getWMode() == 1;
+        return cMap != null && cMap.getWMode() == 1;
     }
 
     @Override
@@ -570,6 +568,10 @@ public class PDType0Font extends PDFont implements PDVectorFont
     @Override
     public int readCode(InputStream in) throws IOException
     {
+        if (cMap == null)
+        {
+            throw new IOException("required cmap is null");
+        }
         return cMap.readCode(in);
     }
 

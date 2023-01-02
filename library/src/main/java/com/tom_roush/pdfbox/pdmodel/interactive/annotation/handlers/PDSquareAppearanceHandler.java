@@ -41,121 +41,113 @@ import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictiona
  */
 public class PDSquareAppearanceHandler extends PDAbstractAppearanceHandler
 {
-   public PDSquareAppearanceHandler(PDAnnotation annotation)
-   {
-      super(annotation);
-   }
+    public PDSquareAppearanceHandler(PDAnnotation annotation)
+    {
+        super(annotation);
+    }
 
-   public PDSquareAppearanceHandler(PDAnnotation annotation, PDDocument document)
-   {
-      super(annotation, document);
-   }
+    public PDSquareAppearanceHandler(PDAnnotation annotation, PDDocument document)
+    {
+        super(annotation, document);
+    }
 
-   @Override
-   public void generateAppearanceStreams()
-   {
-      generateNormalAppearance();
-      generateRolloverAppearance();
-      generateDownAppearance();
-   }
+    @Override
+    public void generateNormalAppearance()
+    {
+        float lineWidth = getLineWidth();
+        PDAnnotationSquareCircle annotation = (PDAnnotationSquareCircle) getAnnotation();
+        PDAppearanceContentStream contentStream  = null;
 
-   @Override
-   public void generateNormalAppearance()
-   {
-      float lineWidth = getLineWidth();
-      PDAnnotationSquareCircle annotation = (PDAnnotationSquareCircle) getAnnotation();
-      PDAppearanceContentStream contentStream  = null;
+        try
+        {
+            contentStream = getNormalAppearanceAsContentStream();
+            boolean hasStroke = contentStream.setStrokingColorOnDemand(getColor());
+            boolean hasBackground = contentStream
+                .setNonStrokingColorOnDemand(annotation.getInteriorColor());
 
-      try
-      {
-         contentStream = getNormalAppearanceAsContentStream();
-         boolean hasStroke = contentStream.setStrokingColorOnDemand(getColor());
-         boolean hasBackground = contentStream
-             .setNonStrokingColorOnDemand(annotation.getInteriorColor());
+            setOpacity(contentStream, annotation.getConstantOpacity());
 
-         setOpacity(contentStream, annotation.getConstantOpacity());
+            contentStream.setBorderLine(lineWidth, annotation.getBorderStyle(), annotation.getBorder());
+            PDBorderEffectDictionary borderEffect = annotation.getBorderEffect();
 
-         contentStream.setBorderLine(lineWidth, annotation.getBorderStyle(), annotation.getBorder());
-         PDBorderEffectDictionary borderEffect = annotation.getBorderEffect();
+            if (borderEffect != null && borderEffect.getStyle().equals(PDBorderEffectDictionary.STYLE_CLOUDY))
+            {
+                CloudyBorder cloudyBorder = new CloudyBorder(contentStream,
+                    borderEffect.getIntensity(), lineWidth, getRectangle());
+                cloudyBorder.createCloudyRectangle(annotation.getRectDifference());
+                annotation.setRectangle(cloudyBorder.getRectangle());
+                annotation.setRectDifference(cloudyBorder.getRectDifference());
+                PDAppearanceStream appearanceStream = annotation.getNormalAppearanceStream();
+                appearanceStream.setBBox(cloudyBorder.getBBox());
+                appearanceStream.setMatrix(cloudyBorder.getMatrix());
+            }
+            else
+            {
+                PDRectangle borderBox = handleBorderBox(annotation, lineWidth);
 
-         if (borderEffect != null && borderEffect.getStyle().equals(PDBorderEffectDictionary.STYLE_CLOUDY))
-         {
-            CloudyBorder cloudyBorder = new CloudyBorder(contentStream,
-                borderEffect.getIntensity(), lineWidth, getRectangle());
-            cloudyBorder.createCloudyRectangle(annotation.getRectDifference());
-            annotation.setRectangle(cloudyBorder.getRectangle());
-            annotation.setRectDifference(cloudyBorder.getRectDifference());
-            PDAppearanceStream appearanceStream = annotation.getNormalAppearanceStream();
-            appearanceStream.setBBox(cloudyBorder.getBBox());
-            appearanceStream.setMatrix(cloudyBorder.getMatrix());
-         }
-         else
-         {
-            PDRectangle borderBox = handleBorderBox(annotation, lineWidth);
+                contentStream.addRect(borderBox.getLowerLeftX(), borderBox.getLowerLeftY(),
+                    borderBox.getWidth(), borderBox.getHeight());
+            }
 
-            contentStream.addRect(borderBox.getLowerLeftX(), borderBox.getLowerLeftY(),
-                borderBox.getWidth(), borderBox.getHeight());
-         }
+            contentStream.drawShape(lineWidth, hasStroke, hasBackground);
+        }
+        catch (IOException e)
+        {
+            Log.e("PdfBox-Android", e.getMessage(), e);
+        }
+        finally{
+            IOUtils.closeQuietly(contentStream);
+        }
+    }
 
-         contentStream.drawShape(lineWidth, hasStroke, hasBackground);
-      }
-      catch (IOException e)
-      {
-         Log.e("PdfBox-Android", e.getMessage(), e);
-      }
-      finally{
-         IOUtils.closeQuietly(contentStream);
-      }
-   }
+    @Override
+    public void generateRolloverAppearance()
+    {
+        // TODO to be implemented
+    }
 
-   @Override
-   public void generateRolloverAppearance()
-   {
-      // TODO to be implemented
-   }
+    @Override
+    public void generateDownAppearance()
+    {
+        // TODO to be implemented
+    }
 
-   @Override
-   public void generateDownAppearance()
-   {
-      // TODO to be implemented
-   }
+    /**
+     * Get the line with of the border.
+     *
+     * Get the width of the line used to draw a border around the annotation.
+     * This may either be specified by the annotation dictionaries Border
+     * setting or by the W entry in the BS border style dictionary. If both are
+     * missing the default width is 1.
+     *
+     * @return the line width
+     */
+    // TODO: according to the PDF spec the use of the BS entry is annotation
+    // specific
+    // so we will leave that to be implemented by individual handlers.
+    // If at the end all annotations support the BS entry this can be handled
+    // here and removed from the individual handlers.
+    float getLineWidth()
+    {
+        PDAnnotationMarkup annotation = (PDAnnotationMarkup) getAnnotation();
 
-   /**
-    * Get the line with of the border.
-    *
-    * Get the width of the line used to draw a border around the annotation.
-    * This may either be specified by the annotation dictionaries Border
-    * setting or by the W entry in the BS border style dictionary. If both are
-    * missing the default width is 1.
-    *
-    * @return the line width
-    */
-   // TODO: according to the PDF spec the use of the BS entry is annotation
-   // specific
-   // so we will leave that to be implemented by individual handlers.
-   // If at the end all annotations support the BS entry this can be handled
-   // here and removed from the individual handlers.
-   float getLineWidth()
-   {
-      PDAnnotationMarkup annotation = (PDAnnotationMarkup) getAnnotation();
+        PDBorderStyleDictionary bs = annotation.getBorderStyle();
 
-      PDBorderStyleDictionary bs = annotation.getBorderStyle();
+        if (bs != null)
+        {
+            return bs.getWidth();
+        }
 
-      if (bs != null)
-      {
-         return bs.getWidth();
-      }
+        COSArray borderCharacteristics = annotation.getBorder();
+        if (borderCharacteristics.size() >= 3)
+        {
+            COSBase base = borderCharacteristics.getObject(2);
+            if (base instanceof COSNumber)
+            {
+                return ((COSNumber) base).floatValue();
+            }
+        }
 
-      COSArray borderCharacteristics = annotation.getBorder();
-      if (borderCharacteristics.size() >= 3)
-      {
-         COSBase base = borderCharacteristics.getObject(2);
-         if (base instanceof COSNumber)
-         {
-            return ((COSNumber) base).floatValue();
-         }
-      }
-
-      return 1;
-   }
+        return 1;
+    }
 }

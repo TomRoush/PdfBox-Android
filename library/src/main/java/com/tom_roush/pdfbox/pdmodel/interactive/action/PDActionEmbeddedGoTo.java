@@ -22,6 +22,7 @@ import com.tom_roush.pdfbox.cos.COSArray;
 import com.tom_roush.pdfbox.cos.COSBase;
 import com.tom_roush.pdfbox.cos.COSBoolean;
 import com.tom_roush.pdfbox.cos.COSDictionary;
+import com.tom_roush.pdfbox.cos.COSInteger;
 import com.tom_roush.pdfbox.cos.COSName;
 import com.tom_roush.pdfbox.pdmodel.common.filespecification.PDFileSpecification;
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
@@ -87,10 +88,10 @@ public class PDActionEmbeddedGoTo extends PDAction
             if (destArray.size() >= 1)
             {
                 COSBase page = destArray.getObject(0);
-                if (!(page instanceof COSDictionary))
+                if (!(page instanceof COSInteger))
                 {
-                    throw new IllegalArgumentException("Destination of a GoToE action must be "
-                        + "a page dictionary object");
+                    throw new IllegalArgumentException(
+                        "Destination of a GoToE action must be an integer");
                 }
             }
         }

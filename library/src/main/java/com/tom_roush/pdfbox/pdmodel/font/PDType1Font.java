@@ -217,7 +217,7 @@ public class PDType1Font extends PDSimpleFont
             PDStream fontFile3 = fd.getFontFile3();
             if (fontFile3 != null)
             {
-                throw new IOException("/FontFile3 for Type1 font not supported");
+                Log.w("PdfBox-Android", "/FontFile3 for Type1 font not supported");
             }
 
             // or it may contain a PFB

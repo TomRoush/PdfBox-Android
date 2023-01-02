@@ -49,6 +49,7 @@ import com.tom_roush.pdfbox.pdmodel.PDDocumentInformation;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentNameDestinationDictionary;
 import com.tom_roush.pdfbox.pdmodel.PDDocumentNameDictionary;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
+import com.tom_roush.pdfbox.pdmodel.PDPageTree;
 import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.PDStructureElementNameTreeNode;
 import com.tom_roush.pdfbox.pdmodel.PageMode;
@@ -352,6 +353,7 @@ public class PDFMergerUtility
         {
             destination = new PDDocument(memUsageSetting);
             PDFCloneUtility cloner = new PDFCloneUtility(destination);
+            PDPageTree destinationPageTree = destination.getPages(); // cache PageTree
 
             for (Object sourceObject : sources)
             {
@@ -383,7 +385,7 @@ public class PDFMergerUtility
                         {
                             newPage.setResources(new PDResources());
                         }
-                        destination.addPage(newPage);
+                        destinationPageTree.add(newPage);
                     }
                 }
                 finally
@@ -789,6 +791,7 @@ public class PDFMergerUtility
 
         Map<COSDictionary, COSDictionary> objMapping = new HashMap<COSDictionary, COSDictionary>();
         int pageIndex = 0;
+        PDPageTree destinationPageTree = destination.getPages(); // cache PageTree
         for (PDPage page : srcCatalog.getPages())
         {
             PDPage newPage = new PDPage((COSDictionary) cloner.cloneForNewDocument(page.getCOSObject()));
@@ -828,7 +831,7 @@ public class PDFMergerUtility
                 }
                 // TODO update mapping for XObjects
             }
-            destination.addPage(newPage);
+            destinationPageTree.add(newPage);
 
             if (pageIndex == pageIndexOpenActionDest)
             {

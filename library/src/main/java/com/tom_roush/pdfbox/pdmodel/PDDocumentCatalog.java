@@ -137,7 +137,7 @@ public class PDDocumentCatalog implements COSObjectable
 
         if (cachedAcroForm == null)
         {
-            COSDictionary dict = (COSDictionary)root.getDictionaryObject(COSName.ACRO_FORM);
+            COSDictionary dict = root.getCOSDictionary(COSName.ACRO_FORM);
             cachedAcroForm = dict == null ? null : new PDAcroForm(document, dict);
         }
         return cachedAcroForm;
@@ -220,7 +220,7 @@ public class PDDocumentCatalog implements COSObjectable
             array = new COSArray();
             root.setItem(COSName.THREADS, array);
         }
-        List<PDThread> pdObjects = new ArrayList<PDThread>();
+        List<PDThread> pdObjects = new ArrayList<PDThread>(array.size());
         for (int i = 0; i < array.size(); i++)
         {
             pdObjects.add(new PDThread((COSDictionary)array.getObject(i)));
@@ -507,14 +507,18 @@ public class PDDocumentCatalog implements COSObjectable
     public PageLayout getPageLayout()
     {
         String mode = root.getNameAsString(COSName.PAGE_LAYOUT);
-        if (mode != null)
+        if (mode != null && !mode.isEmpty())
         {
-            return PageLayout.fromString(mode);
+            try
+            {
+                return PageLayout.fromString(mode);
+            }
+            catch (IllegalArgumentException e)
+            {
+                Log.w("PdfBox-Android", "Invalid PageLayout used '" + mode + "' - returning PageLayout.SINGLE_PAGE", e);
+            }
         }
-        else
-        {
-            return PageLayout.SINGLE_PAGE;
-        }
+        return PageLayout.SINGLE_PAGE;
     }
 
     /**
