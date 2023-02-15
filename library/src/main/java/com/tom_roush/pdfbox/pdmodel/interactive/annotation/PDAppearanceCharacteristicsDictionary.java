@@ -24,6 +24,7 @@ import com.tom_roush.pdfbox.cos.COSStream;
 import com.tom_roush.pdfbox.pdmodel.common.COSObjectable;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceCMYK;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
@@ -237,9 +238,9 @@ public class PDAppearanceCharacteristicsDictionary implements COSObjectable
                 case 3:
                     colorSpace = PDDeviceRGB.INSTANCE;
                     break;
-//                case 4:
-//                    colorSpace = PDDeviceCMYK.INSTANCE; TODO: PdfBox-Android
-//                    break;
+                case 4:
+                    colorSpace = PDDeviceCMYK.INSTANCE;
+                    break;
                 default:
                     return null;
             }

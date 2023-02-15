@@ -37,6 +37,7 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRectangle;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.font.PDType1Font;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceCMYK;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
@@ -421,7 +422,7 @@ public class PDFreeTextAppearanceHandler extends PDAbstractAppearanceHandler
                 }
                 else if (OperatorName.NON_STROKING_CMYK.equals(graphicOpName))
                 {
-//               strokingColor = new PDColor(colors, PDDeviceCMYK.INSTANCE); TODO: PdfBox-Android
+                    strokingColor = new PDColor(colors, PDDeviceCMYK.INSTANCE);
                 }
             }
         }
