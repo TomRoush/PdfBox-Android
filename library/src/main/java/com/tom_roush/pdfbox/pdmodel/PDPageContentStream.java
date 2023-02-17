@@ -40,6 +40,7 @@ import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.graphics.PDXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceCMYK;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
@@ -1079,8 +1080,8 @@ public final class PDPageContentStream implements Closeable
     private COSName getName(PDColorSpace colorSpace) throws IOException
     {
         if (colorSpace instanceof PDDeviceGray ||
-            colorSpace instanceof PDDeviceRGB /*||
-            colorSpace instanceof PDDeviceCMYK TODO: PdfBox-Android*/)
+            colorSpace instanceof PDDeviceRGB ||
+            colorSpace instanceof PDDeviceCMYK)
         {
             return COSName.getPDFName(colorSpace.getName());
         }
@@ -1266,7 +1267,7 @@ public final class PDPageContentStream implements Closeable
         writeOperand(y);
         writeOperand(k);
         writeOperator(OperatorName.STROKING_COLOR_CMYK);
-//        setStrokingColorSpaceStack(PDDeviceCMYK.INSTANCE); TODO: PdfBox-Android
+        setStrokingColorSpaceStack(PDDeviceCMYK.INSTANCE);
     }
 
     /**
@@ -1509,7 +1510,7 @@ public final class PDPageContentStream implements Closeable
         writeOperand(y);
         writeOperand(k);
         writeOperator(OperatorName.NON_STROKING_CMYK);
-//        setNonStrokingColorSpaceStack(PDDeviceCMYK.INSTANCE); TODO: PdfBox-Android
+        setNonStrokingColorSpaceStack(PDDeviceCMYK.INSTANCE);
     }
 
     /**
