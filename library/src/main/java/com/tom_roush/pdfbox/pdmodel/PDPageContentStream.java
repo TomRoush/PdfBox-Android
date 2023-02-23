@@ -42,6 +42,7 @@ import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDICCBased;
 import com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import com.tom_roush.pdfbox.pdmodel.graphics.image.PDInlineImage;
@@ -1116,17 +1117,18 @@ public final class PDPageContentStream implements Closeable
 //            writeOperand(color.getPatternName());
 //        }
 
-//        if (color.getColorSpace() instanceof PDPattern ||
+        if (
+//            color.getColorSpace() instanceof PDPattern ||
 //            color.getColorSpace() instanceof PDSeparation ||
 //            color.getColorSpace() instanceof PDDeviceN ||
-//            color.getColorSpace() instanceof PDICCBased)
-//        {
-//            writeOperator(OperatorName.STROKING_COLOR_N);
-//        }
-//        else
-//        {
+            color.getColorSpace() instanceof PDICCBased)
+        {
+            writeOperator(OperatorName.STROKING_COLOR_N);
+        }
+        else
+        {
             writeOperator(OperatorName.STROKING_COLOR);
-//        } TODO: PdfBox-Android
+        }
     }
 
     /**
@@ -1165,16 +1167,17 @@ public final class PDPageContentStream implements Closeable
 
         PDColorSpace currentStrokingColorSpace = strokingColorSpaceStack.peek();
 
-//        if (currentStrokingColorSpace instanceof PDSeparation ||
+        if (
+//            currentStrokingColorSpace instanceof PDSeparation ||
 //            currentStrokingColorSpace instanceof PDPattern ||
-//            currentStrokingColorSpace instanceof PDICCBased)
-//        {
-//            writeOperator(OperatorName.STROKING_COLOR_N);
-//        }
-//        else
-//        {
+            currentStrokingColorSpace instanceof PDICCBased)
+        {
+            writeOperator(OperatorName.STROKING_COLOR_N);
+        }
+        else
+        {
             writeOperator(OperatorName.STROKING_COLOR);
-//        } TODO: PdfBox-Android
+        }
     }
 
     /**
@@ -1345,17 +1348,18 @@ public final class PDPageContentStream implements Closeable
 //            writeOperand(color.getPatternName());
 //        }
 
-//        if (color.getColorSpace() instanceof PDPattern ||
+        if (
+//            color.getColorSpace() instanceof PDPattern ||
 //            color.getColorSpace() instanceof PDSeparation ||
 //            color.getColorSpace() instanceof PDDeviceN ||
-//            color.getColorSpace() instanceof PDICCBased)
-//        {
-//            writeOperator(OperatorName.NON_STROKING_COLOR_N);
-//        }
-//        else
-//        {
+            color.getColorSpace() instanceof PDICCBased)
+        {
+            writeOperator(OperatorName.NON_STROKING_COLOR_N);
+        }
+        else
+        {
             writeOperator(OperatorName.NON_STROKING_COLOR);
-//        } TODO: PdfBox-Android
+        }
     }
 
     /**
@@ -1394,16 +1398,17 @@ public final class PDPageContentStream implements Closeable
 
         PDColorSpace currentNonStrokingColorSpace = nonStrokingColorSpaceStack.peek();
 
-//        if (currentNonStrokingColorSpace instanceof PDSeparation ||
+        if (
+//            currentNonStrokingColorSpace instanceof PDSeparation ||
 //            currentNonStrokingColorSpace instanceof PDPattern ||
-//            currentNonStrokingColorSpace instanceof PDICCBased)
-//        {
-//            writeOperator(OperatorName.NON_STROKING_COLOR_N);
-//        }
-//        else
-//        {
+            currentNonStrokingColorSpace instanceof PDICCBased)
+        {
+            writeOperator(OperatorName.NON_STROKING_COLOR_N);
+        }
+        else
+        {
             writeOperator(OperatorName.NON_STROKING_COLOR);
-//        } TODO: PdfBox-Android
+        }
     }
 
     /**
