@@ -81,7 +81,7 @@ public final class JPEGFactory
 
         Dimensions meta = retrieveDimensions(byteStream);
 
-        PDColorSpace colorSpace = PDDeviceRGB.INSTANCE; // TODO: PdfBox-Android
+        PDColorSpace colorSpace = PDDeviceRGB.INSTANCE; // All images are RGB after being loaded by Bitmaps
 
         // create PDImageXObject from stream
         PDImageXObject pdImage = new PDImageXObject(document, byteStream,

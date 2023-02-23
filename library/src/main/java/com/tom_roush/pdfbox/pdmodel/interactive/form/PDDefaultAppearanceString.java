@@ -34,6 +34,7 @@ import com.tom_roush.pdfbox.pdmodel.PDResources;
 import com.tom_roush.pdfbox.pdmodel.font.PDFont;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColorSpace;
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceCMYK;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceGray;
 import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
@@ -200,8 +201,7 @@ class PDDefaultAppearanceString
                 colorSpace = PDDeviceRGB.INSTANCE;
                 break;
             case 4:
-//                colorSpace = PDDeviceCMYK.INSTANCE; TODO: PdfBox-Android
-                colorSpace = PDDeviceRGB.INSTANCE;
+                colorSpace = PDDeviceCMYK.INSTANCE;
                 break;
             default:
                 throw new IOException("Missing operands for set non stroking color operator " + Arrays.toString(operands.toArray()));

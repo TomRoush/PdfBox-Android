@@ -91,12 +91,13 @@ public class JPEGFactoryTest
      * Tests JPEGFactory#createFromStream(PDDocument document, InputStream
      * stream) with CMYK color JPEG file
      */
+    @Test
     public void testCreateFromStreamCMYK() throws IOException
     {
         PDDocument document = new PDDocument();
         InputStream stream = testContext.getAssets().open("pdfbox/com/tom_roush/pdfbox/pdmodel/graphics/image/jpegcmyk.jpg");
         PDImageXObject ximage = JPEGFactory.createFromStream(document, stream);
-        validate(ximage, 8, 343, 287, "jpg", PDDeviceRGB.INSTANCE.getName()); // TODO: PdfBox-Android
+        validate(ximage, 8, 343, 287, "jpg", PDDeviceRGB.INSTANCE.getName());
 
         doWritePDF(document, ximage, testResultsDir, "jpegcmykstream.pdf");
         checkJpegStream(testResultsDir, "jpegcmykstream.pdf", testContext.getAssets().open("pdfbox/com/tom_roush/pdfbox/pdmodel/graphics/image/jpegcmyk.jpg"));
