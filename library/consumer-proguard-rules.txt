@@ -4,3 +4,6 @@
 }
 
  -keep,allowobfuscation class com.tom_roush.pdfbox.pdmodel.documentinterchange.** { *; }
+
+-dontwarn com.gemalto.jp2.JP2Decoder
+-dontwarn com.gemalto.jp2.JP2Encoder
