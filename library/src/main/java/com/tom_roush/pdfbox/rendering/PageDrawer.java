@@ -407,7 +407,8 @@ public class PageDrawer extends PDFGraphicsStreamEngine
         PDGraphicsState state = getGraphicsState();
         RenderingMode renderingMode = state.getTextState().getRenderingMode();
 
-        Path path = glyph2D.getPathForCharacterCode(code);
+        Path oldPath = glyph2D.getPathForCharacterCode(code);
+        Path path = new Path(oldPath);
         if (path != null)
         {
             // Stretch non-embedded glyph if it does not match the height/width contained in the PDF.
